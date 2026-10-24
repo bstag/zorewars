@@ -12,6 +12,7 @@ npm test             # the test suite (Python 3 on PATH enables the Python tests
 
 - **Engine changes** (`src/engine/`): run `npm test`. If you change instruction semantics, the assembler or placement, also run the pMARS comparison (`npm run compare -- --pmars path/to/pmars`, see COMPLIANCE.md). The classic ruleset must keep matching pMARS.
 - **New warriors**: add the file to `warriors/` and an entry to `warriors/index.json`. Run `node scripts/convert-library.js` to regenerate the JavaScript and Python versions, and `node scripts/benchmark.js` to update the rankings.
+- **The code editor** is CodeMirror 6, bundled into `web/vendor/codemirror.js` so the site needs no build step. After changing the pinned `@codemirror/*` versions in `package.json`, run `npm run build:editor` and commit the result. Editor integration (Redcode mode, autocomplete, help) is in `web/editor.js`.
 - **Docs**: the tutorial is `web/docs.html` and the encyclopedia is `web/warriors.html` with its data in `warriors/encyclopedia.json`.
 
 ## Licenses of contributions

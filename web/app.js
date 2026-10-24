@@ -4,6 +4,8 @@ import { compile, VM, runRound, mulberry32, DEFAULT_SETTINGS, listing, roundPoin
 import { convertWarrior } from '../src/engine/convert.js';
 import { CoreRenderer, ProcessChart, WARRIOR_COLORS } from './arena.js';
 import { generateFromPython, pythonReady } from './python.js';
+import { createCodeEditor } from './editor.js';
+import './nav.js';
 
 const $ = (id) => document.getElementById(id);
 const MAX_SLOTS = 4;
@@ -181,10 +183,10 @@ function renderTabs() {
 
 function renderEditor() {
   const slot = activeSlot();
-  $('source').value = slot.source;
+  state.editor.setLanguage(slot.language);
+  state.editor.setValue(slot.source);
   $('languageSelect').value = slot.language;
   $('librarySelect').value = slot.libFile && libraryEntry(slot.libFile)?.source === slot.source ? slot.libFile : '';
-  $('source').style.tabSize = slot.language === 'redcode' ? 8 : 4;
   const origin = $('originText');
   origin.hidden = !slot.origin;
   if (slot.origin) {
@@ -198,17 +200,24 @@ function renderEditor() {
   renderEditorStatus();
 }
 
+// Errors and warnings appear on their lines in the editor. (For JavaScript
+// and Python the line numbers refer to the generated Redcode, so they are
+// listed below the editor instead.)
 function renderGutter() {
   const slot = activeSlot();
-  const count = $('source').value.split('\n').length;
-  const errLines = new Set((slot.compiled?.errors || []).map((e) => e.line));
-  const isRedcode = slot.language === 'redcode';
-  const parts = [];
-  for (let i = 1; i <= count; i++) {
-    parts.push(isRedcode && errLines.has(i) ? `<span class="err">${i}</span>` : `${i}\n`);
-  }
-  $('gutter').innerHTML = parts.join('');
-  $('gutter').scrollTop = $('source').scrollTop;
+  const c = slot.compiled;
+  const marks = slot.language === 'redcode' && c
+    ? [...(c.errors || []), ...(c.warnings || []).map((w) => ({ ...w, severity: 'warning' }))]
+    : [];
+  state.editor.setErrors(marks);
+}
+
+function onSourceChange(text) {
+  const slot = activeSlot();
+  slot.source = text;
+  slot.edited = true;
+  saveSlots();
+  scheduleCompile(slot, slot.language === 'python' ? 900 : 250);
 }
 
 function escapeHtml(s) {
@@ -400,17 +409,21 @@ function wireImport() {
 
   // Drop a file onto the editor to load it into the active slot.
   const target = $('codeEditor');
+  // Capture phase, so file drops are imported here before the code editor
+  // (which would insert the file's text) sees them. Dragged text still goes
+  // to the editor.
   target.addEventListener('dragover', (e) => {
     if ([...e.dataTransfer.types].includes('Files')) { e.preventDefault(); target.classList.add('dropping'); }
-  });
+  }, true);
   target.addEventListener('dragleave', () => target.classList.remove('dropping'));
   target.addEventListener('drop', async (e) => {
     target.classList.remove('dropping');
     const file = e.dataTransfer.files[0];
     if (!file) return;
     e.preventDefault();
+    e.stopPropagation();
     try { await importFile(file); } catch (err) { alert(err.message); }
-  });
+  }, true);
 }
 
 // ---------------------------------------------------------------- converting
@@ -542,14 +555,14 @@ function finishRound() {
   if (vm.winner !== null && vm.winner !== undefined) {
     const w = vm.warriors[vm.winner];
     log(`${tag}${colorName(vm.winner, w.name)} <b>wins</b> at cycle ${vm.cycle}`);
-    showOverlay(`${w.name} wins`, `cycle ${vm.cycle.toLocaleString()} · see "Why it ended" · click for a new round`, WARRIOR_COLORS[state.roster[vm.winner]]);
+    showOverlay(`${w.name} wins`, `cycle ${vm.cycle.toLocaleString()} · see "Why it ended" · ${touchQuery.matches ? "tap" : "click"} for a new round`, WARRIOR_COLORS[state.roster[vm.winner]]);
   } else {
     const survivors = vm.warriors.filter((w) => w.alive);
     const msg = vm.warriors.length === 1
       ? (survivors.length ? `Survived all ${vm.cycle.toLocaleString()} cycles` : `Died at cycle ${vm.cycle}`)
       : `Tie: ${survivors.map((w) => w.name).join(', ')} survived ${vm.cycle.toLocaleString()} cycles`;
     log(`${tag}<b>${escapeHtml(msg)}</b>`);
-    showOverlay(vm.warriors.length === 1 ? (survivors.length ? 'Survived' : 'Died') : 'Tie', `${msg} · click for a new round`);
+    showOverlay(vm.warriors.length === 1 ? (survivors.length ? 'Survived' : 'Died') : 'Tie', `${msg} · ${touchQuery.matches ? "tap" : "click"} for a new round`);
   }
   renderScoreboard();
 }
@@ -584,6 +597,7 @@ function renderPostMortem(report) {
       <p class="muted small">${w.codeIntact}/${w.code.length} of its original instructions unchanged.</p></div>`;
   }).join('');
   $('pmCard').hidden = false;
+  if (isPhone() && state.view !== 'details') $('detailsBadge').hidden = false;
 }
 
 function showKillingBlow() {
@@ -630,13 +644,15 @@ function startRunning() {
   if (!state.vm) return;
   if (state.vm.done) newRound();
   state.running = true;
-  $('runIcon').textContent = '⏸';
+  $('runIcon').setAttribute('href', '#i-pause');
   $('runLabel').textContent = 'Pause';
+  $('runBtn').setAttribute('aria-label', 'Pause');
 }
 function stopRunning() {
   state.running = false;
-  $('runIcon').textContent = '▶';
+  $('runIcon').setAttribute('href', '#i-play');
   $('runLabel').textContent = 'Run';
+  $('runBtn').setAttribute('aria-label', 'Run');
 }
 
 let finishing = false;
@@ -766,6 +782,9 @@ function renderInspector() {
       : wpc < 0 ? `Loaded as part of ${colorName(o, vm.warriors[o].name)}.`
       : `Written by ${colorName(o, vm.warriors[o].name)} at cycle ${vm.writeCycle[p].toLocaleString()}, using ${escapeHtml(vm.disassemble(wpc))} at ${pad4(wpc)}.`;
     hint.innerHTML = `${origin} ${state.pinned >= 0 ? `Pinned at ${pad4(state.pinned)}; click again to unpin.` : 'Click to pin.'}`;
+    const peek = $('cellPeek');
+    peek.hidden = state.pinned < 0;
+    if (state.pinned >= 0) peek.innerHTML = `<b>${pad4(p)}</b> ${escapeHtml(vm.disassemble(p))} · ${origin} <span class="muted">Tap again to unpin.</span>`;
   }
 }
 
@@ -848,28 +867,92 @@ function renderSpeed() {
   $('speedOut').textContent = perSec < 10 ? `${perSec.toFixed(1)} cyc/s` : perSec < 10000 ? `${Math.round(perSec)} cyc/s` : `${Math.round(perSec / 1000)}k cyc/s`;
 }
 
+
+// ---------------------------------------------------------------- phone layout
+
+const phoneQuery = matchMedia('(max-width: 860px)');
+const touchQuery = matchMedia('(pointer: coarse)');
+function isPhone() { return phoneQuery.matches; }
+
+// Phones show one view at a time: arena, code or details.
+function setView(view) {
+  state.view = view;
+  document.body.dataset.view = view;
+  for (const b of document.querySelectorAll('#tabbar button')) {
+    if (b.dataset.view === view) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+  }
+  if (view === 'details') $('detailsBadge').hidden = true;
+  if (view === 'arena') { renderer.layout(state.settings.coreSize); state.dirtyFrame = true; }
+  safeSet('zorewars.view', view);
+  window.scrollTo(0, 0);
+}
+
+// Keys that are awkward on phone keyboards, inserted at the cursor.
+const KEYS = {
+  redcode: ['\t', '#', '$', '@', '*', '<', '>', '{', '}', ',', ';', '.', ':', '-', '+', 'MOV', 'ADD', 'JMP', 'SPL', 'DAT', 'DJN', 'SEQ'],
+  javascript: ['  ', '(', ')', '"', '.', ',', ';', '=', '[', ']', '{', '}', '`', '$', '+', '-'],
+  python: ['    ', '(', ')', '"', '.', ',', ':', '=', '[', ']', '_', '#', '+', '-'],
+};
+function renderKeybar() {
+  const lang = activeSlot()?.language || 'redcode';
+  const label = (k) => (k === '\t' || /^ +$/.test(k) ? 'Tab' : k);
+  $('keybar').innerHTML = `
+    <button data-act="left" aria-label="Cursor left"><svg class="icon"><use href="#i-left"/></svg></button>
+    <button data-act="right" aria-label="Cursor right"><svg class="icon"><use href="#i-right"/></svg></button>
+    <button data-act="undo" aria-label="Undo"><svg class="icon"><use href="#i-undo"/></svg></button>
+    ${KEYS[lang].map((k) => `<button data-key="${escapeHtml(k)}" class="${/^[A-Z]{3}$/.test(k) || label(k) === 'Tab' ? 'word' : ''}">${escapeHtml(label(k))}</button>`).join('')}`;
+}
+
+function wireMobile() {
+  $('tabbar').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-view]');
+    if (b) setView(b.dataset.view);
+  });
+  const saved = safeGet('zorewars.view');
+  setView(['arena', 'code', 'details'].includes(saved) ? saved : 'arena');
+
+  // On phones the side cards start folded, except the battle log.
+  if (isPhone()) {
+    $('inspectorCard').open = false;
+    $('tourCard').open = false;
+  }
+
+  // Symbol bar: shown while the editor has focus on a touch screen, and kept
+  // just above the on-screen keyboard.
+  const bar = $('keybar');
+  const place = () => {
+    const vv = window.visualViewport;
+    const keyboard = vv ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop) : 0;
+    // Above the on-screen keyboard, and never over the tab bar (which shows
+    // when there's no on-screen keyboard, such as with a hardware keyboard).
+    const tabs = $('tabbar').offsetHeight;
+    bar.style.bottom = `${Math.max(keyboard, tabs)}px`;
+  };
+  const editorBox = $('codeEditor');
+  editorBox.addEventListener('focusin', () => {
+    if (!touchQuery.matches) return;
+    renderKeybar();
+    bar.hidden = false;
+    place();
+  });
+  editorBox.addEventListener('focusout', () => setTimeout(() => { if (!state.editor.hasFocus()) bar.hidden = true; }, 150));
+  window.visualViewport?.addEventListener('resize', place);
+  window.visualViewport?.addEventListener('scroll', place);
+  // pointerdown + preventDefault keeps focus (and the keyboard) in the editor.
+  bar.addEventListener('pointerdown', (e) => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    e.preventDefault();
+    if (b.dataset.act === 'left') state.editor.moveCursor(-1);
+    else if (b.dataset.act === 'right') state.editor.moveCursor(1);
+    else if (b.dataset.act === 'undo') state.editor.undo();
+    else if (b.dataset.key) state.editor.insert(b.dataset.key);
+  });
+}
+
 // ---------------------------------------------------------------- events
 
 function wireEvents() {
-  const src = $('source');
-  src.addEventListener('input', () => {
-    const slot = activeSlot();
-    slot.source = src.value;
-    slot.edited = true;
-    saveSlots();
-    renderGutter();
-    scheduleCompile(slot, slot.language === 'python' ? 900 : 250);
-  });
-  src.addEventListener('scroll', () => { $('gutter').scrollTop = src.scrollTop; });
-  src.addEventListener('keydown', (e) => {
-    if (e.key === 'Tab' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
-      e.preventDefault();
-      const ins = activeSlot().language === 'redcode' ? '\t' : '    ';
-      const { selectionStart: s, selectionEnd: t } = src;
-      src.setRangeText(ins, s, t, 'end');
-      src.dispatchEvent(new Event('input'));
-    }
-  });
 
   $('librarySelect').addEventListener('change', (e) => {
     const entry = libraryEntry(e.target.value);
@@ -951,7 +1034,7 @@ function wireEvents() {
   $('resetSettings').addEventListener('click', () => applySettings({ ...DEFAULT_SETTINGS }));
 
   document.addEventListener('keydown', (e) => {
-    if (e.target.closest('textarea, input, select') || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.target.closest('textarea, input, select, [contenteditable], .cm-editor, dialog') || e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.code === 'Space') { e.preventDefault(); $('runBtn').click(); }
     else if (e.key === 's' || e.key === 'S') $('stepBtn').click();
     else if (e.key === 'r' || e.key === 'R') newRound();
@@ -970,8 +1053,10 @@ async function boot() {
   const savedSettings = safeGet(SETTINGS_KEY);
   if (savedSettings) state.settings = { ...DEFAULT_SETTINGS, ...savedSettings };
   renderSettings();
+  state.editor = await createCodeEditor($('codeEditor'), { textarea: $('source'), gutter: $('gutter'), onChange: onSourceChange });
   wireEvents();
   wireImport();
+  wireMobile();
   loadClassics();
   renderer.layout(state.settings.coreSize);
   try {

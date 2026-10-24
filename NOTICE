@@ -18,6 +18,13 @@ Trademarks
 "ZoreWars" and the ZoreWars logo are not licensed under the Apache License or
 the content licenses above (Apache License 2.0, section 6).
 
+Third-party software included
+-----------------------------
+* CodeMirror 6 and Lezer (https://codemirror.net), MIT License, Copyright (C)
+  2018-2021 by Marijn Haverbeke and others: the code editor, bundled in
+  web/vendor/codemirror.js by scripts/build-editor.js. License text:
+  web/vendor/LICENSE-codemirror.txt.
+
 Third-party software loaded at runtime (not included in this repository)
 ---------------------------------------------------------------------------
 * Pyodide (https://pyodide.org), Mozilla Public License 2.0, loaded from

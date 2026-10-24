@@ -40,7 +40,8 @@
     .exercise { border: 1px dashed var(--line-2); border-radius: 8px; padding: 10px 16px; margin: 12px 0; }
     .exercise b { color: var(--warn); }
     @media (max-width: 860px) {
-      .docs { grid-template-columns: 1fr; padding: 16px; }
+      .docs { grid-template-columns: minmax(0, 1fr); padding: 16px; }
+      article { min-width: 0; }
       .toc { position: static; max-height: none; border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; }
       .rps { grid-template-columns: 1fr; }
       article h1 { font-size: 28px; }
@@ -53,7 +54,8 @@
       <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
       <span class="brand-name">ZORE<b>WARS</b></span>
     </a>
-    <nav class="nav">
+    <button class="icon-btn menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false" aria-controls="siteNav"><svg class="icon" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <nav class="nav" id="siteNav">
       <a href="./">Arena</a>
       <a href="docs.html" aria-current="page">Learn</a>
       <a href="warriors.html">Warriors</a>
@@ -502,5 +504,6 @@ node cli/zorewars.js battle mine.red https://asdflkj.net/COREWAR/94/HILL32/arvon
     </article>
   </div>
   <footer class="site-footer">ZoreWars · code <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache-2.0</a> · text <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a> · warriors written for ZoreWars <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a></footer>
+  <script type="module" src="nav.js"></script>
 </body>
 </html>
