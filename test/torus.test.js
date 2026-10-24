@@ -1,0 +1,91 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { compile, runMatch, measureSpecies, topologyFor, DEFAULT_SETTINGS } from '../src/engine/index.js';
+import { makeGeometry } from '../src/engine/geometry.js';
+
+const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+const read = (f) => fs.readFileSync(path.join(root, f), 'utf8');
+const torus = (x, y, z = 1) => ({ ...DEFAULT_SETTINGS, topology: 'torus', sizeX: x, sizeY: y, sizeZ: z, coreSize: x * y * z });
+const PLANE = torus(100, 80);
+
+test('geometry: every number is exactly one point, and steps wrap per axis', () => {
+  for (const s of [torus(100, 80), torus(20, 20, 20), torus(7, 3, 5)]) {
+    const g = makeGeometry(s);
+    for (let v = 0; v < g.N; v++) { const [x, y, z] = g.decode(v); assert.equal(g.encode(x, y, z), v); }
+  }
+  const g = makeGeometry(PLANE);
+  assert.deepEqual(g.decode(-1 + 8000), [-1, 0, 0]);               // -1 is still "one cell back"
+  assert.deepEqual(g.decode(g.encode(0, 1)), [0, 1, 0]);
+  assert.deepEqual(g.decode(g.add(g.encode(49, 0), 1)), [-50, 0, 0]);   // wraps within the row
+  assert.deepEqual(g.decode(g.add(g.encode(0, 39), g.encode(0, 1))), [0, -40, 0]);
+  assert.equal(g.div(5, 0), null);                                   // all-zero divisor kills
+  assert.equal(g.format(g.encode(3, -2)), '[3,-2]');
+});
+
+test('torus(8000,1,1) is the classic ring: identical battles for the library', () => {
+  const ring = { ...DEFAULT_SETTINGS };
+  const line = torus(8000, 1);
+  const list = JSON.parse(read('warriors/index.json')).filter((e) => (e.language === 'redcode' || e.language === 'javascript') && e.benchmark !== false);
+  const ws = list.map((e) => ({ name: e.name, r: compile(read(`warriors/${e.file}`), e.language, ring), t: compile(read(`warriors/${e.file}`), e.language, line) }));
+  for (const w of ws) assert.deepEqual(w.t.instructions, w.r.instructions, `${w.name} assembles differently`);
+  for (let i = 0; i < ws.length; i++) for (let j = i + 1; j < ws.length; j++) {
+    const a = runMatch([ws[i].r, ws[j].r], { ...ring, rounds: 2 }, { seed: 7 + i * 50 + j });
+    const b = runMatch([ws[i].t, ws[j].t], { ...line, rounds: 2 }, { seed: 7 + i * 50 + j });
+    for (const [k, ra] of a.rounds.entries()) {
+      const rb = b.rounds[k];
+      assert.deepEqual([rb.winner, rb.cycles, rb.positions], [ra.winner, ra.cycles, ra.positions], `${ws[i].name} vs ${ws[j].name}, round ${k + 1}`);
+    }
+  }
+});
+
+test('assembler: vector literals, SIZEX/SIZEY, and a clear error on the ring', () => {
+  const w = compile('MOV.I $0, $[0,1]\nDAT #SIZEX, #SIZEY', 'redcode', PLANE);
+  assert.ok(w.ok, JSON.stringify(w.errors));
+  const g = makeGeometry(PLANE);
+  assert.deepEqual(g.decode(w.instructions[0].b), [0, 1, 0]);
+  assert.deepEqual([w.instructions[1].a, w.instructions[1].b], [100, 80]);
+  const ring = compile('MOV.I $0, $[0,1]');
+  assert.ok(!ring.ok && /torus/.test(ring.errors[0].message));
+  assert.ok(compile('MOV.I $0, $[1,0]').ok);                        // an x-only vector is fine anywhere
+});
+
+test('the plane: code flows along rows, and fixed steps cover only a stripe', () => {
+  // An imp circles its own row: 100 cells, never 8000.
+  const imp = measureSpecies(compile('MOV.I 0, 1', 'redcode', PLANE), PLANE);
+  assert.equal(imp.coverage, 100);
+  // No single step visits every cell of Z100 x Z80 (it isn't cyclic): at most lcm(100,80) = 400.
+  const g = makeGeometry(PLANE);
+  let longest = 0;
+  for (const s of [1, 3, 7, 99, g.encode(1, 1), g.encode(3, 7), g.encode(13, 11)]) {
+    const seen = new Set();
+    for (let p = 0; !seen.has(p); p = g.add(p, s)) seen.add(p);
+    longest = Math.max(longest, seen.size);
+  }
+  assert.equal(longest, 400);
+  // Warriors load on different rows, a quarter of the longest axis apart.
+  const t = topologyFor(PLANE);
+  let seed = 5;
+  for (let r = 0; r < 50; r++) {
+    const [[a, b], next] = t.place(2, seed);
+    seed = next;
+    assert.notEqual(g.position(a)[1], g.position(b)[1]);
+    assert.ok(t.distance(a, b) >= 25);
+  }
+});
+
+test('plane warriors work on the plane and say so on the ring', () => {
+  for (const f of ['plaid', 'climber', 'planesilk', 'raster']) {
+    const src = read(`warriors/plane/${f}.js`);
+    const onRing = compile(src, 'javascript');
+    assert.ok(!onRing.ok && /is for a plane/.test(onRing.errors[0].message), `${f} on the ring`);
+    const w = compile(src, 'javascript', PLANE);
+    assert.ok(w.ok, `${f}: ${JSON.stringify(w.errors)}`);
+    assert.ok(measureSpecies(w, PLANE).survives, `${f} kills itself alone`);
+  }
+  // Climber really travels vertically: it runs code on many different rows.
+  const climber = compile(read('warriors/plane/climber.js'), 'javascript', PLANE);
+  assert.ok(measureSpecies(climber, PLANE).coverage > 300);
+});

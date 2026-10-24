@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { compile, assemble, VM, runMatch } from '../src/engine/index.js';
+import { compile, assemble, VM, runMatch, DEFAULT_SETTINGS } from '../src/engine/index.js';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const read = (f) => fs.readFileSync(path.join(root, f), 'utf8');
@@ -206,9 +206,12 @@ test('JMZ.F only jumps when both fields are zero', () => {
 test('every library warrior compiles and survives alone', () => {
   const list = JSON.parse(read('warriors/index.json'));
   for (const entry of list.filter((e) => e.language !== 'python')) {
-    const w = compile(read(`warriors/${entry.file}`), entry.language);
+    // Plane warriors ("battlefield": "torus:100x80") run on their own battlefield.
+    const [x, y] = (entry.battlefield ?? '').replace('torus:', '').split('x').map(Number);
+    const settings = entry.battlefield ? { ...DEFAULT_SETTINGS, topology: 'torus', sizeX: x, sizeY: y, sizeZ: 1, coreSize: x * y } : {};
+    const w = compile(read(`warriors/${entry.file}`), entry.language, settings);
     assert.ok(w.ok, `${entry.file}: ${JSON.stringify(w.errors)}`);
-    const vm = new VM();
+    const vm = new VM(settings);
     vm.load([w], { seed: 3 });
     vm.run();
     assert.ok(vm.warriors[0].alive, `${entry.file} killed itself`);

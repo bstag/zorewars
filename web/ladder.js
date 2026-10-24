@@ -18,7 +18,7 @@ const LADDER_START = ['gatekeeper.js', 'bandit.js', 'chameleon.js', 'evolvedsilk
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const rulesKey = (s) => [s.coreSize, s.maxCycles, s.maxProcesses, s.maxLength, s.minDistance].join('/');
+const rulesKey = (s) => [s.topology ?? 'ring', s.sizeX, s.sizeY, s.sizeZ, s.coreSize, s.maxCycles, s.maxProcesses, s.maxLength, s.minDistance].join('/');
 function safeGet(key) { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } }
 function safeSet(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* storage unavailable */ } }
 const plural = (n, one, many) => `${n.toLocaleString()} ${n === 1 ? one : many}`;

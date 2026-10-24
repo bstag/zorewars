@@ -1,6 +1,37 @@
 # Design: rulesets and the 3D battlefield
 
-Status: proposal, for discussion. Nothing here is implemented beyond the seams listed in "Already in place".
+Status: **the 2D slice is implemented** (a torus plane, `--torus 100x80`, experimental). The full 3D game is still a proposal. See "What we built: the 2D slice" below for the semantics as implemented, which refine the draft further down, and for what we learned.
+
+## What we built: the 2D slice
+
+A torus battlefield of X×Y×Z cells (`settings.topology = 'torus'`, `sizeX/sizeY/sizeZ`), used so far as a plane (Z = 1): 100×80 or 125×64, both 8,000 cells.
+
+**Numbers are points.** Every field still holds one number in [0, CORESIZE), and that number *is* a point of the torus, written in balanced mixed radix: x in [-X/2, X/2), then y, then z (`src/engine/geometry.js`). So `1`, `-1` and `12` are still steps along x, exactly as in classic Redcode, and `[0,1]` (= X) is one row down. Storage, P-space, replays and post-mortems are unchanged.
+
+| Per axis (geometry) | Plain numbers (counting) |
+| --- | --- |
+| addressing (`$ @ *`), the next instruction, skips | `DJN` decrements, so counters count normally |
+| `ADD SUB MUL DIV MOD` (DIV/MOD skip zero components, die only on an all-zero divisor) | pointer increments `< > { }`, so a `>ptr` clear sweeps every cell row by row |
+| loading: a warrior's code runs along its row | `SLT`, `SEQ`, `SNE`, `JMZ`, `JMN` |
+
+**The safety net.** A torus one row high (8000×1) is mathematically the classic ring. A check over the library and the 34 Hall of Fame classics (7,080 rounds) and a permanent test (`test/torus.test.js`) confirm battles there are identical, round for round, to the pMARS-verified ring.
+
+**Syntax.** Vector literals `[x,y]` and `[x,y,z]` in any expression; constants `SIZEX`, `SIZEY`, `SIZEZ`; generators get `vec(x, y, z)`. On the ring, a vector with a y or z part is an error.
+
+**Placement.** Warriors load on different rows, at least a quarter of the longest axis apart (Chebyshev distance). The 8000×1 torus places exactly like the ring.
+
+### What the plane taught us
+
+1. **Code flows along rows.** The program counter always moves along x, so an imp circles its own row (100 cells, never 8,000). Moving vertically takes a jump: Climber copies itself down and jumps into the copy.
+2. **No fixed step covers the plane.** Z100×Z80 isn't cyclic: no step visits more than lcm(100, 80) = 400 cells (5%). Stones and scanners need nested loops (Plaid bombs a lattice row by row). The plane's shape decides this: on 125×64 (coprime sides) a single step can still reach every cell.
+3. **Ring-computed constants break.** Imp Ring, Hedgehog, Hydra and Bandit kill themselves on the plane, because their JavaScript did ring arithmetic. Plane warriors compute with `SIZEX`/`SIZEY`.
+4. **The metagame flips.** In a 17-warrior tournament on 100×80, linear core clears came first (Two-Pass Clear 2.41, Raster 2.15 points per round), papers were nearly unkillable (Papercut, Plane Silk, Fast Silk lost 0 to 8 of 320 rounds), and stride-based scanners and stones fell to about 1.0.
+
+### Open questions for the next step
+
+- Should the program counter be able to flow along y (a per-warrior or per-process heading)? That would make vertical imps possible, and is the biggest remaining design choice before 3D.
+- 100×80 (new strategies forced) or 125×64 (classic strategies carry over) as the default plane?
+- 3D: z-slices are already drawn stacked; a WebGL view comes when warriors use z.
 
 ## Goals
 

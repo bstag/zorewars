@@ -187,6 +187,13 @@
 
       <details class="card fold settings">
         <summary><h3>Rules</h3></summary>
+        <label class="field battlefield"><span>Battlefield</span>
+          <select id="setField">
+            <option value="ring">Ring (classic Core War)</option>
+            <option value="torus:100x80">Plane 100×80 (experimental)</option>
+            <option value="torus:125x64">Plane 125×64 (experimental)</option>
+          </select>
+        </label>
         <div class="settings-grid">
           <label class="field"><span>Core size</span><input type="number" id="setCoreSize" min="200" max="100000"></label>
           <label class="field"><span>Max cycles</span><input type="number" id="setMaxCycles" min="100" max="10000000"></label>

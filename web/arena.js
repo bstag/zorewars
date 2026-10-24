@@ -34,12 +34,30 @@ export class CoreRenderer {
     });
   }
 
-  layout(coreSize) {
+  // `geo`: the VM's torus geometry, or null for the classic ring. On a ring
+  // the cells are simply wrapped into a 5:4 grid; on a torus each cell is
+  // drawn at its real (x, y), with z-slices stacked below each other.
+  layout(coreSize, geo = null) {
     this.coreSize = coreSize;
+    this.geo = geo;
     const width = this.canvas.parentElement.clientWidth || 800;
-    // Aim for a 5:4 grid, e.g. 100 x 80 for the standard 8000-cell core.
-    this.cols = Math.max(10, Math.round(Math.sqrt(coreSize * 1.25)));
-    this.rows = Math.ceil(coreSize / this.cols);
+    if (geo) {
+      this.cols = geo.X;
+      this.rows = geo.Y * geo.Z;
+    } else {
+      // Aim for a 5:4 grid, e.g. 100 x 80 for the standard 8000-cell core.
+      this.cols = Math.max(10, Math.round(Math.sqrt(coreSize * 1.25)));
+      this.rows = Math.ceil(coreSize / this.cols);
+    }
+    // Where each cell is drawn (grid index), and which cell is at each spot.
+    this.gridOf = new Int32Array(coreSize);
+    this.cellAtGrid = new Int32Array(this.cols * this.rows).fill(-1);
+    for (let i = 0; i < coreSize; i++) {
+      let g = i;
+      if (geo) { const [x, y, z] = geo.position(i); g = (z * geo.Y + y) * geo.X + x; }
+      this.gridOf[i] = g;
+      this.cellAtGrid[g] = i;
+    }
     this.cell = Math.max(2, Math.floor(width / this.cols));
     const dpr = window.devicePixelRatio || 1;
     const w = this.cols * this.cell;
@@ -58,14 +76,14 @@ export class CoreRenderer {
     const x = Math.floor(((clientX - r.left) / r.width) * this.cols);
     const y = Math.floor(((clientY - r.top) / r.height) * this.rows);
     if (x < 0 || y < 0 || x >= this.cols || y >= this.rows) return -1;
-    const addr = y * this.cols + x;
-    return addr < this.coreSize ? addr : -1;
+    return this.cellAtGrid[y * this.cols + x] ?? -1;
   }
 
   draw(vm, fadeSteps) {
     const { ctx, cols, cell } = this;
     const n = vm.size;
-    if (n !== this.coreSize) this.layout(n);
+    if (n !== this.coreSize || vm.geo !== this.geo) this.layout(n, vm.geo);
+    const grid = this.gridOf;
     ctx.fillStyle = '#050812';
     ctx.fillRect(0, 0, this.cssWidth, this.rows * cell);
 
@@ -76,8 +94,8 @@ export class CoreRenderer {
     const { owner, lastWrite, lastExec, op, a, b } = vm;
 
     for (let i = 0; i < n; i++) {
-      const x = (i % cols) * cell;
-      const y = Math.floor(i / cols) * cell;
+      const x = (grid[i] % cols) * cell;
+      const y = Math.floor(grid[i] / cols) * cell;
       const w = owner[i];
       const isDat = op[i] === OP.DAT;
       if (w < 0) {
@@ -112,8 +130,8 @@ export class CoreRenderer {
       if (!war.alive) continue;
       let count = 0;
       for (const pc of war.queue) {
-        const x = (pc % cols) * cell;
-        const y = Math.floor(pc / cols) * cell;
+        const x = (grid[pc] % cols) * cell;
+        const y = Math.floor(grid[pc] / cols) * cell;
         ctx.fillRect(x, y, inner, inner);
         if (++count > 2000) break; // plenty to show a swarm
       }
@@ -123,7 +141,7 @@ export class CoreRenderer {
       if (addr < 0) continue;
       ctx.strokeStyle = color;
       ctx.lineWidth = 1.5;
-      ctx.strokeRect((addr % cols) * cell - 1, Math.floor(addr / cols) * cell - 1, cell + 1, cell + 1);
+      ctx.strokeRect((grid[addr] % cols) * cell - 1, Math.floor(grid[addr] / cols) * cell - 1, cell + 1, cell + 1);
     }
   }
 }

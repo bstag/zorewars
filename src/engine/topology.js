@@ -9,9 +9,11 @@
 
 import { separationFor } from './constants.js';
 import { pmarsRng } from './random.js';
+import { makeGeometry } from './geometry.js';
 
 const TOPOLOGIES = {
   ring: ringTopology,
+  torus: torusTopology,
 };
 
 export function topologyFor(settings) {
@@ -76,6 +78,44 @@ export function ringTopology(settings) {
           for (let k = 1; k < count; k++) positions.push(k * gap + shift);
           break;
         }
+      }
+      return [positions, seed];
+    },
+  };
+}
+
+// A torus of X x Y x Z cells, every axis wrapping on its own (geometry.js).
+// A warrior's code runs along x, so it occupies part of one row. Warriors are
+// loaded on different rows, at least `separation` apart in Chebyshev distance
+// (the largest per-axis gap). The default separation is the classic minimum
+// distance, capped at a quarter of the longest axis so that it always fits.
+// A torus that is one row high (Y = Z = 1) *is* the classic ring, and places
+// warriors exactly as the ring does.
+export function torusTopology(settings) {
+  const g = makeGeometry(settings);
+  if (g.Y === 1 && g.Z === 1) return { ...ringTopology(settings), kind: 'torus', geometry: g };
+  const sep = Math.max(1, Math.min(separationFor(settings), Math.floor(Math.max(g.X, g.Y, g.Z) / 4)));
+  const row = (p) => { const [, y, z] = g.position(p); return y + g.Y * z; };
+  return {
+    kind: 'torus',
+    size: g.N,
+    separation: sep,
+    geometry: g,
+    norm: (a) => ((a % g.N) + g.N) % g.N,
+    distance: g.distance,
+    place(count, seed) {
+      const positions = [0];
+      for (let i = 1; i < count; i++) {
+        let placed = false;
+        for (let attempt = 0; attempt < 1000 && !placed; attempt++) {
+          seed = pmarsRng(seed);
+          const c = seed % g.N;
+          if (positions.every((p) => row(p) !== row(c) && g.distance(p, c) >= sep)) {
+            positions.push(c);
+            placed = true;
+          }
+        }
+        if (!placed) throw new Error(`a ${g.X}x${g.Y}x${g.Z} torus can't hold ${count} warriors ${sep} apart on separate rows`);
       }
       return [positions, seed];
     },

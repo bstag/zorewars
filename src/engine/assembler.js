@@ -8,6 +8,11 @@
 // a ;redcode line is ignored, as in pMARS.
 
 import { OPCODES, OPCODE_ALIASES, MODIFIERS, MODES, DEFAULT_SETTINGS, defaultModifier, pSpaceSizeFor } from './constants.js';
+import { makeGeometry } from './geometry.js';
+
+// Vector literals [x,y] / [x,y,z] (torus battlefields) are encoded with the
+// battlefield being assembled for; set by assemble() while it runs.
+let encodeVector = null;
 
 export const PSEUDO = new Set(['ORG', 'END', 'EQU', 'PIN']);
 
@@ -23,8 +28,8 @@ export function splitOperands(text) {
   let depth = 0;
   for (let i = 0; i < text.length; i++) {
     const c = text[i];
-    if (c === '(') depth++;
-    else if (c === ')') depth--;
+    if (c === '(' || c === '[') depth++;
+    else if (c === ')' || c === ']') depth--;
     else if (c === ',' && depth === 0) return [text.slice(0, i).trim(), text.slice(i + 1).trim()];
   }
   return text.trim() ? [text.trim()] : [];
@@ -32,7 +37,7 @@ export function splitOperands(text) {
 
 export function tokenizeExpr(text) {
   const tokens = [];
-  const re = /\s*(?:(\d+)|([A-Za-z_][\w]*)|(&&|\|\||==|!=|<=|>=|[-+*/%()<>!=]))/y;
+  const re = /\s*(?:(\d+)|([A-Za-z_][\w]*)|(&&|\|\||==|!=|<=|>=|[-+*/%()<>!=[\],]))/y;
   let pos = 0;
   text = text.trim();
   while (pos < text.length) {
@@ -77,6 +82,15 @@ function evaluate(text, lookup, registers = null) {
       const v = logicalOr();
       if (!eat(')')) throw new Error("missing ')'");
       return v;
+    }
+    if (t.v === '[') {                       // vector literal [x,y] or [x,y,z]
+      const parts = [logicalOr()];
+      while (eat(',')) parts.push(logicalOr());
+      if (!eat(']')) throw new Error("missing ']'");
+      if (parts.length < 2 || parts.length > 3) throw new Error('a vector has 2 or 3 components: [x,y] or [x,y,z]');
+      if (encodeVector) return encodeVector(parts[0], parts[1], parts[2] ?? 0);
+      if (parts[1] !== 0 || (parts[2] ?? 0) !== 0) throw new Error('vectors with a y or z part need a torus battlefield (e.g. --torus 100x80)');
+      return parts[0];
     }
     if (t.v === '-') return -primary();
     if (t.v === '+') return primary();
@@ -244,7 +258,12 @@ export function assemble(source, settings = {}) {
   const header = /^\s*;\s*(redcode(?:-[\w.]+)?)/im.exec(source);
   if (header) meta.dialect = header[1].toLowerCase();
 
+  const geo = makeGeometry(cfg);
+  encodeVector = geo ? geo.encode : null;
   const constants = {
+    SIZEX: geo ? geo.X : cfg.coreSize,
+    SIZEY: geo ? geo.Y : 1,
+    SIZEZ: geo ? geo.Z : 1,
     CORESIZE: cfg.coreSize,
     MAXPROCESSES: cfg.maxProcesses,
     MAXCYCLES: cfg.maxCycles,
@@ -445,8 +464,12 @@ export function assemble(source, settings = {}) {
 }
 
 // Render instructions back to canonical Redcode (relative, signed fields).
-export function listing(warrior, coreSize = DEFAULT_SETTINGS.coreSize) {
-  const signed = (v) => {
+// `sizeOrSettings`: the core size, or full settings (a torus battlefield
+// shows off-axis fields as vectors such as [0,1]).
+export function listing(warrior, sizeOrSettings = DEFAULT_SETTINGS.coreSize) {
+  const geo = typeof sizeOrSettings === 'object' ? makeGeometry({ ...DEFAULT_SETTINGS, ...sizeOrSettings }) : null;
+  const coreSize = typeof sizeOrSettings === 'object' ? (sizeOrSettings.coreSize ?? DEFAULT_SETTINGS.coreSize) : sizeOrSettings;
+  const signed = geo ? geo.format : (v) => {
     let x = ((v % coreSize) + coreSize) % coreSize;
     if (x > coreSize / 2) x -= coreSize;
     return x;

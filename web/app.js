@@ -93,7 +93,7 @@ async function loadLibrary() {
     for (const e of list.filter((x) => x.language === lang)) {
       const o = document.createElement('option');
       o.value = e.file;
-      o.textContent = `${e.name} — ${e.category}${e.convertedFrom ? ' (converted)' : ''}`;
+      o.textContent = `${e.name} — ${e.category}${e.convertedFrom ? ' (converted)' : ''}${e.battlefield ? ' · plane' : ''}`;
       og.appendChild(o);
     }
     if (og.children.length) sel.appendChild(og);
@@ -251,7 +251,7 @@ function renderEditorStatus() {
 
   const gen = $('generatedBox');
   if (c?.ok) {
-    $('generatedCode').textContent = listing(c, state.settings.coreSize);
+    $('generatedCode').textContent = listing(c, state.settings);
     $('generatedMeta').textContent = slot.language === 'redcode' ? '(normalised)' : `(generated from ${slot.language === 'python' ? 'Python' : 'JavaScript'})`;
     gen.hidden = false;
   } else if (c?.redcode && slot.language !== 'redcode') {
@@ -289,6 +289,10 @@ function removeSlot() {
 const HILL_94X = { coreSize: 55440, maxProcesses: 10000, maxCycles: 500000, maxLength: 200, minDistance: 200 };
 function rulesHint(c) {
   if (!c) return null;
+  // Warriors written for the plane battlefield say so when compiled on the ring.
+  if (state.settings.topology !== 'torus' && c.errors?.some((e) => /is for a plane/.test(e.message))) {
+    return { settings: { ...state.settings, ...fieldSettings('torus:100x80') }, text: 'This warrior is written for the plane battlefield (100×80, experimental). Switching applies to every warrior in the arena.' };
+  }
   const core = c.warnings?.map((w) => /CORESIZE\s*==\s*(\d+)/.exec(w.message)).find(Boolean);
   const len = c.errors?.map((e) => /is (\d+) instructions long/.exec(e.message)).find(Boolean);
   if (!core && !len) return null;
@@ -846,14 +850,25 @@ function runTournamentUI() {
 const SETTING_INPUTS = {
   coreSize: 'setCoreSize', maxCycles: 'setMaxCycles', maxProcesses: 'setMaxProcesses', maxLength: 'setMaxLength', minDistance: 'setMinDistance',
 };
+// The battlefield: the classic ring, or a torus plane (see design/3d-battlefield.md).
+function fieldKey(s) {
+  return s.topology === 'torus' ? `torus:${s.sizeX}x${s.sizeY}${(s.sizeZ ?? 1) > 1 ? `x${s.sizeZ}` : ''}` : 'ring';
+}
+function fieldSettings(key) {
+  if (!key.startsWith('torus:')) return { topology: 'ring', sizeX: undefined, sizeY: undefined, sizeZ: undefined };
+  const [x, y, z = 1] = key.slice(6).split('x').map(Number);
+  return { topology: 'torus', sizeX: x, sizeY: y, sizeZ: z, coreSize: x * y * z };
+}
 function renderSettings() {
   for (const [k, id] of Object.entries(SETTING_INPUTS)) $(id).value = state.settings[k];
+  $('setField').value = fieldKey(state.settings);
+  $('setCoreSize').disabled = state.settings.topology === 'torus';   // fixed by the plane's size
 }
 function applySettings(values) {
   state.settings = { ...state.settings, ...values };
   safeSet(SETTINGS_KEY, state.settings);
   renderSettings();
-  renderer.layout(state.settings.coreSize);
+  renderer.layout(state.settings.coreSize, state.vm?.geo ?? null);
   state.vm = null;
   state.slots.forEach((s) => compileSlot(s));
 }
@@ -885,7 +900,7 @@ function setView(view) {
     if (b.dataset.view === view) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
   }
   if (view === 'details') $('detailsBadge').hidden = true;
-  if (view === 'arena') { renderer.layout(state.settings.coreSize); state.dirtyFrame = true; }
+  if (view === 'arena') { renderer.layout(state.settings.coreSize, state.vm?.geo ?? null); state.dirtyFrame = true; }
   safeSet('zorewars.view', view);
   window.scrollTo(0, 0);
 }
@@ -1069,9 +1084,14 @@ function wireEvents() {
       if (!Number.isFinite(n) || n < +$(id).min) { $(id).focus(); return; }
       v[k] = n;
     }
-    applySettings(v);
+    applySettings({ ...v, ...fieldSettings($('setField').value) });
   });
-  $('resetSettings').addEventListener('click', () => applySettings({ ...DEFAULT_SETTINGS }));
+  $('setField').addEventListener('change', () => {
+    const f = fieldSettings($('setField').value);
+    $('setCoreSize').disabled = f.topology === 'torus';
+    if (f.coreSize) $('setCoreSize').value = f.coreSize;
+  });
+  $('resetSettings').addEventListener('click', () => applySettings({ ...DEFAULT_SETTINGS, ...fieldSettings('ring') }));
 
   document.addEventListener('keydown', (e) => {
     if (e.target.closest('textarea, input, select, [contenteditable], .cm-editor, dialog') || e.ctrlKey || e.metaKey || e.altKey) return;
@@ -1083,7 +1103,7 @@ function wireEvents() {
   let resizeTimer;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => { renderer.layout(state.settings.coreSize); state.dirtyFrame = true; }, 100);
+    resizeTimer = setTimeout(() => { renderer.layout(state.settings.coreSize, state.vm?.geo ?? null); state.dirtyFrame = true; }, 100);
   });
 }
 
@@ -1106,7 +1126,7 @@ async function boot() {
   wireImport();
   wireMobile();
   loadClassics();
-  renderer.layout(state.settings.coreSize);
+  renderer.layout(state.settings.coreSize, state.vm?.geo ?? null);
   try {
     await loadLibrary();
   } catch (e) {

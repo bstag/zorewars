@@ -25,6 +25,9 @@ export function postMortem(vm) {
   const size = vm.size;
   const name = (i) => (i >= 0 ? vm.warriors[i]?.name ?? `warrior ${i + 1}` : 'nobody');
 
+  // k instructions on from addr: along x on a torus (code runs along rows).
+  const step = (addr, k) => (vm.geo ? vm.geo.add(addr, vm.norm(k)) : addr + k);
+
   // Everything known about one cell: content, who wrote it, when, and how.
   const cell = (addr) => {
     const p = vm.norm(addr);
@@ -65,7 +68,7 @@ export function postMortem(vm) {
   const warriors = vm.warriors.map((w) => {
     // Ending code: the warrior's original footprint, then and now.
     const code = w.original.map((orig, k) => {
-      const now = cell(w.position + k);
+      const now = cell(step(w.position, k));
       const was = formatInstruction(orig, size);
       return { offset: k, ...now, original: was, changed: was !== now.instruction };
     });
@@ -137,7 +140,7 @@ export function postMortem(vm) {
     killingBlow = {
       victim: final.name,
       ...d,
-      context: Array.from({ length: 7 }, (_, k) => ({ ...cell(d.pc + k - 3), here: k === 3 })),
+      context: Array.from({ length: 7 }, (_, k) => ({ ...cell(step(d.pc, k - 3)), here: k === 3 })),
     };
   }
 

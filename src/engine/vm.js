@@ -7,6 +7,7 @@
 import { OPCODES, MODIFIERS, MODES, OP, MOD, MODE, DEFAULT_SETTINGS, pSpaceSizeFor } from './constants.js';
 import { mulberry32 } from './random.js';
 import { topologyFor } from './topology.js';
+import { makeGeometry } from './geometry.js';
 
 const { DAT, MOV, ADD, SUB, MUL, DIV, MOD: MODOP, JMP, JMZ, JMN, DJN, SPL, SLT, SEQ, SNE, NOP, LDP, STP } = OP;
 const { A, B, AB, BA, F, X, I } = MOD;
@@ -39,6 +40,9 @@ export class VM {
     this.settings = { ...DEFAULT_SETTINGS, ...settings };
     const n = this.settings.coreSize;
     this.size = n;
+    // Torus battlefields: per-axis addressing and arithmetic (geometry.js).
+    // null on the classic ring, where everything is plain modular arithmetic.
+    this.geo = makeGeometry(this.settings);
     this.op = new Uint8Array(n);
     this.mod = new Uint8Array(n);
     this.aMode = new Uint8Array(n);
@@ -94,9 +98,10 @@ export class VM {
         throw new Error(`${w.name} is ${w.instructions.length} instructions long (max ${maxLength})`);
       }
       const base = positions[i];
-      w.instructions.forEach((ins, k) => this.poke(base + k, ins, i));
+      const at = (k) => (this.geo ? this.geo.add(base, k) : base + k);   // code runs along x
+      w.instructions.forEach((ins, k) => this.poke(at(k), ins, i));
       const queue = new ProcessQueue(maxProcesses);
-      queue.push(this.norm(base + w.start));
+      queue.push(this.norm(at(w.start)));
       const pspace = options.pspaces?.[i] || VM.freshPSpace(this.settings);
       this.warriors.push({
         index: i,
@@ -180,7 +185,7 @@ export class VM {
   // Human-readable instruction at an address, with fields shown signed.
   disassemble(addr) {
     const i = this.peek(addr);
-    const s = (v) => (v > this.size / 2 ? v - this.size : v);
+    const s = this.geo ? this.geo.format : (v) => (v > this.size / 2 ? v - this.size : v);
     return `${i.op}.${i.mod} ${i.aMode}${s(i.a)}, ${i.bMode}${s(i.b)}`;
   }
 
@@ -271,6 +276,7 @@ export class VM {
   resolve(mode, field, pc, w) {
     this.postCell = -1;
     if (mode === MODE.IMMEDIATE) return pc;
+    if (this.geo) return this.resolveTorus(mode, field, pc, w);
     const n = this.size;
     const p = (pc + field) % n;
     if (mode === MODE.DIRECT) return p;
@@ -290,6 +296,31 @@ export class VM {
       case MODE.B_POSTINC:
         this.postCell = p; this.postField = this.b;
         return (p + b[p]) % n;
+    }
+    return p;
+  }
+
+  // The same, on a torus: offsets are added per axis; the pointer itself
+  // still counts as a plain number (see geometry.js).
+  resolveTorus(mode, field, pc, w) {
+    const g = this.geo, n = this.size, a = this.a, b = this.b;
+    const p = g.add(pc, field);
+    switch (mode) {
+      case MODE.DIRECT: return p;
+      case MODE.A_INDIRECT: return g.add(p, a[p]);
+      case MODE.B_INDIRECT: return g.add(p, b[p]);
+      case MODE.A_PREDEC:
+        a[p] = (a[p] + n - 1) % n; this.touch(p, w);
+        return g.add(p, a[p]);
+      case MODE.B_PREDEC:
+        b[p] = (b[p] + n - 1) % n; this.touch(p, w);
+        return g.add(p, b[p]);
+      case MODE.A_POSTINC:
+        this.postCell = p; this.postField = this.a;
+        return g.add(p, a[p]);
+      case MODE.B_POSTINC:
+        this.postCell = p; this.postField = this.b;
+        return g.add(p, b[p]);
     }
     return p;
   }
@@ -338,7 +369,9 @@ export class VM {
     const bA = fa[bPtr], bB = fb[bPtr];
     this.applyPostIncrement(w);
 
-    const next = (pc + 1) % n;
+    const g = this.geo;
+    const next = g ? g.add(pc, 1) : (pc + 1) % n;
+    const skipTo = g ? g.add(pc, 2) : (pc + 2) % n;
     let killed = false;
 
     const arith = (fn) => {
@@ -381,11 +414,11 @@ export class VM {
         queue.push(next);
         break;
 
-      case ADD: arith((x, y) => (x + y) % n); break;
-      case SUB: arith((x, y) => (x - y + n) % n); break;
-      case MUL: arith((x, y) => (x * y) % n); break;
-      case DIV: arith((x, y) => (y === 0 ? null : Math.floor(x / y))); break;
-      case MODOP: arith((x, y) => (y === 0 ? null : x % y)); break;
+      case ADD: arith(g ? g.add : (x, y) => (x + y) % n); break;
+      case SUB: arith(g ? g.sub : (x, y) => (x - y + n) % n); break;
+      case MUL: arith(g ? g.mul : (x, y) => (x * y) % n); break;
+      case DIV: arith(g ? g.div : (x, y) => (y === 0 ? null : Math.floor(x / y))); break;
+      case MODOP: arith(g ? g.mod : (x, y) => (y === 0 ? null : x % y)); break;
 
       case JMP:
         queue.push(aPtr);
@@ -446,7 +479,7 @@ export class VM {
             break;
         }
         const skip = op === SEQ ? eq : !eq;
-        queue.push(skip ? (pc + 2) % n : next);
+        queue.push(skip ? skipTo : next);
         break;
       }
 
@@ -460,7 +493,7 @@ export class VM {
           case X: lt = aA < bB && aB < bA; break;
           default: lt = aA < bA && aB < bB; break; // F, I
         }
-        queue.push(lt ? (pc + 2) % n : next);
+        queue.push(lt ? skipTo : next);
         break;
       }
 

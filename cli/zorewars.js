@@ -62,6 +62,8 @@ Options:
   --length N         max warrior length          (default ${DEFAULT_SETTINGS.maxLength})
   --distance N       min distance between warriors (default ${DEFAULT_SETTINGS.minDistance})
   --pspace N         P-space size                (default: coresize/16)
+  --torus XxY[xZ]    a torus battlefield instead of the ring, e.g. 100x80;
+                     addresses are vectors there: [0,1] is one row down
   --fixed N          warrior 2 starts at N in round 1, like pmars -F;
                      later rounds follow pMARS's RNG, so results match pMARS
   --json             machine-readable output
@@ -104,6 +106,13 @@ function settingsFrom(flags, defaults = {}) {
       if (!Number.isFinite(v) || v <= 0) usage(`--${flag} must be a positive integer`);
       s[key] = v;
     }
+  }
+  // --torus 100x80 (or 20x20x20): a torus battlefield instead of the ring.
+  if (flags.torus !== undefined) {
+    const dims = String(flags.torus).toLowerCase().split('x').map((d) => parseInt(d, 10));
+    if (dims.length < 2 || dims.length > 3 || dims.some((d) => !Number.isFinite(d) || d < 1)) usage('--torus takes sizes like 100x80 or 20x20x20');
+    const [x, y, z = 1] = dims;
+    Object.assign(s, { topology: 'torus', sizeX: x, sizeY: y, sizeZ: z, coreSize: x * y * z });
   }
   return s;
 }
@@ -310,7 +319,7 @@ async function cmdCompile(args, checkOnly = false) {
       ok: w.ok, name: w.name, author: w.author, strategy: w.strategy, start: w.start,
       length: w.instructions?.length ?? 0,
       errors: w.errors, warnings: w.warnings,
-      ...(checkOnly ? {} : { instructions: (w.instructions || []).map(({ line, ...i }) => i), redcode: w.ok ? listing(w, settings.coreSize) : '' }),
+      ...(checkOnly ? {} : { instructions: (w.instructions || []).map(({ line, ...i }) => i), redcode: w.ok ? listing(w, settings) : '' }),
     }, null, 2));
   } else if (!w.ok) {
     console.error(`${args._[0]}: failed to compile`);
@@ -319,7 +328,7 @@ async function cmdCompile(args, checkOnly = false) {
   } else {
     for (const e of w.warnings) console.error(`warning: line ${e.line}: ${e.message}`);
     if (checkOnly) console.log(`${w.name}: OK (${w.instructions.length} instructions)`);
-    else console.log(listing(w, settings.coreSize));
+    else console.log(listing(w, settings));
   }
   process.exit(w.ok ? 0 : 1);
 }
@@ -333,7 +342,7 @@ async function cmdConvert(args) {
   const [w] = await loadAll(args._, settings, json);
   // Convert the Redcode itself, so comments and FOR loops carry over. (For a
   // JavaScript, Python or C++ warrior this is the Redcode it generated.)
-  const source = w.redcode ?? listing(w, settings.coreSize);
+  const source = w.redcode ?? listing(w, settings);
   const runPython = to === 'python' ? pythonRunner() : null;
   let result;
   if (to === 'python' && !runPython) {

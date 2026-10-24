@@ -13,6 +13,7 @@ A browser-based programming game inspired by **Core War** (1984). Players write 
 - **Tutorial and reference**: [web/docs.html](web/docs.html), served at `/web/docs.html`.
 - **Battle the real classics**: import originals from the public archives (Koenigstuhl, Planar's archive) by URL, from a file, or by dropping a `.red` file onto the editor. In the CLI, use `classic:thermite` or any URL. Nothing is copied into the project.
 - **CLI for AI agents**: battles and tournaments with `--json` output, reproducible from a seed. See [AGENTS.md](AGENTS.md).
+- **The plane (experimental)**: the first step towards a 3D battlefield. The core can be a torus plane (100×80 or 125×64) where addresses are vectors such as `[0,1]`. Code flows along rows, and fixed strides can't cover the plane, so the strategies that win change. Classic battles are unaffected, and a plane one row high is proven identical to the ring. See [design/3d-battlefield.md](design/3d-battlefield.md).
 - **Developer tools**: `zorewars hill` (benchmark with loss diagnosis), `species` (behaviour map), `tune` (constant search) and `evolve` (Red Queen rounds of MAP-Elites, after [Digital Red Queen](https://github.com/SakanaAI/drq)), all using every CPU core.
 
 **Play it:** [zorewars.blackstag.workers.dev](https://zorewars.blackstag.workers.dev) (full version on Cloudflare) · [bstag.github.io/zorewars](https://bstag.github.io/zorewars/) (static mirror on GitHub Pages: everything except importing originals by URL)
@@ -59,6 +60,7 @@ node cli/zorewars.js evolve --generations 6
 | `src/engine/topology.js` | Battlefield shapes: addressing, distance and placement (the classic ring today; the seam for 3D). |
 | `src/engine/species.js` | Behaviour measurement for the species map, the evolver's archive and `zorewars species`. |
 | `web/ladder.js` | The arena's Ladder and Species map cards. |
+| `src/engine/geometry.js` | Torus geometry: numbers as points, per-axis arithmetic (the plane and, later, 3D). |
 | `src/engine/convert.js` | The Redcode → JavaScript / Python converter, with verification. |
 | `scripts/convert-library.js` | Regenerates and verifies `warriors/javascript/` and `warriors/python/`. |
 | `scripts/benchmark.js` | Round robin of the library; writes `warriors/benchmarks.json` (`npm run bench`). |

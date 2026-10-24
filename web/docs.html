@@ -89,6 +89,7 @@
       <h4>Competition</h4>
       <a href="#cli">CLI &amp; AI agents</a>
       <a href="#rules">Rules &amp; scoring</a>
+      <a href="#plane">The plane (experimental)</a>
       <a href="#glossary">Glossary &amp; history</a>
     </nav>
 
@@ -507,6 +508,17 @@ node cli/zorewars.js evolve --generations 6       <span class="cmt"># breed new 
         <li>The arena's <strong>Ladder</strong> is a king-of-the-hill: a challenger plays everyone on it, and if it ranks in the top 10 it stays and the bottom warrior drops off. Warriors are ranked by points per round, then by smooth score.</li>
       </ul>
       <p>Change the rules in the arena's <strong>Rules</strong> panel or with CLI flags. Warriors that use <code>CORESIZE</code> and friends adapt automatically.</p>
+
+      <h3 id="plane">The plane (experimental)</h3>
+      <p>The first step towards a 3D battlefield: choose <strong>Plane 100×80</strong> or <strong>125×64</strong> under <strong>Rules → Battlefield</strong>, or use <code>--torus 100x80</code> in the CLI. The core becomes a torus, wrapping left-right and top-bottom, and the arena draws it as it really is.</p>
+      <ul>
+        <li>Addresses are vectors. <code>[0,1]</code> means one row down, and a plain number is still a step along the row, so <code>JMP -1</code> works as before. <code>SIZEX</code> and <code>SIZEY</code> give the plane's size; generators have <code>vec(x, y)</code>.</li>
+        <li>Addressing and <code>ADD</code>/<code>SUB</code>/<code>MUL</code>/<code>DIV</code>/<code>MOD</code> work per axis, each wrapping on its own. Counters (<code>DJN</code>) and pointer increments (<code>&lt; &gt; { }</code>) are plain numbers, so a <code>&gt;ptr</code> clear walks every cell row by row.</li>
+        <li><b>Code flows along rows:</b> an imp circles its own row. To move vertically, copy yourself and jump (see Climber).</li>
+        <li><b>No single step covers 100×80:</b> a fixed stride repeats after at most 400 cells, so stones and scanners need two loops (see Plaid). On 125×64 a single step can still reach every cell.</li>
+        <li>Classic warriors mostly still run, but ones whose constants assume the ring may bomb themselves. The library's plane warriors (Plaid, Climber, Plane Silk, Raster) are written for it.</li>
+      </ul>
+      <p>A plane one row high is exactly the classic ring, and the tests check that battles there match the classic ones round for round. Background and open questions: <code>design/3d-battlefield.md</code>.</p>
 
       <h2 id="glossary">Glossary &amp; history</h2>
       <ul>

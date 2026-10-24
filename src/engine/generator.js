@@ -49,6 +49,11 @@ export function createGenerator(settings = {}) {
     apredec: (x) => `{${operand(x)}`,
     postinc: (x) => `>${operand(x)}`,
     apostinc: (x) => `}${operand(x)}`,
+    // Torus battlefields: vec(0, 1) is one step along y, written [0,1].
+    vec: (x, y = 0, z) => (z === undefined ? `[${x},${y}]` : `[${x},${y},${z}]`),
+    SIZEX: cfg.topology === 'torus' ? cfg.sizeX : cfg.coreSize,
+    SIZEY: cfg.topology === 'torus' ? (cfg.sizeY ?? 1) : 1,
+    SIZEZ: cfg.topology === 'torus' ? (cfg.sizeZ ?? 1) : 1,
     CORESIZE: cfg.coreSize,
     MAXPROCESSES: cfg.maxProcesses,
     MAXCYCLES: cfg.maxCycles,

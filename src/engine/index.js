@@ -29,7 +29,7 @@ export function compile(source, language = 'redcode', settings = {}) {
   }
   const result = assemble(redcode, cfg);
   result.redcode = redcode;
-  result.listing = result.ok ? listing(result, cfg.coreSize) : '';
+  result.listing = result.ok ? listing(result, cfg) : '';
   return result;
 }
 
