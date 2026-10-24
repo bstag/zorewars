@@ -11,7 +11,9 @@ A browser-based programming game inspired by **Core War** (1984). Players write 
 - **Battle the real classics**: import originals from the public archives (Koenigstuhl, Planar's archive) by URL, from a file, or by dropping a `.red` file onto the editor. In the CLI, use `classic:thermite` or any URL. Nothing is copied into the project.
 - **CLI for AI agents**: battles and tournaments with `--json` output, reproducible from a seed. See [AGENTS.md](AGENTS.md).
 
-No dependencies; Node.js 18+ only.
+**Play it:** [zorewars.blackstag.workers.dev](https://zorewars.blackstag.workers.dev) (full version on Cloudflare) · [bstag.github.io/zorewars](https://bstag.github.io/zorewars/) (static mirror on GitHub Pages: everything except importing originals by URL)
+
+No runtime dependencies; Node.js 18+ (Wrangler, for Cloudflare deploys, needs Node 22).
 
 ## Quick start
 
