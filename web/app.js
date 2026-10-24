@@ -5,6 +5,7 @@ import { convertWarrior } from '../src/engine/convert.js';
 import { CoreRenderer, ProcessChart, WARRIOR_COLORS } from './arena.js';
 import { generateFromPython, pythonReady } from './python.js';
 import { createCodeEditor } from './editor.js';
+import { initLadder, initSpecies } from './ladder.js';
 import './nav.js';
 
 const $ = (id) => document.getElementById(id);
@@ -137,6 +138,7 @@ async function compileSlot(slot) {
   slot.statusText = '';
   renderTabs();
   if (slot === activeSlot()) renderEditorStatus();
+  refreshPanels();
   // Apply edits immediately when the current round has not started or is over.
   if (!state.booting && (!state.vm || state.vm.steps === 0 || state.vm.done)) {
     if (state.slots.every((s) => s.status !== 'compiling')) newRound();
@@ -187,6 +189,7 @@ function renderEditor() {
   state.editor.setValue(slot.source);
   $('languageSelect').value = slot.language;
   $('librarySelect').value = slot.libFile && libraryEntry(slot.libFile)?.source === slot.source ? slot.libFile : '';
+  refreshPanels();
   const origin = $('originText');
   origin.hidden = !slot.origin;
   if (slot.origin) {
@@ -1086,6 +1089,11 @@ function wireEvents() {
 
 // ---------------------------------------------------------------- boot
 
+// Ladder and species map cards (web/ladder.js).
+const panels = [];
+const panelContext = { library: () => state.library, slots: () => state.slots, activeSlot: () => activeSlot(), settings: () => state.settings };
+function refreshPanels() { for (const p of panels) p.refresh(); }
+
 async function boot() {
   const savedSettings = safeGet(SETTINGS_KEY);
   if (savedSettings) state.settings = { ...DEFAULT_SETTINGS, ...savedSettings };
@@ -1105,6 +1113,7 @@ async function boot() {
     showOverlay('Could not load the warrior library', 'Serve the project with "npm start" rather than opening the file directly.');
     console.error(e);
   }
+  panels.push(initLadder(panelContext), initSpecies(panelContext));
   const saved = safeGet(STORAGE_KEY);
   // ?url=<archive file>&vs=silk.red imports an original to fight a library
   // warrior (the encyclopedia's Hall of Fame links here).

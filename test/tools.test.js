@@ -1,0 +1,90 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { compile, runMatch, measureSpecies, speciesAxes, diagnoseRounds } from '../src/engine/index.js';
+import { parseTunable, withConstants } from '../tools/tune.js';
+import { makeGenePool, makeOperators, genomeOf, graft, toWarrior, toRedcode, roleOf } from '../tools/genes.js';
+
+const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
+const read = (f) => fs.readFileSync(path.join(root, f), 'utf8');
+const warrior = (f) => {
+  const w = compile(read(`warriors/${f}`), f.endsWith('.js') ? 'javascript' : 'redcode');
+  assert.ok(w.ok, `${f}: ${JSON.stringify(w.errors)}`);
+  return w;
+};
+
+test('smooth score: wins and ties as usual, a loss is the share of the round survived', () => {
+  const m = runMatch([warrior('dwarf.red'), warrior('silk.red')], { rounds: 6 }, { seed: 3 });
+  for (const [i, s] of m.warriors.entries()) {
+    let expect = 0;
+    for (const r of m.rounds) {
+      if (r.survivors.includes(i)) expect += r.winner === i ? 3 : 1;
+      else expect += r.diedAt[i] / 80000;
+    }
+    assert.ok(Math.abs(s.smooth - expect) < 1e-3, `${s.name}: ${s.smooth} vs ${expect}`);
+    assert.ok(s.smooth >= s.score, 'never below the normal score');
+    if (s.losses) assert.ok(s.smooth < s.score + s.losses, 'each loss adds less than a tie');
+  }
+});
+
+test('species: imps cover the core with one process, papers hit the process limit', () => {
+  const imp = measureSpecies(warrior('imp.red'));
+  assert.deepEqual([imp.processes, imp.coverage, imp.key], [1, 8000, '0,5']);
+  const silk = measureSpecies(warrior('silk.red'));
+  assert.equal(silk.processes, 8000);
+  assert.equal(silk.cell[0], speciesAxes().processes.edges.length);   // the "max" column
+  assert.equal(silk.hint, 'paper (replicator)');
+  const dwarf = measureSpecies(warrior('dwarf.red'));
+  assert.equal(dwarf.key, '0,0');
+  assert.ok(dwarf.survives);
+  const suicide = measureSpecies(compile('DAT 0'));
+  assert.equal(suicide.survives, false);
+});
+
+test('loss diagnosis sorts every non-win into one symptom', () => {
+  const m = runMatch([warrior('dwarf.red'), warrior('silk.red')], { rounds: 8 }, { seed: 5, report: true });
+  const d = diagnoseRounds(m.rounds, 0);
+  const total = Object.values(d).reduce((a, b) => a + b, 0);
+  assert.equal(total, m.warriors[0].losses + m.warriors[0].ties);
+  assert.equal(d.tie, m.warriors[0].ties);
+});
+
+test('every tuned library bot declares a SPACE that its constants fit', () => {
+  for (const f of ['gatekeeper.js', 'papercut.js', 'blitz.js', 'chameleon.js', 'bandit.js']) {
+    const src = read(`warriors/${f}`);
+    const { space, current } = parseTunable(src);
+    for (const [k, v] of Object.entries(space)) {
+      assert.ok(k in current, `${f}: ${k} missing from P`);
+      if (v.length === 2 && v.every(Number.isInteger)) assert.ok(current[k] >= v[0] && current[k] <= v[1], `${f}: ${k}=${current[k]} outside ${v}`);
+    }
+    // Rewriting the constants changes the program and still compiles.
+    const changed = withConstants(src, { ...current });
+    assert.equal(compile(changed, 'javascript').instructions.length, compile(src, 'javascript').instructions.length);
+  }
+});
+
+test('evolver genes: grafts keep both programs running and round-trip through Redcode', () => {
+  assert.equal(roleOf('Silk paper'), 'paper');
+  assert.equal(roleOf('CMP scanner'), 'scan');
+  assert.equal(roleOf('Stone (bomber)'), 'stone');
+  const dwarf = warrior('dwarf.red'), imp = warrior('imp.red');
+  const g = graft(genomeOf(dwarf), genomeOf(imp));
+  // an SPL in front, plus a JMP back to the old start when it wasn't line 0
+  assert.equal(g.code.length, dwarf.instructions.length + (dwarf.start ? 2 : 1) + imp.instructions.length);
+  const w = toWarrior(g);
+  const back = compile(toRedcode(g, { name: 'Graft' }));
+  assert.ok(back.ok, JSON.stringify(back.errors));
+  assert.deepEqual(back.instructions.map((i) => `${i.op}.${i.mod} ${i.aMode}${(i.a + 8000) % 8000} ${i.bMode}${(i.b + 8000) % 8000}`),
+    w.instructions.map((i) => `${i.op}.${i.mod} ${i.aMode}${i.a} ${i.bMode}${i.b}`));
+  // Alone in the core both parts run: the imp crawls and the dwarf bombs.
+  const s = measureSpecies(w);
+  assert.ok(s.survives);
+  assert.ok(s.processes >= 2 && s.coverage > 1000, JSON.stringify(s));
+  const ops = makeOperators(makeGenePool([{ w: dwarf, role: 'stone' }, { w: imp, role: 'imp' }]));
+  for (const op of Object.values(ops)) {
+    const child = op(genomeOf(dwarf));
+    if (child) assert.ok(compile(toRedcode(child)).ok);
+  }
+});

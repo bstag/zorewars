@@ -32,6 +32,16 @@ Usage:
   zorewars classics [--json]                         famous originals you can fight
   zorewars serve [--port 8080]
 
+Developer tools (use every CPU core):
+  zorewars hill <warrior> [--classics] [--rounds 20]  score it against the library (and the classics),
+                                                     opponent by opponent, with why rounds were lost
+  zorewars species [warrior...]                      where warriors sit on the behaviour map
+                                                     (processes x cells executed); none = the library
+  zorewars tune <warrior.js> [--candidates 40] [--write]
+                                                     search the warrior's // SPACE for better constants
+  zorewars evolve [warrior...] [--generations 6] [--out evolved]
+                                                     breed warriors: Red Queen rounds of MAP-Elites
+
 Warriors:
   path/to/file.red   Redcode assembly
   path/to/file.js    JavaScript generator   (runs in-process)
@@ -55,6 +65,8 @@ Options:
   --fixed N          warrior 2 starts at N in round 1, like pmars -F;
                      later rounds follow pMARS's RNG, so results match pMARS
   --json             machine-readable output
+  --classics         hill/tune/evolve: also play the Hall of Fame originals
+                     (fetched from the public archives each run; needs network)
 
 pMARS's short options also work: -r -s -c -p -l -d -F -S (and -b -k are ignored),
 so 'pmars -r 100 -l 25 -d 100 a.red b.red' becomes 'zorewars battle -r 100 -l 25 -d 100 a.red b.red'.
@@ -72,7 +84,7 @@ function parseArgs(argv) {
     const a = argv[i];
     if (a.startsWith('--')) {
       const key = a.slice(2);
-      if (key === 'json' || key === 'help' || key === 'report') args.flags[key] = true;
+      if (['json', 'help', 'report', 'classics', 'write'].includes(key)) args.flags[key] = true;
       else args.flags[key] = argv[++i];
     } else if (a === '-h') args.flags.help = true;
     else if (/^-[A-Za-z]$/.test(a) && PMARS_FLAGS[a[1]]) args.flags[PMARS_FLAGS[a[1]]] = argv[++i];
@@ -264,7 +276,7 @@ async function cmdBattle(args) {
     console.log(`Post-mortem of round ${detailRound} (positions ${r.positions.join(', ')}; ${warriors[r.firstTurn].name} moved first). Use --round N for another round.\n`);
     console.log(formatPostMortem(r.report));
   }
-  printTable(result.warriors.map((s) => ({ Warrior: s.name, Author: s.author, Wins: s.wins, Losses: s.losses, Ties: s.ties, Score: s.score })));
+  printTable(result.warriors.map((s) => ({ Warrior: s.name, Author: s.author, Wins: s.wins, Losses: s.losses, Ties: s.ties, Score: s.score, Smooth: s.smooth.toFixed(2) })));
 }
 
 async function cmdTournament(args) {
@@ -284,7 +296,7 @@ async function cmdTournament(args) {
   }
   console.log(`\nTournament standings (${settings.rounds} rounds per pairing, 3 points per win, 1 per tie)\n`);
   printTable(result.ranking.map((t, i) => ({
-    '#': i + 1, Warrior: t.name, Wins: t.wins, Losses: t.losses, Ties: t.ties, Score: t.score, 'Pts/round': t.scorePerRound.toFixed(2),
+    '#': i + 1, Warrior: t.name, Wins: t.wins, Losses: t.losses, Ties: t.ties, Score: t.score, 'Pts/round': t.scorePerRound.toFixed(2), 'Smooth/round': t.smoothPerRound.toFixed(2),
   })));
 }
 
@@ -446,6 +458,14 @@ function printTable(rows) {
   for (const r of rows) console.log(line(cols.map((c) => r[c])));
 }
 
+// The library's Redcode and JavaScript warriors, as @refs.
+function libraryRefs() {
+  return JSON.parse(fs.readFileSync(path.join(WARRIOR_DIR, 'index.json'), 'utf8'))
+    .filter((e) => (e.language === 'redcode' || e.language === 'javascript') && e.benchmark !== false)
+    .map(builtinRef);
+}
+const devtools = async () => [await import('./devtools.js'), { loadAll, settingsFrom, usage, printTable, expandRefs, libraryRefs }];
+
 const args = parseArgs(process.argv.slice(2));
 const cmd = args._.shift();
 if (!cmd || args.flags.help) { console.log(HELP); process.exit(cmd || args.flags.help ? 0 : 2); }
@@ -459,5 +479,9 @@ switch (cmd) {
   case 'trace': await cmdTrace(args); break;
   case 'convert': await cmdConvert(args); break;
   case 'serve': cmdServe(args); break;
+  case 'hill': { const [m, h] = await devtools(); await m.cmdHill(args, h); break; }
+  case 'species': { const [m, h] = await devtools(); await m.cmdSpecies(args, h); break; }
+  case 'tune': { const [m, h] = await devtools(); await m.cmdTune(args, h); break; }
+  case 'evolve': { const [m, h] = await devtools(); await m.cmdEvolve(args, h); break; }
   default: usage(`unknown command '${cmd}'`);
 }

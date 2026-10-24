@@ -11,3 +11,5 @@ Thumbs.db
 # redistributed in this repository)
 imported/
 dist-check/
+# Default output of "zorewars evolve"
+evolved/

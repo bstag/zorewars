@@ -5,12 +5,15 @@ A browser-based programming game inspired by **Core War** (1984). Players write 
 - **Visual arena**: watch every memory write, executed instruction and live process in real time, step through instructions, inspect memory, and run tournaments.
 - **Code editor that works on phones**: CodeMirror 6 with Redcode, JavaScript and Python highlighting, assembler errors underlined on their line, autocomplete with instruction help, and a symbol bar above the phone keyboard (`# $ @ < > { }` and common opcodes). On phones the arena switches to Arena / Code / Details tabs with icon controls.
 - **Redcode, JavaScript, Python or C++**: Redcode (ICWS'94 assembly) is what runs in the VM. JavaScript, Python and C++ programs *generate* Redcode, so loops and functions act as a macro language.
-- **Warrior encyclopedia**: 16 warriors covering the classic strategy families (imp, imp ring, stone, paper, silk, B-scanner, CMP scanner, one-shot, quickscan, vampire, core clears, stone/imp), each explained line by line, with history, a Hall of Fame of 35 famous warriors linked to the public archives, and round-robin benchmark results: [web/warriors.html](web/warriors.html).
+- **Warrior encyclopedia**: 22 warriors covering the classic strategy families (imp, imp ring, stone, paper, silk, B-scanner, CMP scanner, one-shot, quickscan, vampire, core clears, stone/imp, P-space switchers), each explained line by line, with history, a Hall of Fame of 35 famous warriors linked to the public archives, and round-robin benchmark results: [web/warriors.html](web/warriors.html).
+- **Tuned and evolved warriors**: Gatekeeper, Papercut, Blitz, Chameleon and Bandit were tuned with the developer tools against the library and the Hall of Fame, and Evolved Silk was bred by the evolver. They top the library benchmark.
+- **Ladder and species map**: a king-of-the-hill ladder in the arena (kept in your browser), and a map that places warriors by how they behave: processes at once against cells executed.
 - **Post-mortems**: every round explains how it was won. You get the killing blow and who wrote it, a timeline, process deaths by cause, conversions (processes running the opponent's program), and the ending code against the original. The arena can replay the end of any round instruction by instruction, and the CLI has `battle --report` and `trace`.
 - **Redcode → JavaScript / Python converter**: readable output (constants, real loops, comments), verified to compile to exactly the same program. Every library warrior ships converted in `warriors/javascript/` and `warriors/python/`, and any original can be converted on demand: `zorewars convert classic:thermite --to py`, or the arena's Convert buttons.
 - **Tutorial and reference**: [web/docs.html](web/docs.html), served at `/web/docs.html`.
 - **Battle the real classics**: import originals from the public archives (Koenigstuhl, Planar's archive) by URL, from a file, or by dropping a `.red` file onto the editor. In the CLI, use `classic:thermite` or any URL. Nothing is copied into the project.
 - **CLI for AI agents**: battles and tournaments with `--json` output, reproducible from a seed. See [AGENTS.md](AGENTS.md).
+- **Developer tools**: `zorewars hill` (benchmark with loss diagnosis), `species` (behaviour map), `tune` (constant search) and `evolve` (Red Queen rounds of MAP-Elites, after [Digital Red Queen](https://github.com/SakanaAI/drq)), all using every CPU core.
 
 **Play it:** [zorewars.blackstag.workers.dev](https://zorewars.blackstag.workers.dev) (full version on Cloudflare) · [bstag.github.io/zorewars](https://bstag.github.io/zorewars/) (static mirror on GitHub Pages: everything except importing originals by URL)
 
@@ -31,6 +34,8 @@ node cli/zorewars.js list
 node cli/zorewars.js battle @mice @dwarf --rounds 100
 node cli/zorewars.js tournament warriors --rounds 20
 node cli/zorewars.js battle warriors/carpet.js @scanner --json
+node cli/zorewars.js hill warriors/gatekeeper.js --classics
+node cli/zorewars.js evolve --generations 6
 ```
 
 ## Project layout
@@ -44,6 +49,7 @@ node cli/zorewars.js battle warriors/carpet.js @scanner --json
 | `src/engine/` | The VM, assembler, JS generator and match runner. Shared by the browser and Node. |
 | `web/` | The arena (`index.html`, `app.js`, `arena.js`) and the tutorial (`docs.html`). |
 | `cli/zorewars.js` | Command-line battles, tournaments, compiler, and the static server with its archive proxy. |
+| `cli/devtools.js`, `tools/` | Developer tools: the parallel benchmark (`hill.js`, `worker.js`), tuner (`tune.js`), evolver (`evolve.js`, `genes.js`). |
 | `cli/remote.js` | Fetches warriors from the public archives (allow-listed hosts for the proxy; Redcode only). |
 | `warriors/` | Built-in warriors and `index.json`, the library manifest. |
 | `lang/python/zorewars.py` | Python generator library. |
@@ -51,11 +57,13 @@ node cli/zorewars.js battle warriors/carpet.js @scanner --json
 | `warriors/encyclopedia.json` | History and analysis behind the encyclopedia page. The line-by-line breakdown comes from each warrior's own comments. |
 | `scripts/pmars-compare.js` | Differential test against a pMARS binary (`npm run compare`). |
 | `src/engine/topology.js` | Battlefield shapes: addressing, distance and placement (the classic ring today; the seam for 3D). |
+| `src/engine/species.js` | Behaviour measurement for the species map, the evolver's archive and `zorewars species`. |
+| `web/ladder.js` | The arena's Ladder and Species map cards. |
 | `src/engine/convert.js` | The Redcode → JavaScript / Python converter, with verification. |
 | `scripts/convert-library.js` | Regenerates and verifies `warriors/javascript/` and `warriors/python/`. |
 | `scripts/benchmark.js` | Round robin of the library; writes `warriors/benchmarks.json` (`npm run bench`). |
 | `examples/` | Example warriors in each language. |
-| `test/` | Engine tests: `npm test`. |
+| `test/` | Engine, converter and tool tests: `npm test`. |
 
 ## How it works
 

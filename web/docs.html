@@ -111,6 +111,7 @@ node cli/zorewars.js battle @dwarf @mice --rounds 10</code></pre>
         <li>Hover over the core to read memory in the <strong>Inspector</strong>. Click to pin an address, and use <strong>Step</strong> (<kbd>S</kbd>) to run one instruction at a time.</li>
         <li>Edit a warrior and the change applies on the next round. <strong>+ Add</strong> brings up to four warriors into the same battle.</li>
         <li>Run a <strong>Tournament</strong> to play many rounds from random starting positions. A single round can be luck; fifty rounds rarely is.</li>
+        <li>Take a working warrior to the <strong>Ladder</strong>: it plays everyone on a king-of-the-hill kept in your browser, starting with the strongest library warriors. Open the <strong>Species map</strong> to see what kind of warrior yours is and who else plays that way.</li>
       </ol>
       <p>Only Node.js 18+ is needed: no install, no dependencies. Python warriors run in the browser through Pyodide, which downloads about 10 MB the first time you use one.</p>
 
@@ -471,6 +472,20 @@ node cli/zorewars.js battle mine.red https://asdflkj.net/COREWAR/94/HILL32/arvon
       </ol>
       <p>To have two agents fight, each writes a warrior and you run <code>zorewars battle a.red b.red --rounds 200 --json</code>. Use a fixed <code>--seed</code> to compare versions fairly, and a fresh one for final scoring so nobody tunes against known load positions.</p>
 
+      <h3 id="devtools">Developer tools</h3>
+      <p>Four commands for improving warriors, all running on every CPU core:</p>
+      <pre><code>node cli/zorewars.js hill mine.red                <span class="cmt"># score against the library, opponent by opponent</span>
+node cli/zorewars.js hill mine.red --classics     <span class="cmt"># ...and the 34 Hall of Fame originals (fetched each run)</span>
+node cli/zorewars.js species                      <span class="cmt"># the behaviour map of the library</span>
+node cli/zorewars.js tune warriors/gatekeeper.js  <span class="cmt"># search for better constants</span>
+node cli/zorewars.js evolve --generations 6       <span class="cmt"># breed new warriors</span></code></pre>
+      <ul>
+        <li><strong>hill</strong> plays your warrior against every library warrior (add <code>--classics</code> for the originals) and lists the results from worst to best, with the <a href="#rules">smooth score</a>. It also sorts every round it didn't win by cause: ties, being stunned or captured, being found fast, being worn down, or own goals.</li>
+        <li><strong>species</strong> runs warriors alone in the core and places them on a map by two measures: the most processes they run at once, and how many different cells they execute. Warriors in the same cell play alike. The strongest warriors ever written are spread over many cells, so there is more than one way to win.</li>
+        <li><strong>tune</strong> works on JavaScript warriors that declare their constants as <code>const P = {...};</code> and the ranges to try in a <code>// SPACE {...}</code> comment (Gatekeeper, Papercut, Blitz, Chameleon and Bandit in the library do). It screens random candidates, re-checks the best on fresh seeds so a lucky draw isn't kept, and <code>--write</code> saves the winner into the file.</li>
+        <li><strong>evolve</strong> breeds warriors from slices of the library (and of any warriors you name). It keeps the best warrior of each species cell (MAP-Elites), and each generation's champion joins the opponents, so the next champion has to beat its ancestors too (Red Queen). Children are repaired according to how their parent loses. Champions and the best of each species are written to <code>evolved/</code>. The library's Evolved Silk came out of it. The method follows <a href="https://github.com/SakanaAI/drq">Digital Red Queen</a> by Sakana AI and MIT.</li>
+      </ul>
+
       <h2 id="rules">Rules &amp; scoring</h2>
       <table class="ref">
         <thead><tr><th>Setting</th><th>Default</th></tr></thead>
@@ -488,6 +503,8 @@ node cli/zorewars.js battle mine.red https://asdflkj.net/COREWAR/94/HILL32/arvon
         <li>Each survivor of a round scores (W²−1)/S, where W is the number of warriors and S the number of survivors. With two warriors, a win scores 3 points, a tie 1 and a loss 0.</li>
         <li>ZoreWars is tested against pMARS, the reference simulator: identical assembly for 53 warriors and identical results for thousands of rounds. See <code>COMPLIANCE.md</code>.</li>
         <li>Tournaments are round robin: every pair plays a match and the table is ranked by total points.</li>
+        <li>The <strong>smooth score</strong> is shown alongside: like the normal score, but a lost round is worth the share of the cycle limit the warrior survived, from 0 to just under 1. Dying at cycle 70,000 is better than dying at cycle 2,000, even though both are losses. It gives tuners and evolvers something to climb when everything loses.</li>
+        <li>The arena's <strong>Ladder</strong> is a king-of-the-hill: a challenger plays everyone on it, and if it ranks in the top 10 it stays and the bottom warrior drops off. Warriors are ranked by points per round, then by smooth score.</li>
       </ul>
       <p>Change the rules in the arena's <strong>Rules</strong> panel or with CLI flags. Warriors that use <code>CORESIZE</code> and friends adapt automatically.</p>
 

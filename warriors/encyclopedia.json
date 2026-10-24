@@ -104,6 +104,36 @@
       "opponent": "seeker.red"
     },
     {
+      "id": "papercut", "file": "papercut.js", "name": "Papercut", "language": "javascript", "family": "Paper", "era": "ZoreWars 2026",
+      "inspiredBy": "Bombing silk papers such as <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/Paperone.txt\">Paperone</a> (Beppe Bezzi, 1995) and <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/SilkWarrior1.3.txt\">Silk Warrior 1.3</a> (Juha Pohjalainen, 1994). Written for ZoreWars and tuned with <code>zorewars tune</code>.",
+      "summary": "A silk paper that bombs while it spreads. Sixteen processes copy the warrior to a new spot on every pass, and each pass also drops a DAT bomb somewhere else in the core.",
+      "how": [
+        "Four <code>SPL 1</code> lines turn one process into 16. All 16 run the silk loop in step, one instruction each.",
+        "<code>SPL STEP, #0</code> and <code>MOV.I &gt;silk, }silk</code> copy the warrior one cell per process and start the copy running: 16 processes copy 16 cells.",
+        "<code>MOV.I seed, &gt;carpet</code> drops a bomb, and the two <code>ADD</code>s move both the bomb pointer and the next copy distance, so neither falls into a pattern.",
+        "<code>MOV.F seed, silk</code> resets the copy pointers and the loop starts again in the new copy."
+      ],
+      "strengths": ["Hard to kill: every copy is a full warrior, so a bomb only takes out one of many.", "The bombs give it some kill power against stones and other papers, which pure silks lack."],
+      "weaknesses": ["Scanners that stun with SPL carpets (Gatekeeper, Blur) catch the copies and freeze them.", "Papers rarely kill fast, so many rounds end in ties against other papers and imps."],
+      "tryIt": "The constants at the top came from <code>node cli/zorewars.js tune warriors/papercut.js</code>. Change <code>STEP</code> to 1777 and watch it against Gatekeeper, then retune it yourself.",
+      "opponent": "gatekeeper.js"
+    },
+    {
+      "id": "evolvedsilk", "file": "evolvedsilk.red", "name": "Evolved Silk", "language": "redcode", "family": "Paper", "era": "ZoreWars 2026 (evolved)",
+      "inspiredBy": "Bred by <code>zorewars evolve</code>, which runs Red Queen rounds of MAP-Elites as in <a href=\"https://github.com/SakanaAI/drq\">Digital Red Queen</a> (Sakana AI and MIT), starting from slices of ZoreWars bots. Nobody wrote it.",
+      "summary": "A silk paper that evolution put together from fragments of other warriors. It turned up in the evolver's archive cell for warriors that reach the process limit, and it is a recognisable classic design: a silk whose copy distance changes on every pass.",
+      "how": [
+        "Six <code>SPL</code> lines make the processes. One of them, <code>SPL $31</code>, starts a process in empty core where it dies at once: a harmless leftover of evolution.",
+        "<code>SPL $1777, #0</code> and <code>MOV.I &gt;-1, }-1</code> are the silk: every process copies one cell of the warrior 1777 cells away and starts the copy.",
+        "<code>ADD.A #1013, seed</code> changes the copy distance by 1013 each pass, so the copies spread out instead of following one stride.",
+        "<code>MOV.F seed, silk</code> resets the pointers for the next pass."
+      ],
+      "strengths": ["Only 12 instructions, and it fills the core with copies within a few thousand cycles.", "Shows what the evolver can find on its own: the same idea human players arrived at in 1994."],
+      "weaknesses": ["It never bombs, so it can't kill anything that doesn't run into its copies. Most rounds against other papers are ties.", "SPL-carpet scanners freeze it, like any silk."],
+      "tryIt": "Delete the <code>SPL $31</code> line and see whether it does any better. Then run <code>node cli/zorewars.js species warriors/evolvedsilk.red</code> to see its niche.",
+      "opponent": "dwarf.red"
+    },
+    {
       "id": "scout", "file": "scanner.red", "name": "Scout", "language": "redcode", "family": "Scanner", "era": "1993",
       "inspiredBy": "A minimal B-field scanner in the spirit of <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/B-scannersliveinvain.txt\">B-scanners live in vain</a> (Matt Hastings, 1993), which checks for non-zero fields instead of comparing pairs of cells.",
       "summary": "Looks at every 9th cell and only bombs when it finds something non-empty. Checks the distance to every find so it never bombs itself.",
@@ -134,6 +164,21 @@
       "opponent": "mice.red"
     },
     {
+      "id": "gatekeeper", "file": "gatekeeper.js", "name": "Gatekeeper", "language": "javascript", "family": "Scanner", "era": "ZoreWars 2026",
+      "inspiredBy": "Compare scanners with SPL carpets and an imp gate, in the line of <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/IronGate%5B2%5D.txt\">Iron Gate</a> (Wayne Sheppard, 1993) and <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/AgonyII.txt\">Agony II</a> (Stefan Strack, 1995). Written for ZoreWars and tuned with <code>zorewars tune</code>.",
+      "summary": "Compares pairs of cells across the core. Whenever a pair differs, it buries the spot under a carpet of SPL 0 stun bombs. After one lap it clears the whole core twice, first with SPL and then with DAT, and keeps decrementing an imp gate in front of itself.",
+      "how": [
+        "<code>ADD.F inc, scan</code> moves both compare pointers STEP cells on; <code>SEQ.I</code> compares two cells GAP apart and skips the jump when they match (both empty).",
+        "On a difference it points <code>bptr</code> BACK cells before the find and writes CARPET copies of <code>SPL.B #0, #0</code> there. Enemy processes that run into them stop doing anything useful and multiply uselessly.",
+        "<code>DJN</code> counts the scans down. The count is worked out by the assembler (<code>EQU</code>) so the scan never compares its own code.",
+        "After the lap comes a SPL clear over the whole core, then a DAT clear that kills the stunned processes. The final loop, <code>JMP clr2, &lt;gate</code>, also decrements the cell in front of it, which stops imps crawling in."
+      ],
+      "strengths": ["Beats papers: stunned copies stop copying, and the DAT clear finishes them.", "The best ZoreWars bot against the 34 Hall of Fame classics when it was added."],
+      "weaknesses": ["Stones bomb faster than it scans, and a lucky bomb on its 24 instructions ends it.", "Decoys and fast-moving warriors waste its carpets."],
+      "tryIt": "Run <code>node cli/zorewars.js hill warriors/gatekeeper.js</code> to see where it loses, then try <code>CARPET: 8</code>.",
+      "opponent": "papercut.js"
+    },
+    {
       "id": "oneshot", "file": "oneshot.red", "name": "One-Shot", "language": "redcode", "family": "Scanner", "era": "1995",
       "inspiredBy": "Built the way one-shots such as <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/Frontwardsv2.txt\">Frontwards</a> (Steven Morrell, 1995) and <a href=\"https://asdflkj.net/COREWAR/94/HILL32/myrmidon.red\">Myrmidon</a> (Roy van Rijn) work: scan only until the first find, then commit everything to a clear.",
       "summary": "Scans until it finds the enemy once, then stops scanning for good. From just before the hit to the end of the core it writes <code>SPL 0</code>, then goes over the same stretch again with <code>DAT</code>.",
@@ -162,6 +207,20 @@
       "weaknesses": ["63 instructions long, so it's a big target.", "Only finds enemies sitting on one of its 28 probe cells. Against Mice it nearly always misses and loses."],
       "tryIt": "Raise <code>PROBES</code> to 20 and recompile. The generator recomputes every address. Mind the 100-instruction limit.",
       "opponent": "scanner.red"
+    },
+    {
+      "id": "blitz", "file": "blitz.js", "name": "Blitz", "language": "javascript", "family": "Scanner", "era": "ZoreWars 2026",
+      "inspiredBy": "The quickscan opening of <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/ThermiteII.txt\">Thermite II</a> (Robert Macrae, 1996), followed by a paper as in many quickscan/paper hybrids.",
+      "summary": "Spends its first cycles checking 9 pairs of cells spread over the core. If a pair isn't empty, it carpet-bombs the area, first with SPL stun bombs and then with DAT. Either way it then turns into Papercut.",
+      "how": [
+        "A JavaScript loop writes one <code>SNE.I</code> per probe. Each compares two cells GAP apart and jumps to the attack when they differ.",
+        "The attack aims <code>ptr</code> just before the find, writes CARPET SPL bombs, steps back and writes CARPET DAT bombs over the same cells.",
+        "Then it runs the same silk-with-bombs loop as Papercut."
+      ],
+      "strengths": ["Kills slow starters outright before they spread.", "Still has a paper's resilience for the rest of the round."],
+      "weaknesses": ["56 instructions make a big target for stones.", "The probes cover only a small part of the core, so in most rounds the quickscan finds nothing."],
+      "tryIt": "Set <code>PROBES</code> to 6 and watch the opening against Dwarf with Step.",
+      "opponent": "dwarf.red"
     },
     {
       "id": "vampire", "file": "vampire.red", "name": "Vampire", "language": "redcode", "family": "Vampire", "era": "1987–95",
@@ -233,6 +292,34 @@
       "weaknesses": ["Covers only 4 cells of every 16.", "Larger than the Dwarf, so easier to find."],
       "tryIt": "Change <code>GAP</code> to 12 and recompile. The generator refuses, because 12 doesn't divide 8000. Try 20 instead.",
       "opponent": "dwarf.red"
+    },
+    {
+      "id": "chameleon", "file": "chameleon.js", "name": "Chameleon", "language": "javascript", "family": "P-space", "era": "ZoreWars 2026",
+      "inspiredBy": "P-space switchers, which appeared after P-space joined the ICWS'94 rules in the mid-1990s: warriors that remember between rounds what worked and change strategy after a loss.",
+      "summary": "Carries two warriors, Papercut and Gatekeeper. It writes which one it played into P-space, and after a lost round it plays the other. Against any one opponent it settles on whichever wins.",
+      "how": [
+        "<code>LDP.AB #0, res</code> reads the last round's result (0 means it lost), and a second <code>LDP</code> reads the strategy it played.",
+        "After a loss it adds 1 to the strategy and takes it modulo 2. A win or a tie keeps it.",
+        "<code>STP</code> saves the choice for the next round, and a jump starts either the paper or the scanner."
+      ],
+      "strengths": ["Paper beats stones and scanners beat papers, so it has an answer to both.", "Learns within a match: it usually loses a round or two at most before settling."],
+      "weaknesses": ["P-space only helps across rounds, so a single round shows nothing special.", "Carrying two warriors makes it 47 instructions long."],
+      "tryIt": "Battle it against Dwarf for 10 rounds with <code>--report</code> and look for the round where it switches.",
+      "opponent": "dwarf.red"
+    },
+    {
+      "id": "bandit", "file": "bandit.js", "name": "Bandit", "language": "javascript", "family": "P-space", "era": "ZoreWars 2026",
+      "inspiredBy": "The multi-armed bandit problem from machine learning: how to split your tries between options when you don't yet know which pays best. Built on P-space switchers like Chameleon.",
+      "summary": "A three-armed bandit. P-space keeps, for each of three strategies (stone, paper, scanner), the points it has earned and how many rounds it has played. Each round it plays the one with the best average.",
+      "how": [
+        "After each round it adds 0, 1 or 3 points (stored times ten) to the strategy it played, and 1 to that strategy's play count.",
+        "It then computes <code>(points + PRIOR) / (plays + 1)</code> for each strategy with <code>DIV</code>. PRIOR is optimistic, so every strategy gets tried before it is judged.",
+        "The best average wins. The three arms are a Dwarf-style stone that ends in a core clear, Papercut and Gatekeeper."
+      ],
+      "strengths": ["Learns which of rock, paper and scissors beats this opponent, and keeps playing it.", "Turns imp matchups that would be losses into ties."],
+      "weaknesses": ["97 of the 100 allowed instructions: the biggest target in the library.", "It needs a few rounds to learn, so short matches favour simpler warriors."],
+      "tryIt": "Try <code>PRIOR: 10</code> (cautious) and <code>PRIOR: 40</code> (curious) against Imp Ring, and compare the scores over 30 rounds.",
+      "opponent": "impring.red"
     }
   ],
 

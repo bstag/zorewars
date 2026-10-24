@@ -9,6 +9,8 @@
 node_modules
 cli
 scripts
+tools
+evolved
 test
 worker
 examples

@@ -165,6 +165,26 @@
         <div id="tourResults"></div>
       </details>
 
+      <details class="card fold" id="ladderCard">
+        <summary><h3>Ladder</h3></summary>
+        <p class="muted small">King of the hill. Your warrior plays everyone on the ladder; finish in the top 10 and it stays, and the bottom warrior drops off. To stay on, a warrior has to keep up with everyone who got there first. Kept in this browser.</p>
+        <div class="row">
+          <button class="btn" id="ladderChallenge">Challenge</button>
+          <label class="field inline"><span>Rounds</span><input type="number" id="ladderRounds" min="2" max="200" value="20"></label>
+        </div>
+        <div class="progress small" aria-hidden="true"><div id="ladderBar"></div></div>
+        <p class="small ladder-status" id="ladderStatus" role="status"></p>
+        <div id="ladderTable"></div>
+        <div class="row"><button class="btn ghost" id="ladderReset" title="Start again from the library's ladder">Reset ladder</button></div>
+      </details>
+
+      <details class="card fold" id="speciesCard">
+        <summary><h3>Species map</h3></summary>
+        <p class="muted small">Warriors sorted by how they behave alone in the core. Strong warriors exist in many cells: there is more than one way to win.</p>
+        <div id="speciesMap"></div>
+        <p class="small species-info" id="speciesInfo"></p>
+      </details>
+
       <details class="card fold settings">
         <summary><h3>Rules</h3></summary>
         <div class="settings-grid">

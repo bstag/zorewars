@@ -8,10 +8,11 @@ export * from './constants.js';
 export { VM } from './vm.js';
 export { assemble, listing } from './assembler.js';
 export { createGenerator, generateFromJS } from './generator.js';
-export { runRound, runMatch, runTournament, WIN_POINTS, TIE_POINTS } from './battle.js';
+export { runRound, runMatch, runTournament, smoothPoints, WIN_POINTS, TIE_POINTS } from './battle.js';
 export { topologyFor, ringTopology } from './topology.js';
 export { mulberry32, pmarsRng } from './random.js';
-export { postMortem, formatPostMortem } from './report.js';
+export { postMortem, formatPostMortem, diagnoseRounds } from './report.js';
+export { measureSpecies, speciesAxes, speciesHint } from './species.js';
 
 // Compile warrior source in any in-process language to a loadable program.
 // language: 'redcode' | 'javascript'. (Python and C++ produce Redcode first,

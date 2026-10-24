@@ -9,9 +9,19 @@ You are writing a *warrior*: a small program that competes with other programs i
 3. `node cli/zorewars.js tournament <file> warriors --rounds 50 --json`: read `ranking`.
 4. Find out *why* rounds were lost: `node cli/zorewars.js battle <file> <opponent> -r 20 --report --json` gives a post-mortem per round: the killing blow (the instruction that killed the last process, and who wrote it and with which instruction), process deaths by cause (`ownCode`, `enemyCode`, `emptyCore`, `divideByZero`), your ending code against the original, and whether your processes were converted to running the opponent's program. `node cli/zorewars.js trace <file> <opponent> --round N --last 60` shows the final instructions executed.
 5. Change one thing, re-run with the same `--seed`, keep it if `scorePerRound` went up.
+   For a fuller picture, `node cli/zorewars.js hill <file> --json` plays every library warrior (add `--classics` for the 34 Hall of Fame originals) and returns per-opponent results, a `smooth` score and `symptoms`: how many non-won rounds were ties, conversions (stunned or captured), early or late deaths, or suicides.
 6. To fight another agent: `node cli/zorewars.js battle a.red b.red --rounds 200 --json`.
 
 `@name` refers to a built-in warrior (`node cli/zorewars.js list` shows all of them, e.g. `@silk @seeker @oneshot @impring @quickscan.js`). `web/warriors.html` explains each one line by line. `-` reads Redcode from stdin. `classic:<name>` fetches a famous original from the public archives (`node cli/zorewars.js classics` lists them), and any `https://` URL to a Redcode file works too: good sparring partners, e.g. `classic:arvon`, the AI-assisted #1 of the Koenigstuhl 94nop hill. Exit codes: 0 ok, 1 compile error, 2 bad usage.
+
+## Developer tools
+
+- `hill <warrior> [--classics] [--rounds 20] [--json]`: benchmark against the library (and the classics), with loss diagnosis.
+- `species [warrior...] [--json]`: where warriors sit by behaviour (most processes at once x different cells executed, measured alone). No arguments: the whole library.
+- `tune <warrior.js> [--candidates 40] [--write]`: random search over a JavaScript warrior's constants. The file needs `const P = {...};` and a `// SPACE {"NAME":[min,max],...}` comment; see `warriors/gatekeeper.js`.
+- `evolve [warrior...] [--generations 6] [--batches 4] [--batch 40] [--classics] [--out evolved]`: breed warriors. MAP-Elites keeps the best of each species; each generation's champion joins the opponents (Red Queen); `--classics` reports each champion's score against the held-out originals. Writes `redqueen-N.red`, `elite-pP-cC.red` and `evolve.json`.
+
+Scores: points per round (win 3, tie 1) and the smooth score, where a loss is worth the share of the cycle limit survived (0 to just under 1).
 
 ## Rules (defaults)
 

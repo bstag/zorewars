@@ -184,6 +184,28 @@ function summarize(result, warriors, blow) {
   return parts.join(' ');
 }
 
+// Why a warrior failed to win, one symptom per round (needs rounds played
+// with report: true). Used by the tuner and evolver to pick repairs.
+//   suicide:   died on its own code, empty core or a divide by zero
+//   converted: died after running lots of enemy-written code (stunned or captured)
+//   early:     killed by an enemy bomb before cycle 5000 (found fast)
+//   late:      killed by an enemy bomb later (worn down)
+//   tie:       still alive at the cycle limit with someone else (no kill power)
+export function diagnoseRounds(rounds, index = 0) {
+  const d = { suicide: 0, converted: 0, early: 0, late: 0, tie: 0 };
+  for (const r of rounds) {
+    if (!r.report || r.winner === index) continue;
+    const me = r.report.warriors[index];
+    if (me.alive) { d.tie++; continue; }
+    const cause = me.lastDeath?.cause;
+    if (cause !== 'enemyCode') d.suicide++;
+    else if (me.foreignSteps > 100) d.converted++;
+    else if (me.diedAt < 5000) d.early++;
+    else d.late++;
+  }
+  return d;
+}
+
 // Plain-text rendering for the CLI.
 export function formatPostMortem(r) {
   const out = [];
