@@ -22,6 +22,8 @@
   {"file":"blitz.js","name":"Blitz","category":"Quickscan + paper","language":"javascript"},
   {"file":"chameleon.js","name":"Chameleon","category":"P-space switcher","language":"javascript"},
   {"file":"bandit.js","name":"Bandit","category":"P-space bandit","language":"javascript"},
+  {"file":"hedgehog.js","name":"Hedgehog","category":"Quickscan + stone/imp","language":"javascript"},
+  {"file":"hydra.js","name":"Hydra","category":"Quickscan + paper/stone","language":"javascript"},
   {"file":"dwarf.py","name":"Dwarf (Python)","category":"Stone (bomber)","language":"python"},
   {"file":"javascript/imp.js","name":"Imp","category":"Imp","language":"javascript","convertedFrom":"imp.red","benchmark":false},
   {"file":"python/imp.py","name":"Imp","category":"Imp","language":"python","convertedFrom":"imp.red","benchmark":false},

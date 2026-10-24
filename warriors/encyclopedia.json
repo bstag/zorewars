@@ -320,6 +320,36 @@
       "weaknesses": ["97 of the 100 allowed instructions: the biggest target in the library.", "It needs a few rounds to learn, so short matches favour simpler warriors."],
       "tryIt": "Try <code>PRIOR: 10</code> (cautious) and <code>PRIOR: 40</code> (curious) against Imp Ring, and compare the scores over 30 rounds.",
       "opponent": "impring.red"
+    },
+    {
+      "id": "hedgehog", "file": "hedgehog.js", "name": "Hedgehog", "language": "javascript", "family": "Hybrid", "era": "ZoreWars 2026",
+      "inspiredBy": "The shape of modern stone/imp hill warriors such as <a href=\"https://asdflkj.net/COREWAR/94/HILL32/tolypeutes.red\">Tolypeutes</a> (Roy van Rijn, 2022) and <a href=\"https://asdflkj.net/COREWAR/94/HILL32/sonofvain.red\">Son of Vain</a> (Oversby and Pihlaja), and of <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/Armadillo.txt\">Armadillo</a> (Stefan Strack, 1992) before them: a decoding quickscan, then a booted stone with imps. Written from scratch for ZoreWars; every constant comes from its JavaScript and <code>zorewars tune</code>.",
+      "summary": "Three warriors in one. A quickscan checks 24 cells round the core in its first few dozen cycles and carpet-bombs anything it finds. Then it copies a stone far away and starts it there, and launches an 8-process imp spiral. The scan code stays behind as a decoy.",
+      "how": [
+        "<b>Quickscan with decode.</b> Each group of three lines checks four cells: <code>SNE.I</code> compares one pair, <code>SEQ.I &lt;t, …</code> compares a second pair and at the same time decrements a table cell, and a <code>JMP</code> whose B-operand picks one of three table cells. On a find, <code>MUL.B</code> multiplies the chosen table value by a factor D, which lands exactly on the cell that differed.",
+        "That only works if every table value v satisfies <code>t + v - 1 = qp + D(v-1)</code> modulo the core size. The JavaScript solves this with a modular inverse, tries every D, and keeps the one that spreads the probes most evenly.",
+        "<b>Boot.</b> Sixteen <code>MOV.I</code> lines copy the stone thousands of cells away. Quickscanners that aim at where we loaded find only the old scan code.",
+        "<b>Stone.</b> <code>SPL #0</code> at its top keeps adding processes, so one hit doesn't stop it. All the processes share a bombing loop and a counter. When the counter runs out, one process rewrites the bomb line into a jump, and every process moves on to a core clear. When the clear is done they all idle.",
+        "<b>Imp spiral.</b> A jump table sends 8 processes to 8 points a third of the core apart. They move in step, so the spiral repairs single hits, and it turns rounds the stone can't win into ties."
+      ],
+      "strengths": ["Our best warrior against the strongest classics when it was added: it beats Agony II and Myrmidon.", "Hard to kill: the stone has many processes, the spiral is spread over the whole core, and the decoy wastes enemy quickscans."],
+      "weaknesses": ["85 instructions: a big target if a scanner finds the right part.", "Modern stone/imp and paper/stone warriors such as Tolypeutes and Azathoth still beat it."],
+      "tryIt": "Run <code>node cli/zorewars.js compile warriors/hedgehog.js</code> and find the 24 probe cells in the comment at the end. Then set <code>T: 3</code> for a thinner spiral and see what changes against Gatekeeper.",
+      "opponent": "gatekeeper.js"
+    },
+    {
+      "id": "hydra", "file": "hydra.js", "name": "Hydra", "language": "javascript", "family": "Hybrid", "era": "ZoreWars 2026",
+      "inspiredBy": "The paper/stone shape of <a href=\"https://asdflkj.net/COREWAR/94/HILL32/azathoth.red\">Azathoth</a> (John Metcalf) and its AI-tuned successor <a href=\"https://asdflkj.net/COREWAR/94/HILL32/arvon.red\">Arvon</a>: quickscan, boot, then a paper and a stone. Written from scratch for ZoreWars with the same quickscan and stone as Hedgehog.",
+      "summary": "Hedgehog's quickscan and stone, with a paper instead of the imps. After the scan it copies the stone and a bombing silk paper to two distant spots and starts them: the paper survives almost anything, and the stone and the paper's bombs do the killing.",
+      "how": [
+        "The quickscan, decode and stone are the same as in Hedgehog.",
+        "The boot copies the stone (16 lines) and the paper (9 lines) away with unrolled <code>MOV.I</code>s, then starts one stone process and 2^LEVELS paper processes.",
+        "The paper is Papercut's loop: every process copies one cell to a new spot and starts the copy, and each pass also drops a bomb."
+      ],
+      "strengths": ["Very hard to kill once the paper has spread.", "The quickscan still wins some rounds in the first few hundred cycles."],
+      "weaknesses": ["Scanners with SPL carpets, such as Agony II and Gatekeeper, freeze the paper.", "Its paper is 9 lines. The best paper/stone warriors use papers of about 5 lines that copy in several streams at once. That is the next thing to try."],
+      "tryIt": "Compare Hydra and Hedgehog with <code>node cli/zorewars.js hill warriors/hydra.js --classics</code>: same quickscan and stone, different partner.",
+      "opponent": "stunner.red"
     }
   ],
 
