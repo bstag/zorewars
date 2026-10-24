@@ -3,7 +3,7 @@
 export { EditorState, Compartment, StateEffect } from '@codemirror/state';
 export {
   EditorView, keymap, lineNumbers, highlightActiveLine, highlightActiveLineGutter,
-  drawSelection, dropCursor, hoverTooltip, placeholder,
+  drawSelection, dropCursor, hoverTooltip, placeholder, tooltips,
 } from '@codemirror/view';
 export { defaultKeymap, history, historyKeymap, indentWithTab, undo, redo, cursorCharLeft, cursorCharRight } from '@codemirror/commands';
 export {

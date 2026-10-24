@@ -1090,7 +1090,10 @@ async function boot() {
   const savedSettings = safeGet(SETTINGS_KEY);
   if (savedSettings) state.settings = { ...DEFAULT_SETTINGS, ...savedSettings };
   renderSettings();
-  state.editor = await createCodeEditor($('codeEditor'), { textarea: $('source'), gutter: $('gutter'), onChange: onSourceChange });
+  state.editor = await createCodeEditor($('codeEditor'), {
+    textarea: $('source'), gutter: $('gutter'), onChange: onSourceChange,
+    reservedBottom: () => ($('keybar').hidden ? Infinity : $('keybar').getBoundingClientRect().top),
+  });
   wireEvents();
   wireImport();
   wireMobile();

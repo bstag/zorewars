@@ -173,7 +173,9 @@ function textareaEditor(textarea, gutter, { onChange }) {
 
 // ---------------------------------------------------------------- CodeMirror
 
-export async function createCodeEditor(container, { textarea, gutter, onChange }) {
+// `reservedBottom()` returns the top of anything fixed over the bottom of the
+// screen (the phone symbol bar), so pop-ups never cover it.
+export async function createCodeEditor(container, { textarea, gutter, onChange, reservedBottom = () => Infinity }) {
   let cm;
   try {
     cm = await import('./vendor/codemirror.js');
@@ -183,7 +185,7 @@ export async function createCodeEditor(container, { textarea, gutter, onChange }
   }
   const {
     EditorState, Compartment, EditorView, keymap, lineNumbers, highlightActiveLine, highlightActiveLineGutter,
-    drawSelection, hoverTooltip, defaultKeymap, history, historyKeymap, indentWithTab, undo,
+    drawSelection, hoverTooltip, tooltips, defaultKeymap, history, historyKeymap, indentWithTab, undo,
     StreamLanguage, HighlightStyle, syntaxHighlighting, indentOnInput, bracketMatching, indentUnit,
     autocompletion, completionKeymap, closeBrackets, closeBracketsKeymap, setDiagnostics, lintGutter,
     searchKeymap, highlightSelectionMatches, javascript, python, tags: t,
@@ -268,7 +270,19 @@ export async function createCodeEditor(container, { textarea, gutter, onChange }
         lineNumbers(), highlightActiveLineGutter(), highlightActiveLine(), drawSelection(), history(),
         indentOnInput(), bracketMatching(), closeBrackets(), highlightSelectionMatches(), lintGutter(),
         autocompletion({ activateOnTyping: true, icons: false }),
-        syntaxHighlighting(style), theme, help,
+        syntaxHighlighting(style), theme,
+        // Hover help is for mice; on touch screens a tap would trigger it.
+        touch ? [] : help,
+        // Pop-ups (autocomplete, help) fit in the visible area above the
+        // keyboard and the symbol bar, flipping above the cursor if needed.
+        tooltips({
+          tooltipSpace: () => {
+            const vv = window.visualViewport;
+            const top = vv ? vv.offsetTop : 0;
+            const bottom = Math.min(vv ? vv.offsetTop + vv.height : window.innerHeight, reservedBottom());
+            return { top, left: 0, right: window.innerWidth, bottom };
+          },
+        }),
         languageConf.of(languageFor(currentLang)),
         EditorView.contentAttributes.of({ autocapitalize: 'off', autocorrect: 'off', spellcheck: 'false', 'aria-label': 'Warrior source code' }),
         keymap.of([...closeBracketsKeymap, ...defaultKeymap, ...historyKeymap, ...completionKeymap, ...searchKeymap, indentWithTab]),
