@@ -24,7 +24,7 @@ Run the real Workers runtime locally:
 
 ```bash
 npm install
-npm run dev:cloudflare        # http://localhost:8787
+npm run dev:cloudflare        # http://localhost:8787 (Wrangler needs Node 22+)
 ```
 
 ### Option A: deploy on every push (recommended)
