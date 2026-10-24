@@ -1,0 +1,24 @@
+{
+  "name": "zorewars",
+  "version": "0.1.0",
+  "description": "A browser-based programming game inspired by Core War: programs battle inside a simulated circular memory array.",
+  "type": "module",
+  "bin": {
+    "zorewars": "cli/zorewars.js"
+  },
+  "scripts": {
+    "start": "node cli/zorewars.js serve",
+    "dev:cloudflare": "wrangler dev",
+    "test": "node --test",
+    "bench": "node scripts/benchmark.js",
+    "compare": "node scripts/pmars-compare.js",
+    "deploy": "wrangler deploy"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "wrangler": "^4.152.0"
+  }
+}

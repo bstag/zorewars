@@ -1,0 +1,276 @@
+{
+  "warriors": [
+    {
+      "id": "imp", "file": "imp.red", "name": "Imp", "language": "redcode", "family": "Imp", "era": "1984",
+      "inspiredBy": "Recreates <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/Imp.txt\">Imp</a> by A. K. Dewdney, from the first Core War article (<i>Scientific American</i>, May 1984). The original is the same single instruction.",
+      "summary": "The smallest possible warrior: one instruction that copies itself into the next cell and then runs that copy. It crawls through the core forever.",
+      "how": [
+        "<code>MOV.I $0, $1</code> copies the whole instruction at offset 0 (itself) to offset 1.",
+        "The process moves on to the next cell, which now holds the same instruction, and the cycle repeats.",
+        "When the Imp crawls over enemy code it replaces it with Imp. Enemy processes that reach those cells turn into Imps too, which is why Imp battles usually end in ties."
+      ],
+      "strengths": ["Almost impossible to kill: a bomb behind it does nothing, and it moves every cycle.", "Turns a likely loss into a tie, which still scores 1 point."],
+      "weaknesses": ["Never kills anything by itself.", "One <code>DAT</code> written just ahead of it ends it, and scanners find it easily."],
+      "tryIt": "Run Imp against itself. Why can neither one ever win?",
+      "opponent": "dwarf.red"
+    },
+    {
+      "id": "dwarf", "file": "dwarf.red", "name": "Dwarf", "language": "redcode", "family": "Stone", "era": "1984",
+      "inspiredBy": "Recreates <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/Dwarf.txt\">Dwarf</a> by A. K. Dewdney (1984), the original bomber. The JavaScript and Python versions in the library generate exactly the same code.",
+      "summary": "The classic stone: a three-instruction loop that drops a <code>DAT</code> bomb on every fourth cell of the core.",
+      "how": [
+        "<code>bomb</code>'s B-field is a pointer. <code>ADD.AB #4, bomb</code> moves it four cells further each pass.",
+        "<code>MOV.I bomb, @bomb</code> copies the bomb to wherever that pointer points (<code>@</code> means use the B-field as an address).",
+        "Any enemy process that later executes one of those <code>DAT</code>s dies.",
+        "4 divides 8000, so the bombs only ever land a multiple of 4 cells from <code>bomb</code>. The other three instructions are 1, 2 and 3 cells away, so the Dwarf never hits itself."
+      ],
+      "strengths": ["Tiny (4 cells), so it's hard to find and hard to hit.", "Gets through the whole core in 6,000 cycles, quickly enough to beat most scanners."],
+      "weaknesses": ["Replicators make copies faster than it can bomb them.", "Leaves gaps of three cells, so very small enemies can survive between bombs."],
+      "tryIt": "Change <code>step</code> to 3 and run it alone (one warrior). It eventually kills itself. Work out when.",
+      "opponent": "scanner.red"
+    },
+    {
+      "id": "gemini", "file": "gemini.red", "name": "Gemini", "language": "redcode", "family": "Self-mover", "era": "1984",
+      "inspiredBy": "Based on <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/Gemini.txt\">Gemini</a> by A. K. Dewdney (1984), the first published program that copies itself. This version uses ICWS'94 post-increment modes to do it in a much shorter loop.",
+      "summary": "Copies its entire body 100 cells ahead, then jumps into the copy. It is the ancestor of every replicator, but this one only moves; it doesn't multiply.",
+      "how": [
+        "<code>ptr</code> holds two pointers relative to itself: the A-field is the next cell to read, the B-field the next cell to write.",
+        "<code>MOV.I }ptr, &gt;ptr</code> copies one cell and then increments both pointers. That is the whole copy loop body.",
+        "Because ICWS'94 copies the source instruction <em>before</em> incrementing, the copy of <code>ptr</code> itself starts with clean pointers.",
+        "<code>SEQ.A #len, ptr</code> stops the loop after <code>len</code> cells; <code>JMP copy+hop</code> continues execution inside the new copy."
+      ],
+      "strengths": ["Leaves a dead copy behind at every hop, which makes scanners waste time on decoys."],
+      "weaknesses": ["Still only one process: a single bomb on the live copy kills it.", "Spends all its time moving and never attacks. It ranks last in the library benchmark."],
+      "tryIt": "Add an <code>SPL</code> so the old copy keeps running as well. You have just reinvented the replicator.",
+      "opponent": "dwarf.red"
+    },
+    {
+      "id": "mice", "file": "mice.red", "name": "Mice", "language": "redcode", "family": "Paper", "era": "1986",
+      "inspiredBy": "Adapted from <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/MICE.txt\">MICE</a> by Chip Wendell, winner of the first ICWS tournament in 1986, rewritten in ICWS'94 syntax with explicit modifiers.",
+      "summary": "A replicator (\"paper\"). It copies its 8 instructions to a new place, starts a process there with <code>SPL</code>, then does it again somewhere else. Every copy does the same, so the number of copies grows exponentially.",
+      "how": [
+        "<code>MOV.AB #12, ptr</code> sets a counter of cells to copy.",
+        "<code>MOV.I @ptr, &lt;copy</code> copies one cell. The source is <code>ptr + counter</code>; the destination is <code>copy</code>'s B-field after it has been decremented. The copy is built from the end backwards.",
+        "<code>DJN.B loop, ptr</code> decrements the counter and repeats until it reaches zero.",
+        "<code>SPL.B @copy, 0</code> starts a new process at the new copy, and <code>ADD.AB #653, copy</code> picks a fresh destination for the next one."
+      ],
+      "strengths": ["Bombers can't kill copies as fast as they appear.", "Ends with thousands of processes in dozens of places."],
+      "weaknesses": ["Each copy takes about 30 cycles to build: slow next to silk papers.", "Scanners that stun before clearing (Seeker, Two-Pass Clear) beat it."],
+      "tryIt": "Watch the Processes chart while Mice fights Dwarf, and find the moment the curve takes off.",
+      "opponent": "dwarf.red"
+    },
+    {
+      "id": "impring", "file": "impring.red", "name": "Imp Ring", "language": "redcode", "family": "Imp", "era": "1992",
+      "inspiredBy": "Uses the idea behind <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/trident.txt\">The IMPire strikes back</a> by Anders Ivner (October 1992), described in Steven Morrell's <a href=\"https://www.asdflkj.net/COREWAR/DOCS/chapter1.txt\">My First Corewar Book</a> as the first imp ring.",
+      "summary": "Three imps exactly a third of the core apart, executing in turn. Each writes the cell the next imp is about to execute, so the three move as one unit.",
+      "how": [
+        "The imp is <code>MOV.I #0, 2667</code>. It copies itself 2667 cells ahead, and 3 × 2667 = 8001, one cell past where it started.",
+        "The launcher turns 1 process into 4 with two <code>SPL 1</code>s, then each passes through <code>JMP }tab</code>, which sends successive processes to successive table entries.",
+        "Three table entries jump to the three ring points in order, and the fourth process dies on a <code>DAT</code>.",
+        "Point 0 writes point 1 just before point 1 runs, point 1 writes point 2, and point 2 writes point 0 plus one cell. Order is everything."
+      ],
+      "strengths": ["Ties or beats most stones: it overwrites their code with imp as it passes through.", "Much harder to stop than a single Imp."],
+      "weaknesses": ["Rarely wins outright against papers or clears.", "Breaks if the processes get out of order, for example if an enemy <code>SPL</code> lands in the ring."],
+      "tryIt": "Change <code>step</code> to 2666. Why does the ring fall apart?",
+      "opponent": "dwarf.red"
+    },
+    {
+      "id": "stoneimp", "file": "stoneimp.red", "name": "Stone and Imp", "language": "redcode", "family": "Imp", "era": "1990s",
+      "inspiredBy": "A simplified take on the stone/imp design of <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/Cannonade.txt\">Cannonade</a> (Paul Kline), <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/BlueFunk.txt\">Blue Funk</a> (Steven Morrell) and <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/Impfinityv4g1.txt\">Impfinity</a> (Damien Doligez), all '94 hill champions.",
+      "summary": "Splits into two warriors at once: a Dwarf-style stone and an Imp Ring. The stone hunts, and the imps turn would-be losses into ties.",
+      "how": [
+        "<code>SPL stone</code> sends one process to the bomber; the rest launch an imp ring exactly as Imp Ring does.",
+        "All four processes share the warrior's turns, so the stone bombs at a quarter of the Dwarf's speed.",
+        "Imps move through the stone's code and turn it into imp. In this version the stone doesn't last long once the ring comes round."
+      ],
+      "strengths": ["Rarely loses outright: the ring survives most attacks."],
+      "weaknesses": ["Slower than either part alone. In the benchmark it does worse than plain Imp Ring.", "Real stone/imps \"boot\" (copy) the stone away from the ring and pick the imp step so their bombs never break the ring. This version doesn't."],
+      "tryIt": "Move the stone out of the ring's path: copy it 4000 cells away before starting it. Does the score improve?",
+      "opponent": "seeker.red"
+    },
+    {
+      "id": "silk", "file": "silk.red", "name": "Silk", "language": "redcode", "family": "Paper", "era": "1994",
+      "inspiredBy": "Uses the trick from <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/SilkWarrior1.3.txt\">Silk Warrior</a> and <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/TimeScape(1.0).txt\">TimeScape</a> by Juha Pohjalainen (1994–95), the papers that gave \"silk\" its name. <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/Paperone.txt\">Paperone</a> by Beppe Bezzi is another well-known example.",
+      "summary": "A replicator with no copy loop. Eight processes run the same two instructions in lockstep; each copies one cell and starts one process in the copy, so a whole new copy appears in a single pass.",
+      "how": [
+        "Three <code>SPL 1</code>s turn 1 process into 8, all queued at <code>silk</code> in order.",
+        "Each of the 8 runs <code>SPL step</code>, starting a process at the copy location. Then each runs <code>MOV.I &gt;silk, }silk</code>, copying the next cell.",
+        "The processes in the copy run just behind the copying, so each instruction arrives just before they need it. It's the same timing trick the Imp Ring uses.",
+        "<code>ADD.A</code> and <code>MOV.F</code> pick a new distance and reset the pointers, and the 8 processes loop to make another copy."
+      ],
+      "strengths": ["Top of the library benchmark.", "Makes a new copy every few cycles, so it reaches thousands of processes almost immediately."],
+      "weaknesses": ["Rarely wins quickly against an Imp: lots of ties.", "Vulnerable to <code>SPL 0</code> carpets followed by a clear, which is how the '94 hill's scanners eventually beat it."],
+      "tryIt": "Add a third line, <code>MOV.I bomb, &gt;2000</code>, so every copy also bombs. That makes it a paper/stone. Does it beat Mice faster?",
+      "opponent": "seeker.red"
+    },
+    {
+      "id": "scout", "file": "scanner.red", "name": "Scout", "language": "redcode", "family": "Scanner", "era": "1993",
+      "inspiredBy": "A minimal B-field scanner in the spirit of <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/B-scannersliveinvain.txt\">B-scanners live in vain</a> (Matt Hastings, 1993), which checks for non-zero fields instead of comparing pairs of cells.",
+      "summary": "Looks at every 9th cell and only bombs when it finds something non-empty. Checks the distance to every find so it never bombs itself.",
+      "how": [
+        "<code>ADD.AB #9, ptr</code> moves the probe.",
+        "<code>JMZ.F loop, @ptr</code> goes back to scanning if both fields of the probed cell are zero (empty core, or the scanner's own bombs).",
+        "<code>SLT.AB #len, ptr</code> skips the next line if the hit is further away than our own code. Otherwise <code>JMP loop</code> ignores it.",
+        "<code>MOV.I bomb, @ptr</code> drops a <code>DAT</code> on the hit."
+      ],
+      "strengths": ["Doesn't waste bombs on empty space.", "A good first example of a warrior that makes decisions."],
+      "weaknesses": ["One bomb per hit is rarely enough against an 8-cell replicator.", "Can't see enemy instructions whose A- and B-fields are both zero, such as <code>JMP 0</code> or <code>SPL 0</code>: to <code>JMZ.F</code> they look like empty core."],
+      "tryIt": "Delete the <code>SLT</code> line and run Scout alone. Find the cycle where it kills itself.",
+      "opponent": "dwarf.red"
+    },
+    {
+      "id": "seeker", "file": "seeker.red", "name": "Seeker", "language": "redcode", "family": "Scanner", "era": "1993–95",
+      "inspiredBy": "Follows the classic CMP-scanner pattern (compare, stun, clear) of <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/IronGate%5B2%5D.txt\">Iron Gate</a> (Wayne Sheppard, first in the Hall of Fame of <a href=\"https://gallium.inria.fr/~doligez/corewar/corewarrior/004.txt\">Core Warrior #4</a>) and <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/AgonyII.txt\">Agony II</a> (Stefan Strack). The name \"scissors\" comes from Matthew Householder's <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/Scissors.txt\">Scissors</a> (1990).",
+      "summary": "Compares two cells 6 apart. Empty core is identical everywhere, so any difference means an enemy. Both cells get an <code>SPL 0</code> stun bomb, and after one lap a <code>DAT</code> sweep finishes off whatever was stunned.",
+      "how": [
+        "<code>SEQ.I</code> compares two whole instructions. If they match, the next line is skipped and scanning continues.",
+        "<code>ADD.F inc, scan</code> moves both of <code>scan</code>'s pointers 12 cells per pass, so the pair of probes covers the core every 6 cells.",
+        "A hit drops <code>SPL #0</code> on both cells. An enemy process that runs it splits into copies of itself that do nothing, using up all of that warrior's turns.",
+        "The assembler computes <code>count</code> so the scan stops just before it would see Seeker's own code. Then <code>MOV.I kill, &gt;cptr</code> clears the core."
+      ],
+      "strengths": ["Beats replicators like Mice: stun first, kill second.", "Beats single-process warriors that sit still."],
+      "weaknesses": ["Loses to Silk, whose copies appear faster than it scans.", "Imps slip past: an Imp in a stunned spot just keeps crawling."],
+      "tryIt": "Try <code>step 8, gap 4</code>. Any 4-cell warrior is now always found. What does it cost?",
+      "opponent": "mice.red"
+    },
+    {
+      "id": "oneshot", "file": "oneshot.red", "name": "One-Shot", "language": "redcode", "family": "Scanner", "era": "1995",
+      "inspiredBy": "Built the way one-shots such as <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/Frontwardsv2.txt\">Frontwards</a> (Steven Morrell, 1995) and <a href=\"https://asdflkj.net/COREWAR/94/HILL32/myrmidon.red\">Myrmidon</a> (Roy van Rijn) work: scan only until the first find, then commit everything to a clear.",
+      "summary": "Scans until it finds the enemy once, then stops scanning for good. From just before the hit to the end of the core it writes <code>SPL 0</code>, then goes over the same stretch again with <code>DAT</code>.",
+      "how": [
+        "Same probe pair as Seeker: <code>SEQ.I</code> on two cells 6 apart, moving 12 per pass.",
+        "On a hit, <code>MOV.AB scan, cptr</code> and <code>ADD.AB</code> turn the probe's address (relative to <code>scan</code>) into one relative to <code>cptr</code>, 8 cells early.",
+        "<code>JMN.B stun, cptr</code> keeps the stun pass going until the pointer wraps round to <code>cptr</code> itself, just before our own code.",
+        "<code>MOV.B start, cptr</code> rewinds, and the DAT pass runs until it gets stuck rewriting <code>cptr</code>, which stops it safely."
+      ],
+      "strengths": ["Second in the library benchmark.", "Spends no time bombing empty core."],
+      "weaknesses": ["Only clears from the hit forward. A paper with copies behind the hit survives, which is why Silk beats it.", "Can't hurt an Imp: one cell of difference isn't enough to catch it."],
+      "tryIt": "Change <code>MOV.B start, cptr</code> to <code>MOV.AB start, cptr</code>. That one-letter mistake made the first draft of this warrior lose every game. Find out why with Step and the Inspector.",
+      "opponent": "dwarf.red"
+    },
+    {
+      "id": "quickscan", "file": "quickscan.js", "name": "Quickscan", "language": "javascript", "family": "Scanner", "era": "1994–96",
+      "inspiredBy": "The quickscan technique: early prototypes by Brant Thomsen (1994), made famous by <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/ThermiteII.txt\">Thermite II</a> (Robert Macrae, 1996), first in the <a href=\"https://gallium.inria.fr/~doligez/corewar/corewarrior/050.txt\">Core Warrior #50</a> Hall of Fame. Modern hill leaders such as Arvon still open with one.",
+      "summary": "Spends its first few dozen cycles checking 14 fixed pairs of locations spread across the core. If any pair isn't empty, it carpet-bombs that spot immediately; otherwise it becomes a Dwarf.",
+      "how": [
+        "Written in JavaScript because nobody wants to work out 56 relative addresses by hand. The <code>for</code> loop unrolls the probes and computes each offset from the line number.",
+        "Each probe is four lines: <code>SNE.I</code> on a pair of cells; <code>JMP</code> to the next probe if they're equal; otherwise <code>MOV.AB</code> to aim the pointer and <code>JMP attack</code>.",
+        "The attack drops <code>GAP + 12</code> bombs in a row over the hit, then falls through into the stone.",
+        "Open the Compiled Redcode panel in the arena to see what the generator produced."
+      ],
+      "strengths": ["Kills a large, slow warrior in the first hundred cycles, before it gets going.", "Shows what a generator language is good for."],
+      "weaknesses": ["63 instructions long, so it's a big target.", "Only finds enemies sitting on one of its 28 probe cells. Against Mice it nearly always misses and loses."],
+      "tryIt": "Raise <code>PROBES</code> to 20 and recompile. The generator recomputes every address. Mind the 100-instruction limit.",
+      "opponent": "scanner.red"
+    },
+    {
+      "id": "vampire", "file": "vampire.red", "name": "Vampire", "language": "redcode", "family": "Vampire", "era": "1987–95",
+      "inspiredBy": "The vampire idea goes back to <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/PIPER.txt\">PIPER</a> (1987) and was refined in <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/Sucker3.txt\">Sucker</a> (Stefan Strack, 1992) and <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/myVampv3.7.txt\">myVamp</a> (Magnus Paulsson, 1995). Their pits hold an <code>SPL 0</code> and a clear; this one uses a plain <code>DAT</code>.",
+      "summary": "Bombs with <code>JMP</code> instructions (\"fangs\") instead of <code>DAT</code>. Wherever a fang lands, its target is adjusted to point back at the vampire's pit, so an enemy process that runs into one gets dragged there.",
+      "how": [
+        "<code>step</code> is <code>DAT #-7, #7</code>: <code>ADD.F step, fang</code> moves the fang's B-field 7 forward and its A-field 7 back.",
+        "<code>MOV.I fang, @fang</code> drops a copy of the fang where its B-field points.",
+        "The A-field always shrinks by the same amount that the drop distance grows, so the dropped <code>JMP</code> always points exactly at <code>pit</code>.",
+        "Captured processes run the pit. Here that's a <code>DAT</code>, so they die."
+      ],
+      "strengths": ["One fang can capture every process that passes through it, not just one.", "With a better pit, captured processes do the vampire's work for it."],
+      "weaknesses": ["With a <code>DAT</code> pit it's just a slower Dwarf.", "Step 7 doesn't divide 8000, so eventually it bites its own code."],
+      "tryIt": "Replace the pit with <code>SPL 0</code> followed by a clear loop. Captured processes then waste the enemy's turns while running your clear.",
+      "opponent": "dwarf.red"
+    },
+    {
+      "id": "sweeper", "file": "sweeper.red", "name": "Sweeper", "language": "redcode", "family": "Core clear", "era": "classic",
+      "inspiredBy": "The simplest core clear. Later designs, such as Björn Günzel's d-clear (credited in <a href=\"https://gallium.inria.fr/~doligez/corewar/corewarrior/066.txt\">Core Warrior #66</a>), make the same idea harder to disrupt.",
+      "summary": "Writes <code>DAT</code> over every cell of the core in order, then stops safely without touching its own code.",
+      "how": [
+        "<code>MOV.I bomb, &gt;ptr</code> writes a bomb at <code>ptr + ptr.B</code> and then increments the B-field. Clear and advance in one instruction.",
+        "The pointer starts just past the program and wraps all the way round the core.",
+        "When it wraps to 0 it points at <code>ptr</code> itself. Every pass then overwrites <code>ptr</code> with a <code>DAT</code> whose B-field is 0, so the clear stays stuck there and never reaches <code>start</code>."
+      ],
+      "strengths": ["Guaranteed to hit every cell of the core.", "The self-stopping trick is worth learning."],
+      "weaknesses": ["Slow: one cell per two cycles.", "Doesn't stun first, so replicators rebuild behind it."],
+      "tryIt": "Add <code>SPL 0</code> before <code>start</code> so many processes run the clear. Does it get faster? Count how many of the warrior's turns are spent on <code>MOV</code>.",
+      "opponent": "dwarf.red"
+    },
+    {
+      "id": "twopass", "file": "twopass.red", "name": "Two-Pass Clear", "language": "redcode", "family": "Core clear", "era": "1992",
+      "inspiredBy": "The SPL-then-DAT two-pass clear that finished off <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/WinterWerewolf.txt\">Winter Werewolf</a> (W. Mintardjo, 1992) and many later bombers, such as <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/Torcht18.txt\">Torch</a>.",
+      "summary": "Sweeps the whole core twice: first with <code>SPL 0</code>, which paralyses whatever runs it, then with <code>DAT</code>, which kills it.",
+      "how": [
+        "Pass 1: <code>MOV.I stun, &gt;ptr</code> with <code>DJN</code> counting down exactly one write for each cell that isn't ours.",
+        "<code>MOV.AB #len, ptr</code> rewinds the pointer.",
+        "Pass 2: <code>MOV.I kill, &gt;ptr</code>, which stops itself on <code>ptr</code> the same way the Sweeper does."
+      ],
+      "strengths": ["Beats replicators like Mice: stunned copies can't keep rebuilding.", "Simple, and it covers everything."],
+      "weaknesses": ["About 32,000 cycles to finish both passes, so bombers get it first.", "Imps survive by crawling over the clear."],
+      "tryIt": "Swap the passes: DAT first, then SPL. Which matchups get worse?",
+      "opponent": "mice.red"
+    },
+    {
+      "id": "stunner", "file": "stunner.red", "name": "Stunner", "language": "redcode", "family": "Stone", "era": "1990s",
+      "inspiredBy": "SPL-carpet bombers like <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/Torcht18.txt\">Torch</a> (Paul Kline, 1996): bomb with <code>SPL</code> to stun, then clear.",
+      "summary": "Drops 999 <code>SPL 0</code> stun bombs spread widely across the core, then switches to a full <code>DAT</code> sweep.",
+      "how": [
+        "Step 3048 is a multiple of 8, so stun bombs only land a multiple of 8 cells from <code>stun</code>. None of our other instructions is that far away, so we never stun ourselves.",
+        "<code>DJN.B loop, #count</code> keeps a counter in its own B-field: the <code>#</code> makes the instruction point at itself.",
+        "Once the counter runs out, <code>MOV.I kill, &gt;ptr</code> sweeps the core and stops on its own pointer."
+      ],
+      "strengths": ["Stunned enemies barely run while the clear approaches.", "Solid all-rounder in the benchmark."],
+      "weaknesses": ["999 widely spaced bombs still leave most cells untouched.", "The sweep at the end is slow."],
+      "tryIt": "Try <code>count</code> at 300 and at 1500 and run a 100-round tournament against Silk each time. Is it better to stun more cells, or to start the clear sooner?",
+      "opponent": "silk.red"
+    },
+    {
+      "id": "carpet", "file": "carpet.js", "name": "Carpet Bomber", "language": "javascript", "family": "Stone", "era": "modern",
+      "inspiredBy": "Unrolled bombing loops of the kind used by fast bombers such as <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/Tornado3.0.txt\">Tornado</a> (Beppe Bezzi, 1996), generated here with a JavaScript loop.",
+      "summary": "Drops a \"carpet\" of 4 bombs in a row, then jumps 16 cells ahead. The JavaScript checks that the carpets can never land on the bomber's own code.",
+      "how": [
+        "A <code>for</code> loop emits N copies of <code>MOV.I bomb, &gt;ptr</code>. Fewer jumps per bomb means more bombs per cycle.",
+        "<code>ADD.AB #GAP-N, ptr</code> skips to the next carpet.",
+        "The generator throws an error unless <code>GAP</code> divides the core and the carpets fall between copies of the code."
+      ],
+      "strengths": ["Bombs on 4 of every 6 cycles, where the Dwarf manages 1 in 3.", "Shows constraint checking at compile time."],
+      "weaknesses": ["Covers only 4 cells of every 16.", "Larger than the Dwarf, so easier to find."],
+      "tryIt": "Change <code>GAP</code> to 12 and recompile. The generator refuses, because 12 doesn't divide 8000. Try 20 instead.",
+      "opponent": "dwarf.red"
+    }
+  ],
+
+  "hallOfFame": [
+    { "name": "Imp", "author": "A. K. Dewdney", "year": "1984", "family": "Imp", "note": "The first published warrior.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/Imp.txt", "ours": "imp" },
+    { "name": "Dwarf", "author": "A. K. Dewdney", "year": "1984", "family": "Stone", "note": "The archetypal bomber.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/Dwarf.txt", "ours": "dwarf" },
+    { "name": "Gemini", "author": "A. K. Dewdney", "year": "1984", "family": "Self-mover", "note": "First program to copy itself.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/Gemini.txt", "ours": "gemini" },
+    { "name": "MICE", "author": "Chip Wendell", "year": "1986", "family": "Paper", "note": "Won the first ICWS tournament.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/MICE.txt", "ours": "mice" },
+    { "name": "CHANG1", "author": "Morrison J. Chang", "year": "1986", "family": "Imp factory", "note": "1986 finalist; keeps spawning imps while bombing.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/CHANG1.txt" },
+    { "name": "COMMANDO", "author": "A. K. Dewdney", "year": "1986", "family": "Imp / stomper", "note": "Dewdney's own tournament entry: stomps imps, launches one, then relocates.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/COMMANDO.txt" },
+    { "name": "PIPER", "author": "unknown", "year": "1987", "family": "Vampire", "note": "The earliest vampire in Planar's archive.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/PIPER.txt", "ours": "vampire" },
+    { "name": "Stone", "author": "Matthew Householder", "year": "1990", "family": "Stone", "note": "Gave stones their name.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/Stone.txt" },
+    { "name": "Scissors", "author": "Matthew Householder", "year": "1990", "family": "Scanner", "note": "Gave scissors their name: scan, stun, clear.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/Scissors.txt", "ours": "seeker" },
+    { "name": "The IMPire strikes back", "author": "Anders Ivner", "year": "1992", "family": "Imp ring", "note": "The first imp ring.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/trident.txt", "ours": "impring" },
+    { "name": "Impressive", "author": "Dan Nabutovsky", "year": "1992", "family": "Imp spiral", "note": "The first imp spiral, launched with a binary tree of SPLs.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/Impressive.txt" },
+    { "name": "Armadillo", "author": "Stefan Strack", "year": "1992", "family": "Stone + clear", "note": "A durable stone that ends with a core clear.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/Armadillo.txt" },
+    { "name": "Winter Werewolf", "author": "W. Mintardjo", "year": "1992", "family": "Stone + clear", "note": "One of the first bombers built to beat imp rings; two-pass SPL/DAT clear.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/WinterWerewolf.txt", "ours": "twopass" },
+    { "name": "Flash Paper 3.7", "author": "Matt Hastings", "year": "1993", "family": "Paper/stone", "note": "A fast replicator that also bombs.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/FlashPaper3.7%5B1%5D.txt" },
+    { "name": "B-scanners live in vain", "author": "Matt Hastings", "year": "1993", "family": "B-scanner", "note": "The classic B-field scanner.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/B-scannersliveinvain.txt", "ours": "scout" },
+    { "name": "Iron Gate 1.5", "author": "Wayne Sheppard", "year": "1993", "family": "CMP scanner", "note": "First in the Hall of Fame of Core Warrior #4 (age 926).", "url": "https://gallium.inria.fr/~doligez/corewar/rc/IronGate%5B2%5D.txt", "ours": "seeker" },
+    { "name": "Cannonade", "author": "Paul Kline", "year": "1994", "family": "Stone/imp", "note": "Hall of Fame stone/imp.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/Cannonade.txt", "ours": "stoneimp" },
+    { "name": "Blue Funk", "author": "Steven Morrell", "year": "1994", "family": "Stone/imp", "note": "Hall of Fame stone/imp.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/BlueFunk.txt", "ours": "stoneimp" },
+    { "name": "Silk Warrior 1.3", "author": "Juha Pohjalainen", "year": "1994", "family": "Silk paper", "note": "Gave silk papers their name.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/SilkWarrior1.3.txt", "ours": "silk" },
+    { "name": "TimeScape", "author": "Juha Pohjalainen", "year": "1995", "family": "Silk paper", "note": "A famous early '94 paper.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/TimeScape(1.0).txt", "ours": "silk" },
+    { "name": "Paperone", "author": "Beppe Bezzi", "year": "1995", "family": "Silk paper", "note": "Silk with an extra bombing copy, explained in Core Warrior.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/Paperone.txt" },
+    { "name": "Agony II", "author": "Stefan Strack", "year": "1995", "family": "CMP scanner", "note": "Compare, stun, clear.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/AgonyII.txt", "ours": "seeker" },
+    { "name": "Frontwards v2", "author": "Steven Morrell", "year": "1995", "family": "One-shot", "note": "Scans until the first hit, then clears.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/Frontwardsv2.txt", "ours": "oneshot" },
+    { "name": "myVamp v3.7", "author": "Magnus Paulsson", "year": "1995", "family": "Vampire", "note": "Fangs into an SPL 0 pit plus a clear.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/myVampv3.7.txt", "ours": "vampire" },
+    { "name": "Night Train", "author": "Karl Lewin", "year": "1995", "family": "Paper/imp", "note": "A replicator that also launches imps.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/NightTrain.txt" },
+    { "name": "Torch t18", "author": "Paul Kline", "year": "1996", "family": "Stone + clear", "note": "SPL carpet, clear and gate.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/Torcht18.txt", "ours": "stunner" },
+    { "name": "Tornado 3.0", "author": "Beppe Bezzi", "year": "1996", "family": "Fast bomber", "note": "Very fast bombing, then a clear.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/Tornado3.0.txt", "ours": "carpet" },
+    { "name": "Blur 2", "author": "Anton Marsden", "year": "1996", "family": "Scanner", "note": "Scans while laying SPL bombs; inspired a family of Blur-style scanners.", "url": "https://gallium.inria.fr/~doligez/corewar/rc/Blur2.txt" },
+    { "name": "Impfinity v4g1", "author": "Damien Doligez", "year": "1996", "family": "Stone/imp", "note": "Second in the Core Warrior #50 Hall of Fame (age 1993).", "url": "https://gallium.inria.fr/~doligez/corewar/rc/Impfinityv4g1.txt", "ours": "stoneimp" },
+    { "name": "Thermite II", "author": "Robert Macrae", "year": "1996", "family": "Quickscan → bomber", "note": "First in the Core Warrior #50 Hall of Fame (age 2262).", "url": "https://gallium.inria.fr/~doligez/corewar/rc/ThermiteII.txt", "ours": "quickscan" },
+    { "name": "Son of Vain", "author": "Ian Oversby / Joonas Pihlaja", "year": "c. 2001", "family": "Stone/imp", "note": "Still near the top of the Koenigstuhl 94nop hill.", "url": "https://asdflkj.net/COREWAR/94/HILL32/sonofvain.red" },
+    { "name": "Myrmidon", "author": "Roy van Rijn", "year": "—", "family": "One-shot", "note": "Wikipedia's example of a one-shot.", "url": "https://asdflkj.net/COREWAR/94/HILL32/myrmidon.red", "ours": "oneshot" },
+    { "name": "Tolypeutes", "author": "Roy van Rijn", "year": "2022", "family": "Quickscan → stone/imp", "note": "A 34-location quickscan, then a stone/imp.", "url": "https://asdflkj.net/COREWAR/94/HILL32/tolypeutes.red" },
+    { "name": "Azathoth", "author": "John Metcalf", "year": "2020s", "family": "Paper/stone", "note": "A former king of the Koenigstuhl 94nop hill.", "url": "https://asdflkj.net/COREWAR/94/HILL32/azathoth.red" },
+    { "name": "Arvon", "author": "Stefan Kammann & Forge-AI", "year": "2026", "family": "Quickscan → paper/stone", "note": "An AI-assisted warrior; first in the Koenigstuhl 94nop recursive ranking (July 2026).", "url": "https://asdflkj.net/COREWAR/94/HILL32/arvon.red" }
+  ]
+}

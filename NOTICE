@@ -1,0 +1,38 @@
+ZoreWars
+Copyright 2026 The ZoreWars authors
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE),
+except where noted below.
+
+Content licenses
+----------------
+* Warriors in warriors/ and examples/ written for ZoreWars: CC0 1.0
+  (public domain dedication). See warriors/LICENSE.md, which also lists the
+  classic warriors adapted from their original authors.
+* Documentation text (web/docs.html, web/warriors.html, warriors/encyclopedia.json
+  and the Markdown documents): Creative Commons Attribution 4.0 (CC BY 4.0),
+  https://creativecommons.org/licenses/by/4.0/
+
+Trademarks
+----------
+"ZoreWars" and the ZoreWars logo are not licensed under the Apache License or
+the content licenses above (Apache License 2.0, section 6).
+
+Third-party software loaded at runtime (not included in this repository)
+---------------------------------------------------------------------------
+* Pyodide (https://pyodide.org), Mozilla Public License 2.0, loaded from
+  cdn.jsdelivr.net to run Python warriors in the browser.
+* Inter and JetBrains Mono fonts, SIL Open Font License 1.1, loaded from
+  Google Fonts.
+
+Development tools (not distributed with the website)
+----------------------------------------------------
+* Wrangler (Cloudflare), MIT OR Apache-2.0.
+
+References
+----------
+ZoreWars is an independent implementation of the ICWS'94 draft standard for
+Redcode. It contains no code from pMARS; pMARS (GPL-2.0-or-later) is used only
+as an external program to check compatibility (see COMPLIANCE.md). The
+position generator implements the published Park-Miller "minimal standard"
+algorithm (Communications of the ACM 31:10, 1988).

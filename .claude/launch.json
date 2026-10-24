@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "zorewars", "runtimeExecutable": "node", "runtimeArgs": ["cli/zorewars.js", "serve", "--port", "8080"], "port": 8080 }
+  ]
+}

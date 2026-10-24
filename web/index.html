@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZoreWars Arena</title>
+  <meta name="description" content="Write small programs that battle inside a simulated circular memory array. A modern take on Core War.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='3' fill='%230b1020'/><rect x='3' y='3' width='4' height='4' fill='%2322d3ee'/><rect x='9' y='9' width='4' height='4' fill='%23f472b6'/><rect x='9' y='3' width='4' height='4' fill='%23334155'/><rect x='3' y='9' width='4' height='4' fill='%23334155'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span class="brand-name">ZORE<b>WARS</b></span>
+    </a>
+    <nav class="nav">
+      <a href="./" aria-current="page">Arena</a>
+      <a href="docs.html">Learn</a>
+      <a href="warriors.html">Warriors</a>
+      <a href="docs.html#cli">CLI &amp; AI agents</a>
+    </nav>
+  </header>
+
+  <main class="layout">
+    <!-- Warrior editors -->
+    <section class="panel editor-panel" aria-label="Warriors">
+      <div class="panel-head">
+        <h2>Warriors</h2>
+        <div class="tabs" id="slotTabs" role="tablist"></div>
+      </div>
+
+      <div class="editor-toolbar">
+        <label class="field">
+          <span>Library</span>
+          <select id="librarySelect"></select>
+        </label>
+        <label class="field">
+          <span>Language</span>
+          <select id="languageSelect">
+            <option value="redcode">Redcode</option>
+            <option value="javascript">JavaScript</option>
+            <option value="python">Python</option>
+          </select>
+        </label>
+        <button class="btn import-btn" id="importBtn" title="Load an original from a public archive, a URL or a file">Import…</button>
+        <button class="icon-btn" id="removeSlot" title="Remove this warrior" aria-label="Remove this warrior">✕</button>
+      </div>
+      <p class="origin" id="originText" hidden></p>
+
+      <div class="code-editor" id="codeEditor">
+        <div class="gutter" id="gutter" aria-hidden="true"></div>
+        <textarea id="source" spellcheck="false" autocomplete="off" autocapitalize="off" aria-label="Warrior source code"></textarea>
+      </div>
+
+      <div class="compile-status" id="compileStatus" role="status"></div>
+      <p class="strategy" id="strategyText"></p>
+      <p class="convert-row" id="convertRow" hidden>
+        Convert to <button class="linkbtn" data-lang="javascript">JavaScript</button> ·
+        <button class="linkbtn" data-lang="python">Python</button>
+        <span class="muted" id="convertStatus"></span>
+      </p>
+
+      <details class="generated" id="generatedBox">
+        <summary>Compiled Redcode <span class="muted" id="generatedMeta"></span></summary>
+        <pre id="generatedCode"></pre>
+      </details>
+    </section>
+
+    <!-- Arena -->
+    <section class="panel arena-panel" aria-label="Arena">
+      <div class="scoreboard" id="scoreboard"></div>
+
+      <div class="core-wrap" id="coreWrap">
+        <canvas id="core" aria-label="Core memory visualisation"></canvas>
+        <div class="overlay" id="overlay" hidden></div>
+      </div>
+
+      <div class="controls">
+        <button class="btn primary" id="runBtn" aria-keyshortcuts="Space"><span id="runIcon">▶</span> <span id="runLabel">Run</span></button>
+        <button class="btn" id="stepBtn" title="Execute one instruction (S)">Step</button>
+        <button class="btn" id="resetBtn" title="Reload warriors at new positions (R)">New round</button>
+        <button class="btn" id="finishBtn" title="Run this round to the end at full speed">Finish round</button>
+        <label class="speed">
+          <span>Speed</span>
+          <input type="range" id="speed" min="0" max="100" value="55" aria-label="Simulation speed">
+          <output id="speedOut"></output>
+        </label>
+        <div class="cycle" id="cycleOut">Cycle 0</div>
+      </div>
+      <div class="progress" aria-hidden="true"><div id="cycleBar"></div></div>
+
+      <div class="chart-wrap">
+        <div class="chart-head">
+          <span>Processes over time <span class="muted">(log scale)</span></span>
+          <span class="legend">
+            <span><i class="sw code"></i>code</span>
+            <span><i class="sw bomb"></i>data / bombs</span>
+            <span><i class="sw pc"></i>running process</span>
+          </span>
+        </div>
+        <canvas id="chart" height="90" aria-label="Process count chart"></canvas>
+      </div>
+    </section>
+
+    <!-- Side panel -->
+    <aside class="panel side-panel" aria-label="Details">
+      <section class="card postmortem" id="pmCard" hidden aria-live="polite">
+        <h3>Why it ended</h3>
+        <p class="pm-summary" id="pmSummary"></p>
+        <div class="row">
+          <button class="btn" id="pmBlow" title="Pin the cell that killed the last process">Show the killing blow</button>
+          <button class="btn" id="pmReplay" title="Re-run this exact round and pause shortly before the end, then use Step">Replay the end</button>
+        </div>
+        <ol class="pm-timeline" id="pmTimeline"></ol>
+        <details class="pm-details">
+          <summary>Deaths, processes and ending code</summary>
+          <div id="pmWarriors"></div>
+        </details>
+      </section>
+
+      <section class="card">
+        <h3>Inspector</h3>
+        <p class="muted small" id="inspectHint">Hover over the core to read memory. Click to pin.</p>
+        <pre class="inspector" id="inspector"></pre>
+      </section>
+
+      <section class="card">
+        <h3>Battle log</h3>
+        <ol class="log" id="log"></ol>
+      </section>
+
+      <section class="card">
+        <h3>Tournament</h3>
+        <p class="muted small">Play many rounds headless with random positions: the real test of a warrior.</p>
+        <div class="row">
+          <label class="field inline"><span>Rounds</span><input type="number" id="tourRounds" min="1" max="1000" value="50"></label>
+          <button class="btn" id="tourBtn">Run</button>
+        </div>
+        <div class="progress small" aria-hidden="true"><div id="tourBar"></div></div>
+        <div id="tourResults"></div>
+      </section>
+
+      <details class="card settings">
+        <summary><h3>Rules</h3></summary>
+        <div class="settings-grid">
+          <label class="field"><span>Core size</span><input type="number" id="setCoreSize" min="200" max="100000"></label>
+          <label class="field"><span>Max cycles</span><input type="number" id="setMaxCycles" min="100" max="10000000"></label>
+          <label class="field"><span>Max processes</span><input type="number" id="setMaxProcesses" min="1" max="100000"></label>
+          <label class="field"><span>Max length</span><input type="number" id="setMaxLength" min="1" max="1000"></label>
+          <label class="field"><span>Min distance</span><input type="number" id="setMinDistance" min="0" max="50000"></label>
+        </div>
+        <div class="row">
+          <button class="btn" id="applySettings">Apply</button>
+          <button class="btn ghost" id="resetSettings">Defaults</button>
+        </div>
+      </details>
+    </aside>
+  </main>
+
+  <dialog class="dialog" id="importDialog" aria-labelledby="importTitle">
+    <form id="importForm">
+      <h3 id="importTitle">Import a warrior</h3>
+      <p class="muted small">Battle the real classics. Warriors are fetched from the public archives when you import them and kept only in this browser; nothing is added to the project.</p>
+      <label class="field"><span>Famous originals</span>
+        <select id="classicSelect"><option value="">Choose a classic…</option></select>
+      </label>
+      <label class="field"><span>Or the URL of a Redcode file</span>
+        <input type="url" id="importUrl" placeholder="https://asdflkj.net/COREWAR/94/HILL32/…" spellcheck="false">
+      </label>
+      <label class="field"><span>Or a file from your computer</span>
+        <input type="file" id="importFile" accept=".red,.rc,.txt,.js,.py,text/plain">
+      </label>
+      <p class="muted small">You can also drop a <code>.red</code> file onto the editor. Archives: <a href="https://asdflkj.net/COREWAR/koenigstuhl.html" target="_blank" rel="noopener">Koenigstuhl</a> · <a href="https://gallium.inria.fr/~doligez/corewar/" target="_blank" rel="noopener">Planar's archive</a></p>
+      <p class="import-status" id="importStatus" role="status"></p>
+      <div class="row">
+        <button class="btn primary" id="importGo" type="submit">Import into this slot</button>
+        <button class="btn ghost" id="importCancel" type="button">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

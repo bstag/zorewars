@@ -1,0 +1,13 @@
+node_modules/
+.wrangler/
+.dev.vars*
+.env*
+*.log
+.DS_Store
+Thumbs.db
+# Local, per-machine Claude Code settings
+.claude/settings.local.json
+# Warriors you download or convert for yourself (archive originals are not
+# redistributed in this repository)
+imported/
+dist-check/

@@ -1,0 +1,45 @@
+# Optional: publish the static site to GitHub Pages.
+# Enable it in the repository settings (Pages > Source: GitHub Actions), then
+# run this workflow by hand, or add `push: branches: [main]` below to publish
+# on every push. GitHub Pages has no server, so importing originals by URL is
+# not available there; everything else works. See DEPLOY.md.
+name: GitHub Pages
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: npm ci && npm test
+      # The website is the repository root minus the CLI, tests and tooling
+      # (the same files .assetsignore leaves out for Cloudflare).
+      - name: Assemble the site
+        run: |
+          mkdir _site
+          cp -r index.html web src warriors lang _site/
+          rm -rf _site/lang/cpp
+          touch _site/.nojekyll
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v5

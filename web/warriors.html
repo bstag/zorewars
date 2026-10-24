@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Warrior Encyclopedia</title>
+  <meta name="description" content="The classic Core War strategies, rebuilt for ZoreWars and explained line by line, with their history and benchmark results.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .docs { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; max-width: 1280px; margin: 0 auto; padding: 24px 20px 80px; }
+    .toc { position: sticky; top: 72px; align-self: start; max-height: calc(100vh - 90px); overflow: auto; font-size: 13px; }
+    .toc h4 { margin: 16px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+    .toc a { display: block; padding: 3px 8px; color: var(--text-2); text-decoration: none; border-radius: 6px; }
+    .toc a:hover { color: var(--text); background: var(--panel-2); }
+    main.enc { min-width: 0; font-size: 15px; line-height: 1.65; }
+    main.enc > h1 { font: 700 34px/1.2 var(--sans); margin: 8px 0; }
+    main.enc > h2 { font-size: 23px; margin: 48px 0 12px; padding-top: 8px; border-top: 1px solid var(--line); scroll-margin-top: 72px; }
+    main.enc p { color: #cbd5e1; max-width: 820px; }
+    .lead { font-size: 18px; color: var(--text-2) !important; }
+    code { font: 13px var(--mono); background: var(--panel-2); border: 1px solid var(--line); padding: 1px 5px; border-radius: 5px; color: #e2e8f0; }
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin: 16px 0; }
+    .stat { border: 1px solid var(--line); border-radius: 10px; background: var(--panel); padding: 12px 14px; }
+    .stat b { display: block; font: 700 26px/1.2 var(--mono); color: var(--accent); }
+    .stat span { font-size: 13px; color: var(--text-2); }
+    .stat a { font-size: 12px; }
+    .callout { border: 1px solid var(--line-2); border-left: 3px solid var(--accent); background: var(--panel); border-radius: 8px; padding: 12px 16px; margin: 16px 0; max-width: 820px; }
+    .callout p { margin: 0; }
+    table.ref { width: 100%; border-collapse: collapse; font-size: 14px; margin: 12px 0; }
+    .table-scroll { overflow-x: auto; }
+    table.ref th, table.ref td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    table.ref th { color: var(--muted); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+    table.ref td.yr { font-family: var(--mono); color: var(--text-2); white-space: nowrap; }
+    .btn.fight { padding: 3px 10px; font-size: 12px; text-decoration: none; color: var(--text); }
+    .chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 16px 0; }
+    .chip { border: 1px solid var(--line); background: var(--bg-2); color: var(--text-2); border-radius: 999px; padding: 4px 12px; cursor: pointer; font-size: 13px; }
+    .chip[aria-pressed="true"] { color: var(--text); border-color: var(--accent); background: rgba(34, 211, 238, 0.1); }
+
+    .wcard { border: 1px solid var(--line); border-radius: 12px; background: linear-gradient(180deg, var(--panel), var(--bg-2)); padding: 18px 20px; margin: 18px 0; scroll-margin-top: 72px; }
+    .wcard[hidden] { display: none; }
+    .wcard header { display: flex; justify-content: space-between; gap: 12px; align-items: start; flex-wrap: wrap; }
+    .wcard h3 { font-size: 22px; text-transform: none; letter-spacing: 0; color: var(--text); margin: 0; }
+    .byline { margin: 2px 0 0 !important; font-size: 13px; color: var(--text-2) !important; }
+    .fam { color: var(--accent); font-weight: 600; }
+    .wcard .btn { text-decoration: none; color: var(--text); }
+    .lineage { font-size: 13px; color: var(--text-2) !important; border-left: 2px solid var(--line-2); padding-left: 10px; margin: 12px 0; }
+    .summary { font-size: 16px; }
+    .cols { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; margin-top: 8px; }
+    .how { max-width: 820px; }
+    .wcard h4 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 14px 0 6px; display: flex; justify-content: space-between; gap: 8px; }
+    .wcard h4 a { text-transform: none; letter-spacing: 0; font-weight: 400; }
+    .how ol, .how ul { padding-left: 20px; margin: 0; }
+    .how li { color: #cbd5e1; margin: 4px 0; font-size: 14px; }
+    .sw-list { list-style: none; padding-left: 0 !important; }
+    .sw-list li { padding-left: 20px; position: relative; }
+    .sw-list li.plus::before { content: '+'; position: absolute; left: 2px; color: var(--good); font-weight: 700; }
+    .sw-list li.minus::before { content: '−'; position: absolute; left: 2px; color: var(--bad); font-weight: 700; }
+    .exercise { border: 1px dashed var(--line-2); border-radius: 8px; padding: 10px 14px; margin: 14px 0 0; font-size: 14px; color: #cbd5e1; }
+    .exercise b { color: var(--warn); }
+    .listing { width: 100%; border-collapse: collapse; font: 12.5px/1.55 var(--mono); background: #060a14; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; display: block; overflow-x: auto; }
+    .listing tbody { display: table; width: 100%; }
+    .listing td { padding: 2px 10px; vertical-align: top; border-bottom: 1px solid #0f1730; }
+    .listing td.code { white-space: pre; color: #e2e8f0; width: 1%; }
+    .listing td.why { color: #7dd3fc; font-family: var(--sans); font-size: 13px; min-width: 200px; }
+    .listing tr.note td { color: #8193b2; font-family: var(--sans); font-size: 13px; font-style: italic; padding-top: 8px; background: #080d1a; }
+    .matchups { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; margin-top: 12px; font-size: 13px; }
+    .matchups h5 { margin: 0 0 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 500; }
+    .matchups ul { list-style: none; margin: 0; padding: 0; }
+    .matchups li { display: flex; justify-content: space-between; gap: 8px; border-bottom: 1px dashed #18223b; padding: 2px 0; color: #cbd5e1; }
+    .matchups .wlt { font-family: var(--mono); color: var(--text-2); }
+    .matchups p { grid-column: 1 / -1; margin: 4px 0 0; }
+    .bad { color: var(--bad) !important; }
+    .cols > div { min-width: 0; }
+    @media (max-width: 860px) {
+      .docs { grid-template-columns: 1fr; padding: 16px; }
+      .toc { position: static; max-height: none; border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; }
+      main.enc > h1 { font-size: 28px; }
+      .listing td.why { min-width: 160px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span class="brand-name">ZORE<b>WARS</b></span>
+    </a>
+    <nav class="nav">
+      <a href="./">Arena</a>
+      <a href="docs.html">Learn</a>
+      <a href="warriors.html" aria-current="page">Warriors</a>
+      <a href="docs.html#cli">CLI &amp; AI agents</a>
+    </nav>
+  </header>
+
+  <div class="docs">
+    <nav class="toc" aria-label="Contents">
+      <h4>Overview</h4>
+      <a href="#count">How many warriors exist?</a>
+      <a href="#ranking">Library ranking</a>
+      <a href="#history">Hall of fame</a>
+      <h4>Warriors</h4>
+      <div id="toc-warriors"></div>
+    </nav>
+
+    <main class="enc">
+      <h1>Warrior Encyclopedia</h1>
+      <p class="lead">The classic Core War strategies, rebuilt for ZoreWars and explained line by line. Every one is in the arena's Library menu and in the <code>warriors/</code> folder.</p>
+
+      <h2 id="count">How many warriors exist?</h2>
+      <p>Thousands. Core War has been played since 1984, and players have published their programs to newsgroups, tournament archives and "hills" (standing tournaments) ever since. The two big public archives:</p>
+      <div class="stats">
+        <div class="stat"><b>5,444</b><span>entries on the Koenigstuhl "infinite hills", where nothing is ever pushed off. Some warriors appear on more than one hill.</span><br><a href="https://asdflkj.net/COREWAR/koenigstuhl.html">Koenigstuhl</a></div>
+        <div class="stat"><b>1,106</b><span>of them on the ICWS'94 "no P-space" hill, the closest match to ZoreWars' rules.</span><br><a href="https://asdflkj.net/COREWAR/koenigstuhl.html">94nop hill</a></div>
+        <div class="stat"><b>1,689</b><span>warriors in Planar's (Damien Doligez's) archive, collected from the 1980s and 1990s.</span><br><a href="https://gallium.inria.fr/~doligez/corewar/">Planar's archive</a></div>
+        <div class="stat"><b>85</b><span>issues of the <i>Core Warrior</i> newsletter (1995–2003), full of strategy write-ups.</span><br><a href="https://gallium.inria.fr/~doligez/corewar/corewarrior/">Core Warrior</a></div>
+      </div>
+      <p>Almost all of them belong to a handful of strategy families. This page covers those families with one working example each.</p>
+      <div class="callout"><p><strong>About the code on this page.</strong> The archives don't say whether their warriors may be redistributed. So every warrior here is our own implementation of a classic idea, written for the ZoreWars VM and tested in it, and each card links to the original that inspired it. You can still battle the originals: <strong>Fight</strong> in the Hall of Fame (or <strong>Import…</strong> in the arena, or <code>zorewars battle classic:thermite</code>) fetches a warrior from its archive when you use it, and it stays in your browser. 34 of the 35 originals below load and run unchanged, including <code>FOR</code> loops and P-space. The exception is Frontwards, which was written for the larger '94x hill rules.</p></div>
+      <p class="muted small">Counts checked on 24 October 2026. Koenigstuhl was last updated 23 July 2026.</p>
+
+      <h2 id="ranking">Library ranking</h2>
+      <p>Every warrior on this page against every other, 100 rounds per pairing. Like rock-paper-scissors, the order depends on who's in the field: add your own warrior and the table changes.</p>
+      <div id="ranking" class="table-scroll"><p class="muted">Loading…</p></div>
+
+      <h2 id="history">Hall of fame</h2>
+      <p>Famous warriors from forty years of Core War. Links go to the original source in the public archives; "our version" links to the warrior on this page built on the same idea.</p>
+      <div id="hof" class="table-scroll"><p class="muted">Loading…</p></div>
+      <p>The most recent name is worth noticing. <strong>Arvon</strong>, credited to "Stefan Kammann &amp; Forge-AI", topped the Koenigstuhl 94nop recursive ranking in 2026. Its strategy notes describe a quickscan whose parameters came from a data-driven coverage model, followed by a silk paper and a stone. AI-assisted warriors are already competing at the top: exactly the kind of loop the ZoreWars CLI is built for.</p>
+
+      <h2 id="warriors">The warriors</h2>
+      <p>Each card explains the idea, walks through the code line by line (the explanations are the comments in the source file), and shows real results from the benchmark. <strong>Watch it fight</strong> opens the warrior in the arena against a suitable opponent.</p>
+      <div class="chips" id="filters" role="group" aria-label="Filter by family"></div>
+      <div id="cards"><p class="muted">Loading warriors…</p></div>
+    </main>
+  </div>
+
+  <script type="module" src="encyclopedia.js"></script>
+  <footer class="site-footer">ZoreWars · code <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache-2.0</a> · text <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a> · warriors written for ZoreWars <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a></footer>
+</body>
+</html>

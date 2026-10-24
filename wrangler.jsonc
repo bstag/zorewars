@@ -1,0 +1,16 @@
+// Cloudflare deployment: Workers + Static Assets.
+// The repository root is the website (no build step). Static files are served
+// directly and for free; only /api/* runs the Worker. .assetsignore keeps the
+// non-website parts of the repository (CLI, tests, scripts, docs) out.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "zorewars",
+  "main": "./worker/index.js",
+  "compatibility_date": "2026-10-24",
+  "assets": {
+    "directory": "./",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  "observability": { "enabled": true }
+}

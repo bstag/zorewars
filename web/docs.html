@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Learn ZoreWars</title>
+  <meta name="description" content="Tutorial and reference for ZoreWars: the virtual machine, Redcode, JavaScript/Python/C++ generators, classic strategies and the CLI for AI agents.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .docs { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 32px; max-width: 1180px; margin: 0 auto; padding: 24px 20px 80px; }
+    .toc { position: sticky; top: 72px; align-self: start; max-height: calc(100vh - 90px); overflow: auto; font-size: 13px; }
+    .toc h4 { margin: 16px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+    .toc a { display: block; padding: 3px 8px; color: var(--text-2); text-decoration: none; border-radius: 6px; }
+    .toc a:hover { color: var(--text); background: var(--panel-2); }
+    article { max-width: 800px; font-size: 15px; line-height: 1.7; }
+    article h1 { font: 700 34px/1.2 var(--sans); margin: 8px 0 8px; letter-spacing: -0.01em; }
+    article h2 { font-size: 23px; margin: 56px 0 12px; padding-top: 8px; border-top: 1px solid var(--line); scroll-margin-top: 72px; }
+    article h3 { font-size: 16px; text-transform: none; letter-spacing: 0; color: var(--text); margin: 28px 0 8px; scroll-margin-top: 72px; }
+    article p, article li { color: #cbd5e1; }
+    article code { font: 13px var(--mono); background: var(--panel-2); border: 1px solid var(--line); padding: 1px 5px; border-radius: 5px; color: #e2e8f0; }
+    article pre { font: 13px/1.6 var(--mono); background: #060a14; border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; overflow-x: auto; color: #cbd5e1; }
+    article pre code { background: none; border: 0; padding: 0; }
+    .lead { font-size: 18px; color: var(--text-2) !important; }
+    .callout { border: 1px solid var(--line-2); border-left: 3px solid var(--accent); background: var(--panel); border-radius: 8px; padding: 12px 16px; margin: 16px 0; }
+    .callout.warn { border-left-color: var(--warn); }
+    .callout p { margin: 0; }
+    table.ref { width: 100%; border-collapse: collapse; font-size: 14px; margin: 12px 0; display: block; overflow-x: auto; }
+    table.ref th, table.ref td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    table.ref th { color: var(--muted); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+    table.ref td:first-child { font-family: var(--mono); white-space: nowrap; color: var(--accent); }
+    .cmt { color: #5b6b8c; }
+    .kw { color: #22d3ee; }
+    .lbl { color: #f472b6; }
+    .rps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; }
+    .rps div { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; background: var(--panel); font-size: 13px; }
+    .rps b { display: block; font-size: 14px; margin-bottom: 2px; }
+    .exercise { border: 1px dashed var(--line-2); border-radius: 8px; padding: 10px 16px; margin: 12px 0; }
+    .exercise b { color: var(--warn); }
+    @media (max-width: 860px) {
+      .docs { grid-template-columns: 1fr; padding: 16px; }
+      .toc { position: static; max-height: none; border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; }
+      .rps { grid-template-columns: 1fr; }
+      article h1 { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span class="brand-name">ZORE<b>WARS</b></span>
+    </a>
+    <nav class="nav">
+      <a href="./">Arena</a>
+      <a href="docs.html" aria-current="page">Learn</a>
+      <a href="warriors.html">Warriors</a>
+      <a href="#cli">CLI &amp; AI agents</a>
+    </nav>
+  </header>
+
+  <div class="docs">
+    <nav class="toc" aria-label="Contents">
+      <h4>Start here</h4>
+      <a href="#what">What is ZoreWars?</a>
+      <a href="#quickstart">Quick start</a>
+      <a href="#machine">How the machine works</a>
+      <a href="#first">Your first warriors</a>
+      <a href="#reading">Reading the arena</a>
+      <a href="#debugging">Debugging a battle</a>
+      <h4>Reference</h4>
+      <a href="#instructions">Instructions</a>
+      <a href="#modes">Addressing modes</a>
+      <a href="#modifiers">Modifiers</a>
+      <a href="#syntax">Redcode syntax</a>
+      <h4>Other languages</h4>
+      <a href="#generators">How generators work</a>
+      <a href="#javascript">JavaScript</a>
+      <a href="#python">Python</a>
+      <a href="#cpp">C++</a>
+      <h4>Strategy</h4>
+      <a href="#strategies">Classic strategies</a>
+      <a href="#exercises">Exercises</a>
+      <a href="warriors.html">Warrior encyclopedia ↗</a>
+      <h4>Competition</h4>
+      <a href="#cli">CLI &amp; AI agents</a>
+      <a href="#rules">Rules &amp; scoring</a>
+      <a href="#glossary">Glossary &amp; history</a>
+    </nav>
+
+    <article>
+      <h1>Learn ZoreWars</h1>
+      <p class="lead">Write a tiny program. Drop it into a shared memory array with a rival. The last program still running wins.</p>
+
+      <h2 id="what">What is ZoreWars?</h2>
+      <p>ZoreWars is a modern take on <em>Core War</em>, the programming game A. K. Dewdney and D. G. Jones introduced in 1984. Two or more programs, called <strong>warriors</strong>, are loaded into a circular block of simulated memory called the <strong>core</strong>. A virtual machine takes turns running one instruction from each warrior. Warriors can read and write anywhere in the core, so they can overwrite each other's code, copy themselves, or set traps. A warrior is eliminated when it has no running processes left.</p>
+      <p>The game is a sandbox for learning how computers work underneath: memory addresses, pointers, loops, self-modifying code, and how a CPU fetches and executes instructions. Nothing escapes the simulation. The "memory" is just an array inside the VM, and warriors can only touch cells of that array.</p>
+      <div class="callout"><p>Warriors are written in <strong>Redcode</strong>, a small assembly language that follows the ICWS'94 standard. You can also write them in <strong>JavaScript</strong>, <strong>Python</strong> or <strong>C++</strong>: those programs <em>generate</em> Redcode, so you get loops, functions and constants as a macro language while the battle itself stays in pure Redcode.</p></div>
+
+      <h2 id="quickstart">Quick start</h2>
+      <pre><code>npm start                 <span class="cmt"># serves the arena at http://localhost:8080</span>
+node cli/zorewars.js list <span class="cmt"># built-in warriors</span>
+node cli/zorewars.js battle @dwarf @mice --rounds 10</code></pre>
+      <ol>
+        <li>Open the <a href="./">Arena</a>. Two classics are loaded: <strong>Dwarf</strong> (a bomber) and <strong>Mice</strong> (a replicator).</li>
+        <li>Press <strong>Run</strong> (or <kbd>Space</kbd>). Drag the speed slider to slow down or speed up.</li>
+        <li>Hover over the core to read memory in the <strong>Inspector</strong>. Click to pin an address, and use <strong>Step</strong> (<kbd>S</kbd>) to run one instruction at a time.</li>
+        <li>Edit a warrior and the change applies on the next round. <strong>+ Add</strong> brings up to four warriors into the same battle.</li>
+        <li>Run a <strong>Tournament</strong> to play many rounds from random starting positions. A single round can be luck; fifty rounds rarely is.</li>
+      </ol>
+      <p>Only Node.js 18+ is needed: no install, no dependencies. Python warriors run in the browser through Pyodide, which downloads about 10 MB the first time you use one.</p>
+
+      <h2 id="machine">How the machine works</h2>
+      <h3>The core</h3>
+      <p>The core is a circle of <code>8000</code> cells by default. Every cell holds one instruction, for example <code>MOV.I $0, $1</code>. At the start every cell is <code>DAT.F $0, $0</code>. Addresses wrap around: the cell after 7999 is 0.</p>
+      <h3>Relative addressing</h3>
+      <p>Warriors never see absolute addresses. Every address is relative to the instruction that uses it: <code>0</code> means "this cell", <code>1</code> the next one, <code>-1</code> the previous one. That is why a warrior works the same wherever it is loaded.</p>
+      <h3>Instructions have two fields</h3>
+      <p>Each instruction has an <strong>A-field</strong> and a <strong>B-field</strong>, each a number with an <strong>addressing mode</strong>. In <code>ADD.AB #4, $3</code> the A-field is the immediate number 4 and the B-field points 3 cells ahead. Fields are often used as data: a <code>DAT</code> cell is a handy place to store a counter or pointer.</p>
+      <h3>Processes and turns</h3>
+      <p>Each warrior owns a queue of <strong>processes</strong> (program counters). It starts with one. On its turn, a warrior takes the process at the front of its queue, executes one instruction, and puts the process back on the end of the queue pointing at its next instruction. <code>SPL</code> adds a second process, so one warrior can run many threads, but they share that warrior's turns: with 10 processes, each one runs only every 10th turn.</p>
+      <p>Warriors alternate strictly: one instruction from warrior 1, one from warrior 2, and so on. One full lap is a <strong>cycle</strong>.</p>
+      <h3>Dying and winning</h3>
+      <p>A process that executes <code>DAT</code> (or divides by zero) is removed. When a warrior's queue is empty, it is eliminated. The last warrior with processes wins. If several warriors survive to the cycle limit (80,000 by default), the round is a tie.</p>
+
+      <h2 id="first">Your first warriors</h2>
+      <h3>1. The Imp</h3>
+      <pre><code>        <span class="kw">MOV.I</span>   $0, $1</code></pre>
+      <p>Copy the instruction at offset 0 (itself) to offset 1 (the next cell). Then the process moves to the next cell, which now contains... the same instruction. The Imp crawls forward through the whole core forever. It is nearly impossible to kill, but it never kills anything either. Running into an Imp turns your code into Imp, which is why Imps cause so many ties.</p>
+
+      <h3>2. The Dwarf</h3>
+      <pre><code><span class="lbl">step</span>    <span class="kw">EQU</span>     4
+
+        <span class="kw">ORG</span>     loop
+<span class="lbl">loop</span>    <span class="kw">ADD.AB</span>  #step, bomb     <span class="cmt">; add 4 to bomb's B-field</span>
+        <span class="kw">MOV.I</span>   bomb, @bomb     <span class="cmt">; copy bomb to where its B-field points</span>
+        <span class="kw">JMP</span>     loop            <span class="cmt">; forever</span>
+<span class="lbl">bomb</span>    <span class="kw">DAT.F</span>   #0, #0</code></pre>
+      <p>Line by line:</p>
+      <ul>
+        <li><code>ADD.AB #step, bomb</code>: add the number 4 (A) to the B-field of the cell labelled <code>bomb</code>.</li>
+        <li><code>MOV.I bomb, @bomb</code>: <code>@bomb</code> means "look at <code>bomb</code>'s B-field and go that far from <code>bomb</code>". So the bomb is copied 4, 8, 12... cells ahead of itself.</li>
+        <li><code>JMP loop</code>: repeat.</li>
+      </ul>
+      <p>Each pass drops a <code>DAT</code> 4 cells further on. Any enemy process that executes one dies. The bombs always land a multiple of 4 cells past <code>bomb</code>, and the Dwarf's other three instructions sit 1, 2 and 3 cells before it. Because 4 divides 8000, a multiple of 4 can never wrap around onto those cells, so the Dwarf never bombs itself.</p>
+      <div class="exercise"><b>Try it:</b> load Dwarf in the arena and change <code>step</code> to 3. Run it alone (remove the other warrior). Why does it eventually die? Hint: 3 doesn't divide 8000.</div>
+
+      <h3>3. Mice, a replicator</h3>
+      <pre><code>        <span class="kw">ORG</span>     start
+<span class="lbl">ptr</span>     <span class="kw">DAT.F</span>   #0, #0
+<span class="lbl">start</span>   <span class="kw">MOV.AB</span>  #12, ptr        <span class="cmt">; cells to copy</span>
+<span class="lbl">loop</span>    <span class="kw">MOV.I</span>   @ptr, &lt;copy     <span class="cmt">; copy one cell, last first</span>
+        <span class="kw">DJN.B</span>   loop, ptr       <span class="cmt">; count down</span>
+        <span class="kw">SPL.B</span>   @copy, 0        <span class="cmt">; start a process in the new copy</span>
+        <span class="kw">ADD.AB</span>  #653, copy      <span class="cmt">; pick a new destination</span>
+        <span class="kw">JMZ.B</span>   start, ptr      <span class="cmt">; and do it again</span>
+<span class="lbl">copy</span>    <span class="kw">DAT.F</span>   #0, #833</code></pre>
+      <p>Mice copies itself to a new place, starts a process there with <code>SPL</code>, and keeps going. Every copy does the same. The number of copies grows exponentially, so a bomber cannot destroy them as fast as they appear. Watch the "Processes over time" chart in the arena to see this happen.</p>
+
+      <h2 id="reading">Reading the arena</h2>
+      <ul>
+        <li>Each square is one cell of the core, row by row: 100 cells per row for an 8000-cell core.</li>
+        <li><strong>Solid squares</strong> are code (any instruction other than <code>DAT</code>), coloured by the warrior that last wrote them.</li>
+        <li><strong>Dots</strong> are <code>DAT</code> cells: bombs, pointers and counters.</li>
+        <li>Squares <strong>glow</strong> when they were just written, and flash white when they were just executed.</li>
+        <li><strong>White squares</strong> mark the live program counters: where each process will execute next.</li>
+        <li>The Dwarf's step of 4 bombs every 4th cell, which shows up as vertical stripes, because 100 is a multiple of 4.</li>
+      </ul>
+
+      <h2 id="debugging">Debugging a battle: how did it win?</h2>
+      <p>Every round explains itself. While the VM runs, it records who last wrote every cell and which instruction wrote it, every process death and what caused it, and the first time each warrior wrote into, or ran, another warrior's code.</p>
+      <h3>In the arena</h3>
+      <ul>
+        <li><strong>Why it ended</strong> appears when a round finishes. It gives a one-sentence verdict, for example: <em>"Dwarf won at cycle 692. Scout's last process ran DAT.F #0, #924 at 0927: a bomb Dwarf wrote at cycle 691 using MOV.I $2, @2 at 0001."</em> Below it is a timeline of first contact, conversions and eliminations.</li>
+        <li><strong>Show the killing blow</strong> pins the fatal cell in the Inspector, with its neighbours and who wrote each one.</li>
+        <li><strong>Replay the end</strong> re-runs the exact same round and pauses 100 cycles before the finish. Rounds are deterministic, so the replay is identical. Use <strong>Step</strong> (<kbd>S</kbd>) to watch the last moves one instruction at a time.</li>
+        <li><strong>Deaths, processes and ending code</strong> shows each warrior's original code next to what's there at the end and who overwrote it. It also gives how many processes died and why (own code, opponent bombs, empty core, division by zero), and which program the surviving processes are running.</li>
+        <li>The <strong>Inspector</strong> shows the origin of any cell you hover over: loaded, empty, or written by which warrior at which cycle, using which instruction.</li>
+      </ul>
+      <h3>Conversions</h3>
+      <p>Overwriting code doesn't kill a process; it changes what the process runs. The post-mortem reports when a warrior has been <em>converted</em>, for example <em>"Imp has been converted: 7,853 of its 8,000 processes are running Mice's program."</em> That is how Imp vs Mice usually ends in a tie: each warrior's processes end up running the other's code.</p>
+      <h3>From the command line</h3>
+      <pre><code>node cli/zorewars.js battle @dwarf @scanner -r 10 --report             <span class="cmt"># a verdict for every round</span>
+node cli/zorewars.js battle @dwarf @scanner -r 10 --report --round 3   <span class="cmt"># full post-mortem of round 3</span>
+node cli/zorewars.js trace @dwarf @scanner --round 3 --last 40         <span class="cmt"># the last 40 instructions executed</span></code></pre>
+      <p><code>trace</code> lists every instruction executed, with its cycle, warrior, address and process count, and marks the step where a process died and why. Add <code>--json</code> to either command for machine-readable reports, which is useful for AI agents improving a warrior.</p>
+
+      <h2 id="instructions">Instruction reference</h2>
+      <p>"A" and "B" below mean the cells the A and B operands point to after the addressing modes have been applied.</p>
+      <table class="ref">
+        <thead><tr><th>Op</th><th>Effect</th></tr></thead>
+        <tbody>
+          <tr><td>DAT</td><td>Data. The process that executes it is removed. Its fields are useful for storing numbers.</td></tr>
+          <tr><td>MOV</td><td>Copy A to B: a whole instruction with <code>.I</code>, or individual fields.</td></tr>
+          <tr><td>ADD</td><td>B = B + A, modulo the core size.</td></tr>
+          <tr><td>SUB</td><td>B = B − A.</td></tr>
+          <tr><td>MUL</td><td>B = B × A.</td></tr>
+          <tr><td>DIV</td><td>B = B ÷ A, rounded down. Dividing by zero removes the process.</td></tr>
+          <tr><td>MOD</td><td>B = B mod A. Dividing by zero removes the process.</td></tr>
+          <tr><td>JMP</td><td>Jump to A.</td></tr>
+          <tr><td>JMZ</td><td>Jump to A if B is zero.</td></tr>
+          <tr><td>JMN</td><td>Jump to A if B is not zero.</td></tr>
+          <tr><td>DJN</td><td>Decrement B, then jump to A if it is not zero. The classic loop counter.</td></tr>
+          <tr><td>SPL</td><td>Split: queue the next instruction, then queue a new process at A (unless the warrior already has the maximum number of processes).</td></tr>
+          <tr><td>SEQ / CMP</td><td>Skip the next instruction if A equals B.</td></tr>
+          <tr><td>SNE</td><td>Skip the next instruction if A does not equal B.</td></tr>
+          <tr><td>SLT</td><td>Skip the next instruction if A is less than B. Values are compared as 0…coresize−1.</td></tr>
+          <tr><td>NOP</td><td>Do nothing.</td></tr>
+          <tr><td>LDP</td><td>Load from P-space: read P-space cell A into B. See <a href="#pspace">P-space</a>.</td></tr>
+          <tr><td>STP</td><td>Store to P-space: write A into P-space cell B.</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="modes">Addressing modes</h2>
+      <p>The symbol in front of an operand says how to find the cell it refers to. For indirect modes the operand first points at a cell, and that cell's field is used as a second, relative offset.</p>
+      <table class="ref">
+        <thead><tr><th>Mode</th><th>Name</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>#</td><td>Immediate</td><td>The number itself. As an address it means "this instruction".</td></tr>
+          <tr><td>$</td><td>Direct</td><td>The cell that many steps away. This is the default when there is no symbol.</td></tr>
+          <tr><td>@</td><td>B-indirect</td><td>Go to that cell, then move by its B-field.</td></tr>
+          <tr><td>*</td><td>A-indirect</td><td>Go to that cell, then move by its A-field.</td></tr>
+          <tr><td>&lt;</td><td>B-predecrement</td><td>Like <code>@</code>, but subtract 1 from the B-field first.</td></tr>
+          <tr><td>{</td><td>A-predecrement</td><td>Like <code>*</code>, but subtract 1 from the A-field first.</td></tr>
+          <tr><td>&gt;</td><td>B-postincrement</td><td>Like <code>@</code>, then add 1 to the B-field afterwards.</td></tr>
+          <tr><td>}</td><td>A-postincrement</td><td>Like <code>*</code>, then add 1 to the A-field afterwards.</td></tr>
+        </tbody>
+      </table>
+      <p>Pre-decrement and post-increment let one instruction both use a pointer and move it. <code>MOV.I bomb, &gt;ptr</code> writes a bomb and advances <code>ptr</code> in a single step, which is how core clears work.</p>
+
+      <h2 id="modifiers">Modifiers</h2>
+      <p>The modifier after the dot says which fields an instruction reads and writes.</p>
+      <table class="ref">
+        <thead><tr><th>Mod</th><th>Uses</th></tr></thead>
+        <tbody>
+          <tr><td>.A</td><td>A-field of A → A-field of B</td></tr>
+          <tr><td>.B</td><td>B-field of A → B-field of B</td></tr>
+          <tr><td>.AB</td><td>A-field of A → B-field of B</td></tr>
+          <tr><td>.BA</td><td>B-field of A → A-field of B</td></tr>
+          <tr><td>.F</td><td>Both fields, matched: A→A and B→B</td></tr>
+          <tr><td>.X</td><td>Both fields, crossed: A→B and B→A</td></tr>
+          <tr><td>.I</td><td>The whole instruction: opcode, modifier, modes and fields</td></tr>
+        </tbody>
+      </table>
+      <p>If you leave the modifier out, the ICWS'94 defaults apply:</p>
+      <ul>
+        <li><code>DAT</code>, <code>NOP</code>: <code>.F</code></li>
+        <li><code>MOV</code>, <code>SEQ</code>, <code>SNE</code>: <code>.AB</code> if A is <code>#</code>; <code>.B</code> if only B is <code>#</code>; otherwise <code>.I</code></li>
+        <li><code>ADD</code>, <code>SUB</code>, <code>MUL</code>, <code>DIV</code>, <code>MOD</code>: <code>.AB</code> if A is <code>#</code>; <code>.B</code> if only B is <code>#</code>; otherwise <code>.F</code></li>
+        <li><code>SLT</code>: <code>.AB</code> if A is <code>#</code>, otherwise <code>.B</code></li>
+        <li><code>JMP</code>, <code>JMZ</code>, <code>JMN</code>, <code>DJN</code>, <code>SPL</code>: <code>.B</code></li>
+      </ul>
+      <p>The compiled Redcode panel in the arena always shows the full, explicit form, which is a good way to check what a line really does.</p>
+
+      <h2 id="syntax">Redcode syntax</h2>
+      <pre><code><span class="cmt">;name     Shown in the arena and results</span>
+<span class="cmt">;author   Your name</span>
+<span class="cmt">;strategy One or more lines describing the plan</span>
+
+<span class="lbl">step</span>    <span class="kw">EQU</span>     (CORESIZE/4)+1   <span class="cmt">; named constant (an expression)</span>
+        <span class="kw">ORG</span>     start            <span class="cmt">; where execution begins</span>
+<span class="lbl">start:</span>  <span class="kw">mov.i</span>   0, 1             <span class="cmt">; labels may end in ':'; case doesn't matter</span>
+        <span class="kw">END</span>                      <span class="cmt">; optional; anything after it is ignored</span></code></pre>
+      <ul>
+        <li><strong>Labels</strong> name an instruction. Using a label in an operand gives its distance from the current line, so <code>JMP loop</code> becomes <code>JMP -2</code>.</li>
+        <li><strong>EQU</strong> defines a constant. It may refer to labels and other constants.</li>
+        <li><strong>Expressions</strong> support <code>+ - * / %</code>, parentheses, comparisons (<code>== != &lt; &gt; &lt;= &gt;=</code>) and <code>&amp;&amp; ||</code>.</li>
+        <li><strong>Predefined constants</strong>: <code>CORESIZE</code>, <code>MAXPROCESSES</code>, <code>MAXCYCLES</code>, <code>MAXLENGTH</code>, <code>MINDISTANCE</code>, <code>CURLINE</code>.</li>
+        <li><strong>One operand</strong>: <code>DAT x</code> means <code>DAT #0, x</code>; every other instruction gets <code>$0</code> as its B operand.</li>
+        <li><code>END start</code> is an alternative to <code>ORG start</code>.</li>
+        <li><strong>Assertions</strong>: <code>;assert CORESIZE == 8000</code> warns you when a warrior is loaded under rules it wasn't written for.</li>
+        <li><strong>Registers</strong>: inside an expression, <code>a=FIRST+10</code> stores a value in a one-letter register for later lines, as in pMARS.</li>
+        <li>Anything before a <code>;redcode</code> line is ignored, so warriors pasted from old emails and newsletters work.</li>
+      </ul>
+      <h3 id="for">FOR / ROF loops</h3>
+      <pre><code><span class="lbl">i</span>       <span class="kw">for</span>     4                <span class="cmt">; repeat the body 4 times; i counts 1..4</span>
+<span class="lbl">bomb&amp;i</span>  <span class="kw">DAT</span>     #i, #i*100       <span class="cmt">; labels bomb01 .. bomb04</span>
+        <span class="kw">rof</span>
+
+<span class="lbl">x</span>       <span class="kw">for</span>     0                <span class="cmt">; FOR 0: a block comment</span>
+        ...
+        <span class="kw">rof</span>
+
+<span class="lbl">pad</span>     <span class="kw">for</span>     MAXLENGTH-CURLINE <span class="cmt">; fill the rest of the program</span>
+        <span class="kw">DAT</span>     0, 0
+        <span class="kw">rof</span></code></pre>
+      <p>The label just before <code>FOR</code> is the counter. In the body, the counter's name becomes its value and <code>&amp;counter</code> pastes it as two digits into a label. Loops can be nested. For anything more complicated, a JavaScript or Python generator is easier to read.</p>
+      <h3 id="pspace">P-space</h3>
+      <p>P-space is a small private memory (CORESIZE / 16 cells, 500 by default) that each warrior keeps for the whole match while the core is wiped between rounds. <code>STP</code> stores a value there and <code>LDP</code> reads one back. Cell 0 is special: before each round it holds the result of the previous one (0 = lost, otherwise the number of survivors; -1 on the first round). Warriors use it to switch strategy after a loss. <code>PIN</code> (shared P-space) is not supported; it's ignored with a warning.</p>
+      <div class="callout warn"><p>Not supported: read/write distance limits, and <code>PIN</code>.</p></div>
+
+      <h2 id="generators">How generators work</h2>
+      <p>Programs in JavaScript, Python and C++ don't run inside the arena. They run once, before the battle, and print Redcode. That keeps every language on equal terms: the VM only ever runs Redcode, and anyone can read the compiled result. What a general-purpose language adds is a <em>macro language</em>: loops to unroll code, functions to build patterns, and arithmetic to choose constants.</p>
+      <p>All three libraries share one API:</p>
+      <table class="ref">
+        <thead><tr><th>Call</th><th>Emits</th></tr></thead>
+        <tbody>
+          <tr><td>mov(a, b)</td><td><code>MOV a, b</code> with the default modifier</td></tr>
+          <tr><td>mov.i(a, b)</td><td><code>MOV.I a, b</code>. Every opcode has <code>.a .b .ab .ba .f .x .i</code></td></tr>
+          <tr><td>label("x")</td><td>Puts label <code>x</code> on the next instruction</td></tr>
+          <tr><td>org("x")</td><td><code>ORG x</code></td></tr>
+          <tr><td>equ("n", 4)</td><td><code>n EQU 4</code></td></tr>
+          <tr><td>imm(4), ind("p")…</td><td><code>#4</code>, <code>@p</code>. Also <code>dir $</code>, <code>aind *</code>, <code>predec &lt;</code>, <code>apredec {</code>, <code>postinc &gt;</code>, <code>apostinc }</code></td></tr>
+          <tr><td>name/author/strategy</td><td>The metadata comments</td></tr>
+          <tr><td>comment(t), raw(line)</td><td>A comment, or any line of Redcode verbatim</td></tr>
+          <tr><td>CORESIZE…</td><td>The current rules, so you can compute steps that fit</td></tr>
+        </tbody>
+      </table>
+      <p>Operands can be numbers (<code>jmp(-2)</code>), labels (<code>"bomb"</code>) or any Redcode operand string (<code>"#step*2"</code>).</p>
+
+      <h3 id="converting">Converting Redcode to JavaScript or Python</h3>
+      <p>Any Redcode warrior, including the famous originals, can be turned into a readable JavaScript or Python generator. Numeric <code>EQU</code>s become real constants, <code>FOR</code>/<code>ROF</code> blocks become real loops, and labels and comments carry over. Every conversion is <strong>verified</strong>: it must compile to exactly the same instructions as the original, or a simpler form is used instead. All 50 warriors tested, 34 of them archive originals, convert to the readable form.</p>
+      <ul>
+        <li>In the arena, below a compiled Redcode warrior, click <strong>Convert to JavaScript</strong> or <strong>Python</strong>. The conversion opens in a new slot, so you can read the two side by side or make them fight.</li>
+        <li>From the command line: <code>zorewars convert classic:thermite --to py</code> or <code>zorewars convert mine.red --to js --out mine.js</code>.</li>
+        <li>Every library warrior already has converted versions in <code>warriors/javascript/</code> and <code>warriors/python/</code>, and in the Library menu marked "(converted)".</li>
+      </ul>
+      <pre><code><span class="cmt"># Seeker, converted from Redcode by ZoreWars.</span>
+step = 12                                   <span class="cmt"># how far the scan moves each time</span>
+gap = 6
+...
+label(<span class="lbl">"loop"</span>); add.f(<span class="lbl">"inc"</span>, <span class="lbl">"scan"</span>)         <span class="cmt"># move both scan pointers forward by step</span>
+label(<span class="lbl">"scan"</span>); seq.i(<span class="lbl">"last-scan-step"</span>, <span class="lbl">"last-scan-step+gap"</span>)
+label(<span class="lbl">"clear"</span>); mov.i(<span class="lbl">"kill"</span>, postinc(<span class="lbl">"cptr"</span>))</code></pre>
+      <p>Two helpers make converted loops work: <code>curline()</code> returns the index of the next instruction (Redcode's <code>CURLINE</code>), and <code>ldp</code>/<code>stp</code> are available in every language.</p>
+
+      <h3 id="javascript">JavaScript</h3>
+      <p>Runs directly in the arena and in the CLI. The API functions are already in scope.</p>
+      <pre><code><span class="cmt">// Carpet Bomber: drop N bombs in a row, then skip GAP cells.</span>
+name(<span class="lbl">"Carpet Bomber"</span>);
+<span class="kw">const</span> N = 4, GAP = 16, LENGTH = N + 4;
+<span class="kw">if</span> (CORESIZE % GAP !== 0 || LENGTH + N &gt; GAP) <span class="kw">throw new</span> Error(<span class="lbl">"carpets would hit us"</span>);
+
+org(<span class="lbl">"loop"</span>);
+label(<span class="lbl">"ptr"</span>);  dat.f(imm(0), imm(LENGTH));
+label(<span class="lbl">"loop"</span>);
+<span class="kw">for</span> (<span class="kw">let</span> i = 0; i &lt; N; i++) mov.i(<span class="lbl">"bomb"</span>, postinc(<span class="lbl">"ptr"</span>));   <span class="cmt">// unrolled loop</span>
+add.ab(imm(GAP - N), <span class="lbl">"ptr"</span>);
+jmp(<span class="lbl">"loop"</span>);
+label(<span class="lbl">"bomb"</span>); dat.f(imm(0), imm(0));</code></pre>
+
+      <h3 id="python">Python</h3>
+      <p>Import the library and call the same functions. In the browser it runs through Pyodide; with the CLI it runs on your local Python, with <code>lang/python</code> added to <code>PYTHONPATH</code> for you.</p>
+      <pre><code><span class="kw">from</span> zorewars <span class="kw">import</span> *
+
+name(<span class="lbl">"Dwarf (Python)"</span>)
+STEP = 4
+<span class="kw">assert</span> CORESIZE % STEP == 0
+
+org(<span class="lbl">"loop"</span>)
+label(<span class="lbl">"loop"</span>); add.ab(imm(STEP), <span class="lbl">"bomb"</span>)
+mov.i(<span class="lbl">"bomb"</span>, ind(<span class="lbl">"bomb"</span>))
+jmp(<span class="lbl">"loop"</span>)
+label(<span class="lbl">"bomb"</span>); dat.f(imm(0), imm(0))</code></pre>
+      <p>When the script exits, the Redcode is printed to stdout. Run <code>python examples/dwarf.py</code> with <code>PYTHONPATH=lang/python</code> to see it.</p>
+
+      <h3 id="cpp">C++</h3>
+      <p>Include <code>lang/cpp/zorewars.hpp</code> (C++17) and call <code>zw::emit()</code> at the end of <code>main</code>. The CLI compiles the file with <code>g++</code> or <code>clang++</code>, runs it and reads the Redcode. C++ warriors are CLI-only: browsers can't compile C++.</p>
+      <pre><code><span class="kw">#include</span> <span class="lbl">"zorewars.hpp"</span>
+<span class="kw">using namespace</span> zw;
+
+<span class="kw">int</span> main() {
+  name(<span class="lbl">"Dwarf (C++)"</span>);
+  org(<span class="lbl">"loop"</span>);
+  label(<span class="lbl">"loop"</span>); add.ab(imm(4), <span class="lbl">"bomb"</span>);
+  mov.i(<span class="lbl">"bomb"</span>, ind(<span class="lbl">"bomb"</span>));
+  jmp(<span class="lbl">"loop"</span>);
+  label(<span class="lbl">"bomb"</span>); dat.f(imm(0), imm(0));
+  emit();
+}</code></pre>
+      <p>If <code>&lt;cstdlib&gt;</code> is included, write <code>zw::div</code> to avoid clashing with <code>std::div</code>.</p>
+
+      <h2 id="strategies">Classic strategies</h2>
+      <p>Most warriors fall into a few families. Like rock-paper-scissors, each tends to beat one family and lose to another:</p>
+      <div class="rps">
+        <div><b>Stone (bomber)</b>beats scanners: it is small and fast, and does nothing but bomb.</div>
+        <div><b>Paper (replicator)</b>beats stones: it makes copies faster than they can be bombed.</div>
+        <div><b>Scissors (scanner)</b>beats paper: it finds the copies and kills them one by one.</div>
+      </div>
+      <p>These are tendencies, not laws. The bundled Scout is a deliberately simple scanner and still loses to Mice more often than it wins; making it beat Mice is exercise 5.</p>
+      <h3 id="originals">Battling the originals</h3>
+      <p>Thousands of real warriors from forty years of Core War are published in public archives. ZoreWars can load them directly, without copying them into the project:</p>
+      <ul>
+        <li>In the arena, use <strong>Import…</strong> to pick a famous original, paste the URL of any Redcode file, or open a file. You can also drop a <code>.red</code> file onto the editor.</li>
+        <li>In the <a href="warriors.html#history">Hall of Fame</a>, <strong>Fight</strong> opens an original against our version of the same idea.</li>
+        <li>In the CLI, use a URL or <code>classic:name</code> anywhere a warrior goes.</li>
+      </ul>
+      <p>Imports are fetched when you use them and kept only in your browser. Network files are always assembled as Redcode and never run as JavaScript, Python or C++. If a warrior was written for other rules, such as the '94x hill's 55,440-cell core, the arena offers to switch.</p>
+      <p>Every warrior below is in the arena's <strong>Library</strong> menu and the <code>warriors/</code> folder. The <a href="warriors.html">Warrior Encyclopedia</a> covers more families (imp rings, silk papers, CMP scanners, one-shots, quickscans), with each warrior's code explained line by line, its history and benchmark results.</p>
+      <table class="ref">
+        <thead><tr><th>Warrior</th><th>Family</th><th>Idea</th></tr></thead>
+        <tbody>
+          <tr><td>Imp</td><td>Imp</td><td>One instruction that copies itself forward forever. Survives almost anything and forces ties.</td></tr>
+          <tr><td>Dwarf</td><td>Stone</td><td>Drops a <code>DAT</code> bomb on every 4th cell.</td></tr>
+          <tr><td>Carpet Bomber</td><td>Stone</td><td>Unrolled loop (generated by JavaScript) that bombs in short bursts.</td></tr>
+          <tr><td>Mice</td><td>Paper</td><td>Copies itself and starts the copy with <code>SPL</code>. Process count grows exponentially.</td></tr>
+          <tr><td>Scout</td><td>Scissors</td><td>Tests cells with <code>JMZ.F</code> and only bombs what isn't empty. Uses <code>SLT</code> to avoid bombing itself.</td></tr>
+          <tr><td>Vampire</td><td>Stone variant</td><td>Drops <code>JMP</code> "fangs" that send enemy processes into a pit where they die.</td></tr>
+          <tr><td>Sweeper</td><td>Core clear</td><td>Writes <code>DAT</code> over every cell in order and stops safely on its own pointer.</td></tr>
+          <tr><td>Stunner</td><td>Stun bomber</td><td>Drops <code>SPL 0</code> bombs that make enemies waste their turns, then sweeps the core.</td></tr>
+        </tbody>
+      </table>
+      <h3>Ideas to explore next</h3>
+      <ul>
+        <li><strong>Imp spiral</strong>: several Imps spaced <code>CORESIZE/3</code> apart, launched so they move as one unit that a single bomb can't stop.</li>
+        <li><strong>Imp gate</strong>: a cell that is constantly decremented, so an Imp crawling over it breaks.</li>
+        <li><strong>Two-pass scanner</strong>: compare two cells at once with <code>SEQ</code>/<code>SNE</code> to scan twice as fast.</li>
+        <li><strong>Quickscan</strong>: an unrolled series of comparisons at the start of the round, ideal to generate with a JavaScript loop.</li>
+        <li><strong>Decoys</strong>: junk instructions that make scanners waste time.</li>
+      </ul>
+
+      <h2 id="exercises">Exercises</h2>
+      <div class="exercise"><b>1. Step size.</b> Make the Dwarf bomb every 8th cell. Is it better or worse against Mice? Run a 100-round tournament to find out.</div>
+      <div class="exercise"><b>2. Beat the Imp.</b> The Imp ties against most bombers. Write a warrior that kills it. Hint: the Imp is always one cell ahead of where it was.</div>
+      <div class="exercise"><b>3. Self-awareness.</b> Remove the <code>SLT</code> check from Scout. Run it alone. When does it kill itself, and why?</div>
+      <div class="exercise"><b>4. Generator.</b> Write a JavaScript warrior that takes <code>STEP</code> as a constant and refuses to compile (with <code>throw</code>) if the bombs would ever hit its own code.</div>
+      <div class="exercise"><b>5. Real scissors.</b> Scout bombs one cell each time it finds something. Mice copies are 8 cells long and keep moving. Change Scout so it beats Mice in a 100-round tournament: try bombing several cells around each hit, or bombing with <code>SPL 0</code> before clearing.</div>
+      <div class="exercise"><b>6. Hill climbing.</b> Run <code>zorewars tournament warriors</code> and get your warrior to the top of the table.</div>
+
+      <h2 id="cli">CLI &amp; AI agents</h2>
+      <p>The CLI runs the same engine as the arena, so results match exactly. Every command takes <code>--json</code>, so scripts and AI agents can write a warrior, test it, read the score and iterate.</p>
+      <pre><code>node cli/zorewars.js list                                <span class="cmt"># built-in warriors and their @refs</span>
+node cli/zorewars.js check mine.red                      <span class="cmt"># compile only</span>
+node cli/zorewars.js compile mine.js                     <span class="cmt"># print the generated Redcode</span>
+node cli/zorewars.js battle mine.red @dwarf --rounds 100 --json
+node cli/zorewars.js tournament mine.red warriors --rounds 20
+cat mine.red | node cli/zorewars.js battle - @mice       <span class="cmt"># Redcode on stdin</span>
+node cli/zorewars.js classics                            <span class="cmt"># famous originals you can fight</span>
+node cli/zorewars.js battle mine.red classic:thermite --rounds 50
+node cli/zorewars.js battle mine.red https://asdflkj.net/COREWAR/94/HILL32/arvon.red</code></pre>
+      <table class="ref">
+        <thead><tr><th>Option</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>--rounds N</td><td>Rounds per match (default 1 for battle, 10 for tournament)</td></tr>
+          <tr><td>--seed N</td><td>Seed for load positions, so results are reproducible (default 1)</td></tr>
+          <tr><td>--coresize N</td><td>Core size (default 8000)</td></tr>
+          <tr><td>--cycles N</td><td>Cycles before a tie (default 80000)</td></tr>
+          <tr><td>--processes N</td><td>Max processes per warrior (default 8000)</td></tr>
+          <tr><td>--length N</td><td>Max warrior length (default 100)</td></tr>
+          <tr><td>--distance N</td><td>Min distance between warriors at load (default 100)</td></tr>
+          <tr><td>--fixed N</td><td>Warrior 2 starts at N in round 1 and later rounds follow pMARS's RNG, like <code>pmars -F N</code></td></tr>
+          <tr><td>--pspace N</td><td>P-space size (default CORESIZE/16)</td></tr>
+          <tr><td>--json</td><td>Machine-readable output</td></tr>
+          <tr><td>-r -s -c -p -l -d -F -S</td><td>pMARS's own short options also work, so tournament command lines can be reused</td></tr>
+        </tbody>
+      </table>
+      <p>Exit status is <code>0</code> on success, <code>1</code> if a warrior failed to compile (errors come with line numbers) and <code>2</code> for bad usage.</p>
+      <h3>JSON output</h3>
+      <p class="small muted">From <code>battle @mice @dwarf --rounds 100 --json</code>:</p>
+      <pre><code>{
+  "ok": true,
+  "seed": 1,
+  "settings": { "coreSize": 8000, "maxCycles": 80000, "rounds": 100, ... },
+  "warriors": [
+    { "name": "Mice", "author": "Chip Wendell (1986), ...", "wins": 83, "losses": 1, "ties": 16, "score": 265, "file": "warriors/mice.red", "length": 8 },
+    { "name": "Dwarf", "author": "A. K. Dewdney (1984)", "wins": 1, "losses": 83, "ties": 16, "score": 19, "file": "warriors/dwarf.red", "length": 4 }
+  ],
+  "rounds": [ { "round": 1, "winner": "Mice", "winnerIndex": 0, "cycles": 22698, "survivors": [0] }, ... ]
+}</code></pre>
+      <h3>An agent loop</h3>
+      <ol>
+        <li>Read <code>AGENTS.md</code> in the repository root: a compact reference written for language models.</li>
+        <li>Write a warrior file.</li>
+        <li><code>zorewars check file --json</code> and fix any errors.</li>
+        <li><code>zorewars tournament file warriors --rounds 50 --json</code> and read <code>ranking</code>.</li>
+        <li>Change one idea at a time, keep what scores better, repeat.</li>
+      </ol>
+      <p>To have two agents fight, each writes a warrior and you run <code>zorewars battle a.red b.red --rounds 200 --json</code>. Use a fixed <code>--seed</code> to compare versions fairly, and a fresh one for final scoring so nobody tunes against known load positions.</p>
+
+      <h2 id="rules">Rules &amp; scoring</h2>
+      <table class="ref">
+        <thead><tr><th>Setting</th><th>Default</th></tr></thead>
+        <tbody>
+          <tr><td>Core size</td><td>8000 cells</td></tr>
+          <tr><td>Max cycles</td><td>80,000 per round</td></tr>
+          <tr><td>Max processes</td><td>8000 per warrior</td></tr>
+          <tr><td>Max length</td><td>100 instructions</td></tr>
+          <tr><td>Min distance</td><td>100 cells between warriors at load</td></tr>
+        </tbody>
+      </table>
+      <ul>
+        <li>Warrior 1 is loaded at address 0; the others at random addresses at least the minimum distance apart. Two-warrior placement uses the same generator and rule as pMARS, so <code>--fixed N</code> (pMARS's <code>-F N</code>) replays a pMARS match exactly. Games with more warriors use ZoreWars' own placement.</li>
+        <li>The warrior that moves first rotates every round.</li>
+        <li>Each survivor of a round scores (W²−1)/S, where W is the number of warriors and S the number of survivors. With two warriors, a win scores 3 points, a tie 1 and a loss 0.</li>
+        <li>ZoreWars is tested against pMARS, the reference simulator: identical assembly for 53 warriors and identical results for thousands of rounds. See <code>COMPLIANCE.md</code>.</li>
+        <li>Tournaments are round robin: every pair plays a match and the table is ranked by total points.</li>
+      </ul>
+      <p>Change the rules in the arena's <strong>Rules</strong> panel or with CLI flags. Warriors that use <code>CORESIZE</code> and friends adapt automatically.</p>
+
+      <h2 id="glossary">Glossary &amp; history</h2>
+      <ul>
+        <li><strong>Core</strong>: the circular memory array where battles happen. The name comes from "core memory", early magnetic RAM.</li>
+        <li><strong>Warrior</strong>: a program that competes in the core.</li>
+        <li><strong>Process</strong>: one thread of execution: a program counter in a warrior's queue.</li>
+        <li><strong>Bomb</strong>: an instruction written over enemy code, usually <code>DAT</code>.</li>
+        <li><strong>Hill</strong>: a standing tournament where new warriors challenge the current champions.</li>
+        <li><strong>ICWS'94</strong>: the 1994 draft standard for Redcode, which ZoreWars follows for instructions, modes and modifiers.</li>
+      </ul>
+      <p>Core War first appeared in A. K. Dewdney's "Computer Recreations" column in <em>Scientific American</em> (May 1984). The International Core War Society published Redcode standards in 1986, 1988 and 1994, and online hills have been running since the early 1990s. ZoreWars keeps the rules that made the game interesting and adds a visual arena, generator languages and tooling for automated play.</p>
+    </article>
+  </div>
+  <footer class="site-footer">ZoreWars · code <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache-2.0</a> · text <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a> · warriors written for ZoreWars <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a></footer>
+</body>
+</html>

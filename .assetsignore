@@ -1,0 +1,23 @@
+# Parts of the repository that are not the website (Cloudflare Static Assets
+# uploads everything else from the repository root; same syntax as .gitignore).
+.git
+.github
+.claude
+.wrangler
+.dev.vars*
+.env*
+node_modules
+cli
+scripts
+test
+worker
+examples
+lang/cpp
+*.md
+package.json
+package-lock.json
+wrangler.jsonc
+.gitignore
+.assetsignore
+.nojekyll
+dist-check
