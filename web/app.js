@@ -920,24 +920,61 @@ function wireMobile() {
   // Symbol bar: shown while the editor has focus on a touch screen, and kept
   // just above the on-screen keyboard.
   const bar = $('keybar');
+  // The bar is pinned to the bottom edge of the *visual* viewport, which is
+  // where the on-screen keyboard starts. Browsers disagree about how the
+  // keyboard changes innerHeight, so nothing is measured from the page bottom.
+  // While editing, the tab bar is hidden (it's behind the keyboard anyway).
   const place = () => {
+    if (bar.hidden) return;
     const vv = window.visualViewport;
-    const keyboard = vv ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop) : 0;
-    // Above the on-screen keyboard, and never over the tab bar (which shows
-    // when there's no on-screen keyboard, such as with a hardware keyboard).
-    const tabs = $('tabbar').offsetHeight;
-    bar.style.bottom = `${Math.max(keyboard, tabs)}px`;
+    if (!vv) { bar.style.top = ''; bar.style.bottom = '0px'; return; }
+    bar.style.bottom = 'auto';
+    bar.style.top = `${Math.round(vv.offsetTop + vv.height - bar.offsetHeight)}px`;
+    showViewportDebug();
   };
+  let raf = 0;
+  const schedule = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(place); };
   const editorBox = $('codeEditor');
   editorBox.addEventListener('focusin', () => {
     if (!touchQuery.matches) return;
     renderKeybar();
+    document.body.classList.add('editing');
     bar.hidden = false;
     place();
   });
-  editorBox.addEventListener('focusout', () => setTimeout(() => { if (!state.editor.hasFocus()) bar.hidden = true; }, 150));
-  window.visualViewport?.addEventListener('resize', place);
-  window.visualViewport?.addEventListener('scroll', place);
+  editorBox.addEventListener('focusout', () => setTimeout(() => {
+    if (state.editor.hasFocus()) return;
+    bar.hidden = true;
+    document.body.classList.remove('editing');
+  }, 150));
+  window.visualViewport?.addEventListener('resize', schedule);
+  window.visualViewport?.addEventListener('scroll', schedule);
+  window.addEventListener('resize', schedule);
+
+  // ?debug=viewport shows what the browser reports, for diagnosing
+  // keyboard and toolbar behaviour on real phones.
+  const debug = new URLSearchParams(location.search).get('debug') === 'viewport';
+  function showViewportDebug() {
+    if (!debug) return;
+    let box = $('vpDebug');
+    if (!box) {
+      box = document.createElement('pre');
+      box.id = 'vpDebug';
+      box.style.cssText = 'position:fixed;top:4px;right:4px;z-index:99;margin:0;padding:6px 8px;font:11px/1.4 monospace;background:#000c;color:#0f0;border:1px solid #0f0;border-radius:6px;pointer-events:none';
+      document.body.appendChild(box);
+    }
+    const vv = window.visualViewport;
+    const r = bar.getBoundingClientRect();
+    box.textContent = [
+      `innerH ${window.innerHeight}  clientH ${document.documentElement.clientHeight}`,
+      `vv.h ${vv ? Math.round(vv.height) : '-'}  vv.top ${vv ? Math.round(vv.offsetTop) : '-'}  scale ${vv ? vv.scale.toFixed(2) : '-'}`,
+      `bar ${Math.round(r.top)}..${Math.round(r.bottom)}  dpr ${devicePixelRatio}`,
+    ].join('\n');
+  }
+  if (debug) {
+    window.visualViewport?.addEventListener('resize', showViewportDebug);
+    showViewportDebug();
+  }
   // pointerdown + preventDefault keeps focus (and the keyboard) in the editor.
   bar.addEventListener('pointerdown', (e) => {
     const b = e.target.closest('button');

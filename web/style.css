@@ -356,3 +356,5 @@ table.results .dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
   /* Details */
   .side-panel { display: none; flex-direction: column; gap: 10px; }
 }
+/* While editing on a touch screen the symbol bar takes the tab bar's place. */
+body.editing .tabbar { display: none; }
