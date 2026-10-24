@@ -32,5 +32,8 @@
     "@lezer/highlight": "1.2.5",
     "esbuild": "0.28.2",
     "wrangler": "^4.152.0"
+  },
+  "overrides": {
+    "undici": "^7.30.1"
   }
 }
