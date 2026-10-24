@@ -19,6 +19,7 @@
   {"file":"quickscan.js","name":"Quickscan","category":"Quickscan","language":"javascript"},
   {"file":"gatekeeper.js","name":"Gatekeeper","category":"CMP scanner","language":"javascript"},
   {"file":"papercut.js","name":"Papercut","category":"Silk paper","language":"javascript"},
+  {"file":"fastsilk.js","name":"Fast Silk","category":"Silk paper","language":"javascript"},
   {"file":"blitz.js","name":"Blitz","category":"Quickscan + paper","language":"javascript"},
   {"file":"chameleon.js","name":"Chameleon","category":"P-space switcher","language":"javascript"},
   {"file":"bandit.js","name":"Bandit","category":"P-space bandit","language":"javascript"},

@@ -107,22 +107,25 @@ export async function cmdTune(args, h) {
   const [w] = await h.loadAll([file], settings, json);
   const field = await opponents(h, settings, args.flags, [w.name, path.basename(file)]);
   const candidates = Math.max(1, parseInt(args.flags.candidates ?? '40', 10));
+  const seeds = Math.max(1, parseInt(args.flags.seeds ?? '3', 10));
   const pool = createPool();
   try {
-    const r = await tune({ pool, source, field, settings, candidates, onProgress: (i, n) => progress(json, `Screening candidate ${i}/${n}…`) });
+    const r = await tune({ pool, source, field, settings, candidates, seeds, onProgress: (i, n) => progress(json, i <= candidates + 1 ? `Screening candidate ${i}/${candidates + 1}…` : `Checking finalists on ${seeds} fresh seeds (${i}/${n})…`) });
     done(json);
-    const cur = r.results.find((x) => x.current);
-    if (args.flags.write && !r.best.current) {
-      fs.writeFileSync(file, source.replace(/^const P = \{.*\};\s*$/m, `const P = ${JSON.stringify(r.best.P)};`));
-    }
-    if (json) { console.log(JSON.stringify({ ok: true, space: r.space, current: r.current, best: r.best.P, results: r.results.map(({ rows, ...x }) => x), written: !!args.flags.write && !r.best.current }, null, 2)); return; }
-    console.log(`Tuned ${w.name}: ${r.tried} candidates screened against ${field.length} opponents${r.rejected ? ` (${r.rejected} refused by the warrior's own checks)` : ''}\n`);
-    h.printTable(r.results.map((x) => ({ Constants: JSON.stringify(x.P) + (x.current ? '  (current)' : ''), 'Pts/round': x.score.toFixed(2), Smooth: x.smooth.toFixed(2) })));
-    if (r.best.current) console.log('\nThe current constants are still the best found.');
+    const write = args.flags.write && r.improved;
+    if (write) fs.writeFileSync(file, source.replace(/^const P = \{.*\};\s*$/m, `const P = ${JSON.stringify(r.best.P)};`));
+    if (json) { console.log(JSON.stringify({ ok: true, space: r.space, current: r.current, best: r.best.P, improved: r.improved, seeds: r.seeds, results: r.results.map(({ rows, ...x }) => x), written: !!write }, null, 2)); return; }
+    console.log(`Tuned ${w.name}: ${r.tried} candidates screened against ${field.length} opponents${r.rejected ? ` (${r.rejected} refused by the warrior's own checks)` : ''}.`);
+    console.log(`Finalists re-checked on ${r.seeds.length} fresh seeds x ${r.checkRounds} rounds; gains are against the current constants, opponent by opponent.\n`);
+    h.printTable(r.results.map((x) => ({
+      Constants: JSON.stringify(x.P) + (x.current ? '  (current)' : ''), 'Pts/round': x.score.toFixed(2), Smooth: x.smooth.toFixed(2),
+      Gain: x.current ? '' : `${x.gain >= 0 ? '+' : ''}${x.gain.toFixed(3)} ± ${x.margin.toFixed(3)}${x.significant ? '  *' : ''}`,
+    })));
+    if (!r.improved) console.log('\nNo finalist beats the current constants by more than the noise (* would mark one). Keeping them.');
     else {
       console.log(`\nBest: const P = ${JSON.stringify(r.best.P)};`);
-      if (cur) console.log(`(${(r.best.smooth - cur.smooth >= 0 ? '+' : '') + (r.best.smooth - cur.smooth).toFixed(2)} smooth points per round over the current constants)`);
-      console.log(args.flags.write ? `Written to ${file}.` : 'Run again with --write to save it into the file.');
+      console.log(`(+${r.best.gain.toFixed(3)} ± ${r.best.margin.toFixed(3)} smooth points per round over the current constants: more than the noise)`);
+      console.log(write ? `Written to ${file}.` : 'Run again with --write to save it into the file.');
     }
   } finally { pool.close(); }
 }
@@ -142,13 +145,18 @@ export async function cmdEvolve(args, h) {
     ...extra.map((w) => ({ w: strip(w), role: roleOf(`${w.name} ${w.strategy || ''}`) || 'paper' })),
   ];
   const heldOut = args.flags.classics ? await opponents(h, settings, { ...args.flags, classics: true }, []).then((f) => f.filter((x) => x.group === 'classic')) : [];
+  // --king a.js,b.red: start the Red Queen with these as champions (they
+  // also join the gene pool and the starting population).
+  const kings = args.flags.king ? await h.loadAll(h.expandRefs(String(args.flags.king).split(',')), settings, json) : [];
+  for (const w of kings) sources.push({ w: strip(w), role: roleOf(`${w.name} ${w.strategy || ''}`) || 'paper' });
+  const maxLength = Math.min(settings.maxLength, Math.max(4, parseInt(args.flags.genome ?? '40', 10)));
   fs.mkdirSync(out, { recursive: true });
   const pool = createPool();
   try {
-    if (!json) console.log(`Evolving: ${generations} Red Queen generations, ${batches}x${batchSize} children each, ${sources.length} warriors in the gene pool${heldOut.length ? `, ${heldOut.length} classics held out` : ''}\n`);
+    if (!json) console.log(`Evolving: ${generations} Red Queen generations, ${batches}x${batchSize} children each, ${sources.length} warriors in the gene pool, genomes up to ${maxLength} instructions${kings.length ? `, starting champions: ${kings.map((k) => k.name).join(', ')}` : ''}${heldOut.length ? `, ${heldOut.length} classics held out` : ''}\n`);
     const r = await evolve({
       pool, sources, opponents: field, heldOut, settings, rounds: generations, batches, batchSize,
-      maxLength: Math.min(settings.maxLength, 40),
+      maxLength, kings,
       onLog: (t) => progress(json, t),
       onRound: (rec) => {
         done(json);

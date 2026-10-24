@@ -119,6 +119,21 @@
       "opponent": "gatekeeper.js"
     },
     {
+      "id": "fastsilk", "file": "fastsilk.js", "name": "Fast Silk", "language": "javascript", "family": "Paper", "era": "ZoreWars 2026",
+      "inspiredBy": "The small multi-stream papers inside modern paper/stone warriors such as <a href=\"https://asdflkj.net/COREWAR/94/HILL32/azathoth.red\">Azathoth</a> (John Metcalf). Written from scratch for ZoreWars and tuned with <code>zorewars tune</code>.",
+      "summary": "A 10-instruction silk paper. Each process copies three cells per pass instead of one, so four processes copy the whole body in a single pass and start the copy. It has no bombs at all, and it was our best warrior against the strongest classics when it was added.",
+      "how": [
+        "Two <code>SPL 1</code> lines make four processes. All four run the loop in step, one instruction each.",
+        "<code>SPL STEP, #0</code> starts a process in the copy; three <code>MOV.I &gt;silk, }silk</code> lines copy three cells each, so four processes copy twelve cells: more than the 8-line body.",
+        "<code>ADD.A #DELTA, seed</code> changes the copy distance for the next pass, and <code>MOV.F seed, silk</code> resets the pointers.",
+        "Compare Papercut: 7 instructions per pass to copy one cell per process, plus bombs. Fast Silk spends 6 to copy three."
+      ],
+      "strengths": ["Tiny and fast: copies spread over the core within a few thousand cycles and are hard to find.", "Holds its own against the modern paper/stone hill leaders (about a point per round against Azathoth and Arvon)."],
+      "weaknesses": ["No kill power of its own: most rounds against other papers are ties.", "SPL-carpet scanners such as Myrmidon freeze its copies."],
+      "tryIt": "Set <code>MOVS: 2</code>. The generator refuses until you raise <code>LEVELS</code>, because four processes copying two cells each can't cover the body.",
+      "opponent": "gatekeeper.js"
+    },
+    {
       "id": "evolvedsilk", "file": "evolvedsilk.red", "name": "Evolved Silk", "language": "redcode", "family": "Paper", "era": "ZoreWars 2026 (evolved)",
       "inspiredBy": "Bred by <code>zorewars evolve</code>, which runs Red Queen rounds of MAP-Elites as in <a href=\"https://github.com/SakanaAI/drq\">Digital Red Queen</a> (Sakana AI and MIT), starting from slices of ZoreWars bots. Nobody wrote it.",
       "summary": "A silk paper that evolution put together from fragments of other warriors. It turned up in the evolver's archive cell for warriors that reach the process limit, and it is a recognisable classic design: a silk whose copy distance changes on every pass.",
@@ -340,14 +355,14 @@
     {
       "id": "hydra", "file": "hydra.js", "name": "Hydra", "language": "javascript", "family": "Hybrid", "era": "ZoreWars 2026",
       "inspiredBy": "The paper/stone shape of <a href=\"https://asdflkj.net/COREWAR/94/HILL32/azathoth.red\">Azathoth</a> (John Metcalf) and its AI-tuned successor <a href=\"https://asdflkj.net/COREWAR/94/HILL32/arvon.red\">Arvon</a>: quickscan, boot, then a paper and a stone. Written from scratch for ZoreWars with the same quickscan and stone as Hedgehog.",
-      "summary": "Hedgehog's quickscan and stone, with a paper instead of the imps. After the scan it copies the stone and a bombing silk paper to two distant spots and starts them: the paper survives almost anything, and the stone and the paper's bombs do the killing.",
+      "summary": "Hedgehog's quickscan and stone, with a paper instead of the imps. After the scan it copies the stone and Fast Silk's small paper to two distant spots and starts them: the paper survives almost anything, and the stone does the killing.",
       "how": [
         "The quickscan, decode and stone are the same as in Hedgehog.",
-        "The boot copies the stone (16 lines) and the paper (9 lines) away with unrolled <code>MOV.I</code>s, then starts one stone process and 2^LEVELS paper processes.",
-        "The paper is Papercut's loop: every process copies one cell to a new spot and starts the copy, and each pass also drops a bomb."
+        "The boot copies the stone (16 lines) and the paper (8 lines) away with unrolled <code>MOV.I</code>s, then starts one stone process and 2^LEVELS paper processes.",
+        "The paper is Fast Silk's loop: every process copies three cells per pass to a new spot and starts the copy."
       ],
       "strengths": ["Very hard to kill once the paper has spread.", "The quickscan still wins some rounds in the first few hundred cycles."],
-      "weaknesses": ["Scanners with SPL carpets, such as Agony II and Gatekeeper, freeze the paper.", "Its paper is 9 lines. The best paper/stone warriors use papers of about 5 lines that copy in several streams at once. That is the next thing to try."],
+      "weaknesses": ["Scanners with SPL carpets, such as Agony II and Gatekeeper, freeze the paper.", "89 instructions: the quickscan and boot code make it a big target until it has booted."],
       "tryIt": "Compare Hydra and Hedgehog with <code>node cli/zorewars.js hill warriors/hydra.js --classics</code>: same quickscan and stone, different partner.",
       "opponent": "stunner.red"
     }

@@ -3,19 +3,19 @@
 //      first few dozen cycles and carpet-bombs anything it finds.
 //   2. The stone (multi-process, turns into a clear) is copied SOFF cells
 //      away and started there. The scan code stays behind as a decoy.
-//   3. A silk paper is copied POFF cells away and started with 2^LEVELS
-//      processes: every copy it makes is a whole warrior, so it is very hard
-//      to kill, and its bombs add kill power.
+//   3. A small silk paper (three copies per pass, 8 lines) is copied POFF
+//      cells away and started with 2^LEVELS processes: every copy it makes is
+//      a whole warrior, so it is very hard to kill.
 // All the arithmetic (decode table, probe spread, safe bomb counts) is done
 // by the JavaScript below.
 //
 // Tuned constants. `zorewars tune` searches the SPACE below for better values:
 //   node cli/zorewars.js tune warriors/hydra.js
-// SPACE {"GAP":[2,12],"QTIME":[8,24],"BACK":[0,6],"QBOMB":["dat","spl"],"SOFF":[200,7800],"SSTEP":[2,7998],"SBOMB":["dat","spl"],"POFF":[200,7800],"LEVELS":[3,5],"PSTEP":[200,7800],"PDELTA":[1,7999],"PBDELTA":[1,7999]}
-const P = {"GAP":7,"QTIME":21,"BACK":2,"QBOMB":"dat","SOFF":992,"SSTEP":4838,"SBOMB":"spl","POFF":4189,"LEVELS":4,"PSTEP":4911,"PDELTA":823,"PBDELTA":4698};
+// SPACE {"GAP":[2,12],"QTIME":[8,24],"BACK":[0,6],"QBOMB":["dat","spl"],"SOFF":[200,7800],"SSTEP":[2,7998],"SBOMB":["dat","spl"],"POFF":[200,7800],"LEVELS":[1,3],"PSTEP":[200,7800],"PDELTA":[1,7999]}
+const P = {"GAP":7,"QTIME":21,"BACK":2,"QBOMB":"dat","SOFF":992,"SSTEP":4838,"SBOMB":"spl","POFF":4189,"LEVELS":2,"PSTEP":485,"PDELTA":7260};
 name("Hydra");
 author("ZoreWars");
-strategy("Decoding quickscan, then a booted multi-process stone that becomes a clear, plus a booted bombing silk paper.");
+strategy("Decoding quickscan, then a booted multi-process stone that becomes a clear, plus a booted small silk paper.");
 
 const N = CORESIZE;
 const wrap = (x) => ((x % N) + N) % N;
@@ -35,6 +35,9 @@ const circ = (a, b) => { const d = wrap(a - b); return Math.min(d, N - d); };
 // v = 1 + (t - qp) / (D - 1): D - 1 must be invertible. JavaScript tries every
 // D and keeps the one that spreads the probes most evenly, away from our code.
 const G = 6, RESERVED = 100;
+// The carpet must cover both cells of a pair: [find-BACK, find-BACK+QTIME).
+if (P.QTIME < P.BACK + P.GAP + 1) throw new Error(`a carpet of ${P.QTIME} from ${P.BACK} back misses the pair's second cell (GAP ${P.GAP})`);
+
 const Q = {};
 let n = 3 * G;
 for (const k of ['skip', 'decA', 'jA', 'decB', 'qb', 'ql', 'qadd', 'qdjn', 'qend', 'qbmb', 'selA', 'selB', 'qp']) Q[k] = n++;
@@ -94,7 +97,7 @@ for (let k = 0; k < G; k++) dat.f(0, best.groups[k].v);
 if (curline() !== QLEN) throw new Error('quickscan layout is off');
 
 // ================= 2. boot and launch =================
-const STONE_LEN = 16, PAPER_LEN = 9;
+const STONE_LEN = 16, PAPER_LEN = 8;
 label("boot");
 for (let i = 0; i < STONE_LEN; i++) mov.i(`sgo+${i}`, `sgo+${i + P.SOFF}`);   // copy the stone away
 for (let i = 0; i < PAPER_LEN; i++) mov.i(`silk+${i}`, `silk+${i + P.POFF}`); // copy the paper away
@@ -102,16 +105,16 @@ spl(`sgo+${P.SOFF}`);                                  // start the stone
 for (let i = 0; i < P.LEVELS; i++) spl(1);             // 2^LEVELS paper processes
 jmp(`silk+${P.POFF}`);
 
-// ================= the paper (Papercut's loop; runs at POFF) =================
-label("silk"); spl(P.PSTEP, imm(0));                   // each process starts one in the copy...
-mov.i(postinc("silk"), apostinc("silk"));              // ...and copies one cell
-mov.i("seed", postinc("phit"));                        // drop a bomb
+// ================= the paper (small silk; runs at POFF) =================
+// Every process runs these lines in step and copies three cells per pass, so
+// 2^LEVELS processes copy the 8-line body in one pass and start the copy.
+label("silk"); spl(P.PSTEP, imm(0));                   // start a process in the copy
+for (let i = 0; i < 3; i++) mov.i(postinc("silk"), apostinc("silk"));   // copy three cells
 add.a(imm(P.PDELTA), "seed");                          // next copy distance
-add.ab(imm(P.PBDELTA), "phit");                        // next bomb
-mov.f("seed", "silk");
+mov.f("seed", "silk");                                 // reset the pointers
 jmp("silk");
 label("seed"); dat.f(imm(P.PSTEP), imm(0));
-label("phit"); dat.f(imm(0), imm(1));
+if ((2 ** P.LEVELS) * 3 < PAPER_LEN) throw new Error('too few paper processes to copy the body');
 
 // ================= 3. the stone (runs at SOFF) =================
 label("sgo");    spl(imm(0), 0);                       // process factory

@@ -37,9 +37,9 @@ Developer tools (use every CPU core):
                                                      opponent by opponent, with why rounds were lost
   zorewars species [warrior...]                      where warriors sit on the behaviour map
                                                      (processes x cells executed); none = the library
-  zorewars tune <warrior.js> [--candidates 40] [--write]
+  zorewars tune <warrior.js> [--candidates 40] [--seeds 3] [--write]
                                                      search the warrior's // SPACE for better constants
-  zorewars evolve [warrior...] [--generations 6] [--out evolved]
+  zorewars evolve [warrior...] [--generations 6] [--king w.js] [--genome 40] [--out evolved]
                                                      breed warriors: Red Queen rounds of MAP-Elites
 
 Warriors:

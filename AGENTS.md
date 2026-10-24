@@ -18,8 +18,8 @@ You are writing a *warrior*: a small program that competes with other programs i
 
 - `hill <warrior> [--classics] [--rounds 20] [--json]`: benchmark against the library (and the classics), with loss diagnosis.
 - `species [warrior...] [--json]`: where warriors sit by behaviour (most processes at once x different cells executed, measured alone). No arguments: the whole library.
-- `tune <warrior.js> [--candidates 40] [--write]`: random search over a JavaScript warrior's constants. The file needs `const P = {...};` and a `// SPACE {"NAME":[min,max],...}` comment; see `warriors/gatekeeper.js`.
-- `evolve [warrior...] [--generations 6] [--batches 4] [--batch 40] [--classics] [--out evolved]`: breed warriors. MAP-Elites keeps the best of each species; each generation's champion joins the opponents (Red Queen); `--classics` reports each champion's score against the held-out originals. Writes `redqueen-N.red`, `elite-pP-cC.red` and `evolve.json`.
+- `tune <warrior.js> [--candidates 40] [--seeds 3] [--write]`: random search over a JavaScript warrior's constants. The file needs `const P = {...};` and a `// SPACE {"NAME":[min,max],...}` comment; see `warriors/gatekeeper.js`. Finalists are re-checked on fresh seeds against the current constants, opponent by opponent; a result only counts (and `--write` only saves it) if the gain is larger than its noise margin.
+- `evolve [warrior...] [--generations 6] [--batches 4] [--batch 40] [--king a.js,b.red] [--genome 40] [--classics] [--out evolved]`: breed warriors. MAP-Elites keeps the best of each species; each generation's champion joins the opponents (Red Queen); `--classics` reports each champion's score against the held-out originals. `--king` starts the Red Queen with those warriors as champions (generation 1 must beat them); `--genome` raises the size limit for evolved code (default 40). Writes `redqueen-N.red`, `elite-pP-cC.red` and `evolve.json`.
 
 Scores: points per round (win 3, tie 1) and the smooth score, where a loss is worth the share of the cycle limit survived (0 to just under 1).
 

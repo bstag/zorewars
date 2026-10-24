@@ -11,7 +11,7 @@
 // Tuned constants. `zorewars tune` searches the SPACE below for better values:
 //   node cli/zorewars.js tune warriors/hedgehog.js
 // SPACE {"GAP":[2,12],"QTIME":[8,24],"BACK":[0,6],"QBOMB":["dat","spl"],"SOFF":[200,7800],"SSTEP":[2,7998],"SBOMB":["dat","spl"],"IOFF":[200,7800],"T":[3,6,8]}
-const P = {"GAP":8,"QTIME":10,"BACK":4,"QBOMB":"spl","SOFF":5077,"SSTEP":1874,"SBOMB":"dat","IOFF":6568,"T":8};
+const P = {"GAP":8,"QTIME":13,"BACK":4,"QBOMB":"spl","SOFF":5077,"SSTEP":1874,"SBOMB":"dat","IOFF":6568,"T":8};
 name("Hedgehog");
 author("ZoreWars");
 strategy("Decoding quickscan, then a booted multi-process stone that becomes a clear, plus an imp spiral.");
@@ -36,6 +36,9 @@ if (!Number.isInteger(ISTEP)) throw new Error('the imp spiral needs CORESIZE+1 d
 // v = 1 + (t - qp) / (D - 1): D - 1 must be invertible. JavaScript tries every
 // D and keeps the one that spreads the probes most evenly, away from our code.
 const G = 6, RESERVED = 100;
+// The carpet must cover both cells of a pair: [find-BACK, find-BACK+QTIME).
+if (P.QTIME < P.BACK + P.GAP + 1) throw new Error(`a carpet of ${P.QTIME} from ${P.BACK} back misses the pair's second cell (GAP ${P.GAP})`);
+
 const Q = {};
 let n = 3 * G;
 for (const k of ['skip', 'decA', 'jA', 'decB', 'qb', 'ql', 'qadd', 'qdjn', 'qend', 'qbmb', 'selA', 'selB', 'qp']) Q[k] = n++;

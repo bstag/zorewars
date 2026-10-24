@@ -52,7 +52,7 @@ test('loss diagnosis sorts every non-win into one symptom', () => {
 });
 
 test('every tuned library bot declares a SPACE that its constants fit', () => {
-  for (const f of ['gatekeeper.js', 'papercut.js', 'blitz.js', 'chameleon.js', 'bandit.js', 'hedgehog.js', 'hydra.js']) {
+  for (const f of ['gatekeeper.js', 'papercut.js', 'blitz.js', 'chameleon.js', 'bandit.js', 'hedgehog.js', 'hydra.js', 'fastsilk.js']) {
     const src = read(`warriors/${f}`);
     const { space, current } = parseTunable(src);
     for (const [k, v] of Object.entries(space)) {

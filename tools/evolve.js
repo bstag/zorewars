@@ -21,13 +21,14 @@ import { makeGenePool, makeOperators, makeChooser, crossover, fits, clone, graft
 export async function evolve({
   pool, sources, opponents, heldOut = [], settings,
   rounds = 8, batches = 4, batchSize = 40, evalRounds = 6, maxLength = MAXLEN,
+  kings = [],          // warriors that start as champions: generation 1 must already beat them
   onLog = () => {}, onRound = () => {},
 }) {
   const units = makeGenePool(sources);
   const ops = makeOperators(units);
   const opNames = Object.keys(ops);
   const chooser = makeChooser(opNames);
-  const champions = [];
+  const champions = kings.map((w) => ({ round: 0, name: w.name, g: genomeOf(w), w: strip(w) }));
   const coreSize = settings.coreSize;
 
   async function assess(g, round) {

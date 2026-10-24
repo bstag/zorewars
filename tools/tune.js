@@ -30,7 +30,15 @@ function sample(space) {
   }));
 }
 
-export async function tune({ pool, source, field, settings, candidates = 40, screenRounds = 10, checkRounds = 30, finalists = 6, onProgress = () => {} }) {
+// Screening picks the best of many noisy samples, so its winner is usually
+// partly luck. The check stage therefore re-runs the finalists and the
+// current constants on fresh seeds (the same seeds, so the same load
+// positions, for everyone) and compares each finalist with the current
+// constants opponent by opponent and seed by seed. A finalist only counts as
+// an improvement if its mean gain is more than Z standard errors above zero.
+const Z = 2.5;   // a little stricter than 2, because several finalists are compared
+
+export async function tune({ pool, source, field, settings, candidates = 40, screenRounds = 10, checkRounds = 20, seeds = 3, finalists = 6, onProgress = () => {} }) {
   const { space, current } = parseTunable(source);
   const build = (P) => compile(withConstants(source, P), 'javascript', settings);
   const tried = [];
@@ -48,11 +56,31 @@ export async function tune({ pool, source, field, settings, candidates = 40, scr
   // Re-check the best (and the current values, for comparison) on fresh seeds.
   const check = tried.slice(0, finalists);
   if (!check.some((t) => t.current)) check.push(tried.find((t) => t.current));
+  const seedList = Array.from({ length: Math.max(1, seeds) }, (_, i) => 1001 + i * 1000);
   const results = [];
-  for (const t of check.filter(Boolean)) {
-    const r = await evaluate(pool, build(t.P), field, { rounds: checkRounds, seed: 1001, settings });
-    results.push({ ...t, score: r.score, smooth: r.smooth, groups: r.groups, rows: r.rows });
+  for (const [i, t] of check.filter(Boolean).entries()) {
+    const w = build(t.P);
+    const runs = [];
+    for (const seed of seedList) runs.push(await evaluate(pool, w, field, { rounds: checkRounds, seed, settings }));
+    const mean = (k) => runs.reduce((s, r) => s + r[k], 0) / runs.length;
+    results.push({ ...t, score: mean('score'), smooth: mean('smooth'), samples: runs.flatMap((r) => r.rows.map((x) => x.smooth)), rows: runs[0].rows });
+    onProgress(all.length + i + 1, all.length + check.length);
+  }
+  // Paired differences against the current constants: same opponent, same seed.
+  const base = results.find((r) => r.current);
+  const baseSamples = base.samples;
+  for (const r of results) {
+    const d = r.samples.map((x, k) => x - baseSamples[k]);
+    const m = d.reduce((s, x) => s + x, 0) / d.length;
+    const sd = Math.sqrt(d.reduce((s, x) => s + (x - m) ** 2, 0) / Math.max(1, d.length - 1));
+    r.gain = m;
+    r.margin = (Z * sd) / Math.sqrt(d.length);   // gain ± margin
+    r.significant = !r.current && m - r.margin > 0;
+    delete r.samples;
   }
   results.sort((a, b) => b.smooth - a.smooth);
-  return { space, current, best: results[0], results, tried: tried.length, rejected };
+  // The recommendation: the best finalist that clearly beats the current
+  // constants; otherwise keep the current ones.
+  const better = results.filter((r) => r.significant).sort((a, b) => b.gain - a.gain)[0];
+  return { space, current, best: better ?? base, improved: !!better, results, tried: tried.length, rejected, seeds: seedList, checkRounds };
 }
