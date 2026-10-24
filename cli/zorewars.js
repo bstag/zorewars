@@ -64,6 +64,7 @@ Options:
   --pspace N         P-space size                (default: coresize/16)
   --torus XxY[xZ]    a torus battlefield instead of the ring, e.g. 100x80;
                      addresses are vectors there: [0,1] is one row down
+                     and TRN turns a process's heading (code can flow any way)
   --fixed N          warrior 2 starts at N in round 1, like pmars -F;
                      later rounds follow pMARS's RNG, so results match pMARS
   --json             machine-readable output

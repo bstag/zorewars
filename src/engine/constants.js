@@ -4,6 +4,7 @@ export const OPCODES = [
   'DAT', 'MOV', 'ADD', 'SUB', 'MUL', 'DIV', 'MOD',
   'JMP', 'JMZ', 'JMN', 'DJN', 'SPL', 'SLT', 'SEQ', 'SNE', 'NOP',
   'LDP', 'STP', // P-space: private memory that survives between rounds
+  'TRN',        // torus battlefields: turn the process to face along A (see geometry.js)
 ];
 // CMP is the historical name for SEQ.
 export const OPCODE_ALIASES = { CMP: 'SEQ' };

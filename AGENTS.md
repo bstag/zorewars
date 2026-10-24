@@ -25,7 +25,7 @@ Scores: points per round (win 3, tie 1) and the smooth score, where a loss is wo
 
 ## The plane (experimental)
 
-`--torus 100x80` (or `125x64`, or `20x20x20`) replaces the ring with a torus. Every number is a point: plain numbers are steps along x (`-1` is still one cell back), `[x,y]` / `[x,y,z]` are vectors, and `SIZEX`/`SIZEY`/`SIZEZ` give the size (generators: `vec(x, y, z)`). Addressing and ADD/SUB/MUL/DIV/MOD work per axis; DJN, pointer increments and comparisons are plain numbers. Code runs along rows, so imps circle their row; on 100x80 no fixed step visits more than 400 cells. Plane warriors: `@plane/plaid.js`, `@plane/climber.js`, `@plane/planesilk.js`, `@plane/raster.js`.
+`--torus 100x80` (or `125x64`, or `20x20x20`) replaces the ring with a torus. Every number is a point: plain numbers are steps along x (`-1` is still one cell back), `[x,y]` / `[x,y,z]` are vectors, and `SIZEX`/`SIZEY`/`SIZEZ` give the size (generators: `vec(x, y, z)`). Addressing and ADD/SUB/MUL/DIV/MOD work per axis; DJN, pointer increments and comparisons are plain numbers. Every process has a heading (+x at the start): its next instruction is one step along it. `TRN A` turns it to face along A (the axis with the largest part; `TRN $[0,1]` faces down); jumps keep the heading and SPL children inherit it. TRN is an error on the ring. On 100x80 no fixed step visits more than 400 cells. Plane warriors: `@plane/plaid.js`, `@plane/climber.js`, `@plane/planesilk.js`, `@plane/raster.js`, `@plane/columnimp.js`, `@plane/pillar.js`, `@plane/weave.js`.
 
 ## Rules (defaults)
 

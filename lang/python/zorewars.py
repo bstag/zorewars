@@ -23,9 +23,14 @@ MAXPROCESSES = 8000
 MAXCYCLES = 80000
 MAXLENGTH = 100
 MINDISTANCE = 100
+# Torus battlefields (the plane): SIZEX x SIZEY x SIZEZ cells. On the classic
+# ring SIZEX is CORESIZE and the others are 1.
+SIZEX = 8000
+SIZEY = 1
+SIZEZ = 1
 
 _OPCODES = ["DAT", "MOV", "ADD", "SUB", "MUL", "DIV", "MOD", "JMP", "JMZ",
-            "JMN", "DJN", "SPL", "SLT", "SEQ", "SNE", "NOP", "LDP", "STP", "CMP"]
+            "JMN", "DJN", "SPL", "SLT", "SEQ", "SNE", "NOP", "LDP", "STP", "CMP", "TRN"]
 _MODIFIERS = ["A", "B", "AB", "BA", "F", "X", "I"]
 
 _meta = {"name": None, "author": None, "strategy": []}
@@ -66,8 +71,13 @@ class _Op:
         _emit(self._op, None, args)
 
 
-dat, mov, add, sub, mul, div, mod, jmp, jmz, jmn, djn, spl, slt, seq, sne, nop, ldp, stp, cmp = (
+dat, mov, add, sub, mul, div, mod, jmp, jmz, jmn, djn, spl, slt, seq, sne, nop, ldp, stp, cmp, trn = (
     _Op(o) for o in _OPCODES)
+
+
+def vec(x, y=0, z=None):
+    """A vector on a torus battlefield: vec(0, 1) is one step along y, written [0,1]."""
+    return f"[{x},{y}]" if z is None else f"[{x},{y},{z}]"
 
 
 def name(s): _meta["name"] = str(s)
@@ -133,8 +143,8 @@ def _print_at_exit():
 
 __all__ = [
     "dat", "mov", "add", "sub", "mul", "div", "mod", "jmp", "jmz", "jmn", "djn",
-    "spl", "slt", "seq", "sne", "nop", "ldp", "stp", "cmp", "name", "author", "strategy",
+    "spl", "slt", "seq", "sne", "nop", "ldp", "stp", "cmp", "trn", "vec", "name", "author", "strategy",
     "label", "equ", "comment", "raw", "org", "curline", "imm", "dir", "ind", "aind",
     "predec", "apredec", "postinc", "apostinc", "render",
-    "CORESIZE", "MAXPROCESSES", "MAXCYCLES", "MAXLENGTH", "MINDISTANCE",
+    "CORESIZE", "MAXPROCESSES", "MAXCYCLES", "MAXLENGTH", "MINDISTANCE", "SIZEX", "SIZEY", "SIZEZ",
 ]

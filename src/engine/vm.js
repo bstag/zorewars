@@ -9,23 +9,34 @@ import { mulberry32 } from './random.js';
 import { topologyFor } from './topology.js';
 import { makeGeometry } from './geometry.js';
 
-const { DAT, MOV, ADD, SUB, MUL, DIV, MOD: MODOP, JMP, JMZ, JMN, DJN, SPL, SLT, SEQ, SNE, NOP, LDP, STP } = OP;
+const { DAT, MOV, ADD, SUB, MUL, DIV, MOD: MODOP, JMP, JMZ, JMN, DJN, SPL, SLT, SEQ, SNE, NOP, LDP, STP, TRN } = OP;
 const { A, B, AB, BA, F, X, I } = MOD;
 
+// Each process is a program counter and, on a torus, a heading: the axis
+// and direction its code flows in (0..5 = +x -x +y -y +z -z; always 0 on the
+// classic ring). push() stores the heading in `h`, which the VM sets to the
+// running process's heading (TRN changes it); shift() leaves the heading of
+// the process it returns in `lastH`.
 class ProcessQueue {
   constructor(capacity) {
     this.buf = new Int32Array(capacity);
+    this.heads = new Uint8Array(capacity);
     this.head = 0;
     this.size = 0;
+    this.h = 0;
+    this.lastH = 0;
   }
   push(pc) {
     if (this.size >= this.buf.length) return false;
-    this.buf[(this.head + this.size) % this.buf.length] = pc;
+    const i = (this.head + this.size) % this.buf.length;
+    this.buf[i] = pc;
+    this.heads[i] = this.h;
     this.size++;
     return true;
   }
   shift() {
     const pc = this.buf[this.head];
+    this.lastH = this.heads[this.head];
     this.head = (this.head + 1) % this.buf.length;
     this.size--;
     return pc;
@@ -43,6 +54,9 @@ export class VM {
     // Torus battlefields: per-axis addressing and arithmetic (geometry.js).
     // null on the classic ring, where everything is plain modular arithmetic.
     this.geo = makeGeometry(this.settings);
+    // One step along each heading (+x -x +y -y +z -z), as stored numbers.
+    this.headingStep = this.geo ? [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]].map(([x, y, z]) => this.geo.encode(x, y, z)) : null;
+    this.curH = 0;
     this.op = new Uint8Array(n);
     this.mod = new Uint8Array(n);
     this.aMode = new Uint8Array(n);
@@ -200,6 +214,8 @@ export class VM {
     const w = this.turn;
     const warrior = this.warriors[w];
     const pc = warrior.queue.shift();
+    this.curH = warrior.queue.lastH;      // heading of this process...
+    warrior.queue.h = this.curH;          // ...which its successors keep (TRN changes it)
     this.steps++;
     this.curPc = pc;
 
@@ -369,9 +385,11 @@ export class VM {
     const bA = fa[bPtr], bB = fb[bPtr];
     this.applyPostIncrement(w);
 
+    // The next instruction is one step along the process's heading.
     const g = this.geo;
-    const next = g ? g.add(pc, 1) : (pc + 1) % n;
-    const skipTo = g ? g.add(pc, 2) : (pc + 2) % n;
+    const step = g ? this.headingStep[this.curH] : 1;
+    const next = g ? g.add(pc, step) : (pc + 1) % n;
+    const skipTo = g ? g.add(next, step) : (pc + 2) % n;
     let killed = false;
 
     const arith = (fn) => {
@@ -500,6 +518,21 @@ export class VM {
       case NOP:
         queue.push(next);
         break;
+
+      case TRN: { // turn: face along A, relative to this instruction (torus only)
+        if (!g) { queue.push(next); break; }   // the assembler refuses TRN on the ring
+        const [dx, dy, dz] = g.decode(g.sub(aPtr, pc));
+        const ax = Math.abs(dx), ay = Math.abs(dy), az = Math.abs(dz);
+        let h = this.curH;                       // a zero vector leaves the heading alone
+        if (ax || ay || az) {
+          if (ax >= ay && ax >= az) h = dx > 0 ? 0 : 1;
+          else if (ay >= az) h = dy > 0 ? 2 : 3;
+          else h = dz > 0 ? 4 : 5;
+        }
+        queue.h = h;
+        queue.push(g.add(pc, this.headingStep[h]));
+        break;
+      }
 
       case LDP: { // load from P-space: index from A, into a field of B
         const ps = this.warriors[w].pspace;

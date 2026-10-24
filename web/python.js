@@ -40,6 +40,10 @@ export async function generateFromPython(source, settings) {
   py.globals.set('__zw_maxlen', settings.maxLength);
   py.globals.set('__zw_mindist', settings.minDistance);
   py.globals.set('__zw_maxcycles', settings.maxCycles);
+  const torus = settings.topology === 'torus';
+  py.globals.set('__zw_sizex', torus ? settings.sizeX : settings.coreSize);
+  py.globals.set('__zw_sizey', torus ? (settings.sizeY ?? 1) : 1);
+  py.globals.set('__zw_sizez', torus ? (settings.sizeZ ?? 1) : 1);
   const out = await py.runPythonAsync(`
 import sys, importlib
 if '/home/pyodide' not in sys.path:
@@ -52,6 +56,9 @@ zorewars.MAXPROCESSES = __zw_maxproc
 zorewars.MAXLENGTH = __zw_maxlen
 zorewars.MINDISTANCE = __zw_mindist
 zorewars.MAXCYCLES = __zw_maxcycles
+zorewars.SIZEX = __zw_sizex
+zorewars.SIZEY = __zw_sizey
+zorewars.SIZEZ = __zw_sizez
 __zw_globals = {'__name__': '__main__'}
 exec(compile(__zw_source, 'warrior.py', 'exec'), __zw_globals)
 zorewars.render()

@@ -514,9 +514,9 @@ node cli/zorewars.js evolve --generations 6       <span class="cmt"># breed new 
       <ul>
         <li>Addresses are vectors. <code>[0,1]</code> means one row down, and a plain number is still a step along the row, so <code>JMP -1</code> works as before. <code>SIZEX</code> and <code>SIZEY</code> give the plane's size; generators have <code>vec(x, y)</code>.</li>
         <li>Addressing and <code>ADD</code>/<code>SUB</code>/<code>MUL</code>/<code>DIV</code>/<code>MOD</code> work per axis, each wrapping on its own. Counters (<code>DJN</code>) and pointer increments (<code>&lt; &gt; { }</code>) are plain numbers, so a <code>&gt;ptr</code> clear walks every cell row by row.</li>
-        <li><b>Code flows along rows:</b> an imp circles its own row. To move vertically, copy yourself and jump (see Climber).</li>
+        <li><b>Headings:</b> every process has a heading, +x at the start, and its next instruction is one step along it. <code>TRN A</code> turns the process to face along A: <code>TRN $[0,1]</code> faces down, <code>TRN $-1</code> faces back along the row, and <code>TRN @ptr</code> turns to a direction computed at run time (the axis with the largest part wins). Jumps keep the heading and <code>SPL</code> children inherit it. Column Imp crawls down a column; Pillar is a stone standing in a column, only one cell wide in each row.</li>
         <li><b>No single step covers 100×80:</b> a fixed stride repeats after at most 400 cells, so stones and scanners need two loops (see Plaid). On 125×64 a single step can still reach every cell.</li>
-        <li>Classic warriors mostly still run, but ones whose constants assume the ring may bomb themselves. The library's plane warriors (Plaid, Climber, Plane Silk, Raster) are written for it.</li>
+        <li>Classic warriors mostly still run, but ones whose constants assume the ring may bomb themselves. The library's plane warriors (Plaid, Climber, Plane Silk, Raster, Column Imp, Pillar, Weave) are written for it.</li>
       </ul>
       <p>A plane one row high is exactly the classic ring, and the tests check that battles there match the classic ones round for round. Background and open questions: <code>design/3d-battlefield.md</code>.</p>
 

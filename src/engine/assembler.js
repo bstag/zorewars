@@ -400,10 +400,13 @@ export function assemble(source, settings = {}) {
         return;
       }
       aOp = { mode: '#', expr: '0' }; bOp = { mode: '#', expr: '0' };
+    } else if (l.op === 'TRN' && !geo) {
+      errors.push({ line: l.lineNo, message: 'TRN (turn) needs a torus battlefield, where code can flow along any axis: choose a Plane battlefield in Rules (CLI: --torus 100x80)' });
+      return;
     } else if (ops.length === 1) {
-      // As in pMARS, only these opcodes may omit the B operand.
+      // As in pMARS, only these opcodes may omit the B operand (and TRN).
       if (l.op === 'DAT') { aOp = { mode: '#', expr: '0' }; bOp = parseOperand(ops[0], equs); }
-      else if (['JMP', 'SPL', 'NOP'].includes(l.op)) { aOp = parseOperand(ops[0], equs); bOp = { mode: '$', expr: '0' }; }
+      else if (['JMP', 'SPL', 'NOP', 'TRN'].includes(l.op)) { aOp = parseOperand(ops[0], equs); bOp = { mode: '$', expr: '0' }; }
       else {
         errors.push({ line: l.lineNo, message: `${l.op} needs two operands (only DAT, JMP, SPL and NOP may have one)` });
         return;

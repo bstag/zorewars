@@ -27,9 +27,13 @@ A torus battlefield of X×Y×Z cells (`settings.topology = 'torus'`, `sizeX/size
 3. **Ring-computed constants break.** Imp Ring, Hedgehog, Hydra and Bandit kill themselves on the plane, because their JavaScript did ring arithmetic. Plane warriors compute with `SIZEX`/`SIZEY`.
 4. **The metagame flips.** In a 17-warrior tournament on 100×80, linear core clears came first (Two-Pass Clear 2.41, Raster 2.15 points per round), papers were nearly unkillable (Papercut, Plane Silk, Fast Silk lost 0 to 8 of 320 rounds), and stride-based scanners and stones fell to about 1.0.
 
-### Open questions for the next step
+### Headings: code that flows in any direction
 
-- Should the program counter be able to flow along y (a per-warrior or per-process heading)? That would make vertical imps possible, and is the biggest remaining design choice before 3D.
+Every process has a heading, one of ±x, ±y, ±z (stored beside its program counter; +x at load). The next instruction is one step along the heading and a skip two. One new instruction, `TRN A`, turns the process to face along A relative to itself, choosing the axis with the largest component (`TRN $[0,1]` faces +y; `TRN @ptr` turns to a computed direction; a zero vector leaves the heading alone). Jumps keep the heading; SPL children inherit it. `TRN` is an assembler error on the ring, and the ring never changes a heading, so classic Core War is untouched (re-verified against pMARS and the ring identity).
+
+What it showed: a vertical imp now works (Column Imp covers its 80-cell column). A stone standing in a column (Pillar) beats the same stone lying in a row (Plaid) in most matchups (7-3-10 head to head, 8-12 instead of 2-18 against the clears), because it is one cell wide in every row. In the full plane tournament, linear clears and papers still lead; imps are weak in 2D, since one row or column is a thin line.
+
+### Open questions for the next step
 - 100×80 (new strategies forced) or 125×64 (classic strategies carry over) as the default plane?
 - 3D: z-slices are already drawn stacked; a WebGL view comes when warriors use z.
 

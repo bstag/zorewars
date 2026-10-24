@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { compile, runMatch, measureSpecies, topologyFor, DEFAULT_SETTINGS } from '../src/engine/index.js';
+import { compile, runMatch, measureSpecies, topologyFor, VM, DEFAULT_SETTINGS } from '../src/engine/index.js';
 import { makeGeometry } from '../src/engine/geometry.js';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
@@ -77,7 +77,7 @@ test('the plane: code flows along rows, and fixed steps cover only a stripe', ()
 });
 
 test('plane warriors work on the plane and say so on the ring', () => {
-  for (const f of ['plaid', 'climber', 'planesilk', 'raster']) {
+  for (const f of ['plaid', 'climber', 'planesilk', 'raster', 'columnimp', 'pillar', 'weave']) {
     const src = read(`warriors/plane/${f}.js`);
     const onRing = compile(src, 'javascript');
     assert.ok(!onRing.ok && /is for a plane/.test(onRing.errors[0].message), `${f} on the ring`);
@@ -88,4 +88,25 @@ test('plane warriors work on the plane and say so on the ring', () => {
   // Climber really travels vertically: it runs code on many different rows.
   const climber = compile(read('warriors/plane/climber.js'), 'javascript', PLANE);
   assert.ok(measureSpecies(climber, PLANE).coverage > 300);
+});
+
+test('headings: TRN turns a process along the dominant axis, and the ring refuses TRN', () => {
+  const g = makeGeometry(PLANE);
+  // Column Imp: after TRN the process runs down its column, 80 cells (plus the launcher).
+  const cimp = measureSpecies(compile(read('warriors/plane/columnimp.js'), 'javascript', PLANE), PLANE);
+  assert.equal(cimp.coverage, 81);
+  // TRN takes the dominant axis of its operand.
+  const w = compile(`
+        TRN $[0,-5]          ; face up (-y): dominant axis y, negative
+        SPL $[0,-2]          ; a child at 2 rows up, still facing up
+        DAT 0                ; never reached by this process: its next cell is above
+  `, 'redcode', PLANE);
+  assert.ok(w.ok, JSON.stringify(w.errors));
+  const vm = new VM(PLANE);
+  vm.load([w], { positions: [g.encode(0, 10)] });
+  vm.step();                                           // TRN
+  const [pc] = [...vm.warriors[0].queue];
+  assert.deepEqual(g.decode(pc), [0, 9, 0]);           // moved up one row, not right
+  assert.ok(!compile('TRN $[0,1]').ok);                // the ring has no headings
+  assert.match(compile('TRN $[0,1]').errors[0].message, /torus/);
 });

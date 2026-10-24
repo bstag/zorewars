@@ -78,7 +78,7 @@ struct Op {
 inline const Op dat{"DAT"}, mov{"MOV"}, add{"ADD"}, sub{"SUB"}, mul{"MUL"},
     div{"DIV"}, mod{"MOD"}, jmp{"JMP"}, jmz{"JMZ"}, jmn{"JMN"}, djn{"DJN"},
     spl{"SPL"}, slt{"SLT"}, seq{"SEQ"}, sne{"SNE"}, nop{"NOP"}, ldp{"LDP"},
-    stp{"STP"}, cmp{"CMP"};
+    stp{"STP"}, cmp{"CMP"}, trn{"TRN"};
 
 inline void name(const std::string& s) { detail::state().name = s; }
 inline void author(const std::string& s) { detail::state().author = s; }
