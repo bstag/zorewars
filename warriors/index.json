@@ -14,6 +14,7 @@
   {"file":"stunner.red","name":"Stunner","category":"Stun bomber","language":"redcode"},
   {"file":"stoneimp.red","name":"Stone and Imp","category":"Stone/imp","language":"redcode"},
   {"file":"evolvedsilk.red","name":"Evolved Silk","category":"Silk paper (evolved)","language":"redcode"},
+  {"file":"redqueen.red","name":"Red Queen","category":"Scanner + paper (evolved)","language":"redcode"},
   {"file":"dwarf.js","name":"Dwarf (JavaScript)","category":"Stone (bomber)","language":"javascript","benchmark":false},
   {"file":"carpet.js","name":"Carpet Bomber","category":"Stone (bomber)","language":"javascript"},
   {"file":"quickscan.js","name":"Quickscan","category":"Quickscan","language":"javascript"},
@@ -55,5 +56,7 @@
   {"file":"javascript/stoneimp.js","name":"Stone and Imp","category":"Stone/imp","language":"javascript","convertedFrom":"stoneimp.red","benchmark":false},
   {"file":"python/stoneimp.py","name":"Stone and Imp","category":"Stone/imp","language":"python","convertedFrom":"stoneimp.red","benchmark":false},
   {"file":"javascript/evolvedsilk.js","name":"Evolved Silk","category":"Silk paper (evolved)","language":"javascript","convertedFrom":"evolvedsilk.red","benchmark":false},
-  {"file":"python/evolvedsilk.py","name":"Evolved Silk","category":"Silk paper (evolved)","language":"python","convertedFrom":"evolvedsilk.red","benchmark":false}
+  {"file":"python/evolvedsilk.py","name":"Evolved Silk","category":"Silk paper (evolved)","language":"python","convertedFrom":"evolvedsilk.red","benchmark":false},
+  {"file":"javascript/redqueen.js","name":"Red Queen","category":"Scanner + paper (evolved)","language":"javascript","convertedFrom":"redqueen.red","benchmark":false},
+  {"file":"python/redqueen.py","name":"Red Queen","category":"Scanner + paper (evolved)","language":"python","convertedFrom":"redqueen.red","benchmark":false}
 ]

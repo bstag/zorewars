@@ -4,129 +4,134 @@
  "seed": 1,
  "ranking": [
   {
-   "file": "gatekeeper.js",
-   "scorePerRound": 1.93,
+   "file": "redqueen.red",
+   "scorePerRound": 1.957,
    "rank": 1
   },
   {
    "file": "bandit.js",
-   "scorePerRound": 1.893,
+   "scorePerRound": 1.953,
    "rank": 2
   },
   {
-   "file": "fastsilk.js",
-   "scorePerRound": 1.831,
+   "file": "gatekeeper.js",
+   "scorePerRound": 1.899,
    "rank": 3
   },
   {
-   "file": "hydra.js",
-   "scorePerRound": 1.829,
+   "file": "fastsilk.js",
+   "scorePerRound": 1.776,
    "rank": 4
   },
   {
    "file": "chameleon.js",
-   "scorePerRound": 1.788,
+   "scorePerRound": 1.76,
    "rank": 5
   },
   {
-   "file": "evolvedsilk.red",
-   "scorePerRound": 1.768,
+   "file": "hydra.js",
+   "scorePerRound": 1.748,
    "rank": 6
   },
   {
-   "file": "blitz.js",
-   "scorePerRound": 1.755,
+   "file": "evolvedsilk.red",
+   "scorePerRound": 1.743,
    "rank": 7
   },
   {
-   "file": "papercut.js",
-   "scorePerRound": 1.729,
+   "file": "blitz.js",
+   "scorePerRound": 1.72,
    "rank": 8
   },
   {
-   "file": "hedgehog.js",
-   "scorePerRound": 1.678,
+   "file": "papercut.js",
+   "scorePerRound": 1.689,
    "rank": 9
   },
   {
-   "file": "silk.red",
-   "scorePerRound": 1.671,
+   "file": "hedgehog.js",
+   "scorePerRound": 1.643,
    "rank": 10
   },
   {
-   "file": "mice.red",
-   "scorePerRound": 1.413,
+   "file": "silk.red",
+   "scorePerRound": 1.614,
    "rank": 11
   },
   {
-   "file": "oneshot.red",
-   "scorePerRound": 1.373,
+   "file": "mice.red",
+   "scorePerRound": 1.386,
    "rank": 12
   },
   {
-   "file": "seeker.red",
-   "scorePerRound": 1.199,
+   "file": "oneshot.red",
+   "scorePerRound": 1.324,
    "rank": 13
   },
   {
-   "file": "impring.red",
-   "scorePerRound": 1.162,
+   "file": "seeker.red",
+   "scorePerRound": 1.212,
    "rank": 14
   },
   {
-   "file": "stunner.red",
-   "scorePerRound": 1.127,
+   "file": "scanner.red",
+   "scorePerRound": 1.151,
    "rank": 15
   },
   {
-   "file": "scanner.red",
-   "scorePerRound": 1.124,
+   "file": "impring.red",
+   "scorePerRound": 1.14,
    "rank": 16
   },
   {
    "file": "twopass.red",
-   "scorePerRound": 1.093,
+   "scorePerRound": 1.101,
    "rank": 17
   },
   {
-   "file": "stoneimp.red",
-   "scorePerRound": 1.014,
+   "file": "stunner.red",
+   "scorePerRound": 1.07,
    "rank": 18
   },
   {
    "file": "quickscan.js",
-   "scorePerRound": 0.996,
+   "scorePerRound": 1.006,
    "rank": 19
   },
   {
-   "file": "dwarf.red",
-   "scorePerRound": 0.947,
+   "file": "stoneimp.red",
+   "scorePerRound": 0.991,
    "rank": 20
   },
   {
-   "file": "vampire.red",
-   "scorePerRound": 0.914,
+   "file": "dwarf.red",
+   "scorePerRound": 0.976,
    "rank": 21
   },
   {
-   "file": "sweeper.red",
-   "scorePerRound": 0.905,
+   "file": "vampire.red",
+   "scorePerRound": 0.93,
    "rank": 22
   },
   {
-   "file": "carpet.js",
-   "scorePerRound": 0.844,
+   "file": "sweeper.red",
+   "scorePerRound": 0.893,
    "rank": 23
   },
   {
-   "file": "imp.red",
-   "scorePerRound": 0.657,
+   "file": "carpet.js",
+   "scorePerRound": 0.864,
    "rank": 24
   },
   {
-   "file": "gemini.red",
-   "scorePerRound": 0.348,
+   "file": "imp.red",
+   "scorePerRound": 0.668,
    "rank": 25
+  },
+  {
+   "file": "gemini.red",
+   "scorePerRound": 0.358,
+   "rank": 26
   }
  ],
  "results": {
@@ -202,15 +207,20 @@
      "l": 46,
      "t": 54
     },
+    "redqueen.red": {
+     "w": 0,
+     "l": 0,
+     "t": 100
+    },
     "carpet.js": {
      "w": 0,
-     "l": 74,
-     "t": 26
+     "l": 63,
+     "t": 37
     },
     "quickscan.js": {
      "w": 0,
-     "l": 24,
-     "t": 76
+     "l": 23,
+     "t": 77
     },
     "gatekeeper.js": {
      "w": 0,
@@ -219,18 +229,18 @@
     },
     "papercut.js": {
      "w": 0,
-     "l": 39,
-     "t": 61
+     "l": 52,
+     "t": 48
     },
     "fastsilk.js": {
      "w": 0,
-     "l": 58,
-     "t": 42
+     "l": 59,
+     "t": 41
     },
     "blitz.js": {
      "w": 0,
-     "l": 40,
-     "t": 60
+     "l": 43,
+     "t": 57
     },
     "chameleon.js": {
      "w": 0,
@@ -239,25 +249,25 @@
     },
     "bandit.js": {
      "w": 0,
-     "l": 43,
-     "t": 57
+     "l": 50,
+     "t": 50
     },
     "hedgehog.js": {
      "w": 0,
-     "l": 29,
-     "t": 71
+     "l": 22,
+     "t": 78
     },
     "hydra.js": {
      "w": 0,
-     "l": 55,
-     "t": 45
+     "l": 56,
+     "t": 44
     }
    },
    "wins": 0,
-   "losses": 824,
-   "ties": 1576,
-   "score": 1576,
-   "played": 2400
+   "losses": 830,
+   "ties": 1670,
+   "score": 1670,
+   "played": 2500
   },
   "dwarf.red": {
    "vs": {
@@ -331,62 +341,67 @@
      "l": 69,
      "t": 27
     },
+    "redqueen.red": {
+     "w": 44,
+     "l": 54,
+     "t": 2
+    },
     "carpet.js": {
-     "w": 65,
+     "w": 66,
      "l": 30,
-     "t": 5
+     "t": 4
     },
     "quickscan.js": {
      "w": 35,
-     "l": 41,
-     "t": 24
+     "l": 39,
+     "t": 26
     },
     "gatekeeper.js": {
-     "w": 35,
-     "l": 62,
+     "w": 36,
+     "l": 61,
      "t": 3
     },
     "papercut.js": {
-     "w": 11,
+     "w": 8,
      "l": 83,
-     "t": 6
+     "t": 9
     },
     "fastsilk.js": {
-     "w": 7,
-     "l": 83,
+     "w": 11,
+     "l": 79,
      "t": 10
     },
     "blitz.js": {
      "w": 6,
-     "l": 82,
-     "t": 12
+     "l": 85,
+     "t": 9
     },
     "chameleon.js": {
-     "w": 9,
+     "w": 12,
      "l": 78,
-     "t": 13
+     "t": 10
     },
     "bandit.js": {
-     "w": 8,
-     "l": 82,
+     "w": 12,
+     "l": 78,
      "t": 10
     },
     "hedgehog.js": {
-     "w": 0,
+     "w": 1,
      "l": 98,
-     "t": 2
+     "t": 1
     },
     "hydra.js": {
      "w": 2,
-     "l": 80,
-     "t": 18
+     "l": 77,
+     "t": 21
     }
    },
-   "wins": 642,
-   "losses": 1411,
-   "ties": 347,
-   "score": 2273,
-   "played": 2400
+   "wins": 697,
+   "losses": 1454,
+   "ties": 349,
+   "score": 2440,
+   "played": 2500
   },
   "gemini.red": {
    "vs": {
@@ -460,62 +475,67 @@
      "l": 93,
      "t": 7
     },
-    "carpet.js": {
+    "redqueen.red": {
      "w": 9,
-     "l": 77,
-     "t": 14
+     "l": 63,
+     "t": 28
+    },
+    "carpet.js": {
+     "w": 4,
+     "l": 81,
+     "t": 15
     },
     "quickscan.js": {
-     "w": 2,
-     "l": 39,
-     "t": 59
+     "w": 1,
+     "l": 38,
+     "t": 61
     },
     "gatekeeper.js": {
-     "w": 11,
-     "l": 59,
-     "t": 30
+     "w": 14,
+     "l": 60,
+     "t": 26
     },
     "papercut.js": {
      "w": 0,
-     "l": 90,
-     "t": 10
+     "l": 94,
+     "t": 6
     },
     "fastsilk.js": {
      "w": 0,
-     "l": 92,
-     "t": 8
+     "l": 85,
+     "t": 15
     },
     "blitz.js": {
      "w": 0,
-     "l": 97,
-     "t": 3
+     "l": 95,
+     "t": 5
     },
     "chameleon.js": {
      "w": 1,
-     "l": 89,
-     "t": 10
+     "l": 85,
+     "t": 14
     },
     "bandit.js": {
-     "w": 1,
-     "l": 88,
+     "w": 2,
+     "l": 87,
      "t": 11
     },
     "hedgehog.js": {
-     "w": 1,
-     "l": 90,
-     "t": 9
+     "w": 0,
+     "l": 89,
+     "t": 11
     },
     "hydra.js": {
-     "w": 0,
-     "l": 91,
-     "t": 9
+     "w": 1,
+     "l": 89,
+     "t": 10
     }
    },
-   "wins": 91,
-   "losses": 1747,
-   "ties": 562,
-   "score": 835,
-   "played": 2400
+   "wins": 98,
+   "losses": 1801,
+   "ties": 601,
+   "score": 895,
+   "played": 2500
   },
   "mice.red": {
    "vs": {
@@ -589,62 +609,67 @@
      "l": 0,
      "t": 100
     },
+    "redqueen.red": {
+     "w": 7,
+     "l": 92,
+     "t": 1
+    },
     "carpet.js": {
      "w": 89,
      "l": 0,
      "t": 11
     },
     "quickscan.js": {
-     "w": 80,
-     "l": 2,
-     "t": 18
+     "w": 88,
+     "l": 1,
+     "t": 11
     },
     "gatekeeper.js": {
-     "w": 5,
+     "w": 6,
      "l": 92,
-     "t": 3
+     "t": 2
     },
     "papercut.js": {
-     "w": 0,
-     "l": 1,
-     "t": 99
-    },
-    "fastsilk.js": {
      "w": 1,
      "l": 0,
      "t": 99
     },
-    "blitz.js": {
-     "w": 2,
+    "fastsilk.js": {
+     "w": 0,
      "l": 0,
-     "t": 98
+     "t": 100
+    },
+    "blitz.js": {
+     "w": 0,
+     "l": 4,
+     "t": 96
     },
     "chameleon.js": {
-     "w": 3,
-     "l": 38,
-     "t": 59
+     "w": 2,
+     "l": 15,
+     "t": 83
     },
     "bandit.js": {
-     "w": 13,
-     "l": 80,
-     "t": 7
+     "w": 20,
+     "l": 77,
+     "t": 3
     },
     "hedgehog.js": {
-     "w": 8,
-     "l": 2,
-     "t": 90
+     "w": 12,
+     "l": 4,
+     "t": 84
     },
     "hydra.js": {
-     "w": 3,
+     "w": 1,
      "l": 3,
-     "t": 94
+     "t": 96
     }
    },
-   "wins": 739,
-   "losses": 488,
-   "ties": 1173,
-   "score": 3390,
-   "played": 2400
+   "wins": 761,
+   "losses": 558,
+   "ties": 1181,
+   "score": 3464,
+   "played": 2500
   },
   "impring.red": {
    "vs": {
@@ -718,45 +743,50 @@
      "l": 46,
      "t": 54
     },
+    "redqueen.red": {
+     "w": 6,
+     "l": 21,
+     "t": 73
+    },
     "carpet.js": {
      "w": 0,
-     "l": 17,
-     "t": 83
+     "l": 23,
+     "t": 77
     },
     "quickscan.js": {
-     "w": 81,
+     "w": 82,
      "l": 18,
-     "t": 1
+     "t": 0
     },
     "gatekeeper.js": {
-     "w": 1,
+     "w": 10,
      "l": 16,
-     "t": 83
+     "t": 74
     },
     "papercut.js": {
      "w": 0,
-     "l": 36,
-     "t": 64
+     "l": 43,
+     "t": 57
     },
     "fastsilk.js": {
      "w": 0,
-     "l": 55,
-     "t": 45
+     "l": 65,
+     "t": 35
     },
     "blitz.js": {
      "w": 0,
-     "l": 32,
-     "t": 68
+     "l": 34,
+     "t": 66
     },
     "chameleon.js": {
      "w": 1,
-     "l": 23,
-     "t": 76
+     "l": 41,
+     "t": 58
     },
     "bandit.js": {
      "w": 0,
-     "l": 38,
-     "t": 62
+     "l": 37,
+     "t": 63
     },
     "hedgehog.js": {
      "w": 0,
@@ -765,15 +795,15 @@
     },
     "hydra.js": {
      "w": 0,
-     "l": 54,
-     "t": 46
+     "l": 63,
+     "t": 37
     }
    },
-   "wins": 520,
-   "losses": 651,
-   "ties": 1229,
-   "score": 2789,
-   "played": 2400
+   "wins": 536,
+   "losses": 723,
+   "ties": 1241,
+   "score": 2849,
+   "played": 2500
   },
   "scanner.red": {
    "vs": {
@@ -847,62 +877,67 @@
      "l": 74,
      "t": 18
     },
+    "redqueen.red": {
+     "w": 40,
+     "l": 56,
+     "t": 4
+    },
     "carpet.js": {
-     "w": 58,
-     "l": 42,
-     "t": 0
+     "w": 61,
+     "l": 35,
+     "t": 4
     },
     "quickscan.js": {
-     "w": 32,
-     "l": 68,
+     "w": 36,
+     "l": 64,
      "t": 0
     },
     "gatekeeper.js": {
-     "w": 47,
-     "l": 46,
-     "t": 7
+     "w": 43,
+     "l": 53,
+     "t": 4
     },
     "papercut.js": {
-     "w": 13,
-     "l": 78,
-     "t": 9
+     "w": 17,
+     "l": 76,
+     "t": 7
     },
     "fastsilk.js": {
      "w": 1,
-     "l": 83,
-     "t": 16
+     "l": 86,
+     "t": 13
     },
     "blitz.js": {
-     "w": 3,
-     "l": 82,
-     "t": 15
+     "w": 8,
+     "l": 78,
+     "t": 14
     },
     "chameleon.js": {
      "w": 7,
-     "l": 83,
-     "t": 10
+     "l": 73,
+     "t": 20
     },
     "bandit.js": {
-     "w": 11,
-     "l": 72,
-     "t": 17
+     "w": 9,
+     "l": 71,
+     "t": 20
     },
     "hedgehog.js": {
-     "w": 11,
-     "l": 86,
+     "w": 17,
+     "l": 80,
      "t": 3
     },
     "hydra.js": {
-     "w": 1,
-     "l": 84,
-     "t": 15
+     "w": 0,
+     "l": 82,
+     "t": 18
     }
    },
-   "wins": 823,
-   "losses": 1349,
-   "ties": 228,
-   "score": 2697,
-   "played": 2400
+   "wins": 878,
+   "losses": 1379,
+   "ties": 243,
+   "score": 2877,
+   "played": 2500
   },
   "seeker.red": {
    "vs": {
@@ -976,62 +1011,67 @@
      "l": 63,
      "t": 33
     },
+    "redqueen.red": {
+     "w": 29,
+     "l": 69,
+     "t": 2
+    },
     "carpet.js": {
-     "w": 38,
-     "l": 48,
-     "t": 14
+     "w": 26,
+     "l": 57,
+     "t": 17
     },
     "quickscan.js": {
-     "w": 38,
-     "l": 51,
-     "t": 11
+     "w": 49,
+     "l": 48,
+     "t": 3
     },
     "gatekeeper.js": {
-     "w": 26,
-     "l": 65,
-     "t": 9
+     "w": 36,
+     "l": 61,
+     "t": 3
     },
     "papercut.js": {
      "w": 0,
-     "l": 52,
-     "t": 48
+     "l": 59,
+     "t": 41
     },
     "fastsilk.js": {
      "w": 0,
-     "l": 65,
-     "t": 35
+     "l": 57,
+     "t": 43
     },
     "blitz.js": {
      "w": 0,
-     "l": 61,
-     "t": 39
+     "l": 59,
+     "t": 41
     },
     "chameleon.js": {
-     "w": 2,
-     "l": 56,
-     "t": 42
+     "w": 1,
+     "l": 61,
+     "t": 38
     },
     "bandit.js": {
-     "w": 4,
-     "l": 59,
-     "t": 37
+     "w": 23,
+     "l": 65,
+     "t": 12
     },
     "hedgehog.js": {
-     "w": 6,
-     "l": 59,
-     "t": 35
+     "w": 9,
+     "l": 54,
+     "t": 37
     },
     "hydra.js": {
      "w": 1,
-     "l": 66,
-     "t": 33
+     "l": 58,
+     "t": 41
     }
    },
-   "wins": 726,
-   "losses": 975,
-   "ties": 699,
-   "score": 2877,
-   "played": 2400
+   "wins": 785,
+   "losses": 1041,
+   "ties": 674,
+   "score": 3029,
+   "played": 2500
   },
   "oneshot.red": {
    "vs": {
@@ -1105,62 +1145,67 @@
      "l": 59,
      "t": 37
     },
+    "redqueen.red": {
+     "w": 30,
+     "l": 70,
+     "t": 0
+    },
     "carpet.js": {
-     "w": 65,
-     "l": 34,
-     "t": 1
+     "w": 59,
+     "l": 38,
+     "t": 3
     },
     "quickscan.js": {
-     "w": 73,
-     "l": 26,
+     "w": 64,
+     "l": 35,
      "t": 1
     },
     "gatekeeper.js": {
-     "w": 28,
-     "l": 72,
+     "w": 36,
+     "l": 64,
      "t": 0
     },
     "papercut.js": {
      "w": 11,
-     "l": 61,
-     "t": 28
+     "l": 59,
+     "t": 30
     },
     "fastsilk.js": {
-     "w": 5,
-     "l": 62,
-     "t": 33
+     "w": 1,
+     "l": 55,
+     "t": 44
     },
     "blitz.js": {
-     "w": 6,
-     "l": 74,
-     "t": 20
+     "w": 9,
+     "l": 70,
+     "t": 21
     },
     "chameleon.js": {
-     "w": 15,
+     "w": 13,
      "l": 69,
-     "t": 16
+     "t": 18
     },
     "bandit.js": {
-     "w": 10,
-     "l": 54,
-     "t": 36
+     "w": 7,
+     "l": 72,
+     "t": 21
     },
     "hedgehog.js": {
-     "w": 17,
-     "l": 44,
-     "t": 39
+     "w": 7,
+     "l": 56,
+     "t": 37
     },
     "hydra.js": {
-     "w": 9,
-     "l": 51,
+     "w": 7,
+     "l": 53,
      "t": 40
     }
    },
-   "wins": 927,
-   "losses": 960,
-   "ties": 513,
-   "score": 3294,
-   "played": 2400
+   "wins": 932,
+   "losses": 1054,
+   "ties": 514,
+   "score": 3310,
+   "played": 2500
   },
   "silk.red": {
    "vs": {
@@ -1234,20 +1279,25 @@
      "l": 0,
      "t": 99
     },
+    "redqueen.red": {
+     "w": 8,
+     "l": 72,
+     "t": 20
+    },
     "carpet.js": {
-     "w": 67,
+     "w": 83,
      "l": 0,
-     "t": 33
+     "t": 17
     },
     "quickscan.js": {
-     "w": 74,
-     "l": 3,
-     "t": 23
+     "w": 64,
+     "l": 6,
+     "t": 30
     },
     "gatekeeper.js": {
-     "w": 12,
-     "l": 65,
-     "t": 23
+     "w": 6,
+     "l": 75,
+     "t": 19
     },
     "papercut.js": {
      "w": 0,
@@ -1261,35 +1311,35 @@
     },
     "blitz.js": {
      "w": 0,
-     "l": 2,
-     "t": 98
+     "l": 0,
+     "t": 100
     },
     "chameleon.js": {
-     "w": 1,
-     "l": 2,
-     "t": 97
+     "w": 3,
+     "l": 11,
+     "t": 86
     },
     "bandit.js": {
-     "w": 8,
-     "l": 2,
-     "t": 90
+     "w": 5,
+     "l": 0,
+     "t": 95
     },
     "hedgehog.js": {
-     "w": 10,
-     "l": 0,
-     "t": 90
+     "w": 11,
+     "l": 1,
+     "t": 88
     },
     "hydra.js": {
-     "w": 1,
-     "l": 2,
-     "t": 97
+     "w": 0,
+     "l": 1,
+     "t": 99
     }
    },
-   "wins": 865,
-   "losses": 120,
-   "ties": 1415,
-   "score": 4010,
-   "played": 2400
+   "wins": 872,
+   "losses": 210,
+   "ties": 1418,
+   "score": 4034,
+   "played": 2500
   },
   "vampire.red": {
    "vs": {
@@ -1363,62 +1413,67 @@
      "l": 81,
      "t": 12
     },
+    "redqueen.red": {
+     "w": 50,
+     "l": 37,
+     "t": 13
+    },
     "carpet.js": {
-     "w": 79,
-     "l": 12,
-     "t": 9
+     "w": 61,
+     "l": 26,
+     "t": 13
     },
     "quickscan.js": {
      "w": 27,
-     "l": 41,
-     "t": 32
+     "l": 44,
+     "t": 29
     },
     "gatekeeper.js": {
-     "w": 46,
-     "l": 45,
-     "t": 9
-    },
-    "papercut.js": {
-     "w": 11,
-     "l": 66,
-     "t": 23
-    },
-    "fastsilk.js": {
-     "w": 1,
-     "l": 89,
+     "w": 51,
+     "l": 39,
      "t": 10
     },
-    "blitz.js": {
-     "w": 2,
-     "l": 66,
-     "t": 32
-    },
-    "chameleon.js": {
-     "w": 5,
-     "l": 59,
+    "papercut.js": {
+     "w": 10,
+     "l": 54,
      "t": 36
     },
-    "bandit.js": {
-     "w": 7,
-     "l": 49,
-     "t": 44
-    },
-    "hedgehog.js": {
-     "w": 0,
-     "l": 79,
-     "t": 21
-    },
-    "hydra.js": {
+    "fastsilk.js": {
      "w": 2,
      "l": 86,
      "t": 12
+    },
+    "blitz.js": {
+     "w": 6,
+     "l": 61,
+     "t": 33
+    },
+    "chameleon.js": {
+     "w": 7,
+     "l": 59,
+     "t": 34
+    },
+    "bandit.js": {
+     "w": 6,
+     "l": 63,
+     "t": 31
+    },
+    "hedgehog.js": {
+     "w": 0,
+     "l": 87,
+     "t": 13
+    },
+    "hydra.js": {
+     "w": 0,
+     "l": 83,
+     "t": 17
     }
    },
-   "wins": 542,
-   "losses": 1291,
-   "ties": 567,
-   "score": 2193,
-   "played": 2400
+   "wins": 582,
+   "losses": 1338,
+   "ties": 580,
+   "score": 2326,
+   "played": 2500
   },
   "sweeper.red": {
    "vs": {
@@ -1492,30 +1547,35 @@
      "l": 92,
      "t": 8
     },
+    "redqueen.red": {
+     "w": 26,
+     "l": 72,
+     "t": 2
+    },
     "carpet.js": {
-     "w": 67,
-     "l": 29,
-     "t": 4
+     "w": 68,
+     "l": 26,
+     "t": 6
     },
     "quickscan.js": {
-     "w": 52,
-     "l": 38,
-     "t": 10
+     "w": 48,
+     "l": 39,
+     "t": 13
     },
     "gatekeeper.js": {
-     "w": 33,
-     "l": 64,
-     "t": 3
+     "w": 24,
+     "l": 75,
+     "t": 1
     },
     "papercut.js": {
      "w": 0,
-     "l": 97,
-     "t": 3
+     "l": 93,
+     "t": 7
     },
     "fastsilk.js": {
      "w": 0,
-     "l": 93,
-     "t": 7
+     "l": 90,
+     "t": 10
     },
     "blitz.js": {
      "w": 0,
@@ -1529,25 +1589,25 @@
     },
     "bandit.js": {
      "w": 2,
-     "l": 93,
-     "t": 5
+     "l": 94,
+     "t": 4
     },
     "hedgehog.js": {
-     "w": 2,
-     "l": 48,
-     "t": 50
+     "w": 1,
+     "l": 44,
+     "t": 55
     },
     "hydra.js": {
-     "w": 0,
-     "l": 88,
-     "t": 12
+     "w": 1,
+     "l": 83,
+     "t": 16
     }
    },
-   "wins": 578,
-   "losses": 1385,
-   "ties": 437,
-   "score": 2171,
-   "played": 2400
+   "wins": 592,
+   "losses": 1451,
+   "ties": 457,
+   "score": 2233,
+   "played": 2500
   },
   "twopass.red": {
    "vs": {
@@ -1621,62 +1681,67 @@
      "l": 51,
      "t": 28
     },
+    "redqueen.red": {
+     "w": 29,
+     "l": 71,
+     "t": 0
+    },
     "carpet.js": {
-     "w": 70,
-     "l": 26,
-     "t": 4
+     "w": 65,
+     "l": 30,
+     "t": 5
     },
     "quickscan.js": {
+     "w": 30,
+     "l": 70,
+     "t": 0
+    },
+    "gatekeeper.js": {
      "w": 23,
      "l": 77,
      "t": 0
     },
-    "gatekeeper.js": {
-     "w": 22,
-     "l": 78,
-     "t": 0
-    },
     "papercut.js": {
-     "w": 15,
-     "l": 51,
-     "t": 34
+     "w": 26,
+     "l": 50,
+     "t": 24
     },
     "fastsilk.js": {
-     "w": 2,
-     "l": 27,
-     "t": 71
+     "w": 3,
+     "l": 38,
+     "t": 59
     },
     "blitz.js": {
-     "w": 21,
-     "l": 46,
-     "t": 33
+     "w": 18,
+     "l": 50,
+     "t": 32
     },
     "chameleon.js": {
-     "w": 18,
-     "l": 66,
+     "w": 23,
+     "l": 61,
      "t": 16
     },
     "bandit.js": {
-     "w": 22,
-     "l": 76,
-     "t": 2
+     "w": 26,
+     "l": 74,
+     "t": 0
     },
     "hedgehog.js": {
-     "w": 1,
-     "l": 59,
-     "t": 40
+     "w": 0,
+     "l": 65,
+     "t": 35
     },
     "hydra.js": {
-     "w": 11,
-     "l": 38,
-     "t": 51
+     "w": 10,
+     "l": 25,
+     "t": 65
     }
    },
-   "wins": 643,
-   "losses": 1062,
-   "ties": 695,
-   "score": 2624,
-   "played": 2400
+   "wins": 691,
+   "losses": 1129,
+   "ties": 680,
+   "score": 2753,
+   "played": 2500
   },
   "stunner.red": {
    "vs": {
@@ -1750,62 +1815,67 @@
      "l": 72,
      "t": 27
     },
-    "carpet.js": {
-     "w": 38,
+    "redqueen.red": {
+     "w": 37,
      "l": 57,
-     "t": 5
+     "t": 6
+    },
+    "carpet.js": {
+     "w": 37,
+     "l": 53,
+     "t": 10
     },
     "quickscan.js": {
-     "w": 41,
-     "l": 58,
-     "t": 1
+     "w": 35,
+     "l": 63,
+     "t": 2
     },
     "gatekeeper.js": {
-     "w": 27,
-     "l": 69,
-     "t": 4
+     "w": 33,
+     "l": 53,
+     "t": 14
     },
     "papercut.js": {
      "w": 0,
-     "l": 73,
-     "t": 27
+     "l": 75,
+     "t": 25
     },
     "fastsilk.js": {
-     "w": 0,
-     "l": 61,
-     "t": 39
-    },
-    "blitz.js": {
      "w": 0,
      "l": 67,
      "t": 33
     },
+    "blitz.js": {
+     "w": 1,
+     "l": 65,
+     "t": 34
+    },
     "chameleon.js": {
-     "w": 5,
-     "l": 64,
-     "t": 31
+     "w": 1,
+     "l": 70,
+     "t": 29
     },
     "bandit.js": {
-     "w": 53,
-     "l": 34,
-     "t": 13
+     "w": 3,
+     "l": 66,
+     "t": 31
     },
     "hedgehog.js": {
-     "w": 6,
-     "l": 52,
-     "t": 42
+     "w": 3,
+     "l": 54,
+     "t": 43
     },
     "hydra.js": {
      "w": 2,
-     "l": 62,
-     "t": 36
+     "l": 64,
+     "t": 34
     }
    },
-   "wins": 714,
-   "losses": 1124,
-   "ties": 562,
-   "score": 2704,
-   "played": 2400
+   "wins": 694,
+   "losses": 1214,
+   "ties": 592,
+   "score": 2674,
+   "played": 2500
   },
   "stoneimp.red": {
    "vs": {
@@ -1879,62 +1949,67 @@
      "l": 40,
      "t": 60
     },
+    "redqueen.red": {
+     "w": 2,
+     "l": 49,
+     "t": 49
+    },
     "carpet.js": {
      "w": 0,
-     "l": 30,
-     "t": 70
+     "l": 31,
+     "t": 69
     },
     "quickscan.js": {
-     "w": 86,
-     "l": 14,
+     "w": 81,
+     "l": 19,
      "t": 0
     },
     "gatekeeper.js": {
-     "w": 0,
-     "l": 58,
-     "t": 42
+     "w": 2,
+     "l": 47,
+     "t": 51
     },
     "papercut.js": {
      "w": 0,
-     "l": 54,
-     "t": 46
+     "l": 53,
+     "t": 47
     },
     "fastsilk.js": {
      "w": 0,
-     "l": 61,
-     "t": 39
+     "l": 76,
+     "t": 24
     },
     "blitz.js": {
      "w": 0,
-     "l": 42,
-     "t": 58
+     "l": 57,
+     "t": 43
     },
     "chameleon.js": {
      "w": 1,
-     "l": 45,
-     "t": 54
+     "l": 50,
+     "t": 49
     },
     "bandit.js": {
-     "w": 0,
-     "l": 41,
-     "t": 59
+     "w": 2,
+     "l": 46,
+     "t": 52
     },
     "hedgehog.js": {
      "w": 0,
-     "l": 20,
-     "t": 80
+     "l": 15,
+     "t": 85
     },
     "hydra.js": {
      "w": 0,
-     "l": 69,
-     "t": 31
+     "l": 49,
+     "t": 51
     }
    },
-   "wins": 432,
-   "losses": 830,
-   "ties": 1138,
-   "score": 2434,
-   "played": 2400
+   "wins": 433,
+   "losses": 888,
+   "ties": 1179,
+   "score": 2478,
+   "played": 2500
   },
   "evolvedsilk.red": {
    "vs": {
@@ -2008,20 +2083,25 @@
      "l": 0,
      "t": 60
     },
+    "redqueen.red": {
+     "w": 30,
+     "l": 57,
+     "t": 13
+    },
     "carpet.js": {
-     "w": 76,
-     "l": 4,
-     "t": 20
+     "w": 79,
+     "l": 0,
+     "t": 21
     },
     "quickscan.js": {
-     "w": 72,
-     "l": 5,
-     "t": 23
+     "w": 69,
+     "l": 7,
+     "t": 24
     },
     "gatekeeper.js": {
-     "w": 31,
-     "l": 56,
-     "t": 13
+     "w": 26,
+     "l": 51,
+     "t": 23
     },
     "papercut.js": {
      "w": 0,
@@ -2030,57 +2110,191 @@
     },
     "fastsilk.js": {
      "w": 0,
-     "l": 0,
-     "t": 100
+     "l": 1,
+     "t": 99
     },
     "blitz.js": {
      "w": 0,
-     "l": 4,
-     "t": 96
+     "l": 2,
+     "t": 98
     },
     "chameleon.js": {
      "w": 1,
-     "l": 1,
-     "t": 98
+     "l": 2,
+     "t": 97
     },
     "bandit.js": {
-     "w": 9,
-     "l": 2,
-     "t": 89
+     "w": 28,
+     "l": 31,
+     "t": 41
     },
     "hedgehog.js": {
-     "w": 11,
-     "l": 2,
-     "t": 87
+     "w": 13,
+     "l": 5,
+     "t": 82
     },
     "hydra.js": {
      "w": 0,
-     "l": 5,
-     "t": 95
+     "l": 1,
+     "t": 99
     }
    },
-   "wins": 986,
-   "losses": 129,
-   "ties": 1285,
-   "score": 4243,
-   "played": 2400
+   "wins": 1032,
+   "losses": 207,
+   "ties": 1261,
+   "score": 4357,
+   "played": 2500
+  },
+  "redqueen.red": {
+   "vs": {
+    "imp.red": {
+     "w": 0,
+     "l": 0,
+     "t": 100
+    },
+    "dwarf.red": {
+     "w": 54,
+     "l": 44,
+     "t": 2
+    },
+    "gemini.red": {
+     "w": 63,
+     "l": 9,
+     "t": 28
+    },
+    "mice.red": {
+     "w": 92,
+     "l": 7,
+     "t": 1
+    },
+    "impring.red": {
+     "w": 21,
+     "l": 6,
+     "t": 73
+    },
+    "scanner.red": {
+     "w": 56,
+     "l": 40,
+     "t": 4
+    },
+    "seeker.red": {
+     "w": 69,
+     "l": 29,
+     "t": 2
+    },
+    "oneshot.red": {
+     "w": 70,
+     "l": 30,
+     "t": 0
+    },
+    "silk.red": {
+     "w": 72,
+     "l": 8,
+     "t": 20
+    },
+    "vampire.red": {
+     "w": 37,
+     "l": 50,
+     "t": 13
+    },
+    "sweeper.red": {
+     "w": 72,
+     "l": 26,
+     "t": 2
+    },
+    "twopass.red": {
+     "w": 71,
+     "l": 29,
+     "t": 0
+    },
+    "stunner.red": {
+     "w": 57,
+     "l": 37,
+     "t": 6
+    },
+    "stoneimp.red": {
+     "w": 49,
+     "l": 2,
+     "t": 49
+    },
+    "evolvedsilk.red": {
+     "w": 57,
+     "l": 30,
+     "t": 13
+    },
+    "carpet.js": {
+     "w": 70,
+     "l": 30,
+     "t": 0
+    },
+    "quickscan.js": {
+     "w": 68,
+     "l": 31,
+     "t": 1
+    },
+    "gatekeeper.js": {
+     "w": 52,
+     "l": 48,
+     "t": 0
+    },
+    "papercut.js": {
+     "w": 86,
+     "l": 9,
+     "t": 5
+    },
+    "fastsilk.js": {
+     "w": 68,
+     "l": 21,
+     "t": 11
+    },
+    "blitz.js": {
+     "w": 82,
+     "l": 12,
+     "t": 6
+    },
+    "chameleon.js": {
+     "w": 62,
+     "l": 36,
+     "t": 2
+    },
+    "bandit.js": {
+     "w": 55,
+     "l": 43,
+     "t": 2
+    },
+    "hedgehog.js": {
+     "w": 60,
+     "l": 28,
+     "t": 12
+    },
+    "hydra.js": {
+     "w": 64,
+     "l": 17,
+     "t": 19
+    }
+   },
+   "wins": 1507,
+   "losses": 622,
+   "ties": 371,
+   "score": 4892,
+   "played": 2500
   },
   "carpet.js": {
    "vs": {
     "imp.red": {
-     "w": 74,
+     "w": 63,
      "l": 0,
-     "t": 26
+     "t": 37
     },
     "dwarf.red": {
      "w": 30,
-     "l": 65,
-     "t": 5
+     "l": 66,
+     "t": 4
     },
     "gemini.red": {
-     "w": 77,
-     "l": 9,
-     "t": 14
+     "w": 81,
+     "l": 4,
+     "t": 15
     },
     "mice.red": {
      "w": 0,
@@ -2088,240 +2302,250 @@
      "t": 11
     },
     "impring.red": {
-     "w": 17,
+     "w": 23,
      "l": 0,
-     "t": 83
+     "t": 77
     },
     "scanner.red": {
-     "w": 42,
-     "l": 58,
-     "t": 0
+     "w": 35,
+     "l": 61,
+     "t": 4
     },
     "seeker.red": {
-     "w": 48,
-     "l": 38,
-     "t": 14
+     "w": 57,
+     "l": 26,
+     "t": 17
     },
     "oneshot.red": {
-     "w": 34,
-     "l": 65,
-     "t": 1
+     "w": 38,
+     "l": 59,
+     "t": 3
     },
     "silk.red": {
      "w": 0,
-     "l": 67,
-     "t": 33
+     "l": 83,
+     "t": 17
     },
     "vampire.red": {
-     "w": 12,
-     "l": 79,
-     "t": 9
+     "w": 26,
+     "l": 61,
+     "t": 13
     },
     "sweeper.red": {
-     "w": 29,
-     "l": 67,
-     "t": 4
+     "w": 26,
+     "l": 68,
+     "t": 6
     },
     "twopass.red": {
-     "w": 26,
-     "l": 70,
-     "t": 4
+     "w": 30,
+     "l": 65,
+     "t": 5
     },
     "stunner.red": {
-     "w": 57,
-     "l": 38,
-     "t": 5
+     "w": 53,
+     "l": 37,
+     "t": 10
     },
     "stoneimp.red": {
-     "w": 30,
+     "w": 31,
      "l": 0,
-     "t": 70
+     "t": 69
     },
     "evolvedsilk.red": {
-     "w": 4,
-     "l": 76,
-     "t": 20
-    },
-    "quickscan.js": {
-     "w": 25,
-     "l": 70,
-     "t": 5
-    },
-    "gatekeeper.js": {
-     "w": 24,
-     "l": 76,
-     "t": 0
-    },
-    "papercut.js": {
-     "w": 0,
-     "l": 93,
-     "t": 7
-    },
-    "fastsilk.js": {
      "w": 0,
      "l": 79,
      "t": 21
     },
+    "redqueen.red": {
+     "w": 30,
+     "l": 70,
+     "t": 0
+    },
+    "quickscan.js": {
+     "w": 24,
+     "l": 74,
+     "t": 2
+    },
+    "gatekeeper.js": {
+     "w": 24,
+     "l": 74,
+     "t": 2
+    },
+    "papercut.js": {
+     "w": 0,
+     "l": 91,
+     "t": 9
+    },
+    "fastsilk.js": {
+     "w": 0,
+     "l": 81,
+     "t": 19
+    },
     "blitz.js": {
      "w": 0,
-     "l": 89,
-     "t": 11
+     "l": 91,
+     "t": 9
     },
     "chameleon.js": {
      "w": 2,
-     "l": 86,
-     "t": 12
+     "l": 89,
+     "t": 9
     },
     "bandit.js": {
-     "w": 2,
-     "l": 90,
-     "t": 8
+     "w": 1,
+     "l": 96,
+     "t": 3
     },
     "hedgehog.js": {
-     "w": 3,
-     "l": 69,
-     "t": 28
+     "w": 5,
+     "l": 58,
+     "t": 37
     },
     "hydra.js": {
      "w": 0,
-     "l": 73,
-     "t": 27
+     "l": 76,
+     "t": 24
     }
    },
-   "wins": 536,
-   "losses": 1446,
-   "ties": 418,
-   "score": 2026,
-   "played": 2400
+   "wins": 579,
+   "losses": 1498,
+   "ties": 423,
+   "score": 2160,
+   "played": 2500
   },
   "quickscan.js": {
    "vs": {
     "imp.red": {
-     "w": 24,
+     "w": 23,
      "l": 0,
-     "t": 76
+     "t": 77
     },
     "dwarf.red": {
-     "w": 41,
+     "w": 39,
      "l": 35,
-     "t": 24
+     "t": 26
     },
     "gemini.red": {
-     "w": 39,
-     "l": 2,
-     "t": 59
+     "w": 38,
+     "l": 1,
+     "t": 61
     },
     "mice.red": {
-     "w": 2,
-     "l": 80,
-     "t": 18
+     "w": 1,
+     "l": 88,
+     "t": 11
     },
     "impring.red": {
      "w": 18,
-     "l": 81,
-     "t": 1
+     "l": 82,
+     "t": 0
     },
     "scanner.red": {
-     "w": 68,
-     "l": 32,
+     "w": 64,
+     "l": 36,
      "t": 0
     },
     "seeker.red": {
-     "w": 51,
-     "l": 38,
-     "t": 11
+     "w": 48,
+     "l": 49,
+     "t": 3
     },
     "oneshot.red": {
-     "w": 26,
-     "l": 73,
+     "w": 35,
+     "l": 64,
      "t": 1
     },
     "silk.red": {
-     "w": 3,
-     "l": 74,
-     "t": 23
+     "w": 6,
+     "l": 64,
+     "t": 30
     },
     "vampire.red": {
-     "w": 41,
+     "w": 44,
      "l": 27,
-     "t": 32
+     "t": 29
     },
     "sweeper.red": {
-     "w": 38,
-     "l": 52,
-     "t": 10
+     "w": 39,
+     "l": 48,
+     "t": 13
     },
     "twopass.red": {
-     "w": 77,
-     "l": 23,
+     "w": 70,
+     "l": 30,
      "t": 0
     },
     "stunner.red": {
-     "w": 58,
-     "l": 41,
-     "t": 1
+     "w": 63,
+     "l": 35,
+     "t": 2
     },
     "stoneimp.red": {
-     "w": 14,
-     "l": 86,
+     "w": 19,
+     "l": 81,
      "t": 0
     },
     "evolvedsilk.red": {
-     "w": 5,
-     "l": 72,
-     "t": 23
+     "w": 7,
+     "l": 69,
+     "t": 24
+    },
+    "redqueen.red": {
+     "w": 31,
+     "l": 68,
+     "t": 1
     },
     "carpet.js": {
-     "w": 70,
-     "l": 25,
-     "t": 5
+     "w": 74,
+     "l": 24,
+     "t": 2
     },
     "gatekeeper.js": {
-     "w": 30,
-     "l": 68,
+     "w": 25,
+     "l": 73,
      "t": 2
     },
     "papercut.js": {
-     "w": 13,
-     "l": 84,
-     "t": 3
+     "w": 7,
+     "l": 83,
+     "t": 10
     },
     "fastsilk.js": {
+     "w": 17,
+     "l": 72,
+     "t": 11
+    },
+    "blitz.js": {
      "w": 11,
      "l": 78,
      "t": 11
     },
-    "blitz.js": {
-     "w": 12,
-     "l": 80,
-     "t": 8
-    },
     "chameleon.js": {
-     "w": 15,
-     "l": 77,
-     "t": 8
+     "w": 17,
+     "l": 78,
+     "t": 5
     },
     "bandit.js": {
-     "w": 10,
-     "l": 79,
+     "w": 14,
+     "l": 75,
      "t": 11
     },
     "hedgehog.js": {
      "w": 6,
-     "l": 91,
-     "t": 3
+     "l": 93,
+     "t": 1
     },
     "hydra.js": {
-     "w": 9,
+     "w": 5,
      "l": 74,
-     "t": 17
+     "t": 21
     }
    },
-   "wins": 681,
-   "losses": 1372,
-   "ties": 347,
-   "score": 2390,
-   "played": 2400
+   "wins": 721,
+   "losses": 1427,
+   "ties": 352,
+   "score": 2515,
+   "played": 2500
   },
   "gatekeeper.js": {
    "vs": {
@@ -2331,446 +2555,327 @@
      "t": 100
     },
     "dwarf.red": {
-     "w": 62,
-     "l": 35,
+     "w": 61,
+     "l": 36,
      "t": 3
     },
     "gemini.red": {
-     "w": 59,
-     "l": 11,
-     "t": 30
+     "w": 60,
+     "l": 14,
+     "t": 26
     },
     "mice.red": {
      "w": 92,
-     "l": 5,
-     "t": 3
+     "l": 6,
+     "t": 2
     },
     "impring.red": {
      "w": 16,
-     "l": 1,
-     "t": 83
+     "l": 10,
+     "t": 74
     },
     "scanner.red": {
-     "w": 46,
-     "l": 47,
-     "t": 7
+     "w": 53,
+     "l": 43,
+     "t": 4
     },
     "seeker.red": {
-     "w": 65,
-     "l": 26,
-     "t": 9
+     "w": 61,
+     "l": 36,
+     "t": 3
     },
     "oneshot.red": {
-     "w": 72,
-     "l": 28,
+     "w": 64,
+     "l": 36,
      "t": 0
     },
     "silk.red": {
-     "w": 65,
-     "l": 12,
-     "t": 23
+     "w": 75,
+     "l": 6,
+     "t": 19
     },
     "vampire.red": {
-     "w": 45,
-     "l": 46,
-     "t": 9
+     "w": 39,
+     "l": 51,
+     "t": 10
     },
     "sweeper.red": {
-     "w": 64,
-     "l": 33,
-     "t": 3
+     "w": 75,
+     "l": 24,
+     "t": 1
     },
     "twopass.red": {
-     "w": 78,
-     "l": 22,
+     "w": 77,
+     "l": 23,
      "t": 0
     },
     "stunner.red": {
-     "w": 69,
-     "l": 27,
-     "t": 4
+     "w": 53,
+     "l": 33,
+     "t": 14
     },
     "stoneimp.red": {
-     "w": 58,
-     "l": 0,
-     "t": 42
+     "w": 47,
+     "l": 2,
+     "t": 51
     },
     "evolvedsilk.red": {
-     "w": 56,
-     "l": 31,
-     "t": 13
+     "w": 51,
+     "l": 26,
+     "t": 23
     },
-    "carpet.js": {
-     "w": 76,
-     "l": 24,
+    "redqueen.red": {
+     "w": 48,
+     "l": 52,
      "t": 0
     },
+    "carpet.js": {
+     "w": 74,
+     "l": 24,
+     "t": 2
+    },
     "quickscan.js": {
-     "w": 68,
-     "l": 30,
+     "w": 73,
+     "l": 25,
      "t": 2
     },
     "papercut.js": {
-     "w": 91,
-     "l": 5,
-     "t": 4
+     "w": 85,
+     "l": 8,
+     "t": 7
     },
     "fastsilk.js": {
-     "w": 55,
-     "l": 15,
-     "t": 30
+     "w": 51,
+     "l": 14,
+     "t": 35
     },
     "blitz.js": {
-     "w": 81,
+     "w": 83,
      "l": 13,
-     "t": 6
+     "t": 4
     },
     "chameleon.js": {
-     "w": 61,
-     "l": 35,
-     "t": 4
+     "w": 64,
+     "l": 34,
+     "t": 2
     },
     "bandit.js": {
-     "w": 38,
-     "l": 58,
-     "t": 4
+     "w": 50,
+     "l": 49,
+     "t": 1
     },
     "hedgehog.js": {
-     "w": 19,
-     "l": 31,
-     "t": 50
+     "w": 20,
+     "l": 21,
+     "t": 59
     },
     "hydra.js": {
      "w": 54,
-     "l": 14,
-     "t": 32
+     "l": 19,
+     "t": 27
     }
    },
-   "wins": 1390,
-   "losses": 549,
-   "ties": 461,
-   "score": 4631,
-   "played": 2400
+   "wins": 1426,
+   "losses": 605,
+   "ties": 469,
+   "score": 4747,
+   "played": 2500
   },
   "papercut.js": {
    "vs": {
     "imp.red": {
-     "w": 39,
-     "l": 0,
-     "t": 61
-    },
-    "dwarf.red": {
-     "w": 83,
-     "l": 11,
-     "t": 6
-    },
-    "gemini.red": {
-     "w": 90,
-     "l": 0,
-     "t": 10
-    },
-    "mice.red": {
-     "w": 1,
-     "l": 0,
-     "t": 99
-    },
-    "impring.red": {
-     "w": 36,
-     "l": 0,
-     "t": 64
-    },
-    "scanner.red": {
-     "w": 78,
-     "l": 13,
-     "t": 9
-    },
-    "seeker.red": {
      "w": 52,
      "l": 0,
      "t": 48
     },
-    "oneshot.red": {
-     "w": 61,
-     "l": 11,
-     "t": 28
-    },
-    "silk.red": {
-     "w": 0,
-     "l": 0,
-     "t": 100
-    },
-    "vampire.red": {
-     "w": 66,
-     "l": 11,
-     "t": 23
-    },
-    "sweeper.red": {
-     "w": 97,
-     "l": 0,
-     "t": 3
-    },
-    "twopass.red": {
-     "w": 51,
-     "l": 15,
-     "t": 34
-    },
-    "stunner.red": {
-     "w": 73,
-     "l": 0,
-     "t": 27
-    },
-    "stoneimp.red": {
-     "w": 54,
-     "l": 0,
-     "t": 46
-    },
-    "evolvedsilk.red": {
-     "w": 0,
-     "l": 0,
-     "t": 100
-    },
-    "carpet.js": {
-     "w": 93,
-     "l": 0,
-     "t": 7
-    },
-    "quickscan.js": {
-     "w": 84,
-     "l": 13,
-     "t": 3
-    },
-    "gatekeeper.js": {
-     "w": 5,
-     "l": 91,
-     "t": 4
-    },
-    "fastsilk.js": {
-     "w": 0,
-     "l": 1,
-     "t": 99
-    },
-    "blitz.js": {
-     "w": 1,
-     "l": 2,
-     "t": 97
-    },
-    "chameleon.js": {
-     "w": 1,
-     "l": 4,
-     "t": 95
-    },
-    "bandit.js": {
-     "w": 22,
-     "l": 67,
-     "t": 11
-    },
-    "hedgehog.js": {
-     "w": 9,
-     "l": 0,
-     "t": 91
-    },
-    "hydra.js": {
-     "w": 0,
-     "l": 4,
-     "t": 96
-    }
-   },
-   "wins": 996,
-   "losses": 243,
-   "ties": 1161,
-   "score": 4149,
-   "played": 2400
-  },
-  "fastsilk.js": {
-   "vs": {
-    "imp.red": {
-     "w": 58,
-     "l": 0,
-     "t": 42
-    },
     "dwarf.red": {
      "w": 83,
-     "l": 7,
-     "t": 10
+     "l": 8,
+     "t": 9
     },
     "gemini.red": {
-     "w": 92,
-     "l": 0,
-     "t": 8
-    },
-    "mice.red": {
-     "w": 0,
-     "l": 1,
-     "t": 99
-    },
-    "impring.red": {
-     "w": 55,
-     "l": 0,
-     "t": 45
-    },
-    "scanner.red": {
-     "w": 83,
-     "l": 1,
-     "t": 16
-    },
-    "seeker.red": {
-     "w": 65,
-     "l": 0,
-     "t": 35
-    },
-    "oneshot.red": {
-     "w": 62,
-     "l": 5,
-     "t": 33
-    },
-    "silk.red": {
-     "w": 0,
-     "l": 0,
-     "t": 100
-    },
-    "vampire.red": {
-     "w": 89,
-     "l": 1,
-     "t": 10
-    },
-    "sweeper.red": {
-     "w": 93,
-     "l": 0,
-     "t": 7
-    },
-    "twopass.red": {
-     "w": 27,
-     "l": 2,
-     "t": 71
-    },
-    "stunner.red": {
-     "w": 61,
-     "l": 0,
-     "t": 39
-    },
-    "stoneimp.red": {
-     "w": 61,
-     "l": 0,
-     "t": 39
-    },
-    "evolvedsilk.red": {
-     "w": 0,
-     "l": 0,
-     "t": 100
-    },
-    "carpet.js": {
-     "w": 79,
-     "l": 0,
-     "t": 21
-    },
-    "quickscan.js": {
-     "w": 78,
-     "l": 11,
-     "t": 11
-    },
-    "gatekeeper.js": {
-     "w": 15,
-     "l": 55,
-     "t": 30
-    },
-    "papercut.js": {
-     "w": 1,
-     "l": 0,
-     "t": 99
-    },
-    "blitz.js": {
-     "w": 0,
-     "l": 1,
-     "t": 99
-    },
-    "chameleon.js": {
-     "w": 4,
-     "l": 6,
-     "t": 90
-    },
-    "bandit.js": {
-     "w": 23,
-     "l": 9,
-     "t": 68
-    },
-    "hedgehog.js": {
-     "w": 19,
-     "l": 0,
-     "t": 81
-    },
-    "hydra.js": {
-     "w": 0,
-     "l": 3,
-     "t": 97
-    }
-   },
-   "wins": 1048,
-   "losses": 102,
-   "ties": 1250,
-   "score": 4394,
-   "played": 2400
-  },
-  "blitz.js": {
-   "vs": {
-    "imp.red": {
-     "w": 40,
-     "l": 0,
-     "t": 60
-    },
-    "dwarf.red": {
-     "w": 82,
-     "l": 6,
-     "t": 12
-    },
-    "gemini.red": {
-     "w": 97,
-     "l": 0,
-     "t": 3
-    },
-    "mice.red": {
-     "w": 0,
-     "l": 2,
-     "t": 98
-    },
-    "impring.red": {
-     "w": 32,
-     "l": 0,
-     "t": 68
-    },
-    "scanner.red": {
-     "w": 82,
-     "l": 3,
-     "t": 15
-    },
-    "seeker.red": {
-     "w": 61,
-     "l": 0,
-     "t": 39
-    },
-    "oneshot.red": {
-     "w": 74,
-     "l": 6,
-     "t": 20
-    },
-    "silk.red": {
-     "w": 2,
-     "l": 0,
-     "t": 98
-    },
-    "vampire.red": {
-     "w": 66,
-     "l": 2,
-     "t": 32
-    },
-    "sweeper.red": {
      "w": 94,
      "l": 0,
      "t": 6
     },
+    "mice.red": {
+     "w": 0,
+     "l": 1,
+     "t": 99
+    },
+    "impring.red": {
+     "w": 43,
+     "l": 0,
+     "t": 57
+    },
+    "scanner.red": {
+     "w": 76,
+     "l": 17,
+     "t": 7
+    },
+    "seeker.red": {
+     "w": 59,
+     "l": 0,
+     "t": 41
+    },
+    "oneshot.red": {
+     "w": 59,
+     "l": 11,
+     "t": 30
+    },
+    "silk.red": {
+     "w": 0,
+     "l": 0,
+     "t": 100
+    },
+    "vampire.red": {
+     "w": 54,
+     "l": 10,
+     "t": 36
+    },
+    "sweeper.red": {
+     "w": 93,
+     "l": 0,
+     "t": 7
+    },
     "twopass.red": {
-     "w": 46,
-     "l": 21,
-     "t": 33
+     "w": 50,
+     "l": 26,
+     "t": 24
+    },
+    "stunner.red": {
+     "w": 75,
+     "l": 0,
+     "t": 25
+    },
+    "stoneimp.red": {
+     "w": 53,
+     "l": 0,
+     "t": 47
+    },
+    "evolvedsilk.red": {
+     "w": 0,
+     "l": 0,
+     "t": 100
+    },
+    "redqueen.red": {
+     "w": 9,
+     "l": 86,
+     "t": 5
+    },
+    "carpet.js": {
+     "w": 91,
+     "l": 0,
+     "t": 9
+    },
+    "quickscan.js": {
+     "w": 83,
+     "l": 7,
+     "t": 10
+    },
+    "gatekeeper.js": {
+     "w": 8,
+     "l": 85,
+     "t": 7
+    },
+    "fastsilk.js": {
+     "w": 0,
+     "l": 0,
+     "t": 100
+    },
+    "blitz.js": {
+     "w": 1,
+     "l": 1,
+     "t": 98
+    },
+    "chameleon.js": {
+     "w": 1,
+     "l": 3,
+     "t": 96
+    },
+    "bandit.js": {
+     "w": 19,
+     "l": 64,
+     "t": 17
+    },
+    "hedgehog.js": {
+     "w": 20,
+     "l": 2,
+     "t": 78
+    },
+    "hydra.js": {
+     "w": 1,
+     "l": 4,
+     "t": 95
+    }
+   },
+   "wins": 1024,
+   "losses": 325,
+   "ties": 1151,
+   "score": 4223,
+   "played": 2500
+  },
+  "fastsilk.js": {
+   "vs": {
+    "imp.red": {
+     "w": 59,
+     "l": 0,
+     "t": 41
+    },
+    "dwarf.red": {
+     "w": 79,
+     "l": 11,
+     "t": 10
+    },
+    "gemini.red": {
+     "w": 85,
+     "l": 0,
+     "t": 15
+    },
+    "mice.red": {
+     "w": 0,
+     "l": 0,
+     "t": 100
+    },
+    "impring.red": {
+     "w": 65,
+     "l": 0,
+     "t": 35
+    },
+    "scanner.red": {
+     "w": 86,
+     "l": 1,
+     "t": 13
+    },
+    "seeker.red": {
+     "w": 57,
+     "l": 0,
+     "t": 43
+    },
+    "oneshot.red": {
+     "w": 55,
+     "l": 1,
+     "t": 44
+    },
+    "silk.red": {
+     "w": 0,
+     "l": 0,
+     "t": 100
+    },
+    "vampire.red": {
+     "w": 86,
+     "l": 2,
+     "t": 12
+    },
+    "sweeper.red": {
+     "w": 90,
+     "l": 0,
+     "t": 10
+    },
+    "twopass.red": {
+     "w": 38,
+     "l": 3,
+     "t": 59
     },
     "stunner.red": {
      "w": 67,
@@ -2778,66 +2883,205 @@
      "t": 33
     },
     "stoneimp.red": {
-     "w": 42,
+     "w": 76,
      "l": 0,
-     "t": 58
+     "t": 24
     },
     "evolvedsilk.red": {
-     "w": 4,
+     "w": 1,
      "l": 0,
-     "t": 96
+     "t": 99
     },
-    "carpet.js": {
-     "w": 89,
-     "l": 0,
+    "redqueen.red": {
+     "w": 21,
+     "l": 68,
      "t": 11
     },
+    "carpet.js": {
+     "w": 81,
+     "l": 0,
+     "t": 19
+    },
     "quickscan.js": {
-     "w": 80,
-     "l": 12,
-     "t": 8
+     "w": 72,
+     "l": 17,
+     "t": 11
     },
     "gatekeeper.js": {
-     "w": 13,
-     "l": 81,
-     "t": 6
+     "w": 14,
+     "l": 51,
+     "t": 35
     },
     "papercut.js": {
-     "w": 2,
-     "l": 1,
-     "t": 97
+     "w": 0,
+     "l": 0,
+     "t": 100
     },
-    "fastsilk.js": {
+    "blitz.js": {
      "w": 1,
      "l": 0,
      "t": 99
     },
     "chameleon.js": {
      "w": 3,
-     "l": 5,
-     "t": 92
+     "l": 19,
+     "t": 78
     },
     "bandit.js": {
-     "w": 22,
-     "l": 67,
-     "t": 11
+     "w": 5,
+     "l": 0,
+     "t": 95
     },
     "hedgehog.js": {
-     "w": 14,
-     "l": 4,
-     "t": 82
+     "w": 16,
+     "l": 0,
+     "t": 84
     },
     "hydra.js": {
-     "w": 1,
-     "l": 5,
-     "t": 94
+     "w": 0,
+     "l": 1,
+     "t": 99
     }
    },
-   "wins": 1014,
-   "losses": 215,
-   "ties": 1171,
-   "score": 4213,
-   "played": 2400
+   "wins": 1057,
+   "losses": 174,
+   "ties": 1269,
+   "score": 4440,
+   "played": 2500
+  },
+  "blitz.js": {
+   "vs": {
+    "imp.red": {
+     "w": 43,
+     "l": 0,
+     "t": 57
+    },
+    "dwarf.red": {
+     "w": 85,
+     "l": 6,
+     "t": 9
+    },
+    "gemini.red": {
+     "w": 95,
+     "l": 0,
+     "t": 5
+    },
+    "mice.red": {
+     "w": 4,
+     "l": 0,
+     "t": 96
+    },
+    "impring.red": {
+     "w": 34,
+     "l": 0,
+     "t": 66
+    },
+    "scanner.red": {
+     "w": 78,
+     "l": 8,
+     "t": 14
+    },
+    "seeker.red": {
+     "w": 59,
+     "l": 0,
+     "t": 41
+    },
+    "oneshot.red": {
+     "w": 70,
+     "l": 9,
+     "t": 21
+    },
+    "silk.red": {
+     "w": 0,
+     "l": 0,
+     "t": 100
+    },
+    "vampire.red": {
+     "w": 61,
+     "l": 6,
+     "t": 33
+    },
+    "sweeper.red": {
+     "w": 94,
+     "l": 0,
+     "t": 6
+    },
+    "twopass.red": {
+     "w": 50,
+     "l": 18,
+     "t": 32
+    },
+    "stunner.red": {
+     "w": 65,
+     "l": 1,
+     "t": 34
+    },
+    "stoneimp.red": {
+     "w": 57,
+     "l": 0,
+     "t": 43
+    },
+    "evolvedsilk.red": {
+     "w": 2,
+     "l": 0,
+     "t": 98
+    },
+    "redqueen.red": {
+     "w": 12,
+     "l": 82,
+     "t": 6
+    },
+    "carpet.js": {
+     "w": 91,
+     "l": 0,
+     "t": 9
+    },
+    "quickscan.js": {
+     "w": 78,
+     "l": 11,
+     "t": 11
+    },
+    "gatekeeper.js": {
+     "w": 13,
+     "l": 83,
+     "t": 4
+    },
+    "papercut.js": {
+     "w": 1,
+     "l": 1,
+     "t": 98
+    },
+    "fastsilk.js": {
+     "w": 0,
+     "l": 1,
+     "t": 99
+    },
+    "chameleon.js": {
+     "w": 2,
+     "l": 4,
+     "t": 94
+    },
+    "bandit.js": {
+     "w": 29,
+     "l": 61,
+     "t": 10
+    },
+    "hedgehog.js": {
+     "w": 18,
+     "l": 3,
+     "t": 79
+    },
+    "hydra.js": {
+     "w": 7,
+     "l": 2,
+     "t": 91
+    }
+   },
+   "wins": 1048,
+   "losses": 296,
+   "ties": 1156,
+   "score": 4300,
+   "played": 2500
   },
   "chameleon.js": {
    "vs": {
@@ -2848,48 +3092,48 @@
     },
     "dwarf.red": {
      "w": 78,
-     "l": 9,
-     "t": 13
+     "l": 12,
+     "t": 10
     },
     "gemini.red": {
-     "w": 89,
+     "w": 85,
      "l": 1,
-     "t": 10
+     "t": 14
     },
     "mice.red": {
-     "w": 38,
-     "l": 3,
-     "t": 59
+     "w": 15,
+     "l": 2,
+     "t": 83
     },
     "impring.red": {
-     "w": 23,
+     "w": 41,
      "l": 1,
-     "t": 76
+     "t": 58
     },
     "scanner.red": {
-     "w": 83,
+     "w": 73,
      "l": 7,
-     "t": 10
+     "t": 20
     },
     "seeker.red": {
-     "w": 56,
-     "l": 2,
-     "t": 42
+     "w": 61,
+     "l": 1,
+     "t": 38
     },
     "oneshot.red": {
      "w": 69,
-     "l": 15,
-     "t": 16
+     "l": 13,
+     "t": 18
     },
     "silk.red": {
-     "w": 2,
-     "l": 1,
-     "t": 97
+     "w": 11,
+     "l": 3,
+     "t": 86
     },
     "vampire.red": {
      "w": 59,
-     "l": 5,
-     "t": 36
+     "l": 7,
+     "t": 34
     },
     "sweeper.red": {
      "w": 94,
@@ -2897,227 +3141,237 @@
      "t": 5
     },
     "twopass.red": {
-     "w": 66,
-     "l": 18,
+     "w": 61,
+     "l": 23,
      "t": 16
     },
     "stunner.red": {
-     "w": 64,
-     "l": 5,
-     "t": 31
+     "w": 70,
+     "l": 1,
+     "t": 29
     },
     "stoneimp.red": {
-     "w": 45,
+     "w": 50,
      "l": 1,
-     "t": 54
+     "t": 49
     },
     "evolvedsilk.red": {
-     "w": 1,
+     "w": 2,
      "l": 1,
-     "t": 98
+     "t": 97
+    },
+    "redqueen.red": {
+     "w": 36,
+     "l": 62,
+     "t": 2
     },
     "carpet.js": {
-     "w": 86,
+     "w": 89,
      "l": 2,
-     "t": 12
+     "t": 9
     },
     "quickscan.js": {
-     "w": 77,
-     "l": 15,
-     "t": 8
-    },
-    "gatekeeper.js": {
-     "w": 35,
-     "l": 61,
-     "t": 4
-    },
-    "papercut.js": {
-     "w": 4,
-     "l": 1,
-     "t": 95
-    },
-    "fastsilk.js": {
-     "w": 6,
-     "l": 4,
-     "t": 90
-    },
-    "blitz.js": {
-     "w": 5,
-     "l": 3,
-     "t": 92
-    },
-    "bandit.js": {
-     "w": 51,
-     "l": 44,
+     "w": 78,
+     "l": 17,
      "t": 5
     },
+    "gatekeeper.js": {
+     "w": 34,
+     "l": 64,
+     "t": 2
+    },
+    "papercut.js": {
+     "w": 3,
+     "l": 1,
+     "t": 96
+    },
+    "fastsilk.js": {
+     "w": 19,
+     "l": 3,
+     "t": 78
+    },
+    "blitz.js": {
+     "w": 4,
+     "l": 2,
+     "t": 94
+    },
+    "bandit.js": {
+     "w": 44,
+     "l": 56,
+     "t": 0
+    },
     "hedgehog.js": {
-     "w": 12,
-     "l": 7,
-     "t": 81
+     "w": 14,
+     "l": 3,
+     "t": 83
     },
     "hydra.js": {
-     "w": 9,
-     "l": 7,
-     "t": 84
+     "w": 5,
+     "l": 5,
+     "t": 90
     }
    },
-   "wins": 1052,
-   "losses": 214,
-   "ties": 1134,
-   "score": 4290,
-   "played": 2400
+   "wins": 1095,
+   "losses": 289,
+   "ties": 1116,
+   "score": 4401,
+   "played": 2500
   },
   "bandit.js": {
    "vs": {
     "imp.red": {
-     "w": 43,
+     "w": 50,
      "l": 0,
-     "t": 57
+     "t": 50
     },
     "dwarf.red": {
-     "w": 82,
-     "l": 8,
+     "w": 78,
+     "l": 12,
      "t": 10
     },
     "gemini.red": {
-     "w": 88,
-     "l": 1,
+     "w": 87,
+     "l": 2,
      "t": 11
     },
     "mice.red": {
-     "w": 80,
-     "l": 13,
-     "t": 7
+     "w": 77,
+     "l": 20,
+     "t": 3
     },
     "impring.red": {
-     "w": 38,
+     "w": 37,
      "l": 0,
-     "t": 62
+     "t": 63
     },
     "scanner.red": {
-     "w": 72,
-     "l": 11,
-     "t": 17
+     "w": 71,
+     "l": 9,
+     "t": 20
     },
     "seeker.red": {
-     "w": 59,
-     "l": 4,
-     "t": 37
+     "w": 65,
+     "l": 23,
+     "t": 12
     },
     "oneshot.red": {
-     "w": 54,
-     "l": 10,
-     "t": 36
+     "w": 72,
+     "l": 7,
+     "t": 21
     },
     "silk.red": {
-     "w": 2,
-     "l": 8,
-     "t": 90
+     "w": 0,
+     "l": 5,
+     "t": 95
     },
     "vampire.red": {
-     "w": 49,
-     "l": 7,
-     "t": 44
+     "w": 63,
+     "l": 6,
+     "t": 31
     },
     "sweeper.red": {
-     "w": 93,
+     "w": 94,
      "l": 2,
-     "t": 5
+     "t": 4
     },
     "twopass.red": {
-     "w": 76,
-     "l": 22,
-     "t": 2
+     "w": 74,
+     "l": 26,
+     "t": 0
     },
     "stunner.red": {
-     "w": 34,
-     "l": 53,
-     "t": 13
+     "w": 66,
+     "l": 3,
+     "t": 31
     },
     "stoneimp.red": {
-     "w": 41,
-     "l": 0,
-     "t": 59
+     "w": 46,
+     "l": 2,
+     "t": 52
     },
     "evolvedsilk.red": {
-     "w": 2,
-     "l": 9,
-     "t": 89
+     "w": 31,
+     "l": 28,
+     "t": 41
+    },
+    "redqueen.red": {
+     "w": 43,
+     "l": 55,
+     "t": 2
     },
     "carpet.js": {
-     "w": 90,
-     "l": 2,
-     "t": 8
+     "w": 96,
+     "l": 1,
+     "t": 3
     },
     "quickscan.js": {
-     "w": 79,
-     "l": 10,
+     "w": 75,
+     "l": 14,
      "t": 11
     },
     "gatekeeper.js": {
-     "w": 58,
-     "l": 38,
-     "t": 4
+     "w": 49,
+     "l": 50,
+     "t": 1
     },
     "papercut.js": {
-     "w": 67,
-     "l": 22,
-     "t": 11
+     "w": 64,
+     "l": 19,
+     "t": 17
     },
     "fastsilk.js": {
-     "w": 9,
-     "l": 23,
-     "t": 68
+     "w": 0,
+     "l": 5,
+     "t": 95
     },
     "blitz.js": {
-     "w": 67,
-     "l": 22,
-     "t": 11
+     "w": 61,
+     "l": 29,
+     "t": 10
     },
     "chameleon.js": {
-     "w": 44,
-     "l": 51,
-     "t": 5
+     "w": 56,
+     "l": 44,
+     "t": 0
     },
     "hedgehog.js": {
-     "w": 19,
-     "l": 29,
-     "t": 52
+     "w": 29,
+     "l": 47,
+     "t": 24
     },
     "hydra.js": {
-     "w": 9,
-     "l": 22,
-     "t": 69
+     "w": 29,
+     "l": 35,
+     "t": 36
     }
    },
-   "wins": 1255,
-   "losses": 367,
-   "ties": 778,
-   "score": 4543,
-   "played": 2400
+   "wins": 1413,
+   "losses": 444,
+   "ties": 643,
+   "score": 4882,
+   "played": 2500
   },
   "hedgehog.js": {
    "vs": {
     "imp.red": {
-     "w": 29,
+     "w": 22,
      "l": 0,
-     "t": 71
+     "t": 78
     },
     "dwarf.red": {
      "w": 98,
-     "l": 0,
-     "t": 2
+     "l": 1,
+     "t": 1
     },
     "gemini.red": {
-     "w": 90,
-     "l": 1,
-     "t": 9
+     "w": 89,
+     "l": 0,
+     "t": 11
     },
     "mice.red": {
-     "w": 2,
-     "l": 8,
-     "t": 90
+     "w": 4,
+     "l": 12,
+     "t": 84
     },
     "impring.red": {
      "w": 7,
@@ -3125,235 +3379,245 @@
      "t": 93
     },
     "scanner.red": {
-     "w": 86,
-     "l": 11,
+     "w": 80,
+     "l": 17,
      "t": 3
     },
     "seeker.red": {
-     "w": 59,
-     "l": 6,
-     "t": 35
+     "w": 54,
+     "l": 9,
+     "t": 37
     },
     "oneshot.red": {
-     "w": 44,
-     "l": 17,
-     "t": 39
+     "w": 56,
+     "l": 7,
+     "t": 37
     },
     "silk.red": {
-     "w": 0,
-     "l": 10,
-     "t": 90
+     "w": 1,
+     "l": 11,
+     "t": 88
     },
     "vampire.red": {
-     "w": 79,
+     "w": 87,
      "l": 0,
-     "t": 21
+     "t": 13
     },
     "sweeper.red": {
-     "w": 48,
-     "l": 2,
-     "t": 50
+     "w": 44,
+     "l": 1,
+     "t": 55
     },
     "twopass.red": {
-     "w": 59,
-     "l": 1,
-     "t": 40
+     "w": 65,
+     "l": 0,
+     "t": 35
     },
     "stunner.red": {
-     "w": 52,
-     "l": 6,
-     "t": 42
+     "w": 54,
+     "l": 3,
+     "t": 43
     },
     "stoneimp.red": {
-     "w": 20,
+     "w": 15,
      "l": 0,
-     "t": 80
+     "t": 85
     },
     "evolvedsilk.red": {
-     "w": 2,
-     "l": 11,
-     "t": 87
+     "w": 5,
+     "l": 13,
+     "t": 82
+    },
+    "redqueen.red": {
+     "w": 28,
+     "l": 60,
+     "t": 12
     },
     "carpet.js": {
-     "w": 69,
-     "l": 3,
-     "t": 28
+     "w": 58,
+     "l": 5,
+     "t": 37
     },
     "quickscan.js": {
-     "w": 91,
+     "w": 93,
      "l": 6,
-     "t": 3
+     "t": 1
     },
     "gatekeeper.js": {
-     "w": 31,
-     "l": 19,
-     "t": 50
+     "w": 21,
+     "l": 20,
+     "t": 59
     },
     "papercut.js": {
-     "w": 0,
-     "l": 9,
-     "t": 91
+     "w": 2,
+     "l": 20,
+     "t": 78
     },
     "fastsilk.js": {
      "w": 0,
-     "l": 19,
-     "t": 81
+     "l": 16,
+     "t": 84
     },
     "blitz.js": {
-     "w": 4,
-     "l": 14,
-     "t": 82
+     "w": 3,
+     "l": 18,
+     "t": 79
     },
     "chameleon.js": {
-     "w": 7,
-     "l": 12,
-     "t": 81
+     "w": 3,
+     "l": 14,
+     "t": 83
     },
     "bandit.js": {
-     "w": 29,
-     "l": 19,
-     "t": 52
+     "w": 47,
+     "l": 29,
+     "t": 24
     },
     "hydra.js": {
-     "w": 4,
-     "l": 18,
-     "t": 78
+     "w": 5,
+     "l": 13,
+     "t": 82
     }
    },
-   "wins": 910,
-   "losses": 192,
-   "ties": 1298,
-   "score": 4028,
-   "played": 2400
+   "wins": 941,
+   "losses": 275,
+   "ties": 1284,
+   "score": 4107,
+   "played": 2500
   },
   "hydra.js": {
    "vs": {
     "imp.red": {
-     "w": 55,
+     "w": 56,
      "l": 0,
-     "t": 45
+     "t": 44
     },
     "dwarf.red": {
-     "w": 80,
+     "w": 77,
      "l": 2,
-     "t": 18
+     "t": 21
     },
     "gemini.red": {
-     "w": 91,
-     "l": 0,
-     "t": 9
+     "w": 89,
+     "l": 1,
+     "t": 10
     },
     "mice.red": {
      "w": 3,
-     "l": 3,
-     "t": 94
+     "l": 1,
+     "t": 96
     },
     "impring.red": {
-     "w": 54,
+     "w": 63,
      "l": 0,
-     "t": 46
+     "t": 37
     },
     "scanner.red": {
-     "w": 84,
-     "l": 1,
-     "t": 15
+     "w": 82,
+     "l": 0,
+     "t": 18
     },
     "seeker.red": {
-     "w": 66,
+     "w": 58,
      "l": 1,
-     "t": 33
+     "t": 41
     },
     "oneshot.red": {
-     "w": 51,
-     "l": 9,
+     "w": 53,
+     "l": 7,
      "t": 40
     },
     "silk.red": {
-     "w": 2,
-     "l": 1,
-     "t": 97
+     "w": 1,
+     "l": 0,
+     "t": 99
     },
     "vampire.red": {
-     "w": 86,
-     "l": 2,
-     "t": 12
+     "w": 83,
+     "l": 0,
+     "t": 17
     },
     "sweeper.red": {
-     "w": 88,
-     "l": 0,
-     "t": 12
+     "w": 83,
+     "l": 1,
+     "t": 16
     },
     "twopass.red": {
-     "w": 38,
-     "l": 11,
-     "t": 51
+     "w": 25,
+     "l": 10,
+     "t": 65
     },
     "stunner.red": {
-     "w": 62,
+     "w": 64,
      "l": 2,
-     "t": 36
+     "t": 34
     },
     "stoneimp.red": {
-     "w": 69,
+     "w": 49,
      "l": 0,
-     "t": 31
+     "t": 51
     },
     "evolvedsilk.red": {
-     "w": 5,
+     "w": 1,
      "l": 0,
-     "t": 95
+     "t": 99
+    },
+    "redqueen.red": {
+     "w": 17,
+     "l": 64,
+     "t": 19
     },
     "carpet.js": {
-     "w": 73,
+     "w": 76,
      "l": 0,
-     "t": 27
+     "t": 24
     },
     "quickscan.js": {
      "w": 74,
-     "l": 9,
-     "t": 17
+     "l": 5,
+     "t": 21
     },
     "gatekeeper.js": {
-     "w": 14,
+     "w": 19,
      "l": 54,
-     "t": 32
+     "t": 27
     },
     "papercut.js": {
      "w": 4,
-     "l": 0,
-     "t": 96
+     "l": 1,
+     "t": 95
     },
     "fastsilk.js": {
-     "w": 3,
+     "w": 1,
      "l": 0,
-     "t": 97
+     "t": 99
     },
     "blitz.js": {
-     "w": 5,
-     "l": 1,
-     "t": 94
+     "w": 2,
+     "l": 7,
+     "t": 91
     },
     "chameleon.js": {
-     "w": 7,
-     "l": 9,
-     "t": 84
+     "w": 5,
+     "l": 5,
+     "t": 90
     },
     "bandit.js": {
-     "w": 22,
-     "l": 9,
-     "t": 69
+     "w": 35,
+     "l": 29,
+     "t": 36
     },
     "hedgehog.js": {
-     "w": 18,
-     "l": 4,
-     "t": 78
+     "w": 13,
+     "l": 5,
+     "t": 82
     }
    },
-   "wins": 1054,
-   "losses": 118,
-   "ties": 1228,
-   "score": 4390,
-   "played": 2400
+   "wins": 1033,
+   "losses": 195,
+   "ties": 1272,
+   "score": 4371,
+   "played": 2500
   }
  }
 }

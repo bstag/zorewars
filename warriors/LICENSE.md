@@ -13,6 +13,7 @@ These are adaptations of published classics, included for teaching with credit t
 | Imp | `imp.red`, `javascript/imp.js`, `python/imp.py` | A. K. Dewdney, *Scientific American*, May 1984 |
 | Dwarf | `dwarf.red`, `dwarf.js`, `dwarf.py`, `javascript/dwarf.js`, `python/dwarf.py`, `examples/dwarf.py`, `examples/dwarf.cpp` | A. K. Dewdney, *Scientific American*, May 1984 |
 | Mice | `mice.red`, `javascript/mice.js`, `python/mice.py` | Chip Wendell, first ICWS tournament, 1986 |
+| Red Queen | `redqueen.red`, `javascript/redqueen.js`, `python/redqueen.py` | The body of Mice (Chip Wendell, 1986) unchanged, beside Gatekeeper (ZoreWars, CC0). The ZoreWars evolver came upon the combination. |
 
 Other warriors whose descriptions say "after …" (Gemini, Imp Ring, Silk, Seeker, One-Shot and others) were written from scratch for ZoreWars. They follow published *ideas*, not code, and are CC0.
 

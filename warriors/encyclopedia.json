@@ -149,6 +149,22 @@
       "opponent": "dwarf.red"
     },
     {
+      "id": "redqueen", "file": "redqueen.red", "name": "Red Queen", "language": "redcode", "family": "Hybrid", "era": "ZoreWars 2026 (evolved)",
+      "inspiredBy": "Our evolver came upon this warrior, but its parts have a history. The replicator is <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/MICE.txt\">Mice</a> by Chip Wendell, winner of the first ICWS tournament in 1986, here unchanged. The scanner is Gatekeeper, ZoreWars' compare scanner in the line of <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/IronGate%5B2%5D.txt\">Iron Gate</a> (Wayne Sheppard) and <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/AgonyII.txt\">Agony</a> (Stefan Strack). The evolver (<code>zorewars evolve</code>, after <a href=\"https://github.com/SakanaAI/drq\">Digital Red Queen</a> by Sakana AI and MIT) found the pairing in a run that started from Hedgehog, Hydra and Fast Silk.",
+      "summary": "Our evolver came upon it: Gatekeeper and a complete copy of Chip Wendell's Mice, started side by side with one extra SPL. It was the strongest ZoreWars warrior when it was added, both overall and against the Hall of Fame classics. That surprised us, because our hand-built scanner/paper hybrids had failed.",
+      "how": [
+        "Three launch lines: two <code>SPL</code>s start Mice and a leftover fragment, then a <code>JMP</code> sends the first process into Gatekeeper.",
+        "Gatekeeper runs unchanged: it compares cells across the core, stuns anything it finds with a carpet of <code>SPL 0</code>, and finishes with a two-pass clear.",
+        "Mice copies itself 653 cells further on, starts a process in the copy, and repeats. Each copy adds only one process.",
+        "<b>Why it works when our hand-built hybrids didn't:</b> a warrior gets one instruction per turn, however many processes it has. Papercut runs 16 processes, so in Gatepaper the scanner got one turn in 17. Mice grows one process at a time, so Gatekeeper keeps most of the turns while the copies spread in the background.",
+        "The last three lines are a leftover of evolution: one process writes two cells and then runs off into empty core."
+      ],
+      "strengths": ["Our best overall and against the classics when it was added: about 1.6 points per round against the whole hill, 1.4 against the classics.", "The scanner beats papers and the replicator survives the stones that beat scanners."],
+      "weaknesses": ["Gatekeeper's carpets also hit Mice's copies, and its final clear wipes them.", "Modern paper/stone warriors such as Son of Vain still beat it most of the time."],
+      "tryIt": "Delete the first two lines and change <code>ORG</code> to start at the <code>JMP</code>: that is plain Gatekeeper. Compare the two with <code>node cli/zorewars.js hill warriors/redqueen.red --classics</code>.",
+      "opponent": "gatekeeper.js"
+    },
+    {
       "id": "scout", "file": "scanner.red", "name": "Scout", "language": "redcode", "family": "Scanner", "era": "1993",
       "inspiredBy": "A minimal B-field scanner in the spirit of <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/B-scannersliveinvain.txt\">B-scanners live in vain</a> (Matt Hastings, 1993), which checks for non-zero fields instead of comparing pairs of cells.",
       "summary": "Looks at every 9th cell and only bombs when it finds something non-empty. Checks the distance to every find so it never bombs itself.",
