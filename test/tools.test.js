@@ -5,7 +5,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { compile, runMatch, measureSpecies, speciesAxes, diagnoseRounds } from '../src/engine/index.js';
 import { parseTunable, withConstants } from '../tools/tune.js';
-import { makeGenePool, makeOperators, genomeOf, graft, toWarrior, toRedcode, roleOf } from '../tools/genes.js';
+import { makeGenePool, makeOperators, genomeOf, graft, toWarrior, toRedcode, roleOf, randomGenome } from '../tools/genes.js';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const read = (f) => fs.readFileSync(path.join(root, f), 'utf8');
@@ -115,4 +115,22 @@ test('evolver on a volume: 3D mutations move numbers off the row, and species ge
   for (let k = 0; k < 400; k++) assert.ok(!ring.tweak(g).code.some((i) => i.op === 'TRN'));
   const shape = (f) => measureSpecies(compile(read(`warriors/${f}`), 'javascript', VOL), { ...VOL, maxProcesses: 8000, maxCycles: 80000, maxLength: 100 }).shape;
   assert.equal(shape('volume/lift.js'), 3);     // a line through the layers
+});
+
+test('evolving from scratch: random programs compile on the ring and on a plane', async () => {
+  const { makeGeometry } = await import('../src/engine/geometry.js');
+  const PLANE = { topology: 'torus', sizeX: 100, sizeY: 80, sizeZ: 1, coreSize: 8000 };
+  const geo = makeGeometry(PLANE);
+  let trn = 0;
+  for (let k = 0; k < 200; k++) {
+    const g = randomGenome(4 + (k % 16), { coreSize: 8000 });
+    assert.ok(!g.code.some((i) => i.op === 'TRN'), 'no TRN on the ring');
+    assert.ok(compile(toRedcode(g, { coreSize: 8000 }), 'redcode').ok);
+    const p = randomGenome(4 + (k % 16), { coreSize: 8000, geo });
+    trn += p.code.filter((i) => i.op === 'TRN').length;
+    assert.ok(compile(toRedcode(p, { coreSize: 8000, geo }), 'redcode', PLANE).ok);
+  }
+  assert.ok(trn > 0, 'TRN appears on a plane');
+  const ops = makeOperators({}, null, { scratch: true });
+  assert.ok(ops.retune && !ops.graft_paper);
 });

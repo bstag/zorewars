@@ -139,13 +139,18 @@ export async function cmdEvolve(args, h) {
   const batchSize = Math.max(4, parseInt(args.flags.batch ?? '40', 10));
   const out = args.flags.out ?? 'evolved';
   // Gene pool and starting opponents: the library, plus any warriors given.
-  const field = libraryOpponents(settings);
+  // --scratch: none of that. Random programs, scored only against each
+  // other's champions; the library is only held out, to report progress.
+  const scratch = !!args.flags.scratch;
+  const library = libraryOpponents(settings);
+  const field = scratch ? [] : library;
   const extra = args._.length ? await h.loadAll(h.expandRefs(args._), settings, json) : [];
   const sources = [
     ...field.map((o) => ({ w: o.w, role: roleOf(`${o.category} ${o.name}`) })),
     ...extra.map((w) => ({ w: strip(w), role: roleOf(`${w.name} ${w.strategy || ''}`) || 'paper' })),
   ];
-  const heldOut = args.flags.classics ? await opponents(h, settings, { ...args.flags, classics: true }, []).then((f) => f.filter((x) => x.group === 'classic')) : [];
+  const classics = args.flags.classics ? await opponents(h, settings, { ...args.flags, classics: true }, []).then((f) => f.filter((x) => x.group === 'classic')) : [];
+  const heldOut = scratch ? [...library, ...classics] : classics;
   // --king a.js,b.red: start the Red Queen with these as champions (they
   // also join the gene pool and the starting population).
   const kings = args.flags.king ? await h.loadAll(h.expandRefs(String(args.flags.king).split(',')), settings, json) : [];
@@ -154,11 +159,11 @@ export async function cmdEvolve(args, h) {
   fs.mkdirSync(out, { recursive: true });
   const pool = createPool();
   try {
-    if (!json) console.log(`Evolving: ${generations} Red Queen generations, ${batches}x${batchSize} children each, ${sources.length} warriors in the gene pool, genomes up to ${maxLength} instructions${kings.length ? `, starting champions: ${kings.map((k) => k.name).join(', ')}` : ''}${heldOut.length ? `, ${heldOut.length} classics held out` : ''}\n`);
+    if (!json) console.log(`Evolving${scratch ? ' from scratch' : ''}: ${generations} Red Queen generations, ${batches}x${batchSize} children each, ${scratch ? 'random programs, no gene pool' : `${sources.length} warriors in the gene pool`}, genomes up to ${maxLength} instructions${kings.length ? `, starting champions: ${kings.map((k) => k.name).join(', ')}` : ''}${heldOut.length ? `, ${heldOut.length} ${scratch ? 'library warriors and classics' : 'classics'} held out` : ''}\n`);
     const geo = settings.topology === 'torus' && (settings.sizeY ?? 1) > 1 ? makeGeometry(settings) : null;
     const r = await evolve({
       pool, sources, opponents: field, heldOut, settings, rounds: generations, batches, batchSize,
-      maxLength, kings,
+      maxLength, kings, scratch,
       onLog: (t) => progress(json, t),
       onRound: (rec) => {
         done(json);
@@ -167,7 +172,7 @@ export async function cmdEvolve(args, h) {
         fs.writeFileSync(file, toRedcode(c.g, { name: c.name, coreSize: settings.coreSize, geo, strategy: `Champion of Red Queen generation ${rec.round} (zorewars evolve): ${c.species.hint}, ${c.species.processes} processes, ${c.species.coverage} cells.` }));
         if (json) return;
         const vs = c.vsAncestors ? ` | vs ancestors ${(c.vsAncestors.reduce((s, x) => s + x.pts, 0) / c.vsAncestors.length).toFixed(2)} pts/round` : '';
-        const held = c.heldOut ? ` | held-out classics ${c.heldOut.score.toFixed(2)}` : '';
+        const held = c.heldOut ? ` | held-out ${scratch ? 'library' : 'classics'} ${c.heldOut.score.toFixed(2)}` : '';
         console.log(`generation ${rec.round}: ${rec.cells} species cells (${rec.placed} improved) | champion fitness ${c.fit.toFixed(2)}, ${c.species.hint}, ${c.g.code.length} instructions${vs}${held}  -> ${file}`);
       },
     });

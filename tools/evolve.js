@@ -17,17 +17,18 @@
 import { measureSpecies } from '../src/engine/index.js';
 import { makeGeometry } from '../src/engine/geometry.js';
 import { evaluate, strip } from './hill.js';
-import { makeGenePool, makeOperators, makeChooser, crossover, fits, clone, graft, genomeOf, pick, toWarrior, MAXLEN } from './genes.js';
+import { makeGenePool, makeOperators, makeChooser, crossover, fits, clone, graft, genomeOf, pick, toWarrior, randomGenome, MAXLEN } from './genes.js';
 
 export async function evolve({
   pool, sources, opponents, heldOut = [], settings,
   rounds = 8, batches = 4, batchSize = 40, evalRounds = 6, maxLength = MAXLEN,
   kings = [],          // warriors that start as champions: generation 1 must already beat them
+  scratch = false,     // from scratch: random programs, no gene pool, fitness only against champions
   onLog = () => {}, onRound = () => {},
 }) {
   const units = makeGenePool(sources);
   const geo = settings.topology === 'torus' && (settings.sizeY ?? 1) > 1 ? makeGeometry(settings) : null;
-  const ops = makeOperators(units, geo);
+  const ops = makeOperators(units, geo, { scratch, coreSize: settings.coreSize });
   // On a plane or volume the archive gets a third dimension, the warrior's
   // shape (how many axes its writes spread over), so row-bound, flat and
   // volumetric species each keep their own elites.
@@ -43,14 +44,14 @@ export async function evolve({
     const species = measureSpecies(w, settings);
     if (!species.survives) return null;              // kills itself when alone
     const seed = round * 1000 + 1;                     // the same placements for everyone in a round
-    const a = await evaluate(pool, w, opponents, { rounds: evalRounds, seed, settings, diagnose: true });
-    let fit = a.smooth;
-    const sym = { ...a.symptoms };
+    const a = opponents.length ? await evaluate(pool, w, opponents, { rounds: evalRounds, seed, settings, diagnose: true }) : null;
+    let fit = a ? a.smooth : 0;
+    const sym = a ? { ...a.symptoms } : {};
     if (champions.length) {
       const c = await evaluate(pool, w, champions.map((x) => ({ name: x.name, group: 'champion', w: x.w })), { rounds: evalRounds, seed, settings, diagnose: true });
       const vsChamps = c.rows.reduce((s, r) => s + r.smooth - (0.5 * r.t) / evalRounds, 0) / c.rows.length;
-      fit = (a.smooth + vsChamps) / 2;
-      for (const k in sym) sym[k] += c.symptoms[k];
+      fit = a ? (a.smooth + vsChamps) / 2 : vsChamps;     // from scratch: only the champions count
+      for (const k in c.symptoms) sym[k] = (sym[k] ?? 0) + c.symptoms[k];
     }
     return { g, fit, sym, species };
   }
@@ -62,9 +63,25 @@ export async function evolve({
     return true;
   };
 
-  // Round 1 starts from the sources themselves plus random grafts of their slices.
+  // Round 1 starts from the sources themselves plus random grafts of their
+  // slices; from scratch, from random programs that survive alone, and (with
+  // no kings) four of those survivors are generation 0's champions.
   const unitList = Object.values(units).flat();
   let start = sources.map((s) => genomeOf(s.w)).filter((g) => fits(g, maxLength));
+  if (scratch) {
+    const alive = [];
+    for (let tries = 0; alive.length < Math.max(batchSize, 40) && tries < 20000; tries++) {
+      const g = randomGenome(4 + Math.floor(Math.random() * (maxLength - 3)), { coreSize, geo });
+      if (measureSpecies(toWarrior(g, 'Random', coreSize), settings).survives) alive.push(g);
+    }
+    if (!alive.length) throw new Error('no random program survived alone');
+    if (!champions.length) {
+      for (const [k, g] of alive.slice(0, 4).entries()) {
+        champions.push({ round: 0, name: `Random ${k + 1}`, g, w: strip(toWarrior(g, `Random ${k + 1}`, coreSize)) });
+      }
+    }
+    start.push(...alive);
+  }
   for (let tries = 0; start.length < Math.max(batchSize, 40) && tries < 1000 && unitList.length; tries++) {
     const c = graft(clone(pick(unitList)), pick(unitList));
     if (fits(c, maxLength)) start.push(c);

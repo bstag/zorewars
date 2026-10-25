@@ -64,17 +64,31 @@ export function graft(g, u) {
 }
 
 const NUMS = [1, 2, 3, 4, 5, 7, 8, 13, 16, 97, 1471, 2365, 2667, 3044, 3364];
+const OPS_ALL = ['MOV', 'ADD', 'SUB', 'MUL', 'DIV', 'MOD', 'JMP', 'JMZ', 'JMN', 'DJN', 'SPL', 'SEQ', 'SNE', 'SLT', 'NOP', 'DAT'];
+const MODS_ALL = ['A', 'B', 'AB', 'BA', 'F', 'X', 'I'];
+const MODES_ALL = ['#', '$', '@', '<', '>', '*', '{', '}'];
+
+// A random program for evolving from scratch: random opcodes, modifiers and
+// modes; each number is a small step (within the program, mostly) or any
+// number at all (on a torus: any point). Nothing from the library.
+export function randomGenome(len, { coreSize = 8000, geo = null } = {}) {
+  const ops = geo ? [...OPS_ALL, 'TRN'] : OPS_ALL;
+  const num = () => (Math.random() < 0.6 ? rnd(2 * len + 9) - len - 4 : rnd(coreSize));
+  const code = Array.from({ length: len }, () => ({ op: pick(ops), mod: pick(MODS_ALL), aMode: pick(MODES_ALL), a: num(), bMode: pick(MODES_ALL), b: num() }));
+  return { start: rnd(len), code };
+}
 // geo (a plane or volume's geometry, see src/engine/geometry.js) adds
 // operators that treat a number as the point it is: plain retunes mostly
 // move along x, so on their own they rarely reach other rows or layers.
-export function makeOperators(units, geo = null) {
+export function makeOperators(units, geo = null, { scratch = false, coreSize = 8000 } = {}) {
   // Every ICWS'94 opcode the evolver can switch to, plus TRN (our turn
   // instruction, an assembler error on the ring) on a plane or volume.
   const OPCODES = ['MOV', 'ADD', 'SUB', 'MUL', 'DIV', 'MOD', 'JMP', 'JMZ', 'JMN', 'DJN', 'SPL', 'SEQ', 'SNE', 'SLT', 'NOP', 'DAT', ...(geo ? ['TRN'] : [])];
   const ops = {
     retune(g) {   // change one number: nudge it, or try a known-good step
       const c = clone(g); const i = pick(c.code); const f = Math.random() < 0.5 ? 'a' : 'b';
-      i[f] = Math.random() < 0.5 ? i[f] + rnd(9) - 4 : (Math.random() < 0.5 ? pick(NUMS) * (1 + rnd(4)) : rnd(8000));
+      // From scratch there are no known-good steps: a nudge or any number.
+      i[f] = Math.random() < 0.5 ? i[f] + rnd(9) - 4 : (!scratch && Math.random() < 0.5 ? pick(NUMS) * (1 + rnd(4)) : rnd(coreSize));
       return c;
     },
     trim(g) {     // delete an instruction: smaller is harder to find

@@ -39,7 +39,7 @@ Developer tools (use every CPU core):
                                                      (processes x cells executed); none = the library
   zorewars tune <warrior.js> [--candidates 40] [--seeds 3] [--write]
                                                      search the warrior's // SPACE for better constants
-  zorewars evolve [warrior...] [--generations 6] [--king w.js] [--genome 40] [--out evolved]
+  zorewars evolve [warrior...] [--generations 6] [--king w.js] [--genome 40] [--scratch] [--out evolved]
                                                      breed warriors: Red Queen rounds of MAP-Elites
 
 Warriors:
@@ -69,6 +69,7 @@ Options:
                      later rounds follow pMARS's RNG, so results match pMARS
   --json             machine-readable output
   --classics         hill/tune/evolve: also play the Hall of Fame originals
+  --scratch          evolve: start from random programs, no library genes or opponents (the library is only held out)
                      (fetched from the public archives each run; needs network)
 
 pMARS's short options also work: -r -s -c -p -l -d -F -S (and -b -k are ignored),
@@ -87,7 +88,7 @@ function parseArgs(argv) {
     const a = argv[i];
     if (a.startsWith('--')) {
       const key = a.slice(2);
-      if (['json', 'help', 'report', 'classics', 'write'].includes(key)) args.flags[key] = true;
+      if (['json', 'help', 'report', 'classics', 'write', 'scratch'].includes(key)) args.flags[key] = true;
       else args.flags[key] = argv[++i];
     } else if (a === '-h') args.flags.help = true;
     else if (/^-[A-Za-z]$/.test(a) && PMARS_FLAGS[a[1]]) args.flags[PMARS_FLAGS[a[1]]] = argv[++i];
