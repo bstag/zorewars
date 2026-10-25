@@ -8,7 +8,7 @@ if (SIZEZ < 2) throw new Error("Volume Silk is for a 3D battlefield: choose a Vo
 //
 // Tuned constants: `node cli/zorewars.js tune warriors/volume/volumesilk.js --torus 40x20x10`
 // SPACE {"LEVELS":[1,3],"DX":[1,39],"DY":[0,19],"DZ":[1,9],"EX":[0,39],"EY":[0,19],"EZ":[0,9]}
-const P = {"LEVELS":3,"DX":13,"DY":7,"DZ":3,"EX":11,"EY":5,"EZ":4};
+const P = {"LEVELS":3,"DX":29,"DY":14,"DZ":3,"EX":21,"EY":16,"EZ":5};
 
 org("start");
 label("start");

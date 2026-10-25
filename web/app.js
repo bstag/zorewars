@@ -1,6 +1,6 @@
 // ZoreWars arena: editors, live battle view, inspector and tournaments.
 
-import { compile, VM, runRound, mulberry32, DEFAULT_SETTINGS, listing, roundPoints, postMortem, generateFromJS } from '../src/engine/index.js';
+import { compile, VM, runRound, mulberry32, DEFAULT_SETTINGS, listing, roundPoints, postMortem, generateFromJS, fitsBattlefield } from '../src/engine/index.js';
 import { convertWarrior } from '../src/engine/convert.js';
 import { CoreRenderer, ProcessChart, WARRIOR_COLORS } from './arena.js';
 import { CoreView3D } from './arena3d.js';
@@ -114,20 +114,65 @@ async function loadLibrary() {
     entry.source = await fetch(`../warriors/${entry.file}`).then((r) => r.text());
   }));
   state.library = list;
+  renderLibrarySelect();
+  refreshLibraryFit();
+}
+
+// Which library warriors can play on the current battlefield (they compile
+// there and, on a torus, survive alone): those are listed first, the rest in
+// a last group, where picking one explains what it needs and offers to
+// switch. Checked in short slices after every change of battlefield.
+const battlefieldKey = (s) => [s.topology ?? 'ring', s.sizeX, s.sizeY, s.sizeZ, s.coreSize, s.maxLength, s.maxProcesses, s.maxCycles].join('/');
+function refreshLibraryFit() {
+  const key = battlefieldKey(state.settings);
+  if (state.libraryFit?.key === key) return;
+  const fit = new Map();
+  state.libraryFit = { key, fit, done: false };
+  const todo = state.library.filter((e) => e.language !== 'python');
+  let i = 0;
+  const step = () => {
+    if (state.libraryFit.key !== key) return;            // the battlefield changed again
+    const t0 = performance.now();
+    while (i < todo.length && performance.now() - t0 < 25) {
+      const e = todo[i++];
+      let ok = false;
+      try { ok = fitsBattlefield(compile(e.source, e.language, state.settings), state.settings); } catch { ok = false; }
+      fit.set(e.file, ok);
+    }
+    if (i < todo.length) { setTimeout(step, 0); return; }
+    // Python warriors run in Pyodide: they follow the Redcode warrior they mirror.
+    for (const e of state.library.filter((x) => x.language === 'python')) {
+      const twin = e.convertedFrom ?? state.library.find((x) => x.name === e.name.replace(/ \(Python\)$/, '') && x.language === 'redcode')?.file;
+      fit.set(e.file, twin ? fit.get(twin) !== false : state.settings.topology !== 'torus');
+    }
+    state.libraryFit.done = true;
+    renderLibrarySelect();
+  };
+  step();
+}
+function renderLibrarySelect() {
   const sel = $('librarySelect');
+  const keep = sel.value;
+  const fit = state.libraryFit?.done ? state.libraryFit.fit : null;
+  const runs = (e) => !fit || fit.get(e.file) !== false;
   sel.innerHTML = '<option value="">Load a classic…</option>';
-  const groups = { redcode: 'Redcode', javascript: 'JavaScript', python: 'Python' };
-  for (const [lang, label] of Object.entries(groups)) {
+  const label = (e) => `${e.name} — ${e.category}${e.convertedFrom ? ' (converted)' : ''}${e.battlefield ? (e.battlefield.split('x').length > 2 ? ' · 3D' : ' · plane') : ''}`;
+  const add = (title, entries) => {
+    if (!entries.length) return;
     const og = document.createElement('optgroup');
-    og.label = label;
-    for (const e of list.filter((x) => x.language === lang)) {
+    og.label = title;
+    for (const e of entries) {
       const o = document.createElement('option');
       o.value = e.file;
-      o.textContent = `${e.name} — ${e.category}${e.convertedFrom ? ' (converted)' : ''}${e.battlefield ? (e.battlefield.split('x').length > 2 ? ' · 3D' : ' · plane') : ''}`;
+      o.textContent = label(e);
       og.appendChild(o);
     }
-    if (og.children.length) sel.appendChild(og);
-  }
+    sel.appendChild(og);
+  };
+  const groups = { redcode: 'Redcode', javascript: 'JavaScript', python: 'Python' };
+  for (const [lang, title] of Object.entries(groups)) add(title, state.library.filter((x) => x.language === lang && runs(x)));
+  add('For other battlefields (pick one to switch)', state.library.filter((x) => !runs(x)));
+  sel.value = keep;
 }
 
 function libraryEntry(file) {
@@ -322,6 +367,13 @@ function rulesHint(c) {
   // Warriors written for a 3D battlefield, or the plane, say so when compiled elsewhere.
   if ((state.settings.sizeZ ?? 1) < 2 && c.errors?.some((e) => /is for a 3D battlefield/.test(e.message))) {
     return { settings: { ...state.settings, ...fieldSettings('torus:40x20x10') }, text: 'This warrior is written for the 3D battlefield (40×20×10, experimental). Switching applies to every warrior in the arena.' };
+  }
+  // A ring warrior on a plane or volume: too long for half a row, or it would
+  // destroy itself there. Offer the classic ring.
+  const lib = activeSlot()?.libFile;
+  const misfit = lib && state.libraryFit?.done && state.libraryFit.fit.get(lib) === false && !libraryEntry(lib)?.battlefield;
+  if (state.settings.topology === 'torus' && (misfit || c.errors?.some((e) => /half a row/.test(e.message)))) {
+    return { settings: { ...state.settings, ...fieldSettings('ring'), coreSize: 8000 }, text: "This warrior is written for the classic ring and can't play on this battlefield. Switching applies to every warrior in the arena." };
   }
   if (state.settings.topology !== 'torus' && c.errors?.some((e) => /is for a plane/.test(e.message))) {
     return { settings: { ...state.settings, ...fieldSettings('torus:100x80') }, text: 'This warrior is written for the plane battlefield (100×80, experimental). Switching applies to every warrior in the arena.' };
@@ -943,6 +995,7 @@ function applySettings(values) {
   renderer.layout(state.settings.coreSize, state.vm?.geo ?? null);
   state.vm = null;
   state.slots.forEach((s) => compileSlot(s));
+  refreshLibraryFit();
 }
 
 // ---------------------------------------------------------------- speed

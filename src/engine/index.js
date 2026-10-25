@@ -3,6 +3,7 @@
 import { assemble, listing } from './assembler.js';
 import { generateFromJS } from './generator.js';
 import { DEFAULT_SETTINGS } from './constants.js';
+import { measureSpecies } from './species.js';
 
 export * from './constants.js';
 export { VM } from './vm.js';
@@ -24,6 +25,16 @@ export function inLibraryFor(entry, settings = {}) {
   if (entry.convertedFrom) return false;
   if (settings.topology === 'torus') return entry.benchmark !== false || !!entry.battlefield;
   return entry.benchmark !== false && !entry.battlefield;
+}
+
+// Whether a compiled warrior can play on a battlefield: it compiled there
+// and, on a torus, doesn't destroy itself when run alone (warriors written
+// for the ring often compute constants with ring arithmetic). Used to filter
+// the arena's library list and the CLI's list.
+export function fitsBattlefield(compiled, settings = {}) {
+  if (!compiled?.ok) return false;
+  if (settings.topology !== 'torus') return true;
+  return measureSpecies(compiled, { ...DEFAULT_SETTINGS, ...settings }).survives;
 }
 
 // Compile warrior source in any in-process language to a loadable program.

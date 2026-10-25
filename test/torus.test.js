@@ -160,3 +160,13 @@ test('battle events: the VM reports overrides and kills for the highlights, only
   for (let s = 0; s < 1000; s++) quiet.step();
   assert.equal(quiet.takeEvents(), null);               // not collected unless enabled
 });
+
+test('fitsBattlefield: which library warriors can play where', async () => {
+  const { fitsBattlefield } = await import('../src/engine/index.js');
+  const VOL = torus(40, 20, 10);
+  const fits = (f, s) => fitsBattlefield(compile(read(`warriors/${f}`), f.endsWith('.js') ? 'javascript' : 'redcode', s), s);
+  assert.ok(fits('imp.red', {}) && fits('imp.red', VOL));          // runs anywhere
+  assert.ok(!fits('hedgehog.js', VOL));                             // 85 instructions: too long for half a 40-cell row
+  assert.ok(!fits('impring.red', PLANE));                           // ring arithmetic: destroys itself on the plane
+  assert.ok(!fits('volume/star.js', {}) && fits('volume/star.js', VOL));
+});

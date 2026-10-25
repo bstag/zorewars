@@ -9,7 +9,7 @@ import path from 'node:path';
 import http from 'node:http';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { compile, detectLanguage, runMatch, runTournament, DEFAULT_SETTINGS, listing, formatPostMortem, generateFromJS, inLibraryFor } from '../src/engine/index.js';
+import { compile, detectLanguage, runMatch, runTournament, DEFAULT_SETTINGS, listing, formatPostMortem, generateFromJS, inLibraryFor, fitsBattlefield } from '../src/engine/index.js';
 import { convertWarrior, conversionCandidates } from '../src/engine/convert.js';
 import { runPythonFile, pythonRunner } from './python.js';
 import { fetchWarriorText, nameFromUrl } from './remote.js';
@@ -28,7 +28,7 @@ Usage:
   zorewars compile <warrior> [--json]
   zorewars convert <warrior> --to js|py [--out file]  Redcode -> JavaScript or Python, verified
   zorewars check <warrior> [--json]
-  zorewars list [--json]
+  zorewars list [--torus XxY[xZ]] [--json]          built-in warriors (and which run on that battlefield)
   zorewars classics [--json]                         famous originals you can fight
   zorewars serve [--port 8080]
 
@@ -409,13 +409,27 @@ function cmdClassics(args) {
   console.log('Warriors are fetched from the public archives each time; nothing is saved.');
 }
 
+// With --torus (or other rule flags), also says which warriors can play on
+// that battlefield: they compile there and, on a torus, survive alone.
 function cmdList(args) {
   const list = JSON.parse(fs.readFileSync(path.join(WARRIOR_DIR, 'index.json'), 'utf8'));
+  const settings = settingsFrom(args.flags);
+  const check = args.flags.torus !== undefined;
+  const runs = new Map();
+  if (check) {
+    for (const w of list.filter((e) => e.language !== 'python')) {
+      runs.set(w.file, fitsBattlefield(compile(fs.readFileSync(path.join(WARRIOR_DIR, w.file), 'utf8'), w.language, settings), settings));
+    }
+    for (const w of list.filter((e) => e.language === 'python')) runs.set(w.file, runs.get(w.convertedFrom ?? w.file.replace(/\.py$/, '.red')) ?? false);
+  }
   if (args.flags.json) {
-    console.log(JSON.stringify(list.map((w) => ({ ...w, ref: builtinRef(w) })), null, 2));
+    console.log(JSON.stringify(list.map((w) => ({ ...w, ref: builtinRef(w), ...(check ? { runsHere: runs.get(w.file) } : {}) })), null, 2));
     return;
   }
-  printTable(list.map((w) => ({ Ref: builtinRef(w), Name: w.name, Strategy: w.category, Language: w.language, File: `warriors/${w.file}` })));
+  const rows = list.map((w) => ({ Ref: builtinRef(w), Name: w.name, Strategy: w.category, Language: w.language, ...(check ? { 'Runs here': runs.get(w.file) ? 'yes' : '-' } : {}), File: `warriors/${w.file}` }));
+  printTable(check ? [...rows.filter((r) => r['Runs here'] === 'yes'), ...rows.filter((r) => r['Runs here'] !== 'yes')] : rows);
+  if (check) console.log(`
+${[...runs.values()].filter(Boolean).length} of ${list.length} can play on this battlefield.`);
 }
 
 const MIME = {

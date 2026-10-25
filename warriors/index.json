@@ -37,6 +37,7 @@
   {"file":"volume/lift.js","name":"Lift","category":"3D imp (depth)","language":"javascript","battlefield":"torus:40x20x10","benchmark":false},
   {"file":"volume/star.js","name":"Star","category":"3D imps (x, y and z)","language":"javascript","battlefield":"torus:40x20x10","benchmark":false},
   {"file":"volume/volumesilk.js","name":"Volume Silk","category":"3D paper","language":"javascript","battlefield":"torus:40x20x10","benchmark":false},
+  {"file":"volume/cubist.js","name":"Cubist","category":"3D stone","language":"javascript","battlefield":"torus:40x20x10","benchmark":false},
   {"file":"dwarf.py","name":"Dwarf (Python)","category":"Stone (bomber)","language":"python"},
   {"file":"javascript/imp.js","name":"Imp","category":"Imp","language":"javascript","convertedFrom":"imp.red","benchmark":false},
   {"file":"python/imp.py","name":"Imp","category":"Imp","language":"python","convertedFrom":"imp.red","benchmark":false},

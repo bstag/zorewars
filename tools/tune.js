@@ -10,7 +10,7 @@
 import { compile } from '../src/engine/index.js';
 import { evaluate } from './hill.js';
 
-const P_LINE = /^const P = (\{.*\});\s*$/m;
+const P_LINE = /^const P = (\{.*\});[ \t]*$/m;   // [ \t]*, not \s*: keep the line break and any blank line after it
 
 export function parseTunable(source) {
   const space = /\/\/ SPACE (\{.*\})/.exec(source);

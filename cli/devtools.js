@@ -113,7 +113,7 @@ export async function cmdTune(args, h) {
     const r = await tune({ pool, source, field, settings, candidates, seeds, onProgress: (i, n) => progress(json, i <= candidates + 1 ? `Screening candidate ${i}/${candidates + 1}…` : `Checking finalists on ${seeds} fresh seeds (${i}/${n})…`) });
     done(json);
     const write = args.flags.write && r.improved;
-    if (write) fs.writeFileSync(file, source.replace(/^const P = \{.*\};\s*$/m, `const P = ${JSON.stringify(r.best.P)};`));
+    if (write) fs.writeFileSync(file, source.replace(/^const P = \{.*\};[ \t]*$/m, `const P = ${JSON.stringify(r.best.P)};`));
     if (json) { console.log(JSON.stringify({ ok: true, space: r.space, current: r.current, best: r.best.P, improved: r.improved, seeds: r.seeds, results: r.results.map(({ rows, ...x }) => x), written: !!write }, null, 2)); return; }
     console.log(`Tuned ${w.name}: ${r.tried} candidates screened against ${field.length} opponents${r.rejected ? ` (${r.rejected} refused by the warrior's own checks)` : ''}.`);
     console.log(`Finalists re-checked on ${r.seeds.length} fresh seeds x ${r.checkRounds} rounds; gains are against the current constants, opponent by opponent.\n`);
