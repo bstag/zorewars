@@ -105,6 +105,10 @@
           <button class="view-btn" id="spinToggle" type="button" title="Spin the view" aria-label="Spin" aria-pressed="true">⟳</button>
           <button class="view-btn" id="viewToggle" type="button">3D</button>
         </div>
+        <div class="follow-chip" id="followChip" hidden>
+          <span>Following <b id="followName"></b></span>
+          <button class="view-btn" id="followStop" type="button" title="Stop following" aria-label="Stop following">✕</button>
+        </div>
         <div class="slice-bar" id="sliceBar" hidden>
           <span id="sliceLabel">z 0</span>
           <input type="range" id="sliceRange" min="0" max="9" value="0" aria-label="Which layers to show">

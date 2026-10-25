@@ -5,7 +5,9 @@
 //
 // Also: slicing (show only a slab of layers along x, y or z), battle
 // highlights (splashes for overrides, sparks for kills; see highlights.js),
-// and an "Action" camera that flies to where the fighting is and follows it.
+// an "Action" camera that flies to where the fighting is and follows it, and
+// following one warrior: the camera tracks one of its processes (each frame,
+// the warrior's process nearest to where it was), with a trail behind it.
 //
 // Same interface as the 2D CoreRenderer (layout, draw, addressAt, hover,
 // pinned), so the arena can swap between them. Plain canvas, no libraries.
@@ -17,6 +19,8 @@ const BACKGROUND = '#050812';
 const EMPTY_DOT = 'rgba(120, 140, 190, 0.16)';
 const EDGE = 'rgba(120, 140, 190, 0.35)';
 const ACTION_ZOOM = 2.6;
+const FOLLOW_ZOOM = 2.8;
+const TRAIL = 90;
 
 export class CoreView3D {
   constructor(canvas) {
@@ -33,6 +37,10 @@ export class CoreView3D {
     this.targetCenter = [0, 0, 0];
     this.spin = true;                 // turns on its own until grabbed
     this.follow = false;              // the Action camera
+    this.followWarrior = -1;          // the warrior being followed (-1: none)
+    this.followColor = '#ffffff';
+    this.tracked = -1;                // the process (cell) the camera is on
+    this.trail = [];
     this.slice = { axis: -1, pos: 0, thick: 1 };   // axis -1: no slicing
     this.active = false;
     this.dragMoved = false;
@@ -89,14 +97,30 @@ export class CoreView3D {
   }
   fit() {                                             // the whole shape, centred
     this.follow = false;
+    this.followWarrior = -1;
+    this.trail = [];
     this.targetZoom = 1;
     this.targetCenter = [0, 0, 0];
     this.changed = true;
   }
   setFollow(on) {
+    if (on) { this.followWarrior = -1; this.trail = []; }
     this.follow = on;
     if (!on) this.fit();
     this.changed = true;
+  }
+  // Follow warrior k (its index in the VM); `color` for its trail.
+  followWarriorIndex(k, color) {
+    this.follow = false;
+    this.followWarrior = k;
+    this.followColor = color;
+    this.tracked = -1;
+    this.trail = [];
+    this.spin = false;
+    this.changed = true;
+  }
+  stopFollowingWarrior() {
+    if (this.followWarrior >= 0) this.fit();
   }
   setSlice(axis, pos, thick) {
     this.slice = { axis, pos, thick };
@@ -109,7 +133,7 @@ export class CoreView3D {
     const c = this.center, t = this.targetCenter;
     return Math.abs(this.zoom - this.targetZoom) > 1e-3 || Math.abs(c[0] - t[0]) + Math.abs(c[1] - t[1]) + Math.abs(c[2] - t[2]) > 1e-4;
   }
-  get animating() { return this.active && (this.spin || this.changed || this.follow || this.easing || !!this.highlights?.active); }
+  get animating() { return this.active && (this.spin || this.changed || this.follow || this.followWarrior >= 0 || this.easing || !!this.highlights?.active); }
 
   layout(coreSize, geo) {
     this.coreSize = coreSize;
@@ -144,6 +168,42 @@ export class CoreView3D {
     this.keys = new Float64Array(coreSize);           // depth-sort keys (no per-frame allocation)
     this.drawnCount = 0;
     this.drawnCells = new Int32Array(coreSize);
+  }
+
+  // Torus distance between two cells (squared, per axis wrapping).
+  gap(p, q) {
+    const C = this.coord, [X, Y, Z] = this.geo ? [this.geo.X, this.geo.Y, this.geo.Z] : [this.coreSize, 1, 1];
+    let dx = Math.abs(C[p * 3] - C[q * 3]); dx = Math.min(dx, X - dx);
+    let dy = Math.abs(C[p * 3 + 1] - C[q * 3 + 1]); dy = Math.min(dy, Y - dy);
+    let dz = Math.abs(C[p * 3 + 2] - C[q * 3 + 2]); dz = Math.min(dz, Z - dz);
+    return dx * dx + dy * dy + dz * dz;
+  }
+
+  // Following a warrior: stay with the process nearest to the last one, so
+  // the camera rides one line of descent rather than jumping between them.
+  track(vm) {
+    const war = vm.warriors[this.followWarrior];
+    if (!war || !war.alive || !war.queue.size) return;     // stays where it last was
+    let best = -1, bestGap = Infinity;
+    if (this.tracked < 0) best = war.queue.buf[war.queue.head];
+    else {
+      for (const pc of war.queue) {
+        const g = this.gap(pc, this.tracked);
+        if (g < bestGap) { bestGap = g; best = pc; if (g === 0) break; }
+      }
+    }
+    const prev = this.tracked;
+    this.tracked = best;
+    if (this.trail[this.trail.length - 1] !== best) {
+      this.trail.push(best);
+      if (this.trail.length > TRAIL) this.trail.shift();
+    }
+    const target = [this.pos[best * 3], this.pos[best * 3 + 1], this.pos[best * 3 + 2]];
+    // Wrapping round the torus: jump straight there instead of sweeping across.
+    const far = prev >= 0 && target.some((v, k) => Math.abs(v - this.center[k]) > this.dims[k] / 2);
+    if (far) this.center = target.slice();
+    this.targetCenter = target;
+    this.targetZoom = Math.max(this.targetZoom, FOLLOW_ZOOM);
   }
 
   inSlice(i) {
@@ -189,6 +249,7 @@ export class CoreView3D {
         this.targetZoom = Math.max(this.targetZoom, ACTION_ZOOM);
       }
     }
+    if (this.followWarrior >= 0) this.track(vm);
     const ease = 0.12;
     this.zoom += (this.targetZoom - this.zoom) * ease;
     for (let k = 0; k < 3; k++) this.center[k] += (this.targetCenter[k] - this.center[k]) * ease;
@@ -257,6 +318,27 @@ export class CoreView3D {
         ctx.fillRect(this.sx[pc] - size / 2, this.sy[pc] - size / 2, size, size);
         if (++count > 2000) break;
       }
+    }
+    // The followed process: its trail (broken where it jumps) and a pulsing ring.
+    if (this.followWarrior >= 0 && this.tracked >= 0) {
+      ctx.strokeStyle = this.followColor;
+      ctx.lineWidth = 2;
+      const t = this.trail;
+      for (let j = 1; j < t.length; j++) {
+        if (this.gap(t[j - 1], t[j]) > 9) continue;          // a hop, not a step
+        ctx.globalAlpha = 0.15 + 0.75 * (j / t.length);
+        ctx.beginPath();
+        ctx.moveTo(this.sx[t[j - 1]], this.sy[t[j - 1]]);
+        ctx.lineTo(this.sx[t[j]], this.sy[t[j]]);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+      const c = this.tracked, px = this.cellSize * this.scale[c];
+      const r = Math.max(6, px * (1.1 + 0.25 * Math.sin(now / 160)));
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(this.sx[c], this.sy[c], r, 0, Math.PI * 2);
+      ctx.stroke();
     }
     // Battle highlights.
     if (highlights) {

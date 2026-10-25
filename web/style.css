@@ -184,6 +184,15 @@ select:focus, input:focus, textarea:focus, button:focus-visible { outline: 2px s
 .slice-bar { position: absolute; left: 6px; right: 6px; bottom: 6px; z-index: 2; display: flex; align-items: center; gap: 8px;
   background: rgba(14, 21, 41, 0.85); border: 1px solid var(--line-2); border-radius: 8px; padding: 4px 8px; }
 .slice-bar[hidden] { display: none; }
+/* Following one warrior through 3D space */
+.follow-chip { position: absolute; left: 6px; bottom: 6px; z-index: 3; display: flex; align-items: center; gap: 6px;
+  background: rgba(14, 21, 41, 0.85); border: 1px solid var(--c, var(--line-2)); border-radius: 8px; padding: 2px 2px 2px 8px;
+  font: 600 11px/1 var(--mono); color: var(--text-2); }
+.follow-chip b { color: var(--c, var(--text)); }
+.follow-chip[hidden] { display: none; }
+.core-wrap.slicing .follow-chip { bottom: 48px; }   /* above the slice bar */
+.fighter.following { box-shadow: 0 0 0 1px var(--c); }
+.scoreboard.followable .fighter { cursor: pointer; }
 .slice-bar span { font: 600 11px/1 var(--mono); color: var(--text-2); min-width: 64px; }
 .slice-bar input { flex: 1; accent-color: var(--accent); min-width: 60px; }
 .overlay .big { font: 700 26px/1.2 var(--mono); letter-spacing: 0.04em; }

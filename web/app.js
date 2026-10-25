@@ -89,6 +89,7 @@ function pickRenderer() {
   renderer3d.active = want3d;
   $('core').style.touchAction = want3d ? 'none' : '';      // drags turn the view instead of scrolling
   renderer.layout(state.settings.coreSize, geo);
+  updateFollow();
   state.dirtyFrame = true;
 }
 const chart = new ProcessChart($('chart'));
@@ -540,6 +541,8 @@ function newRound() {
     return;
   }
   state.vm = vm;
+  renderer3d.stopFollowingWarrior();                   // warrior numbers change between rounds
+  updateFollow();
   state.round++;
   state.replaying = false;
   state.report = null;
@@ -760,10 +763,36 @@ function updateCycle() {
   $('cycleBar').style.width = `${Math.min(100, (c / state.settings.maxCycles) * 100)}%`;
 }
 
+// Following one warrior through 3D space (tap its card on the scoreboard).
+function updateFollow() {
+  const k = renderer3d.followWarrior;
+  const on = k >= 0 && renderer === renderer3d && !!state.vm?.warriors[k];
+  $('followChip').hidden = !on;
+  if (on) {
+    $('followName').textContent = state.vm.warriors[k].name;
+    $('followChip').style.setProperty('--c', WARRIOR_COLORS[state.roster[k]]);
+  }
+  [...$('scoreboard').children].forEach((card, i) => card.classList.toggle('following', on && i === k));
+  $('actionView').setAttribute('aria-pressed', String(renderer3d.follow));
+}
+function followWarrior(k) {
+  const geo = state.vm?.geo;
+  if (!geo) return;                                    // the classic ring has no 3D view
+  if (renderer3d.followWarrior === k && renderer === renderer3d) {
+    renderer3d.stopFollowingWarrior();
+  } else {
+    if (renderer !== renderer3d) { state.view3d = true; pickRenderer(); }   // a plane tilts into 3D
+    renderer3d.followWarriorIndex(k, WARRIOR_COLORS[state.roster[k]]);
+  }
+  updateFollow();
+  state.dirtyFrame = true;
+}
+
 function renderScoreboard() {
   const sb = $('scoreboard');
   sb.innerHTML = '';
   const vm = state.vm;
+  sb.classList.toggle('followable', !!vm?.geo);
   if (!vm) return;
   vm.warriors.forEach((w, k) => {
     const color = WARRIOR_COLORS[state.roster[k]];
@@ -772,7 +801,7 @@ function renderScoreboard() {
     d.style.setProperty('--c', color);
     d.innerHTML = `<div class="name"></div><div class="meta"><span class="procs"></span><span class="badge"></span></div><div class="bar"><i></i></div>`;
     d.querySelector('.name').textContent = w.name;
-    d.querySelector('.name').title = `${w.name} by ${w.author} · ${w.length} instructions`;
+    d.querySelector('.name').title = `${w.name} by ${w.author} · ${w.length} instructions${vm.geo ? ' · tap to follow it in 3D' : ''}`;
     sb.appendChild(d);
   });
   renderScoreboardLive();
@@ -1133,6 +1162,7 @@ function wireEvents() {
     $('sliceToggle').textContent = axis < 0 ? 'Slice' : `Slice ${AXES[axis]}`;
     $('sliceToggle').setAttribute('aria-pressed', String(axis >= 0));
     $('sliceBar').hidden = axis < 0 || renderer !== renderer3d;
+    $('coreWrap').classList.toggle('slicing', !$('sliceBar').hidden);
     if (axis < 0) return;
     const size = renderer3d.sliceSize(axis);
     $('sliceRange').max = String(size - 1);
@@ -1163,13 +1193,18 @@ function wireEvents() {
   $('zoomOut').addEventListener('click', () => { renderer3d.zoomBy(1 / 1.35); state.dirtyFrame = true; });
   $('fitView').addEventListener('click', () => {
     renderer3d.fit();
-    $('actionView').setAttribute('aria-pressed', 'false');
+    updateFollow();
     state.dirtyFrame = true;
   });
   $('actionView').addEventListener('click', () => {
     renderer3d.setFollow(!renderer3d.follow);
-    $('actionView').setAttribute('aria-pressed', String(renderer3d.follow));
+    updateFollow();
     state.dirtyFrame = true;
+  });
+  $('followStop').addEventListener('click', () => { renderer3d.stopFollowingWarrior(); updateFollow(); state.dirtyFrame = true; });
+  $('scoreboard').addEventListener('click', (e) => {
+    const card = e.target.closest('.fighter');
+    if (card) followWarrior([...$('scoreboard').children].indexOf(card));
   });
 
   $('spinToggle').addEventListener('click', () => {
