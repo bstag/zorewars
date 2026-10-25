@@ -69,8 +69,31 @@ export function makeGeometry(settings) {
     const v = (x + X * (y + Y * z)) % N;
     return v < 0 ? v + N : v;
   }
-  const add = (a, b) => addsub(a, b, 1);
-  const sub = (a, b) => addsub(a, b, -1);
+  // The same through lookup tables, which the VM calls for every address:
+  // each number's position along each axis (pre-scaled, 0 up to the axis
+  // size), the number at each position, and each number's negation. A sum
+  // is then three table reads, three compares and one more read. Numbers
+  // outside [0, N) take the arithmetic path.
+  let add = (a, b) => addsub(a, b, 1);
+  let sub = (a, b) => addsub(a, b, -1);
+  if (N <= 1 << 21) {
+    const XY = X * Y;
+    const px = new Int32Array(N), py = new Int32Array(N), pz = new Int32Array(N), num = new Int32Array(N), neg = new Int32Array(N);
+    for (let v = 0; v < N; v++) {
+      const x = ((v + hx) % X) - hx, r = (v - x) / X, y = ((r + hy) % Y) - hy, z = (((r - y) / Y + hz) % Z) - hz;
+      px[v] = wrap(x, X); py[v] = wrap(y, Y) * X; pz[v] = wrap(z, Z) * XY;
+    }
+    for (let v = 0; v < N; v++) num[px[v] + py[v] + pz[v]] = v;
+    for (let v = 0; v < N; v++) neg[v] = num[(X - px[v]) % X + (XY - py[v]) % XY + (N - pz[v]) % N];
+    add = (a, b) => {
+      if (a >>> 0 >= N || b >>> 0 >= N) return addsub(a, b, 1);
+      let x = px[a] + px[b]; if (x >= X) x -= X;
+      let y = py[a] + py[b]; if (y >= XY) y -= XY;
+      let z = pz[a] + pz[b]; if (z >= N) z -= N;
+      return num[x + y + z];
+    };
+    sub = (a, b) => (b >>> 0 >= N ? addsub(a, b, -1) : add(a, neg[b]));
+  }
   const mul = lift((p, q, m) => wrap(p, m) * wrap(q, m));
   function divmod(isMod) {
     return (a, b) => {

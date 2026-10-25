@@ -61,6 +61,8 @@ const state = {
   lastStep: null,
   tournament: null,
   dirtyFrame: true,
+  sceneDirty: true,
+  lastSceneDraw: 0,
   booting: true,
 };
 
@@ -831,26 +833,49 @@ function frame() {
       state.dirtyFrame = true;
     }
   }
+  const now = performance.now();
   if (vm) {
     pickRenderer();
     const events = vm.takeEvents();
-    highlights.ingest(events, performance.now());
-    renderer.ingest?.(vm, events, performance.now());        // the avatar views animate the hits
-    if (highlights.active) state.dirtyFrame = true;
+    highlights.ingest(events, now);
+    renderer.ingest?.(vm, events, now);                      // the avatar views animate the hits
   }
-  if (renderer.animating) state.dirtyFrame = true;
-  if (state.dirtyFrame && vm) {
+  // Two kinds of redraw: `dirtyFrame` (the VM stepped or something changed)
+  // redraws everything; an animation (highlights fading, the avatars, a
+  // spinning view) only redraws the arena, at most 30 times a second while
+  // paused, and not at all while the arena is off screen.
+  if (state.dirtyFrame) state.sceneDirty = true;
+  let scene = state.sceneDirty || highlights.active || renderer.animating;
+  if (scene && !state.sceneDirty && !state.running && now - state.lastSceneDraw < 33) scene = false;
+  if (scene && vm && arenaVisible()) {
     const fade = Math.min(40000, Math.max(24, state.stepsPerFrame * vm.warriors.length * 36));
     renderer.hover = state.hover;
     renderer.pinned = state.pinned;
     renderer.draw(vm, fade, highlights);
+    state.sceneDirty = false;
+    state.lastSceneDraw = now;
+  }
+  if (state.dirtyFrame && vm) {
     chart.draw(state.settings.maxProcesses);
     renderScoreboardLive();
     updateCycle();
     renderInspector();
-    state.dirtyFrame = false;
   }
+  state.dirtyFrame = false;
   requestAnimationFrame(frame);
+}
+
+// Whether the arena can be seen: on a phone only on the Arena tab, and on
+// any screen only while it is scrolled into view.
+let arenaOnScreen = true;
+function arenaVisible() {
+  return arenaOnScreen && (!isPhone() || state.view === 'arena');
+}
+if ('IntersectionObserver' in window) {
+  new IntersectionObserver((entries) => {
+    arenaOnScreen = entries.some((e) => e.isIntersecting);
+    if (arenaOnScreen) state.dirtyFrame = true;
+  }).observe(document.querySelector('.arena-panel'));
 }
 
 function updateCycle() {

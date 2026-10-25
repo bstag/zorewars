@@ -94,6 +94,7 @@ export class AvatarView {
       this.pointer = e.clientX;
       if (Math.abs(dx) > 1) this.dragMoved = true;
       this.dragYaw += dx * 0.008;
+      this.dragAt = performance.now();
     });
     const up = () => { this.pointer = null; };
     c.addEventListener('pointerup', up);
@@ -101,14 +102,18 @@ export class AvatarView {
     c.addEventListener('pointerleave', up);
   }
   consumeDrag() { const d = this.dragMoved; this.dragMoved = false; return d; }
-  get animating() { return this.active; }
+  // Redraw while the battle or a drag is moving, and for a few seconds after;
+  // then rest until something moves again (a paused battle costs nothing).
+  get animating() {
+    return this.active && (!!this.pointer || performance.now() - Math.max(this.quietSince ?? 0, this.dragAt ?? 0) < 4000 || this.flying?.length > 0);
+  }
 
   layout(coreSize, geo) {
     this.coreSize = coreSize;
     this.geo = geo;
     const width = this.canvas.parentElement.clientWidth || 800;
     const height = Math.round(width * 0.62);
-    const dpr = window.devicePixelRatio || 1;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);     // 3x phones: 9x the pixels for no visible gain
     this.canvas.width = Math.round(width * dpr);
     this.canvas.height = Math.round(height * dpr);
     this.canvas.style.width = '100%';
@@ -133,6 +138,8 @@ export class AvatarView {
   // ---- bodies, built once per round ----
   build(vm) {
     this.vm = vm;
+    this.seenSteps = -1;
+    this.quietSince = performance.now();
     this.flying = [];
     this.impacts = [];
     this.model.build(vm);
@@ -167,6 +174,7 @@ export class AvatarView {
     const { ctx } = this;
     const now = performance.now();
     const n = vm.warriors.length;
+    if (vm.steps !== this.seenSteps) { this.seenSteps = vm.steps; this.quietSince = now; }
     this.yaw = Math.sin(now * 0.00015) * 0.3 + this.dragYaw;
     this.model.update(vm, now, Math.max(24, fadeSteps));
 

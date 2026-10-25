@@ -59,6 +59,7 @@ export class AvatarModel {
     this.vm = vm;
     this.hits = [];
     this.last = 0;
+    this.scannedSteps = -1;
     this.partW = new Int8Array(vm.size).fill(-1);
     this.partI = new Int16Array(vm.size);
     this.programs = new Map();             // instruction -> bitmask of warriors whose program has it
@@ -148,13 +149,21 @@ export class AvatarModel {
     if (vm !== this.vm) this.build(vm);
     const dt = this.last ? Math.min(250, Math.max(0, now - this.last)) : 16;
     this.last = now;
-    for (let w = 0; w < this.bodies.length; w++) this.census(vm, w, now, dt, Math.max(1, recentSteps));
+    // Counting the processes and parts reads the whole queue: only when the
+    // VM has moved (or the fade changed). The smoothing runs every call.
+    const scan = vm.steps !== this.scannedSteps || recentSteps !== this.scannedRecent;
+    this.scannedSteps = vm.steps;
+    this.scannedRecent = recentSteps;
+    for (let w = 0; w < this.bodies.length; w++) {
+      if (scan) this.census(vm, w, now, Math.max(1, recentSteps));
+      this.smooth(vm, w, dt);
+    }
   }
 
   // A process is captive when the instruction it is on is not from its own
   // program and either an enemy wrote it or it is from an enemy's program: a
   // process that runs imp code writes half the cells it runs itself.
-  census(vm, w, now, dt, recent) {
+  census(vm, w, now, recent) {
     const b = this.bodies[w];
     const war = vm.warriors[w];
     const n = vm.size, own = 1 << w;
@@ -196,12 +205,17 @@ export class AvatarModel {
       b.active[i] = war.alive ? Math.max(0, 1 - (vm.steps - vm.lastExec[cell]) / recent) : 0;
     }
     b.integrity = 1 - lost / b.cells.length;
+    b.share = war.alive && b.total ? most / b.total : 0;
+  }
 
-    // Conversion: the captive share, smoothed (a captured imp's instant share
-    // flickers), with hysteresis so the change of body doesn't flap.
-    const share = war.alive && b.total ? most / b.total : 0;
+  // Conversion: the captive share, smoothed (a captured imp's instant share
+  // flickers), with hysteresis so the change of body doesn't flap.
+  smooth(vm, w, dt) {
+    const b = this.bodies[w];
+    const war = vm.warriors[w];
+    const share = b.share ?? 0;
     b.capture += (share - b.capture) * (1 - Math.exp(-dt / CAPTURE_MS));
-    if (captor >= 0 && share > 0) b.lastCaptor = captor;
+    if (b.captor >= 0 && share > 0) b.lastCaptor = b.captor;
     if (b.capture > 0.4) b.converted = true;
     else if (b.capture < 0.15 || !war.alive) b.converted = false;
     b.morph += ((b.converted ? 1 : 0) - b.morph) * (1 - Math.exp(-dt / MORPH_MS));

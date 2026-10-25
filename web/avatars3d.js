@@ -46,6 +46,7 @@ const MAX_RINGS = 32;
 const MAX_SPARKS = 28;          // orbiting processes per warrior
 const USER_PAUSE_MS = 8000;     // the director waits this long after you move the camera
 const SLOW_MS = 1600;           // slow motion after a knockout
+const SETTLE_MS = 4000;         // keep animating this long after the VM or the user last moved
 const SLOW = 0.3;
 const MAP_W = 6.4;              // the map's width in world units (the arena is about 6)
 const SPACING = 1.0;            // avatars on the map keep at least this far apart
@@ -156,7 +157,9 @@ export class AvatarView3D {
     this.mapOn = false;
     this.onMapChange = null;
 
-    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+    // No antialias here: the bloom composer renders through its own targets,
+    // so the default framebuffer's multisampling would be paid for and unused.
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.05;
     renderer.shadowMap.enabled = true;
@@ -180,6 +183,7 @@ export class AvatarView3D {
     controls.target.set(0, 0.8, 0);
     controls.addEventListener('start', () => { this.userHolding = true; this.userAt = performance.now(); });
     controls.addEventListener('end', () => { this.userHolding = false; this.userAt = performance.now(); });
+    controls.addEventListener('change', () => { this.userAt = performance.now(); });
     this.controls = controls;
     canvas.addEventListener('pointerdown', (e) => { this.down = [e.clientX, e.clientY]; this.dragMoved = false; });
     canvas.addEventListener('pointermove', (e) => {
@@ -218,6 +222,9 @@ export class AvatarView3D {
 
     this.colors = WARRIOR_COLORS.map((c) => new THREE.Color(c));
     this.tmp = { m: new THREE.Matrix4(), q: new THREE.Quaternion(), q2: new THREE.Quaternion(), v: new THREE.Vector3(), v2: new THREE.Vector3(), s: new THREE.Vector3(), c: new THREE.Color() };
+    // Scratch for the per-part drawing: put() copies what it is given, so
+    // these are free again as soon as it returns.
+    this.sq = { a: new THREE.Quaternion(), b: new THREE.Quaternion(), c: new THREE.Quaternion(), dir: new THREE.Vector3(), id: new THREE.Quaternion() };
 
     this.legend = document.createElement('div');
     this.legend.className = 'avatar-legend';
@@ -399,6 +406,9 @@ export class AvatarView3D {
     this.pCol.fill(0);
     this.focus = null;
     this.slowUntil = 0;
+    this.seenSteps = -1;
+    this.quietSince = performance.now();
+    this.mapDirty = true;
 
     for (const l of this.labels) l.el.remove();
     this.labels = bodies.map((b, w) => {
@@ -429,6 +439,8 @@ export class AvatarView3D {
 
   applyMap() {
     const on = this.mapOn;
+    this.mapDirty = true;
+    this.quietSince = performance.now();
     this.mapMesh.visible = on;
     for (const r of this.arenaRings) r.visible = !on;
     this.floor.scale.setScalar(on ? 1.75 : 1);
@@ -520,11 +532,11 @@ export class AvatarView3D {
 
   // Each avatar walks to the process it follows (each frame the one of its
   // processes nearest to the last), keeping clear of the others.
-  trackOnMap(vm, dt) {
+  trackOnMap(vm, dt, moved = true) {
     const { gridOf, cols } = this.grid;
     this.rt.forEach((rt, w) => {
       const war = vm.warriors[w];
-      if (war.alive && war.queue.size) {
+      if (war.alive && war.queue.size && (moved || rt.anchor < 0)) {      // the processes only move when the VM does
         let best = war.queue.buf[war.queue.head];
         if (rt.anchor >= 0) {
           const g0 = gridOf[rt.anchor], x0 = g0 % cols, y0 = (g0 - x0) / cols;
@@ -575,7 +587,7 @@ export class AvatarView3D {
       const from = tmp.v.copy(rt.stage).setY(0.03);
       const len = from.distanceTo(at);
       if (len < 0.02) return;
-      const q = new THREE.Quaternion().setFromUnitVectors(Y, at.clone().sub(from).normalize());
+      const q = this.sq.a.setFromUnitVectors(Y, this.sq.dir.copy(at).sub(from).normalize());
       this.put(this.tethers, from, q, 0.012, len, 0.012, tmp.c.copy(col).multiplyScalar(1.4));
     });
   }
@@ -586,7 +598,14 @@ export class AvatarView3D {
   }
 
   consumeDrag() { const d = this.dragMoved; this.dragMoved = false; return d; }
-  get animating() { return this.active; }
+  // Redraw while the battle or the camera is moving, and for a few seconds
+  // after (effects settle, the camera eases); then rest until something
+  // moves again, so a paused or finished battle costs nothing.
+  get animating() {
+    if (!this.active) return false;
+    const now = performance.now();
+    return this.userHolding || now - Math.max(this.quietSince ?? 0, this.userAt) < SETTLE_MS || now < this.slowUntil || this.flying?.length > 0;
+  }
 
   layout(coreSize, geo) {
     this.coreSize = coreSize;
@@ -598,6 +617,9 @@ export class AvatarView3D {
     this.renderer.setSize(width, height, false);
     this.composer.setPixelRatio(dpr);
     this.composer.setSize(width, height);
+    // Phones: bloom at half its resolution (a quarter of the pixels in its
+    // dozen blur passes); the glow is soft anyway.
+    if (matchMedia('(pointer: coarse)').matches) this.bloom.setSize(Math.round(width * dpr / 2), Math.round(height * dpr / 2));
     this.canvas.style.width = '100%';
     this.canvas.style.aspectRatio = `${width} / ${height}`;
     this.camera.aspect = width / height;
@@ -668,6 +690,8 @@ export class AvatarView3D {
     this.lastNow = now;
     const dt = realDt * (now < this.slowUntil ? SLOW : 1);
     this.t += dt;
+    const moved = vm.steps !== this.seenSteps;
+    if (moved) { this.seenSteps = vm.steps; this.quietSince = now; }
     this.model.update(vm, now, Math.max(24, fadeSteps));
     const bodies = this.model.bodies;
 
@@ -694,8 +718,13 @@ export class AvatarView3D {
     });
 
     if (this.mapOn) {
-      this.trackOnMap(vm, realDt);
-      this.updateMap(vm, Math.max(24, fadeSteps));
+      this.trackOnMap(vm, realDt, moved);
+      // The floor shows the whole core: rebuild it only when the VM moved.
+      if (moved || this.mapDirty || fadeSteps !== this.mapFade) {
+        this.updateMap(vm, Math.max(24, fadeSteps));
+        this.mapDirty = false;
+        this.mapFade = fadeSteps;
+      }
     }
 
     // Everyone faces the nearest living opponent.
@@ -741,14 +770,15 @@ export class AvatarView3D {
     const TB = to >= 0 ? this.model.bodies[to] : null, TL = to >= 0 ? this.layouts[to] : null;
     const e = to >= 0 ? smooth(Math.min(1, b.morph)) : 0;
     const N = to >= 0 ? Math.max(n, TB.cells.length) : n;
-    const qYaw = tmp.q.setFromAxisAngle(Y, rt.yaw).clone();
-    const fwd = new THREE.Vector3(Math.cos(rt.yaw), 0, -Math.sin(rt.yaw));
-    const side = new THREE.Vector3(Math.sin(rt.yaw), 0, Math.cos(rt.yaw));
+    const W = (rt.scratch ??= { q: new THREE.Quaternion(), fwd: new THREE.Vector3(), side: new THREE.Vector3(), local: new THREE.Vector3(), pos: new THREE.Vector3(), c: new THREE.Color(), body: new THREE.Color() });
+    const qYaw = W.q.setFromAxisAngle(Y, rt.yaw);
+    const fwd = W.fwd.set(Math.cos(rt.yaw), 0, -Math.sin(rt.yaw));
+    const side = W.side.set(Math.sin(rt.yaw), 0, Math.cos(rt.yaw));
     const bob = b.alive ? Math.sin(this.t * 2.6 + w) * 0.02 : 0;
     const shake = now - b.shake < 300 ? (1 - (now - b.shake) / 300) * 0.05 : 0;
     const fallen = !!rt.fall;
     if (fallen) this.stepFall(rt, dt);
-    const local = new THREE.Vector3(), pos = new THREE.Vector3(), c = new THREE.Color();
+    const local = W.local, pos = W.pos, c = W.c;
     rt.top = 0;
     rt.drawn = N;
 
@@ -801,14 +831,14 @@ export class AvatarView3D {
         this.drawPart(kind, pos, q, r, c, act, j, fwd, side, fallen);
       }
       if (dmg === 'stunned' && !fallen) {
-        const qs = new THREE.Quaternion().setFromAxisAngle(Y, this.t * 0.9 + j);
+        const qs = this.sq.a.setFromAxisAngle(Y, this.t * 0.9 + j);
         this.put(this.webs, pos, qs, r * 1.55, r * 1.55, r * 1.55, tmp.c.copy(colors[enemy % colors.length]).multiplyScalar(1.6));
       }
       if (dmg === 'chipped' && !fallen) {
         for (let k = 0; k < 3; k++) {
           const a = hash(j * 5 + k) * Math.PI * 2, el = (hash(j * 7 + k) - 0.5) * 2;
-          const dir = new THREE.Vector3(Math.cos(a), el, Math.sin(a)).normalize();
-          const qc = new THREE.Quaternion().setFromUnitVectors(Y, dir);
+          const dir = this.sq.dir.set(Math.cos(a), el, Math.sin(a)).normalize();
+          const qc = this.sq.a.setFromUnitVectors(Y, dir);
           this.put(this.chips, tmp.v.copy(pos).addScaledVector(dir, r * 0.95), qc, r * 0.3, r * 0.5, r * 0.3, tmp.c.copy(colors[enemy % colors.length]).multiplyScalar(1.4));
         }
       }
@@ -823,14 +853,14 @@ export class AvatarView3D {
 
     // Spine links between consecutive parts, and legs to the floor.
     if (!fallen) {
-      const body = new THREE.Color().copy(col);
+      const body = W.body.copy(col);
       if (to >= 0) body.lerp(colors[to % colors.length], e);
       const lc = tmp.c.copy(body).multiplyScalar(0.55);
       for (let j = 1; j < N; j++) {
         const a = rt.slotPos[j - 1], z = rt.slotPos[j];
         const len = a.distanceTo(z);
         if (len < 1e-4 || rt.slotR[j] < 0.004 || rt.slotR[j - 1] < 0.004) continue;
-        const ql = new THREE.Quaternion().setFromUnitVectors(Y, tmp.v.copy(z).sub(a).normalize());
+        const ql = this.sq.a.setFromUnitVectors(Y, tmp.v.copy(z).sub(a).normalize());
         const th = Math.min(rt.slotR[j], rt.slotR[j - 1]) * 0.32;
         this.put(this.links, a, ql, th, len, th, lc);
       }
@@ -839,7 +869,7 @@ export class AvatarView3D {
       for (const s of [-1, 1]) {
         const foot = tmp.v2.copy(rt.stage).addScaledVector(side, s * 0.13).addScaledVector(fwd, s * step);
         const len = hip.distanceTo(foot);
-        const ql = new THREE.Quaternion().setFromUnitVectors(Y, tmp.v.copy(hip).sub(foot).normalize());
+        const ql = this.sq.a.setFromUnitVectors(Y, tmp.v.copy(hip).sub(foot).normalize());
         this.put(this.legs, foot, ql, 0.028, len, 0.028, tmp.c.copy(body).multiplyScalar(0.7));
       }
     }
@@ -849,7 +879,7 @@ export class AvatarView3D {
       const v = Math.min(1, Math.log2(1 + b.total) / Math.log2(1 + vm.settings.maxProcesses));
       const s = 0.42 + 0.35 * v + 0.02 * Math.sin(this.t * 5);
       tmp.v.copy(rt.stage).setY(0.006);
-      this.put(this.halos, tmp.v, new THREE.Quaternion(), s, 1, s, tmp.c.copy(col).multiplyScalar(0.35 + 0.9 * v));
+      this.put(this.halos, tmp.v, this.sq.id, s, 1, s, tmp.c.copy(col).multiplyScalar(0.35 + 0.9 * v));
     }
 
     // Processes running elsewhere orbit the body; captives in the captor's colour.
@@ -868,28 +898,28 @@ export class AvatarView3D {
   // One part, with what its shape needs: tentacles, jaws, an eye, a turning gear.
   drawPart(kind, pos, q, r, color, act, j, fwd, side, fallen) {
     const { tmp } = this;
-    const local = new THREE.Quaternion();
+    const local = this.sq.a.identity();
     switch (kind) {
       case 'gear': local.setFromAxisAngle(Z, (fallen ? 0 : this.t * (0.5 + 4 * act)) + j); break;
       case 'joint': local.setFromAxisAngle(X, Math.PI / 2 + Math.sin(this.t + j) * 0.3); break;
       case 'plate': local.setFromAxisAngle(Y, Math.PI / 4); break;
       default: break;
     }
-    const qq = new THREE.Quaternion().copy(q).multiply(local);
+    const qq = this.sq.b.copy(q).multiply(local);
     this.put(this.parts[kind], pos, qq, r, r, r, color);
     if (fallen) return;
     if (kind === 'arm') {                       // tentacles out both sides, waving
       for (const s of [-1, 1]) {
-        const qt = new THREE.Quaternion().copy(q)
-          .multiply(new THREE.Quaternion().setFromAxisAngle(Y, (s * Math.PI) / 2))
-          .multiply(new THREE.Quaternion().setFromAxisAngle(Z, Math.sin(this.t * 3 + j + s) * 0.45 - 0.1));
+        const qt = this.sq.b.copy(q)
+          .multiply(this.sq.a.setFromAxisAngle(Y, (s * Math.PI) / 2))
+          .multiply(this.sq.c.setFromAxisAngle(Z, Math.sin(this.t * 3 + j + s) * 0.45 - 0.1));
         this.put(this.tentacles, pos, qt, r, r, r, color);
       }
     } else if (kind === 'claw') {               // a pincer towards the enemy, open while it runs
       const open = 0.2 + 0.5 * act;
       const at = tmp.v.copy(pos).addScaledVector(fwd, r * 0.75);
       for (const s of [-1, 1]) {
-        const qj = new THREE.Quaternion().copy(q).multiply(new THREE.Quaternion().setFromAxisAngle(Z, s * open));
+        const qj = this.sq.b.copy(q).multiply(this.sq.a.setFromAxisAngle(Z, s * open));
         this.put(this.jaws, at, qj, r * 1.25, r * 1.25, r * 1.25, color);
       }
     } else if (kind === 'eye') {                // a scanner looks around
