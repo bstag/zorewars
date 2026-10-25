@@ -14,7 +14,9 @@ const runPython = pythonRunner();
 const toJS = (code) => generateFromJS(code);
 
 test('every library warrior converts to readable, verified JavaScript', async () => {
-  for (const e of index.filter((x) => x.language === 'redcode')) {
+  // Warriors written for a plane or volume are skipped, as scripts/convert-library.js
+  // skips them: this converts on the classic ring, where TRN and vectors don't exist.
+  for (const e of index.filter((x) => x.language === 'redcode' && !x.battlefield)) {
     const r = await convertWarrior(read(`warriors/${e.file}`), 'javascript', { compile, toRedcode: toJS });
     assert.equal(r.level, 'readable', e.file);
   }

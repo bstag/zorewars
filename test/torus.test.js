@@ -186,6 +186,10 @@ test('3D warriors: each survives alone on its battlefield and beats Dwarf there'
   const vq = compile(read('warriors/volume/volumequeen.js'), 'javascript', VOL);
   const m = runMatch([lf, vq], { ...VOL, rounds: 6 }, { seed: 11 });
   assert.ok(m.warriors[0].wins >= 4, `Leapfrog vs Volume Queen ${m.warriors[0].wins}-${m.warriors[0].losses}`);
+  // Gremlin, evolved from random code, breaks the clear's arithmetic
+  const gr = compile(read('warriors/volume/gremlin.red'), 'redcode', VOL);
+  const g6 = runMatch([gr, vq], { ...VOL, rounds: 6 }, { seed: 3 });
+  assert.ok(g6.warriors[0].wins >= 5, `Gremlin vs Volume Queen ${g6.warriors[0].wins}-${g6.warriors[0].losses}`);
   // Anti-Chameleon reads Volume Chameleon's switching and stays a step ahead
   const ac = compile(read('warriors/volume/antichameleon.js'), 'javascript', WIDE);
   const vc = compile(read('warriors/volume/volumechameleon.js'), 'javascript', WIDE);
