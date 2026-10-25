@@ -365,12 +365,18 @@ const HILL_94X = { coreSize: 55440, maxProcesses: 10000, maxCycles: 500000, maxL
 function rulesHint(c) {
   if (!c) return null;
   // Warriors written for a 3D battlefield, or the plane, say so when compiled elsewhere.
+  const field3d = libraryEntry(activeSlot()?.libFile)?.battlefield ?? 'torus:40x20x10';
   if ((state.settings.sizeZ ?? 1) < 2 && c.errors?.some((e) => /is for a 3D battlefield/.test(e.message))) {
-    return { settings: { ...state.settings, ...fieldSettings('torus:40x20x10') }, text: 'This warrior is written for the 3D battlefield (40×20×10, experimental). Switching applies to every warrior in the arena.' };
+    const size = field3d.slice(6).replaceAll('x', '×');
+    return { settings: { ...state.settings, ...fieldSettings(field3d) }, text: `This warrior is written for the 3D battlefield (${size}, experimental). Switching applies to every warrior in the arena.` };
   }
   // A ring warrior on a plane or volume: too long for half a row, or it would
   // destroy itself there. Offer the classic ring.
   const lib = activeSlot()?.libFile;
+  const home = libraryEntry(lib)?.battlefield;
+  if (home && home !== fieldKey(state.settings) && c.errors?.length) {
+    return { settings: { ...state.settings, ...fieldSettings(home) }, text: `This warrior is written for the ${home.slice(6).replaceAll('x', '×')} battlefield (experimental). Switching applies to every warrior in the arena.` };
+  }
   const misfit = lib && state.libraryFit?.done && state.libraryFit.fit.get(lib) === false && !libraryEntry(lib)?.battlefield;
   if (state.settings.topology === 'torus' && (misfit || c.errors?.some((e) => /half a row/.test(e.message)))) {
     return { settings: { ...state.settings, ...fieldSettings('ring'), coreSize: 8000 }, text: "This warrior is written for the classic ring and can't play on this battlefield. Switching applies to every warrior in the arena." };

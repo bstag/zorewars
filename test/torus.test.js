@@ -170,3 +170,15 @@ test('fitsBattlefield: which library warriors can play where', async () => {
   assert.ok(!fits('impring.red', PLANE));                           // ring arithmetic: destroys itself on the plane
   assert.ok(!fits('volume/star.js', {}) && fits('volume/star.js', VOL));
 });
+
+test('3D warriors: each survives alone on its battlefield and beats Dwarf there', () => {
+  const VOL = torus(40, 20, 10), WIDE = torus(80, 10, 10);
+  for (const [f, s] of [['slant', VOL], ['battleship', VOL], ['broadside', VOL], ['fleet', WIDE]]) {
+    const w = compile(read(`warriors/volume/${f}.js`), 'javascript', s);
+    assert.ok(w.ok, `${f} compiles`);
+    assert.ok(measureSpecies(w, s).survives, `${f} survives alone`);
+    const r = runMatch([w, compile(read('warriors/dwarf.red'), 'redcode', s)], { ...s, rounds: 6 }, { seed: 7 });
+    assert.ok(r.warriors[0].score > r.warriors[1].score, `${f} beats Dwarf`);
+  }
+  assert.ok(!compile(read('warriors/volume/fleet.js'), 'javascript', VOL).ok);   // 31 instructions: more than half a 40-cell row
+});

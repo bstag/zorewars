@@ -531,6 +531,13 @@ node cli/zorewars.js evolve --generations 6       <span class="cmt"># breed new 
         <li>The <strong>2D</strong> button shows the layers side by side instead, and planes can be tilted in 3D with the same button.</li>
       </ul>
       <p> To start, try Lift (an imp that travels through depth), Star (imps along all three axes) and Volume Silk.</p>
+      <p>Strategies change in a volume. On 40×20×10 a fixed step comes back to where it started within 40 cells (it repeats along each axis), so a stone or scanner with one stride covers almost nothing. The library has warriors built for that:</p>
+      <ul>
+        <li><strong>Slant</strong> is a replicator that copies itself diagonally, across rows, columns and layers at once, then steers each new copy somewhere else.</li>
+        <li><strong>Battleship</strong> digs instead of striding. Its pointer counts up as a plain number, so it checks every cell in turn, row by row and layer by layer. When it finds something, it fires a salvo that covers a 3D block around the hit.</li>
+        <li><strong>Broadside</strong> is a silk paper whose every copy bombs along its own diagonal, so many bombing lines run side by side through the volume.</li>
+        <li><strong>Fleet</strong> combines Battleship and Slant: the scanner hunts while the replicator spreads. It is 31 instructions, too long for half a 40-cell row, so it plays on <strong>Volume 80×10×10</strong> (40-instruction warriors).</li>
+      </ul>
       <p>A plane one row high is exactly the classic ring, and the tests check that battles there match the classic ones round for round. Background and open questions: <code>design/3d-battlefield.md</code>.</p>
 
       <h2 id="glossary">Glossary &amp; history</h2>
