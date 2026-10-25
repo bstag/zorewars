@@ -105,6 +105,14 @@ test('evolver on a volume: 3D mutations move numbers off the row, and species ge
   assert.ok(offRow > 150, 'lift gives a field a part along y or z');
   const vrc = toRedcode(ops.lift(g), { geo, coreSize: 8000 });
   assert.ok(compile(vrc, 'redcode', VOL).ok, 'vector output compiles on the volume');
+  // turn: a TRN along one axis, which compiles on the volume; the ring never gets one
+  const t = ops.turn(g);
+  const trn = t.code.find((i) => i.op === 'TRN');
+  assert.ok(trn && geo.decode(trn.a).filter((v) => v !== 0).length === 1);
+  assert.ok(compile(toRedcode(t, { geo, coreSize: 8000 }), 'redcode', VOL).ok);
+  const ring = makeOperators({});
+  assert.ok(!ring.turn);
+  for (let k = 0; k < 400; k++) assert.ok(!ring.tweak(g).code.some((i) => i.op === 'TRN'));
   const shape = (f) => measureSpecies(compile(read(`warriors/${f}`), 'javascript', VOL), { ...VOL, maxProcesses: 8000, maxCycles: 80000, maxLength: 100 }).shape;
   assert.equal(shape('volume/lift.js'), 3);     // a line through the layers
 });

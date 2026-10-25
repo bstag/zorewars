@@ -68,6 +68,9 @@ const NUMS = [1, 2, 3, 4, 5, 7, 8, 13, 16, 97, 1471, 2365, 2667, 3044, 3364];
 // operators that treat a number as the point it is: plain retunes mostly
 // move along x, so on their own they rarely reach other rows or layers.
 export function makeOperators(units, geo = null) {
+  // Every ICWS'94 opcode the evolver can switch to, plus TRN (our turn
+  // instruction, an assembler error on the ring) on a plane or volume.
+  const OPCODES = ['MOV', 'ADD', 'SUB', 'MUL', 'DIV', 'MOD', 'JMP', 'JMZ', 'JMN', 'DJN', 'SPL', 'SEQ', 'SNE', 'SLT', 'NOP', 'DAT', ...(geo ? ['TRN'] : [])];
   const ops = {
     retune(g) {   // change one number: nudge it, or try a known-good step
       const c = clone(g); const i = pick(c.code); const f = Math.random() < 0.5 ? 'a' : 'b';
@@ -84,7 +87,7 @@ export function makeOperators(units, geo = null) {
     tweak(g) {    // change an opcode, modifier or mode
       const c = clone(g); const i = pick(c.code);
       const r = rnd(4);
-      if (r === 0) i.op = pick(['MOV', 'ADD', 'SUB', 'JMP', 'JMZ', 'JMN', 'DJN', 'SPL', 'SEQ', 'SNE', 'DAT', 'MUL']);
+      if (r === 0) i.op = pick(OPCODES);
       else if (r === 1) i.mod = pick(['A', 'B', 'AB', 'BA', 'F', 'X', 'I']);
       else if (r === 2) i.aMode = pick(['#', '$', '@', '<', '>', '*', '{', '}']);
       else i.bMode = pick(['#', '$', '@', '<', '>', '*', '{', '}']);
@@ -110,6 +113,12 @@ export function makeOperators(units, geo = null) {
         i[f] = geo.encode(...v);
         return c;
       },
+      turn(g) {     // make an instruction a TRN that faces along one axis: code flows down a column or through the layers
+        const c = clone(g); const i = pick(c.code);
+        const v = [0, 0, 0]; v[rnd(dims)] = Math.random() < 0.5 ? -1 : 1;
+        Object.assign(i, { op: 'TRN', mod: 'B', aMode: '$', a: geo.encode(...v), bMode: '$', b: 0 });
+        return c;
+      },
       lift(g) {     // give a plain step a part along another axis: off the row, through the layers
         const [c, i, f] = field(g); const v = geo.decode(i[f]); const k = 1 + rnd(dims - 1);
         v[k] = (1 + rnd(size[k] - 1)) * (Math.random() < 0.5 ? -1 : 1);
@@ -128,7 +137,7 @@ export const CURE = {
   early: ['trim', 'procs', 'graft_paper'],
   late: ['graft_paper', 'procs'],
   converted: ['graft_paper', 'graft_clear', 'procs'],
-  tie: ['graft_stone', 'graft_scan', 'graft_clear', 'retune', 'lift', 'rotate'],
+  tie: ['graft_stone', 'graft_scan', 'graft_clear', 'retune', 'lift', 'rotate', 'turn'],
 };
 
 // Picks an operator from a warrior's symptoms, weighted by how often each
