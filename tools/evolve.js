@@ -9,7 +9,8 @@
 // - Red Queen: each round's champion joins the opponents. Fitness is half
 //   "beat the starting opponents", half "beat every earlier champion", so a
 //   new champion can't forget how to beat its ancestors. Ties against
-//   champions count half, so tie-farming imps can't win a round that way.
+//   champions count half (tieValue), so tie-farming imps can't win a round
+//   that way; lower it to make champions kill.
 // - Held out (optional): opponents never trained on, e.g. the Hall of Fame
 //   classics, to see whether champions get more general or only better at
 //   beating each other.
@@ -24,6 +25,7 @@ export async function evolve({
   rounds = 8, batches = 4, batchSize = 40, evalRounds = 6, maxLength = MAXLEN,
   kings = [],          // warriors that start as champions: generation 1 must already beat them
   scratch = false,     // from scratch: random programs, no gene pool, fitness only against champions
+  tieValue = 0.5,      // what a tie with a champion is worth, as a share of a tie's points (0..1)
   onLog = () => {}, onRound = () => {},
 }) {
   const units = makeGenePool(sources);
@@ -49,7 +51,7 @@ export async function evolve({
     const sym = a ? { ...a.symptoms } : {};
     if (champions.length) {
       const c = await evaluate(pool, w, champions.map((x) => ({ name: x.name, group: 'champion', w: x.w })), { rounds: evalRounds, seed, settings, diagnose: true });
-      const vsChamps = c.rows.reduce((s, r) => s + r.smooth - (0.5 * r.t) / evalRounds, 0) / c.rows.length;
+      const vsChamps = c.rows.reduce((s, r) => s + r.smooth - ((1 - tieValue) * r.t) / evalRounds, 0) / c.rows.length;
       fit = a ? (a.smooth + vsChamps) / 2 : vsChamps;     // from scratch: only the champions count
       for (const k in c.symptoms) sym[k] = (sym[k] ?? 0) + c.symptoms[k];
     }

@@ -164,6 +164,7 @@ export async function cmdEvolve(args, h) {
     const r = await evolve({
       pool, sources, opponents: field, heldOut, settings, rounds: generations, batches, batchSize,
       maxLength, kings, scratch,
+      tieValue: Math.min(1, Math.max(0, parseFloat(args.flags.ties ?? '0.5'))),
       onLog: (t) => progress(json, t),
       onRound: (rec) => {
         done(json);

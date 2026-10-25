@@ -39,7 +39,7 @@ Developer tools (use every CPU core):
                                                      (processes x cells executed); none = the library
   zorewars tune <warrior.js> [--candidates 40] [--seeds 3] [--write]
                                                      search the warrior's // SPACE for better constants
-  zorewars evolve [warrior...] [--generations 6] [--king w.js] [--genome 40] [--scratch] [--out evolved]
+  zorewars evolve [warrior...] [--generations 6] [--king w.js] [--genome 40] [--scratch] [--ties 0.5] [--out evolved]
                                                      breed warriors: Red Queen rounds of MAP-Elites
 
 Warriors:
@@ -70,6 +70,7 @@ Options:
   --json             machine-readable output
   --classics         hill/tune/evolve: also play the Hall of Fame originals
   --scratch          evolve: start from random programs, no library genes or opponents (the library is only held out)
+  --ties 0.5         evolve: what a tie with a champion counts (0..1); lower makes champions kill
                      (fetched from the public archives each run; needs network)
 
 pMARS's short options also work: -r -s -c -p -l -d -F -S (and -b -k are ignored),
