@@ -1,7 +1,9 @@
 // Fleet: Battleship and Slant together, the Red Queen recipe in 3D. The
 // scanner digs through the volume and fires block salvos at what it finds;
-// the replicator spreads diagonal copies of itself in the background, one
-// process per copy, so it takes few of the scanner's turns. The scanner hunts
+// the replicator (Slant's code, including its accidental steering: see
+// slant.js) lays chains of copies in the background, one process per copy,
+// so it takes few of the scanner's turns. With the steering "fixed" (ADD.A)
+// Fleet drops from 1.66 to 1.16 points per round on 80x10x10. The scanner hunts
 // papers' copies while the replicator outlasts the stones that beat scanners.
 // It needs a volume at least 64 cells wide (code can be half a row long):
 // 80x10x10 gives it room.
