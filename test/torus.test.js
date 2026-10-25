@@ -173,12 +173,17 @@ test('fitsBattlefield: which library warriors can play where', async () => {
 
 test('3D warriors: each survives alone on its battlefield and beats Dwarf there', () => {
   const VOL = torus(40, 20, 10), WIDE = torus(80, 10, 10);
-  for (const [f, s] of [['slant', VOL], ['battleship', VOL], ['broadside', VOL], ['volumequeen', VOL], ['fleet', WIDE]]) {
+  for (const [f, s] of [['slant', VOL], ['battleship', VOL], ['broadside', VOL], ['volumequeen', VOL], ['leapfrog', VOL], ['fleet', WIDE]]) {
     const w = compile(read(`warriors/volume/${f}.js`), 'javascript', s);
     assert.ok(w.ok, `${f} compiles`);
     assert.ok(measureSpecies(w, s).survives, `${f} survives alone`);
     const r = runMatch([w, compile(read('warriors/dwarf.red'), 'redcode', s)], { ...s, rounds: 6 }, { seed: 7 });
     assert.ok(r.warriors[0].score > r.warriors[1].score, `${f} beats Dwarf`);
   }
-  assert.ok(!compile(read('warriors/volume/fleet.js'), 'javascript', VOL).ok);   // 31 instructions: more than half a 40-cell row
+  assert.ok(!compile(read('warriors/volume/fleet.js'), 'javascript', VOL).ok);
+  // Leapfrog sees a clear coming and leaps behind it: it beats Volume Queen
+  const lf = compile(read('warriors/volume/leapfrog.js'), 'javascript', VOL);
+  const vq = compile(read('warriors/volume/volumequeen.js'), 'javascript', VOL);
+  const m = runMatch([lf, vq], { ...VOL, rounds: 6 }, { seed: 11 });
+  assert.ok(m.warriors[0].wins >= 4, `Leapfrog vs Volume Queen ${m.warriors[0].wins}-${m.warriors[0].losses}`);   // 31 instructions: more than half a 40-cell row
 });
