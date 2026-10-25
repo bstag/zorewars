@@ -2,7 +2,7 @@
 
 ## Warriors written for ZoreWars: CC0 1.0
 
-The warriors in this folder (and its `javascript/`, `python/`, `plane/` and `volume/` subfolders), in `examples/`, and in `test/fixtures/` were written for ZoreWars, except those listed below. They are dedicated to the public domain under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/): copy, change, share and enter them in tournaments without asking or giving credit. Credit is appreciated, though.
+The warriors in this folder (and its `javascript/`, `python/`, `plane/`, `volume/` and `prototypes/` subfolders), in `examples/`, and in `test/fixtures/` were written for ZoreWars, except those listed below. They are dedicated to the public domain under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/): copy, change, share and enter them in tournaments without asking or giving credit. Credit is appreciated, though.
 
 ## Classic warriors adapted from their authors
 
