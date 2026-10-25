@@ -15,6 +15,15 @@ Scores are points per round (win 3, tie 1) from `zorewars hill <file> --torus <s
 | `dodgingqueen.js` | 80×10×10 | Volume Queen plus a watcher that moves the clear behind another clear's front | Ties nearly everything | Two clear processes share one DJN counter; after a move they split into an SPL pass and a DAT pass on alternate cells |
 | `dodgingqueen-one.js` | 80×10×10 | The same with one clear process | 1.77 (Volume Queen 2.25); beats clears 17-3 | Weaker against papers than a two-process clear |
 
+## Scanners that copy
+
+| File | Field | Idea | Result | Why |
+| --- | --- | --- | --- | --- |
+| `scannerswarm.js` | 80×10×10 | Four Battleships that recognise each other: copies line up at the same x, and a find is compared (A-fields) with our own cell at that x, found with `MUL` by `[1,0,0]` | 1.52 (Battleship 1.50); Leapfrog 20-0, Battleship 18-1; paper losses become ties; clears 6-14 | Copies split the turns, so the scan is no faster; four bodies survive papers better than one |
+| `shieldswarm.js` | 80×10×10 | Scanner Swarm with a Leapfrog marker in every copy, checked whenever the scan finds something | 1.64; still 7-13 against Volume Queen | Each copy has a quarter of the turns and must see the front itself |
+
+Friend or foe in 3D: a tag in a body's first cell doesn't work, because a body across the end of its row is two pieces in number order and a scan can meet the tail first. Lining copies up at the same x and comparing a find with your own cell at that x does work, for every cell; compare A-fields only, since B-fields hold each copy's pointers and counters.
+
 ## Papers that dodge
 
 | File | Field | Idea | Result | Why |
@@ -58,7 +67,7 @@ Scores are points per round (win 3, tie 1) from `zorewars hill <file> --torus <s
 
 1. **On an 8,000-cell volume the clear is king, and you beat it by seeing it coming, not by hiding.** A clear counts through every cell in number order, so no position is safe. But its front is predictable and its code never moves: Leapfrog (in the library) watches one marker in the one direction the front comes from and beats every clear. More markers (Sentry) or random directions only make it worse.
 2. **`SPL 0` wins because it floods, not because it traps.** Every enemy process caught on `SPL 0` spawns another and fills the enemy's queue, so its working processes hardly run. Traps that only hold (the fang clears) lose to papers, however fast they kill.
-3. **One process reacts; many processes survive; a warrior can't be both.** Leapfrog's dodge needs every turn in one process; a paper needs many processes, which leaves each one slow (Frogspawn). A one-process body loses to papers however well it shoots (Bullfrog, Battleship).
+3. **One process reacts; many processes survive; a warrior can't be both.** Turns belong to the warrior, not the process: four copies scan no faster than one. Leapfrog's dodge needs every turn in one process; a paper needs many processes, which leaves each one slow (Frogspawn, Shield Swarm's copies). A one-process body loses to papers however well it shoots (Bullfrog, Battleship); four bodies at least tie them (Scanner Swarm).
 4. **Your own weapons are a hazard in 3D.** A clear stuns its own imp (Queen Imp); sibling copies clear each other (Frogspawn); two processes sharing one counter drift apart after a move (Dodging Queen).
 5. **Mixing two jobs in one warrior costs more than it gains; switching between rounds doesn't.** Every two-job hybrid here scored below its best parent. Volume Chameleon, which plays one strategy per round and switches with P-space, is the best on 80×10×10.
 6. **Geometry traps to remember:**
