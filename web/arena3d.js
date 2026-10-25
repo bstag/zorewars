@@ -1,16 +1,22 @@
 // A live 3D view of a torus battlefield: every cell drawn at its (x, y, z)
 // with perspective, coloured like the 2D grid (owner, and a glow for recent
-// writes), running processes in white. Drag to rotate, wheel or pinch to
-// zoom, and it spins on its own until you grab it. Same interface as the 2D
-// CoreRenderer (layout, draw, addressAt, hover, pinned), so the arena can
-// swap between them. Plain canvas: no WebGL or libraries needed.
+// writes), running processes as white points. Drag to rotate, wheel or pinch
+// to zoom, and it spins on its own until you grab it.
+//
+// Also: slicing (show only a slab of layers along x, y or z), battle
+// highlights (splashes for overrides, sparks for kills; see highlights.js),
+// and an "Action" camera that flies to where the fighting is and follows it.
+//
+// Same interface as the 2D CoreRenderer (layout, draw, addressAt, hover,
+// pinned), so the arena can swap between them. Plain canvas, no libraries.
 
 import { OP } from '../src/engine/index.js';
-import { makePalettes, GLOW } from './arena.js';
+import { makePalettes, GLOW, WARRIOR_COLORS } from './arena.js';
 
 const BACKGROUND = '#050812';
 const EMPTY_DOT = 'rgba(120, 140, 190, 0.16)';
 const EDGE = 'rgba(120, 140, 190, 0.35)';
+const ACTION_ZOOM = 2.6;
 
 export class CoreView3D {
   constructor(canvas) {
@@ -22,15 +28,19 @@ export class CoreView3D {
     this.yaw = -0.6;
     this.pitch = 0.45;
     this.zoom = 1;
-    this.spin = true;          // turns on its own until grabbed
+    this.targetZoom = 1;
+    this.center = [0, 0, 0];         // the point the camera looks at (world units)
+    this.targetCenter = [0, 0, 0];
+    this.spin = true;                 // turns on its own until grabbed
+    this.follow = false;              // the Action camera
+    this.slice = { axis: -1, pos: 0, thick: 1 };   // axis -1: no slicing
     this.active = false;
     this.dragMoved = false;
     this.pointers = new Map();
+    this.highlights = null;
     this.attach();
   }
 
-  // Rotating and zooming. Clicks that end a drag are not "clicks" for the
-  // arena (see consumeDrag), so pinning a cell still works with a tap.
   attach() {
     const c = this.canvas;
     c.addEventListener('pointerdown', (e) => {
@@ -47,7 +57,7 @@ export class CoreView3D {
       if (this.pointers.size === 2) {                 // pinch to zoom
         const [a, b] = [...this.pointers.values()];
         const d = Math.hypot(a.x - b.x, a.y - b.y);
-        if (this.startPinch) this.setZoom(this.zoom * (d / this.startPinch));
+        if (this.startPinch) this.zoomBy(d / this.startPinch, true);
         this.startPinch = d;
         this.dragMoved = true;
         return;
@@ -67,14 +77,39 @@ export class CoreView3D {
     c.addEventListener('wheel', (e) => {
       if (!this.active) return;
       e.preventDefault();
-      this.setZoom(this.zoom * Math.exp(-e.deltaY * 0.0015));
+      this.zoomBy(Math.exp(-e.deltaY * 0.0015), true);
     }, { passive: false });
   }
-  setZoom(z) { this.zoom = Math.max(0.5, Math.min(4, z)); this.changed = true; }
-  // True once after a drag, so the click that ends it doesn't pin a cell.
+
+  // ---- camera controls (also used by the arena's buttons) ----
+  zoomBy(f, now = false) {
+    this.targetZoom = Math.max(0.5, Math.min(6, this.targetZoom * f));
+    if (now) this.zoom = this.targetZoom;
+    this.changed = true;
+  }
+  fit() {                                             // the whole shape, centred
+    this.follow = false;
+    this.targetZoom = 1;
+    this.targetCenter = [0, 0, 0];
+    this.changed = true;
+  }
+  setFollow(on) {
+    this.follow = on;
+    if (!on) this.fit();
+    this.changed = true;
+  }
+  setSlice(axis, pos, thick) {
+    this.slice = { axis, pos, thick };
+    this.changed = true;
+  }
+  sliceSize(axis) { return this.geo ? [this.geo.X, this.geo.Y, this.geo.Z][axis] : 1; }
+
   consumeDrag() { const d = this.dragMoved; this.dragMoved = false; return d; }
-  // While spinning (or just moved by hand) the view needs redrawing every frame.
-  get animating() { return this.active && (this.spin || this.changed); }
+  get easing() {
+    const c = this.center, t = this.targetCenter;
+    return Math.abs(this.zoom - this.targetZoom) > 1e-3 || Math.abs(c[0] - t[0]) + Math.abs(c[1] - t[1]) + Math.abs(c[2] - t[2]) > 1e-4;
+  }
+  get animating() { return this.active && (this.spin || this.changed || this.follow || this.easing || !!this.highlights?.active); }
 
   layout(coreSize, geo) {
     this.coreSize = coreSize;
@@ -89,14 +124,15 @@ export class CoreView3D {
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     this.w = width;
     this.h = height;
-    // Each cell's position, centred and scaled so the largest side is 1.
     const [X, Y, Z] = geo ? [geo.X, geo.Y, geo.Z] : [coreSize, 1, 1];
     const s = 1 / Math.max(X, Y, Z);
     this.dims = [X * s, Y * s, Z * s];
     this.cellSize = s;
     this.pos = new Float32Array(coreSize * 3);
+    this.coord = new Int16Array(coreSize * 3);       // integer (x, y, z), for slicing
     for (let i = 0; i < coreSize; i++) {
       const [x, y, z] = geo ? geo.position(i) : [i, 0, 0];
+      this.coord[i * 3] = x; this.coord[i * 3 + 1] = y; this.coord[i * 3 + 2] = z;
       this.pos[i * 3] = (x - (X - 1) / 2) * s;
       this.pos[i * 3 + 1] = (y - (Y - 1) / 2) * s;
       this.pos[i * 3 + 2] = (z - (Z - 1) / 2) * s;
@@ -105,10 +141,20 @@ export class CoreView3D {
     this.sy = new Float32Array(coreSize);
     this.depth = new Float32Array(coreSize);
     this.scale = new Float32Array(coreSize);
+    this.keys = new Float64Array(coreSize);           // depth-sort keys (no per-frame allocation)
+    this.drawnCount = 0;
+    this.drawnCells = new Int32Array(coreSize);
   }
 
-  // Rotate, then perspective-project every cell. Screen y grows downwards,
-  // which matches y growing downwards in the 2D grid.
+  inSlice(i) {
+    const { axis, pos, thick } = this.slice;
+    if (axis < 0) return true;
+    const size = this.sliceSize(axis);
+    const d = ((this.coord[i * 3 + axis] - pos) % size + size) % size;
+    return d < thick;
+  }
+
+  // Rotate around the camera's centre, then perspective-project every cell.
   project() {
     const cy = Math.cos(this.yaw), syaw = Math.sin(this.yaw);
     const cp = Math.cos(this.pitch), sp = Math.sin(this.pitch);
@@ -116,11 +162,12 @@ export class CoreView3D {
     const f = Math.min(this.w, this.h) * 1.9 * this.zoom;
     const ox = this.w / 2, oy = this.h / 2;
     const P = this.pos, n = this.coreSize;
+    const [c0, c1, c2] = this.center;
     for (let i = 0; i < n; i++) {
-      const x = P[i * 3], y = P[i * 3 + 1], z = P[i * 3 + 2];
+      const x = P[i * 3] - c0, y = P[i * 3 + 1] - c1, z = P[i * 3 + 2] - c2;
       const x1 = x * cy + z * syaw, z1 = -x * syaw + z * cy;     // yaw: around the vertical axis
       const y2 = y * cp - z1 * sp, z2 = y * sp + z1 * cp;        // pitch: tilt towards the viewer
-      const k = f / (dist - z2);
+      const k = f / Math.max(0.05, dist - z2);
       this.sx[i] = ox + x1 * k;
       this.sy[i] = oy + y2 * k;
       this.depth[i] = z2;
@@ -129,10 +176,24 @@ export class CoreView3D {
     return { cy, syaw, cp, sp, dist, f, ox, oy };
   }
 
-  draw(vm, fadeSteps) {
+  draw(vm, fadeSteps, highlights = null) {
     if (vm.size !== this.coreSize || vm.geo !== this.geo) this.layout(vm.size, vm.geo);
+    this.highlights = highlights;
+    const now = performance.now();
+    // Camera: spin, follow the action, ease towards targets.
     if (this.spin && !this.pointers.size) this.yaw += 0.006;
+    if (this.follow && highlights) {
+      const hot = highlights.hottest();
+      if (hot >= 0) {
+        this.targetCenter = [this.pos[hot * 3], this.pos[hot * 3 + 1], this.pos[hot * 3 + 2]];
+        this.targetZoom = Math.max(this.targetZoom, ACTION_ZOOM);
+      }
+    }
+    const ease = 0.12;
+    this.zoom += (this.targetZoom - this.zoom) * ease;
+    for (let k = 0; k < 3; k++) this.center[k] += (this.targetCenter[k] - this.center[k]) * ease;
     this.changed = false;
+
     const { ctx } = this;
     const cam = this.project();
     ctx.fillStyle = BACKGROUND;
@@ -141,37 +202,45 @@ export class CoreView3D {
 
     const n = this.coreSize;
     const { owner, lastWrite, lastExec, op, a, b } = vm;
-    const now = vm.steps;
-    // Empty space: a faint dot per cell, so the volume is visible.
+    const steps = vm.steps;
+    const slicing = this.slice.axis >= 0;
+    // Empty space as faint dots (one path, one fill); occupied cells are
+    // collected with a depth key for sorting far to near.
     ctx.fillStyle = EMPTY_DOT;
-    const drawn = [];
+    ctx.beginPath();
+    let m = 0;
+    const keys = this.keys;
     for (let i = 0; i < n; i++) {
+      if (slicing && !this.inSlice(i)) continue;
       const empty = owner[i] < 0 && op[i] === OP.DAT && a[i] === 0 && b[i] === 0;
-      if (empty && now - lastExec[i] > fadeSteps) {
-        const r = Math.max(0.6, this.cellSize * this.scale[i] * 0.12);
-        ctx.fillRect(this.sx[i] - r / 2, this.sy[i] - r / 2, r, r);
-      } else drawn.push(i);
+      if (empty && steps - lastExec[i] > fadeSteps) {
+        const r = Math.max(0.6, this.cellSize * this.scale[i] * (slicing ? 0.2 : 0.12));
+        ctx.rect(this.sx[i] - r / 2, this.sy[i] - r / 2, r, r);
+      } else {
+        keys[m++] = Math.round((this.depth[i] + 8) * 65536) * n + i;
+      }
     }
-    // Everything else, far to near.
-    drawn.sort((p, q) => this.depth[p] - this.depth[q]);
-    this.drawnCells = drawn;
-    for (const i of drawn) {
+    ctx.fill();
+    const sorted = keys.subarray(0, m).sort();
+    this.drawnCount = m;
+    for (let j = 0; j < m; j++) {
+      const i = sorted[j] % n;
+      this.drawnCells[j] = i;
       const size = Math.max(1.2, this.cellSize * this.scale[i] * 0.78);
       const w = owner[i];
       const x = this.sx[i] - size / 2, y = this.sy[i] - size / 2;
       if (w < 0) {
         ctx.fillStyle = '#334155';
       } else {
-        const age = now - lastWrite[i];
+        const age = steps - lastWrite[i];
         const level = age < fadeSteps ? Math.round(GLOW * (1 - age / fadeSteps)) : 0;
         ctx.fillStyle = this.palettes[w % this.palettes.length][level];
       }
       if (op[i] === OP.DAT) {
-        // Data and bombs as smaller dots, so code stands out as solid blocks.
-        const d = size * 0.45;
+        const d = size * 0.45;            // data and bombs as smaller dots
         ctx.fillRect(this.sx[i] - d / 2, this.sy[i] - d / 2, d, d);
       } else ctx.fillRect(x, y, size, size);
-      const ex = now - lastExec[i];
+      const ex = steps - lastExec[i];
       if (ex < fadeSteps * 0.5) {
         ctx.fillStyle = `rgba(255,255,255,${0.45 * (1 - ex / (fadeSteps * 0.5))})`;
         ctx.fillRect(x, y, size, size);
@@ -183,10 +252,15 @@ export class CoreView3D {
       if (!war.alive) continue;
       let count = 0;
       for (const pc of war.queue) {
+        if (slicing && !this.inSlice(pc)) continue;
         const size = Math.max(1.5, this.cellSize * this.scale[pc] * 0.35);
         ctx.fillRect(this.sx[pc] - size / 2, this.sy[pc] - size / 2, size, size);
         if (++count > 2000) break;
       }
+    }
+    // Battle highlights.
+    if (highlights) {
+      highlights.draw(ctx, now, (cell) => (slicing && !this.inSlice(cell) ? null : [this.sx[cell], this.sy[cell], this.cellSize * this.scale[cell]]), WARRIOR_COLORS);
     }
     for (const [addr, color] of [[this.hover, 'rgba(255,255,255,0.85)'], [this.pinned, '#fbbf24']]) {
       if (addr < 0 || addr >= n) continue;
@@ -200,28 +274,28 @@ export class CoreView3D {
   // The battlefield's bounding box and its axes, for orientation.
   drawBox(cam) {
     const [dx, dy, dz] = this.dims.map((d) => d / 2);
+    const [c0, c1, c2] = this.center;
     const corner = (sx, sy, sz) => {
-      const x = sx * dx, y = sy * dy, z = sz * dz;
+      const x = sx * dx - c0, y = sy * dy - c1, z = sz * dz - c2;
       const x1 = x * cam.cy + z * cam.syaw, z1 = -x * cam.syaw + z * cam.cy;
       const y2 = y * cam.cp - z1 * cam.sp, z2 = y * cam.sp + z1 * cam.cp;
-      const k = cam.f / (cam.dist - z2);
+      const k = cam.f / Math.max(0.05, cam.dist - z2);
       return [cam.ox + x1 * k, cam.oy + y2 * k];
     };
     const ctx = this.ctx;
     ctx.strokeStyle = EDGE;
     ctx.lineWidth = 1;
     ctx.beginPath();
-    for (const [a, b] of [
+    for (const [p0, p1] of [
       [[-1, -1, -1], [1, -1, -1]], [[-1, 1, -1], [1, 1, -1]], [[-1, -1, 1], [1, -1, 1]], [[-1, 1, 1], [1, 1, 1]],
       [[-1, -1, -1], [-1, 1, -1]], [[1, -1, -1], [1, 1, -1]], [[-1, -1, 1], [-1, 1, 1]], [[1, -1, 1], [1, 1, 1]],
       [[-1, -1, -1], [-1, -1, 1]], [[1, -1, -1], [1, -1, 1]], [[-1, 1, -1], [-1, 1, 1]], [[1, 1, -1], [1, 1, 1]],
     ]) {
-      const p = corner(...a), q = corner(...b);
+      const p = corner(...p0), q = corner(...p1);
       ctx.moveTo(p[0], p[1]);
       ctx.lineTo(q[0], q[1]);
     }
     ctx.stroke();
-    // Axis labels at the ends of the three edges from the origin corner.
     ctx.font = '11px ui-monospace, monospace';
     ctx.fillStyle = 'rgba(160, 175, 210, 0.75)';
     for (const [label, at] of [['x', [1.12, -1, -1]], ['y', [-1, 1.12, -1]], ['z', [-1, -1, 1.12]]]) {
@@ -231,24 +305,25 @@ export class CoreView3D {
   }
 
   // The cell under the pointer: the nearest drawn cell within reach, or any
-  // cell if nothing is drawn there, preferring cells nearer the viewer.
+  // visible cell if nothing is drawn there, preferring cells nearer the viewer.
   addressAt(clientX, clientY) {
-    if (!this.drawnCells) return -1;
+    if (!this.sx) return -1;
     const r = this.canvas.getBoundingClientRect();
     const x = ((clientX - r.left) / r.width) * this.w, y = ((clientY - r.top) / r.height) * this.h;
-    const pick = (cells, reach) => {
+    const pickFrom = (count, cellAt, reach) => {
       let best = -1, bestScore = Infinity;
-      for (const i of cells) {
+      for (let j = 0; j < count; j++) {
+        const i = cellAt(j);
+        if (i < 0) continue;
         const d = Math.hypot(this.sx[i] - x, this.sy[i] - y);
-        const limit = Math.max(reach, this.cellSize * this.scale[i] * 0.6);
-        if (d > limit) continue;
-        const score = d - this.depth[i] * 4;          // nearer the viewer wins ties
+        if (d > Math.max(reach, this.cellSize * this.scale[i] * 0.6)) continue;
+        const score = d - this.depth[i] * 4;
         if (score < bestScore) { bestScore = score; best = i; }
       }
       return best;
     };
-    const hit = pick(this.drawnCells, 6);
+    const hit = pickFrom(this.drawnCount, (j) => this.drawnCells[j], 6);
     if (hit >= 0) return hit;
-    return pick(Array.from({ length: this.coreSize }, (_, i) => i), 4);
+    return pickFrom(this.coreSize, (i) => (this.inSlice(i) ? i : -1), 4);
   }
 }

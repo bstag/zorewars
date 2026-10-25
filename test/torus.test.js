@@ -137,3 +137,26 @@ test('3D: a volume runs warriors along all three axes', () => {
     assert.ok(!compile(read(`warriors/volume/${f}.js`), 'javascript', PLANE).ok, `${f} needs depth`);
   }
 });
+
+test('battle events: the VM reports overrides and kills for the highlights, only when asked', () => {
+  const ws = ['warriors/twopass.red', 'warriors/plane/planesilk.js'].map((f) => compile(read(f), f.endsWith('.js') ? 'javascript' : 'redcode', PLANE));
+  const vm = new VM(PLANE);
+  vm.enableEvents();
+  vm.load(ws, { seed: 4 });
+  const seen = { 0: 0, 1: 0 };
+  for (let s = 0; s < 60000 && !vm.done; s++) {
+    vm.step();
+    const e = vm.takeEvents();
+    for (let k = 0; k < e.length; k += 4) {
+      const [cell, attacker, victim, kind] = e.slice(k, k + 4);
+      assert.ok(cell >= 0 && cell < vm.size && attacker !== victim);
+      seen[kind]++;
+    }
+  }
+  assert.ok(seen[0] > 0, 'overrides reported');
+  assert.ok(seen[1] > 0, 'kills reported');
+  const quiet = new VM(PLANE);
+  quiet.load(ws, { seed: 4 });
+  for (let s = 0; s < 1000; s++) quiet.step();
+  assert.equal(quiet.takeEvents(), null);               // not collected unless enabled
+});

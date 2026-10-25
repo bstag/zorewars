@@ -97,8 +97,18 @@
       <div class="core-wrap" id="coreWrap">
         <canvas id="core" aria-label="Core memory visualisation"></canvas>
         <div class="view-tools" id="viewTools" hidden>
-          <button class="view-btn" id="viewToggle" type="button">3D</button>
+          <button class="view-btn" id="actionView" type="button" title="Fly to the fighting and follow it" aria-pressed="false">◎ Action</button>
+          <button class="view-btn" id="sliceToggle" type="button" title="Show only some layers: z, y, x, or all">Slice</button>
+          <button class="view-btn" id="zoomOut" type="button" title="Zoom out" aria-label="Zoom out">−</button>
+          <button class="view-btn" id="zoomIn" type="button" title="Zoom in" aria-label="Zoom in">+</button>
+          <button class="view-btn" id="fitView" type="button" title="Show the whole battlefield" aria-label="Fit">⤢</button>
           <button class="view-btn" id="spinToggle" type="button" title="Spin the view" aria-label="Spin" aria-pressed="true">⟳</button>
+          <button class="view-btn" id="viewToggle" type="button">3D</button>
+        </div>
+        <div class="slice-bar" id="sliceBar" hidden>
+          <span id="sliceLabel">z 0</span>
+          <input type="range" id="sliceRange" min="0" max="9" value="0" aria-label="Which layers to show">
+          <button class="view-btn" id="sliceThick" type="button" title="How many layers to show">1 layer</button>
         </div>
         <div class="overlay" id="overlay" hidden></div>
       </div>

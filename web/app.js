@@ -4,6 +4,7 @@ import { compile, VM, runRound, mulberry32, DEFAULT_SETTINGS, listing, roundPoin
 import { convertWarrior } from '../src/engine/convert.js';
 import { CoreRenderer, ProcessChart, WARRIOR_COLORS } from './arena.js';
 import { CoreView3D } from './arena3d.js';
+import { Highlights } from './highlights.js';
 import { generateFromPython, pythonReady } from './python.js';
 import { createCodeEditor } from './editor.js';
 import { initLadder, initSpecies } from './ladder.js';
@@ -67,14 +68,21 @@ const state = {
 const renderer2d = new CoreRenderer($('core'));
 const renderer3d = new CoreView3D($('core'));
 let renderer = renderer2d;
+// Splashes and sparks where warriors overwrite and kill each other.
+const highlights = new Highlights();
 function pickRenderer() {
   const geo = state.vm?.geo ?? null;
   const want3d = !!geo && (state.view3d ?? geo.Z > 1);
   const next = want3d ? renderer3d : renderer2d;
+  const key = `${!!geo}/${want3d}`;
+  if (key === pickRenderer.last && next === renderer) return;      // nothing changed this frame
+  pickRenderer.last = key;
   $('viewTools').hidden = !geo;
   $('viewToggle').textContent = want3d ? '2D' : '3D';
   $('viewToggle').title = want3d ? 'Show the flat grid' : 'Show the battlefield in 3D (drag to turn it)';
-  $('spinToggle').hidden = !want3d;
+  for (const id of ['spinToggle', 'zoomOut', 'zoomIn', 'fitView', 'actionView', 'sliceToggle']) $(id).hidden = !want3d;
+  $('sliceBar').hidden = !want3d || renderer3d.slice.axis < 0;
+  $('actionView').setAttribute('aria-pressed', String(renderer3d.follow));
   $('spinToggle').setAttribute('aria-pressed', String(renderer3d.spin));
   if (next === renderer) return;
   renderer = next;
@@ -512,6 +520,8 @@ function newRound() {
     return;
   }
   const vm = new VM(state.settings);
+  vm.enableEvents();
+  highlights.reset(vm.size);
   const warriors = roster.map((i) => state.slots[i].compiled);
   // P-space carries over between rounds while the same warriors keep fighting.
   const sameField = state.pspaceOwners?.length === warriors.length && warriors.every((w, k) => w === state.pspaceOwners[k]);
@@ -647,6 +657,8 @@ function replayEnd(cyclesBefore = 100) {
   if (!setup) return;
   stopRunning();
   const vm = new VM(state.settings);
+  vm.enableEvents();
+  highlights.reset(vm.size);
   vm.load(setup.warriors, { positions: setup.positions, firstTurn: setup.firstTurn, pspaces: setup.pspaces.map((ps) => ps.slice()) });
   const target = Math.max(0, end - cyclesBefore);
   while (!vm.done && vm.cycle < target) vm.step();
@@ -721,13 +733,17 @@ function frame() {
       state.dirtyFrame = true;
     }
   }
-  if (vm) pickRenderer();
+  if (vm) {
+    pickRenderer();
+    highlights.ingest(vm.takeEvents(), performance.now());
+    if (highlights.active) state.dirtyFrame = true;
+  }
   if (renderer.animating) state.dirtyFrame = true;
   if (state.dirtyFrame && vm) {
     const fade = Math.min(40000, Math.max(24, state.stepsPerFrame * vm.warriors.length * 36));
     renderer.hover = state.hover;
     renderer.pinned = state.pinned;
-    renderer.draw(vm, fade);
+    renderer.draw(vm, fade, highlights);
     chart.draw(state.settings.maxProcesses);
     renderScoreboardLive();
     updateCycle();
@@ -1110,6 +1126,52 @@ function wireEvents() {
     state.view3d = renderer !== renderer3d;
     pickRenderer();
   });
+  // 3D camera and slicing.
+  const AXES = ['x', 'y', 'z'];
+  const renderSlice = () => {
+    const { axis, pos, thick } = renderer3d.slice;
+    $('sliceToggle').textContent = axis < 0 ? 'Slice' : `Slice ${AXES[axis]}`;
+    $('sliceToggle').setAttribute('aria-pressed', String(axis >= 0));
+    $('sliceBar').hidden = axis < 0 || renderer !== renderer3d;
+    if (axis < 0) return;
+    const size = renderer3d.sliceSize(axis);
+    $('sliceRange').max = String(size - 1);
+    $('sliceRange').value = String(pos);
+    $('sliceLabel').textContent = thick === 1 ? `${AXES[axis]} ${pos}` : `${AXES[axis]} ${pos}–${(pos + thick - 1) % size}`;
+    $('sliceThick').textContent = thick === 1 ? '1 layer' : `${thick} layers`;
+  };
+  $('sliceToggle').addEventListener('click', () => {
+    // all -> z -> y -> x -> all (z first: the depth is what's hardest to see)
+    const order = [-1, 2, 1, 0];
+    const next = order[(order.indexOf(renderer3d.slice.axis) + 1) % order.length];
+    renderer3d.setSlice(next, next < 0 ? 0 : Math.floor(renderer3d.sliceSize(next) / 2), renderer3d.slice.thick);
+    renderSlice();
+    state.dirtyFrame = true;
+  });
+  $('sliceRange').addEventListener('input', () => {
+    renderer3d.setSlice(renderer3d.slice.axis, +$('sliceRange').value, renderer3d.slice.thick);
+    renderSlice();
+    state.dirtyFrame = true;
+  });
+  $('sliceThick').addEventListener('click', () => {
+    const t = { 1: 3, 3: 5, 5: 1 }[renderer3d.slice.thick] ?? 1;
+    renderer3d.setSlice(renderer3d.slice.axis, renderer3d.slice.pos, t);
+    renderSlice();
+    state.dirtyFrame = true;
+  });
+  $('zoomIn').addEventListener('click', () => { renderer3d.zoomBy(1.35); state.dirtyFrame = true; });
+  $('zoomOut').addEventListener('click', () => { renderer3d.zoomBy(1 / 1.35); state.dirtyFrame = true; });
+  $('fitView').addEventListener('click', () => {
+    renderer3d.fit();
+    $('actionView').setAttribute('aria-pressed', 'false');
+    state.dirtyFrame = true;
+  });
+  $('actionView').addEventListener('click', () => {
+    renderer3d.setFollow(!renderer3d.follow);
+    $('actionView').setAttribute('aria-pressed', String(renderer3d.follow));
+    state.dirtyFrame = true;
+  });
+
   $('spinToggle').addEventListener('click', () => {
     renderer3d.spin = !renderer3d.spin;
     $('spinToggle').setAttribute('aria-pressed', String(renderer3d.spin));

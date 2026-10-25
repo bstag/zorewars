@@ -97,7 +97,7 @@ export class CoreRenderer {
     return this.cellAtGrid[y * this.cols + x] ?? -1;
   }
 
-  draw(vm, fadeSteps) {
+  draw(vm, fadeSteps, highlights = null) {
     const { ctx, cols, cell } = this;
     const n = vm.size;
     if (n !== this.coreSize || vm.geo !== this.geo) this.layout(n, vm.geo);
@@ -155,6 +155,10 @@ export class CoreRenderer {
       }
     }
 
+    // Battle highlights: splashes for overrides, sparks for kills (highlights.js).
+    if (highlights) {
+      highlights.draw(ctx, performance.now(), (c) => [(grid[c] % cols) * cell + inner / 2, Math.floor(grid[c] / cols) * cell + inner / 2, cell], WARRIOR_COLORS);
+    }
     for (const [addr, color] of [[this.hover, 'rgba(255,255,255,0.8)'], [this.pinned, '#fbbf24']]) {
       if (addr < 0) continue;
       ctx.strokeStyle = color;

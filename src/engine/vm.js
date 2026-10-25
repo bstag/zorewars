@@ -242,6 +242,7 @@ export class VM {
       warrior.deaths.total++;
       warrior.deaths[cause]++;
       warrior.lastDeath = { cycle: this.cycle, step: this.steps, pc, instruction: this.disassemble(pc), cause, codeOwner, writerPc, writeCycle };
+      if (this.events && cause === 'enemyCode' && this.events.length < this.eventLimit) this.events.push(pc, codeOwner, w, 1);
       if (this.trace) this.trace.at(-1).died = cause;
     }
     if (warrior.queue.size > warrior.peak) warrior.peak = warrior.queue.size;
@@ -351,8 +352,24 @@ export class VM {
     this.touch(p, w);
   }
 
+  // Battle events for the arena's highlights, collected only after
+  // enableEvents(): flat groups of [cell, attacker, victim, kind], where kind
+  // 0 is an override (a warrior writing into another's cell) and 1 a kill (a
+  // process dying on an enemy's bomb). takeEvents() hands them over.
+  enableEvents(limit = 4096) {
+    this.events = [];
+    this.eventLimit = limit * 4;
+  }
+  takeEvents() {
+    const e = this.events;
+    if (!e) return null;
+    this.events = [];
+    return e;
+  }
+
   touch(addr, w) {
     const prev = this.owner[addr];
+    if (this.events && prev >= 0 && prev !== w && this.events.length < this.eventLimit) this.events.push(addr, w, prev, 0);
     if (prev >= 0 && prev !== w && !this.contactSeen.has(w * 64 + prev)) {
       this.contactSeen.add(w * 64 + prev);
       this.contacts.push({ attacker: w, victim: prev, cycle: this.cycle, step: this.steps, addr, pc: this.curPc, instruction: this.disassemble(this.curPc) });
