@@ -3,15 +3,22 @@
 ;author ZoreWars Evolver (from Two-Pass Clear and Fast Silk, ZoreWars)
 ;strategy Found by "zorewars evolve --torus 100x80" (Red Queen rounds of MAP-Elites,
 ;strategy started from Two-Pass Clear, Papercut and Plane Silk as champions). A two-pass
-;strategy core clear plus a decoy sprayer: the best warrior on the plane when added.
+;strategy core clear run by two processes, plus one decoy: the best warrior on the plane when added.
 ;
 ; Where it comes from: lines 3-10 are Two-Pass Clear unchanged, and lines
 ; 11-17 are Fast Silk's three-stream copy loop. Evolution put them together,
 ; added the launch lines, and lost the SPL that would start each copy, so
-; the copies never run: the loop sprays inert fragments of the warrior across
-; the plane (decoys) while the clear does the killing. It even uses the
-; clear's DAT bomb (line 10) as its copy pointers. The comments were added
-; afterwards; the instructions are exactly as evolved.
+; the copy never runs: the loop leaves one inert fragment of the warrior
+; (three cells) somewhere else as a decoy. It even uses the clear's DAT bomb
+; (line 10) as its copy pointers. Its last JMP lands on that DAT, so the
+; sprayer copies once and ends, which turns out to matter: a sprayer that
+; kept looping would be caught by the clear's SPL 0 pass and fill the
+; process queue, starving the clear (Volume Queen, its 3D port, sprays a
+; counted number of decoys for that reason). The decoy adds nothing
+; measurable: without it the warrior scores the same. Its edge over Two-Pass
+; Clear is the clear run by two processes, which survives losing one, and
+; its larger body. The comments were added afterwards;
+; the instructions are exactly as evolved.
 ;
 ; On the plane: a clear's >ptr walks every cell row by row, so geometry can't
 ; hide anything from it, and the decoys give scanners and stones something
@@ -33,7 +40,7 @@
         SPL.B   #0, #0          ; the stun bomb
         DAT.F   #0, #0          ; the kill bomb; also the sprayer's pointers (A: write, B: read)
 
-; ---- decoy sprayer (Fast Silk's loop, without its SPL) ----
+; ---- one decoy (Fast Silk's loop, without its SPL; the JMP ends in the DAT above) ----
         MOV.I   >-1, }-1        ; copy a cell from just here to the target...
         MOV.I   >-2, }-2        ; ...three per pass
         MOV.I   >-3, }-3

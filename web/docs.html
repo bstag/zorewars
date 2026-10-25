@@ -536,6 +536,7 @@ node cli/zorewars.js evolve --generations 6       <span class="cmt"># breed new 
         <li><strong>Slant</strong> is a replicator that copies itself diagonally, across rows, columns and layers at once, then steers each new copy somewhere else.</li>
         <li><strong>Battleship</strong> digs instead of striding. Its pointer counts up as a plain number, so it checks every cell in turn, row by row and layer by layer. When it finds something, it fires a salvo that covers a 3D block around the hit.</li>
         <li><strong>Broadside</strong> is a silk paper whose every copy bombs along its own diagonal, so many bombing lines run side by side through the volume.</li>
+        <li><strong>Volume Queen</strong> is Plane Queen, the evolver's best plane warrior, written as a 3D generator: a two-pass core clear run by two processes. A clear counts through the volume cell by cell, so nothing can hide from it; it leads the volume.</li>
         <li><strong>Fleet</strong> combines Battleship and Slant: the scanner hunts while the replicator spreads. It is 31 instructions, too long for half a 40-cell row, so it plays on <strong>Volume 80×10×10</strong> (40-instruction warriors).</li>
       </ul>
       <p>A plane one row high is exactly the classic ring, and the tests check that battles there match the classic ones round for round. Background and open questions: <code>design/3d-battlefield.md</code>.</p>
