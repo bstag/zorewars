@@ -96,7 +96,9 @@
 
       <div class="core-wrap" id="coreWrap">
         <canvas id="core" aria-label="Core memory visualisation"></canvas>
-        <div class="view-tools" id="viewTools" hidden>
+        <canvas id="avatar3d" aria-label="The warriors as creatures, in 3D" hidden></canvas>
+        <div class="avatar-labels" id="avatarLabels" hidden></div>
+        <div class="view-tools" id="viewTools">
           <button class="view-btn" id="actionView" type="button" title="Fly to the fighting and follow it" aria-pressed="false">◎ Action</button>
           <button class="view-btn" id="sliceToggle" type="button" title="Show only some layers: z, y, x, or all">Slice</button>
           <button class="view-btn" id="zoomOut" type="button" title="Zoom out" aria-label="Zoom out">−</button>
@@ -104,6 +106,8 @@
           <button class="view-btn" id="fitView" type="button" title="Show the whole battlefield" aria-label="Fit">⤢</button>
           <button class="view-btn" id="spinToggle" type="button" title="Spin the view" aria-label="Spin" aria-pressed="true">⟳</button>
           <button class="view-btn" id="viewToggle" type="button">3D</button>
+          <button class="view-btn" id="mapToggle" type="button" title="Stand the avatars on the core: each over where its processes are, with hits landing on the real cells" aria-pressed="false" hidden>Map</button>
+          <button class="view-btn" id="avatarToggle" type="button" title="Show the warriors as creatures: their code is their body" aria-pressed="false">Avatars</button>
         </div>
         <div class="follow-chip" id="followChip" hidden>
           <span>Following <b id="followName"></b></span>

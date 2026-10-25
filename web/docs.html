@@ -173,6 +173,17 @@ node cli/zorewars.js battle @dwarf @mice --rounds 10</code></pre>
         <li><strong>White squares</strong> mark the live program counters: where each process will execute next.</li>
         <li>The Dwarf's step of 4 bombs every 4th cell, which shows up as vertical stripes, because 100 is a multiple of 4.</li>
       </ul>
+      <h3 id="avatars">Avatars</h3>
+      <p>The <strong>Avatars</strong> button shows the battle as creatures in an arena. Each warrior's body is its own code: one segment per instruction, head first (the <code>ORG</code> instruction). The opcode decides the part, so every warrior has its own build: <code>SPL</code> is an arm, <code>MOV</code> a claw, <code>ADD</code>…<code>MOD</code> a gear, <code>JMP</code>/<code>DJN</code> a joint, the tests (<code>SEQ</code>, <code>SNE</code>, <code>SLT</code>, <code>JMZ</code>, <code>JMN</code>) an eye, and <code>DAT</code> an ammo pod. Long warriors coil into a helix.</p>
+      <p>The view is drawn in 3D with WebGL, with lights, shadows and glow. The <strong>Flat</strong> button switches to a plain canvas drawing of the same thing, which is also what you get when the browser has no WebGL.</p>
+      <ul>
+        <li>When a warrior writes into another's body, a shot flies from the instruction that wrote it to the part it hit. A <code>DAT</code> smashes the part; a <code>SPL</code> or <code>JMP</code> over something else webs it (a stun); the same opcode with new fields chips it (decrements and arithmetic); any other instruction turns the part into the attacker's kind of part, in the attacker's colour.</li>
+        <li>Parts glow where a process is, and light up as they run. Processes running elsewhere (a paper's copies) orbit the body. Those running an enemy's code orbit in the enemy's colour, and once enough of them do, the eyes change colour too.</li>
+        <li><strong>Conversion:</strong> when the warrior's processes run an enemy's program, the avatar turns into that enemy: each part slides into the enemy's shape and colour.</li>
+        <li>The bar over each avatar is how much of its body is still its own. A warrior with no processes left falls apart, in slow motion.</li>
+        <li><strong>Map</strong> stands the avatars on the core itself: the floor is the live core, laid out like the grid (cells in their owner's colour, glowing where just written, running processes in white). Each avatar stands over where its processes are, tethered to the cell, and moves as they do; a hit outside any body lands on the cell that was written, so you see a bomber carpet the floor. On by default on a plane or a volume; click a cell of the floor to read it.</li>
+        <li>The camera directs itself: it sways round the arena, pushes in when a process dies and swings to a knockout. Drag to turn it, and wheel or pinch to zoom; it takes over again after a few quiet seconds. Click a part to read its instruction in the inspector.</li>
+      </ul>
 
       <h2 id="debugging">Debugging a battle: how did it win?</h2>
       <p>Every round explains itself. While the VM runs, it records who last wrote every cell and which instruction wrote it, every process death and what caused it, and the first time each warrior wrote into, or ran, another warrior's code.</p>

@@ -14,6 +14,7 @@
     "compare": "node scripts/pmars-compare.js",
     "deploy": "wrangler deploy",
     "build:editor": "node scripts/build-editor.js",
+    "build:three": "node scripts/build-three.js",
     "fuzz": "node scripts/plane-fuzz.js"
   },
   "engines": {
@@ -32,6 +33,7 @@
     "@codemirror/view": "6.43.15",
     "@lezer/highlight": "1.2.5",
     "esbuild": "0.28.2",
+    "three": "0.185.1",
     "wrangler": "^4.152.0"
   },
   "overrides": {

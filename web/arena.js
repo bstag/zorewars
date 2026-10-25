@@ -28,6 +28,43 @@ export function makePalettes() {
   });
 }
 
+// Where each cell sits on a flat grid (shared by this view and the floor of
+// the 3D Avatars view). On a ring the cells are simply wrapped into a 5:4
+// grid; on a torus each cell is at its real (x, y), with the z-slices of a
+// volume side by side. Returns { cols, rows, gridOf, cellAtGrid }: the grid
+// index of each cell, and the cell at each grid index (-1: none).
+export function gridLayout(coreSize, geo = null) {
+  let perRow = 1;
+  if (geo && geo.Z > 1) {
+    let best = Infinity;
+    for (let k = 1; k <= geo.Z; k++) {
+      const ratio = (k * geo.X) / (Math.ceil(geo.Z / k) * geo.Y);
+      if (Math.abs(Math.log(ratio / 1.25)) < best) { best = Math.abs(Math.log(ratio / 1.25)); perRow = k; }
+    }
+  }
+  let cols, rows;
+  if (geo) {
+    cols = geo.X * perRow;
+    rows = geo.Y * Math.ceil(geo.Z / perRow);
+  } else {
+    // Aim for a 5:4 grid, e.g. 100 x 80 for the standard 8000-cell core.
+    cols = Math.max(10, Math.round(Math.sqrt(coreSize * 1.25)));
+    rows = Math.ceil(coreSize / cols);
+  }
+  const gridOf = new Int32Array(coreSize);
+  const cellAtGrid = new Int32Array(cols * rows).fill(-1);
+  for (let i = 0; i < coreSize; i++) {
+    let g = i;
+    if (geo) {
+      const [x, y, z] = geo.position(i);
+      g = (Math.floor(z / perRow) * geo.Y + y) * cols + (z % perRow) * geo.X + x;
+    }
+    gridOf[i] = g;
+    cellAtGrid[g] = i;
+  }
+  return { cols, rows, gridOf, cellAtGrid };
+}
+
 export class CoreRenderer {
   constructor(canvas) {
     this.canvas = canvas;
@@ -47,35 +84,7 @@ export class CoreRenderer {
     this.coreSize = coreSize;
     this.geo = geo;
     const width = this.canvas.parentElement.clientWidth || 800;
-    // z-slices of a volume sit side by side in a grid, about 5:4 overall.
-    let perRow = 1;
-    if (geo && geo.Z > 1) {
-      let best = Infinity;
-      for (let k = 1; k <= geo.Z; k++) {
-        const ratio = (k * geo.X) / (Math.ceil(geo.Z / k) * geo.Y);
-        if (Math.abs(Math.log(ratio / 1.25)) < best) { best = Math.abs(Math.log(ratio / 1.25)); perRow = k; }
-      }
-    }
-    if (geo) {
-      this.cols = geo.X * perRow;
-      this.rows = geo.Y * Math.ceil(geo.Z / perRow);
-    } else {
-      // Aim for a 5:4 grid, e.g. 100 x 80 for the standard 8000-cell core.
-      this.cols = Math.max(10, Math.round(Math.sqrt(coreSize * 1.25)));
-      this.rows = Math.ceil(coreSize / this.cols);
-    }
-    // Where each cell is drawn (grid index), and which cell is at each spot.
-    this.gridOf = new Int32Array(coreSize);
-    this.cellAtGrid = new Int32Array(this.cols * this.rows).fill(-1);
-    for (let i = 0; i < coreSize; i++) {
-      let g = i;
-      if (geo) {
-        const [x, y, z] = geo.position(i);
-        g = (Math.floor(z / perRow) * geo.Y + y) * this.cols + (z % perRow) * geo.X + x;
-      }
-      this.gridOf[i] = g;
-      this.cellAtGrid[g] = i;
-    }
+    Object.assign(this, gridLayout(coreSize, geo));
     this.cell = Math.max(2, Math.floor(width / this.cols));
     const dpr = window.devicePixelRatio || 1;
     const w = this.cols * this.cell;

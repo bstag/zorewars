@@ -13,6 +13,7 @@ A browser-based programming game inspired by **Core War** (1984). Players write 
 - **Tutorial and reference**: [web/docs.html](web/docs.html), served at `/web/docs.html`.
 - **Battle the real classics**: import originals from the public archives (Koenigstuhl, Planar's archive) by URL, from a file, or by dropping a `.red` file onto the editor. In the CLI, use `classic:thermite` or any URL. Nothing is copied into the project.
 - **CLI for AI agents**: battles and tournaments with `--json` output, reproducible from a seed. See [AGENTS.md](AGENTS.md).
+- **Avatars**: the battle as creatures in an arena. Each warrior's body is built from its own code, one part per instruction. Hits fly from the instruction that wrote them to the part they hit. A part is smashed, webbed, chipped or turned into the attacker's kind of part depending on what was written, and a captured warrior turns into its captor. Drawn in 3D with WebGL (three.js, loaded only when the view opens), with a flat canvas fallback. **Map** stands them on the live core: each avatar over where its processes are, with hits landing on the real cells.
 - **3D (experimental)**: a 40×20×10 or 80×10×10 volume or a 20×20×20 cube, shown live in 3D in the arena (drag to turn it, pinch or wheel to zoom, or let it spin). Code can travel along any axis.
 - **The plane (experimental)**: the first step towards a 3D battlefield. The core can be a torus plane (100×80 or 125×64) where addresses are vectors such as `[0,1]`. Code flows along rows, and fixed strides can't cover the plane, so the strategies that win change. Classic battles are unaffected, and a plane one row high is proven identical to the ring. See [design/3d-battlefield.md](design/3d-battlefield.md).
 - **Developer tools**: `zorewars hill` (benchmark with loss diagnosis), `species` (behaviour map), `tune` (constant search) and `evolve` (Red Queen rounds of MAP-Elites, after [Digital Red Queen](https://github.com/SakanaAI/drq)), all using every CPU core.
@@ -61,6 +62,8 @@ node cli/zorewars.js evolve --generations 6
 | `src/engine/topology.js` | Battlefield shapes: addressing, distance and placement (the classic ring today; the seam for 3D). |
 | `src/engine/species.js` | Behaviour measurement for the species map, the evolver's archive and `zorewars species`. |
 | `web/ladder.js` | The arena's Ladder and Species map cards. |
+| `web/avatar-model.js` | What the Avatars views show (bodies, damage, captives, conversion, hits), read from the VM; tested in `test/avatar-model.test.js`. |
+| `web/avatars3d.js`, `web/avatars.js` | The Avatars view in WebGL (three.js, bundled in `web/vendor/three.js` by `npm run build:three`), and its flat canvas fallback. |
 | `src/engine/geometry.js` | Torus geometry: numbers as points, per-axis arithmetic (the plane and, later, 3D). |
 | `scripts/plane-reference.js`, `scripts/plane-fuzz.js` | An independent interpreter for torus battlefields and the differential fuzzer that checks the VM against it (`npm run fuzz`). |
 | `src/engine/convert.js` | The Redcode → JavaScript / Python converter, with verification. |

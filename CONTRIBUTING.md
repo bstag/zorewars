@@ -13,6 +13,7 @@ npm test             # the test suite (Python 3 on PATH enables the Python tests
 - **Engine changes** (`src/engine/`): run `npm test`. If you change instruction semantics, the assembler or placement, also run the pMARS comparison (`npm run compare -- --pmars path/to/pmars`, see COMPLIANCE.md). The classic ruleset must keep matching pMARS.
 - **New warriors**: add the file to `warriors/` and an entry to `warriors/index.json`. Run `node scripts/convert-library.js` to regenerate the JavaScript and Python versions, and `node scripts/benchmark.js` to update the rankings.
 - **The code editor** is CodeMirror 6, bundled into `web/vendor/codemirror.js` so the site needs no build step. After changing the pinned `@codemirror/*` versions in `package.json`, run `npm run build:editor` and commit the result. Editor integration (Redcode mode, autocomplete, help) is in `web/editor.js`.
+- **The 3D Avatars view** uses three.js, bundled the same way into `web/vendor/three.js` (only what `scripts/three-entry.js` lists, so add anything new from three.js there). After changing the pinned `three` version or the entry, run `npm run build:three` and commit the result. The arena loads it only when the Avatars view opens.
 - **Docs**: the tutorial is `web/docs.html` and the encyclopedia is `web/warriors.html` with its data in `warriors/encyclopedia.json`.
 
 ## Licenses of contributions

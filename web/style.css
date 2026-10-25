@@ -167,6 +167,18 @@ select:focus, input:focus, textarea:focus, button:focus-visible { outline: 2px s
 
 .core-wrap { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); background: #050812; }
 #core { display: block; width: 100%; cursor: crosshair; image-rendering: pixelated; }
+#core[hidden], #avatar3d[hidden] { display: none; }
+/* Avatars in WebGL: names and status drawn over the scene */
+#avatar3d { display: block; width: 100%; cursor: grab; touch-action: none; }
+.avatar-labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; font: 12px/1.25 system-ui, sans-serif; }
+.avatar-labels[hidden] { display: none; }
+.avatar-label { position: absolute; transform: translate(-50%, -100%); text-align: center; white-space: nowrap; text-shadow: 0 1px 3px #000; }
+.avatar-label[hidden] { display: none; }
+.avatar-label b { display: block; font-size: 13px; font-weight: 600; }
+.avatar-label i { display: block; width: 72px; height: 4px; margin: 3px auto; background: rgba(255, 255, 255, 0.14); border-radius: 2px; overflow: hidden; }
+.avatar-label i span { display: block; height: 100%; }
+.avatar-label small { color: #cbd5e1; font-size: 11px; }
+.avatar-legend { position: absolute; left: 8px; bottom: 6px; color: #9fb0d8; opacity: 0.6; font-size: 11px; }
 .overlay {
   position: absolute; inset: 0; display: grid; place-items: center; text-align: center;
   background: rgba(5, 8, 18, 0.72); backdrop-filter: blur(2px); font-size: 15px;

@@ -4,6 +4,7 @@ import { compile, VM, runRound, mulberry32, DEFAULT_SETTINGS, listing, roundPoin
 import { convertWarrior } from '../src/engine/convert.js';
 import { CoreRenderer, ProcessChart, WARRIOR_COLORS } from './arena.js';
 import { CoreView3D } from './arena3d.js';
+import { AvatarView } from './avatars.js';
 import { Highlights } from './highlights.js';
 import { generateFromPython, pythonReady } from './python.js';
 import { createCodeEditor } from './editor.js';
@@ -67,19 +68,49 @@ const state = {
 // torus battlefields (automatic when the battlefield has depth; toggleable).
 const renderer2d = new CoreRenderer($('core'));
 const renderer3d = new CoreView3D($('core'));
+// The battle as creatures: each warrior's code is its body (any battlefield).
+const avatars = new AvatarView($('core'));
+// The same in WebGL (three.js), loaded the first time the Avatars view opens.
+// The canvas view above is the fallback, and the "Flat" view.
+let avatars3d = null;
+let avatars3dState = 'idle';          // 'loading', 'ready' or 'failed'
+function loadAvatars3d() {
+  if (avatars3dState !== 'idle') return;
+  avatars3dState = 'loading';
+  import('./avatars3d.js')
+    .then(({ AvatarView3D }) => {
+      avatars3d = new AvatarView3D($('avatar3d'), $('avatarLabels'));
+      avatars3d.onMapChange = (on) => $('mapToggle').setAttribute('aria-pressed', String(on));
+      avatars3dState = 'ready';
+    })
+    .catch((e) => {
+      console.warn('3D avatars unavailable, showing the flat view:', e);
+      avatars3dState = 'failed';
+    })
+    .finally(() => { pickRenderer.last = null; pickRenderer(); });
+}
 let renderer = renderer2d;
 // Splashes and sparks where warriors overwrite and kill each other.
 const highlights = new Highlights();
 function pickRenderer() {
   const geo = state.vm?.geo ?? null;
-  const want3d = !!geo && (state.view3d ?? geo.Z > 1);
-  const next = want3d ? renderer3d : renderer2d;
-  const key = `${!!geo}/${want3d}`;
+  const want3d = !state.avatars && !!geo && (state.view3d ?? geo.Z > 1);
+  const flat = !!state.avatarsFlat || avatars3dState === 'failed';
+  if (state.avatars && !flat) loadAvatars3d();
+  const avatarView = !flat && avatars3d ? avatars3d : avatars;
+  const next = state.avatars ? avatarView : want3d ? renderer3d : renderer2d;
+  const key = `${!!geo}/${want3d}/${!!state.avatars}/${next === avatars3d}/${flat}`;
   if (key === pickRenderer.last && next === renderer) return;      // nothing changed this frame
   pickRenderer.last = key;
-  $('viewTools').hidden = !geo;
-  $('viewToggle').textContent = want3d ? '2D' : '3D';
-  $('viewToggle').title = want3d ? 'Show the flat grid' : 'Show the battlefield in 3D (drag to turn it)';
+  $('viewToggle').hidden = state.avatars ? avatars3dState === 'failed' : !geo;
+  $('avatarToggle').setAttribute('aria-pressed', String(!!state.avatars));
+  if (state.avatars) {
+    $('viewToggle').textContent = flat ? '3D' : 'Flat';
+    $('viewToggle').title = flat ? 'Show the avatars in 3D (WebGL)' : 'Show the avatars on a flat canvas';
+  } else {
+    $('viewToggle').textContent = want3d ? '2D' : '3D';
+    $('viewToggle').title = want3d ? 'Show the flat grid' : 'Show the battlefield in 3D (drag to turn it)';
+  }
   for (const id of ['spinToggle', 'zoomOut', 'zoomIn', 'fitView', 'actionView', 'sliceToggle']) $(id).hidden = !want3d;
   $('sliceBar').hidden = !want3d || renderer3d.slice.axis < 0;
   $('actionView').setAttribute('aria-pressed', String(renderer3d.follow));
@@ -87,7 +118,13 @@ function pickRenderer() {
   if (next === renderer) return;
   renderer = next;
   renderer3d.active = want3d;
-  $('core').style.touchAction = want3d ? 'none' : '';      // drags turn the view instead of scrolling
+  avatars.active = next === avatars;
+  if (avatars3d) avatars3d.active = next === avatars3d;
+  $('core').hidden = next === avatars3d;                   // WebGL draws on its own canvas
+  $('avatar3d').hidden = next !== avatars3d;
+  $('avatarLabels').hidden = next !== avatars3d;
+  $('mapToggle').hidden = next !== avatars3d;
+  $('core').style.touchAction = want3d || next === avatars ? 'none' : '';      // drags turn the view instead of scrolling
   renderer.layout(state.settings.coreSize, geo);
   updateFollow();
   state.dirtyFrame = true;
@@ -796,7 +833,9 @@ function frame() {
   }
   if (vm) {
     pickRenderer();
-    highlights.ingest(vm.takeEvents(), performance.now());
+    const events = vm.takeEvents();
+    highlights.ingest(events, performance.now());
+    renderer.ingest?.(vm, events, performance.now());        // the avatar views animate the hits
     if (highlights.active) state.dirtyFrame = true;
   }
   if (renderer.animating) state.dirtyFrame = true;
@@ -839,7 +878,7 @@ function followWarrior(k) {
   if (renderer3d.followWarrior === k && renderer === renderer3d) {
     renderer3d.stopFollowingWarrior();
   } else {
-    if (renderer !== renderer3d) { state.view3d = true; pickRenderer(); }   // a plane tilts into 3D
+    if (renderer !== renderer3d) { state.view3d = true; state.avatars = false; pickRenderer(); }   // a plane tilts into 3D
     renderer3d.followWarriorIndex(k, WARRIOR_COLORS[state.roster[k]]);
   }
   updateFollow();
@@ -1194,21 +1233,32 @@ function wireEvents() {
   if (typeof savedSpeed === 'number') speed.value = savedSpeed;
   onSpeed();
 
-  const canvas = $('core');
-  canvas.addEventListener('mousemove', (e) => {
-    if (renderer === renderer3d && renderer3d.pointers.size) return;   // turning the view
-    const a = renderer.addressAt(e.clientX, e.clientY);
-    if (a !== state.hover) { state.hover = a; state.dirtyFrame = true; }
-  });
-  canvas.addEventListener('mouseleave', () => { state.hover = -1; state.dirtyFrame = true; });
-  canvas.addEventListener('click', (e) => {
-    if (renderer === renderer3d && renderer3d.consumeDrag()) return;   // the end of a drag, not a tap
-    const a = renderer.addressAt(e.clientX, e.clientY);
-    state.pinned = a === state.pinned ? -1 : a;
+  for (const canvas of [$('core'), $('avatar3d')]) {
+    canvas.addEventListener('mousemove', (e) => {
+      if (renderer === renderer3d && renderer3d.pointers.size) return;   // turning the view
+      if (renderer === avatars3d && avatars3d.down) return;
+      const a = renderer.addressAt(e.clientX, e.clientY);
+      if (a !== state.hover) { state.hover = a; state.dirtyFrame = true; }
+    });
+    canvas.addEventListener('mouseleave', () => { state.hover = -1; state.dirtyFrame = true; });
+    canvas.addEventListener('click', (e) => {
+      if (renderer.consumeDrag?.()) return;              // the end of a drag, not a tap
+      const a = renderer.addressAt(e.clientX, e.clientY);
+      state.pinned = a === state.pinned ? -1 : a;
+      state.dirtyFrame = true;
+    });
+  }
+
+  $('mapToggle').addEventListener('click', () => {
+    avatars3d?.setMap(!avatars3d.mapOn);
     state.dirtyFrame = true;
   });
-
+  $('avatarToggle').addEventListener('click', () => {
+    state.avatars = !state.avatars;
+    pickRenderer();
+  });
   $('viewToggle').addEventListener('click', () => {
+    if (state.avatars) { state.avatarsFlat = !state.avatarsFlat; pickRenderer(); return; }
     const geo = state.vm?.geo;
     if (!geo) return;
     state.view3d = renderer !== renderer3d;

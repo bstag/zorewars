@@ -13,3 +13,5 @@ imported/
 dist-check/
 # Default output of "zorewars evolve"
 evolved/
+# Python bytecode (created when the tests run the Python generators)
+__pycache__/
