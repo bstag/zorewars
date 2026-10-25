@@ -200,7 +200,7 @@ test('3D warriors: each survives alone on its battlefield and beats Dwarf there'
 test('prototypes: every 3D prototype still compiles on its battlefield', () => {
   const field = (f) => /^(sentry|fleet-scatter|bullfrog|dodgingqueen|scannerswarm|shieldswarm)/.test(f) ? torus(80, 10, 10) : /coprime/.test(f) ? torus(41, 20, 9) : torus(40, 20, 10);
   const files = fs.readdirSync(path.join(root, 'warriors/prototypes')).filter((f) => /\.(js|red)$/.test(f));
-  assert.ok(files.length >= 22);
+  assert.ok(files.length >= 23);
   for (const f of files) {
     const w = compile(read(`warriors/prototypes/${f}`), f.endsWith('.js') ? 'javascript' : 'redcode', field(f));
     assert.ok(w.ok, `${f}: ${JSON.stringify(w.errors)}`);

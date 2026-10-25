@@ -61,6 +61,7 @@ Friend or foe in 3D: a tag in a body's first cell doesn't work, because a body a
 | File | Field | What it is |
 | --- | --- | --- |
 | `evolved-coprime-hybrid.red` | 41×20×9 | From an evolver run from scratch on the coprime volume: a copier stepping by `[-18,0,-2]` plus a stone bombing every `[14,-6,4]`, both through all three axes. 2.05 there (Plane Queen 2.32) |
+| `evolved-stream.red` | 40×20×10 | From the second from-scratch run (`--ties 0.1`): a DJN stream again, found independently of Gremlin, in 10 instructions and one process. 1.91; Volume Queen 30-0; ties Gremlin 30 rounds in 30 |
 | `evolved-depth-imp.red` | 40×20×10 | From the first evolver run with TRN: it invented a depth imp (copies `MOV.I $0,$[0,0,1]` under a `TRN $[0,0,1]`, as Lift does) |
 
 ## What they tell us about what's possible
