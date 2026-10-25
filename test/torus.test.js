@@ -173,7 +173,7 @@ test('fitsBattlefield: which library warriors can play where', async () => {
 
 test('3D warriors: each survives alone on its battlefield and beats Dwarf there', () => {
   const VOL = torus(40, 20, 10), WIDE = torus(80, 10, 10);
-  for (const [f, s] of [['slant', VOL], ['battleship', VOL], ['broadside', VOL], ['volumequeen', VOL], ['leapfrog', VOL], ['scatter', VOL], ['fleet', WIDE], ['volumechameleon', WIDE]]) {
+  for (const [f, s] of [['slant', VOL], ['battleship', VOL], ['broadside', VOL], ['volumequeen', VOL], ['leapfrog', VOL], ['scatter', VOL], ['fleet', WIDE], ['volumechameleon', WIDE], ['antichameleon', WIDE]]) {
     const w = compile(read(`warriors/volume/${f}.js`), 'javascript', s);
     assert.ok(w.ok, `${f} compiles`);
     assert.ok(measureSpecies(w, s).survives, `${f} survives alone`);
@@ -185,7 +185,12 @@ test('3D warriors: each survives alone on its battlefield and beats Dwarf there'
   const lf = compile(read('warriors/volume/leapfrog.js'), 'javascript', VOL);
   const vq = compile(read('warriors/volume/volumequeen.js'), 'javascript', VOL);
   const m = runMatch([lf, vq], { ...VOL, rounds: 6 }, { seed: 11 });
-  assert.ok(m.warriors[0].wins >= 4, `Leapfrog vs Volume Queen ${m.warriors[0].wins}-${m.warriors[0].losses}`);   // 31 instructions: more than half a 40-cell row
+  assert.ok(m.warriors[0].wins >= 4, `Leapfrog vs Volume Queen ${m.warriors[0].wins}-${m.warriors[0].losses}`);
+  // Anti-Chameleon reads Volume Chameleon's switching and stays a step ahead
+  const ac = compile(read('warriors/volume/antichameleon.js'), 'javascript', WIDE);
+  const vc = compile(read('warriors/volume/volumechameleon.js'), 'javascript', WIDE);
+  const n = runMatch([ac, vc], { ...WIDE, rounds: 10 }, { seed: 5 });
+  assert.ok(n.warriors[0].wins >= 6 && n.warriors[0].wins >= 2 * n.warriors[0].losses, `Anti-Chameleon vs Volume Chameleon ${n.warriors[0].wins}-${n.warriors[0].losses}`);   // 31 instructions: more than half a 40-cell row
 });
 
 test('prototypes: every 3D prototype still compiles on its battlefield', () => {

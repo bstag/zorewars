@@ -45,6 +45,7 @@
   {"file":"volume/volumequeen.js","name":"Volume Queen","category":"3D clear + decoy (from Plane Queen)","language":"javascript","battlefield":"torus:40x20x10","benchmark":false},
   {"file":"volume/leapfrog.js","name":"Leapfrog","category":"3D anti-clear (leaps behind the front)","language":"javascript","battlefield":"torus:40x20x10","benchmark":false},
   {"file":"volume/volumechameleon.js","name":"Volume Chameleon","category":"3D P-space switcher (Leapfrog / clear)","language":"javascript","battlefield":"torus:80x10x10","benchmark":false},
+  {"file":"volume/antichameleon.js","name":"Anti-Chameleon","category":"3D P-space counter-switcher (paper / Leapfrog)","language":"javascript","battlefield":"torus:80x10x10","benchmark":false},
   {"file":"volume/fleet.js","name":"Fleet","category":"3D scanner + replicator hybrid","language":"javascript","battlefield":"torus:80x10x10","benchmark":false},
   {"file":"dwarf.py","name":"Dwarf (Python)","category":"Stone (bomber)","language":"python"},
   {"file":"javascript/imp.js","name":"Imp","category":"Imp","language":"javascript","convertedFrom":"imp.red","benchmark":false},
