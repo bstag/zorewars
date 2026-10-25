@@ -173,7 +173,7 @@ test('fitsBattlefield: which library warriors can play where', async () => {
 
 test('3D warriors: each survives alone on its battlefield and beats Dwarf there', () => {
   const VOL = torus(40, 20, 10), WIDE = torus(80, 10, 10);
-  for (const [f, s] of [['slant', VOL], ['battleship', VOL], ['broadside', VOL], ['volumequeen', VOL], ['leapfrog', VOL], ['fleet', WIDE], ['volumechameleon', WIDE]]) {
+  for (const [f, s] of [['slant', VOL], ['battleship', VOL], ['broadside', VOL], ['volumequeen', VOL], ['leapfrog', VOL], ['scatter', VOL], ['fleet', WIDE], ['volumechameleon', WIDE]]) {
     const w = compile(read(`warriors/volume/${f}.js`), 'javascript', s);
     assert.ok(w.ok, `${f} compiles`);
     assert.ok(measureSpecies(w, s).survives, `${f} survives alone`);

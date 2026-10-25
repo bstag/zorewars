@@ -39,6 +39,7 @@
   {"file":"volume/volumesilk.js","name":"Volume Silk","category":"3D paper","language":"javascript","battlefield":"torus:40x20x10","benchmark":false},
   {"file":"volume/cubist.js","name":"Cubist","category":"3D stone","language":"javascript","battlefield":"torus:40x20x10","benchmark":false},
   {"file":"volume/slant.js","name":"Slant","category":"3D replicator (diagonal)","language":"javascript","battlefield":"torus:40x20x10","benchmark":false},
+  {"file":"volume/scatter.js","name":"Scatter","category":"3D replicator (scattering)","language":"javascript","battlefield":"torus:40x20x10","benchmark":false},
   {"file":"volume/battleship.js","name":"Battleship","category":"3D digging scanner","language":"javascript","battlefield":"torus:40x20x10","benchmark":false},
   {"file":"volume/broadside.js","name":"Broadside","category":"3D paper + diagonal bombs","language":"javascript","battlefield":"torus:40x20x10","benchmark":false},
   {"file":"volume/volumequeen.js","name":"Volume Queen","category":"3D clear + decoy (from Plane Queen)","language":"javascript","battlefield":"torus:40x20x10","benchmark":false},
