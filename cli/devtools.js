@@ -11,6 +11,7 @@ import { createPool, libraryOpponents, classicOpponents, evaluate, strip } from 
 import { tune } from '../tools/tune.js';
 import { evolve } from '../tools/evolve.js';
 import { roleOf, toRedcode } from '../tools/genes.js';
+import { makeGeometry } from '../src/engine/geometry.js';
 
 const SYMPTOMS = {
   tie: 'ties (both alive at the end: no kill power)',
@@ -154,6 +155,7 @@ export async function cmdEvolve(args, h) {
   const pool = createPool();
   try {
     if (!json) console.log(`Evolving: ${generations} Red Queen generations, ${batches}x${batchSize} children each, ${sources.length} warriors in the gene pool, genomes up to ${maxLength} instructions${kings.length ? `, starting champions: ${kings.map((k) => k.name).join(', ')}` : ''}${heldOut.length ? `, ${heldOut.length} classics held out` : ''}\n`);
+    const geo = settings.topology === 'torus' && (settings.sizeY ?? 1) > 1 ? makeGeometry(settings) : null;
     const r = await evolve({
       pool, sources, opponents: field, heldOut, settings, rounds: generations, batches, batchSize,
       maxLength, kings,
@@ -162,7 +164,7 @@ export async function cmdEvolve(args, h) {
         done(json);
         const c = rec.champion;
         const file = path.join(out, `redqueen-${rec.round}.red`);
-        fs.writeFileSync(file, toRedcode(c.g, { name: c.name, coreSize: settings.coreSize, strategy: `Champion of Red Queen generation ${rec.round} (zorewars evolve): ${c.species.hint}, ${c.species.processes} processes, ${c.species.coverage} cells.` }));
+        fs.writeFileSync(file, toRedcode(c.g, { name: c.name, coreSize: settings.coreSize, geo, strategy: `Champion of Red Queen generation ${rec.round} (zorewars evolve): ${c.species.hint}, ${c.species.processes} processes, ${c.species.coverage} cells.` }));
         if (json) return;
         const vs = c.vsAncestors ? ` | vs ancestors ${(c.vsAncestors.reduce((s, x) => s + x.pts, 0) / c.vsAncestors.length).toFixed(2)} pts/round` : '';
         const held = c.heldOut ? ` | held-out classics ${c.heldOut.score.toFixed(2)}` : '';
@@ -170,8 +172,9 @@ export async function cmdEvolve(args, h) {
       },
     });
     for (const x of r.archive) {
-      const [p, c] = x.cell.split(',');
-      fs.writeFileSync(path.join(out, `elite-p${p}-c${c}.red`), toRedcode(x.g, { name: `Elite p${p} c${c}`, coreSize: settings.coreSize, strategy: `Best evolved ${x.species.hint} (${x.species.processes} processes, ${x.species.coverage} cells), zorewars evolve.` }));
+      const [p, c, shape] = x.cell.split(',');
+      const tag = `p${p}-c${c}${shape ? `-s${shape}` : ''}`;
+      fs.writeFileSync(path.join(out, `elite-${tag}.red`), toRedcode(x.g, { name: `Elite ${tag.replaceAll('-', ' ')}`, coreSize: settings.coreSize, geo, strategy: `Best evolved ${x.species.hint} (${x.species.processes} processes, ${x.species.coverage} cells), zorewars evolve.` }));
     }
     fs.writeFileSync(path.join(out, 'evolve.json'), JSON.stringify(r, null, 1));
     if (json) { console.log(JSON.stringify({ ok: true, out, champions: r.champions.map(({ w, ...c }) => c), archive: r.archive, operators: r.operators }, null, 2)); return; }

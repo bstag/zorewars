@@ -100,9 +100,9 @@ Ideas 3 and 4 are the smallest steps and the most useful to evolution. Idea 1 is
 
 ### Evolution for 3D
 
-- **Vector-aware mutation:** mutate one axis of a vector constant, rotate a vector (swap its axes), or lift a 2D constant into 3D by adding a z part. Today's mutations treat a vector as one number, so most of them land in the same row.
+- **Vector-aware mutation (built):** on a torus the evolver also has `axis` (nudge one axis of a number, or set it anywhere along that axis), `rotate` (swap two axes) and `lift` (give a plain step a y or z part). The older retunes treat a number as one number, so most of them stay in the same row.
 - **Seed with 2D winners lifted to 3D:** Plane Queen, Two-Pass Clear and Plane Silk, with their constants rewritten as vectors.
-- **A shape dimension for MAP-Elites:** how many axes a warrior's writes spread over (a line, a plane or the volume). Diagonal and volumetric species then get their own cells instead of competing with row-bound ones.
+- **A shape dimension for MAP-Elites (built):** `measureSpecies` reports `shape`, how many axes the cells a warrior wrote alone spread over (1 a row, 2 a layer, 3 the volume). On a torus it is the archive's third dimension, so diagonal and volumetric species get their own cells instead of competing with row-bound ones.
 - **Fitness on several volumes at once** (40×20×10, 80×10×10, the cube and a coprime volume), so champions win because of their strategy, not because they fit one size.
 - **A size curriculum:** evolve on a small volume, then carry the elites into a larger one.
 

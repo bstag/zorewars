@@ -15,6 +15,7 @@
 //   beating each other.
 
 import { measureSpecies } from '../src/engine/index.js';
+import { makeGeometry } from '../src/engine/geometry.js';
 import { evaluate, strip } from './hill.js';
 import { makeGenePool, makeOperators, makeChooser, crossover, fits, clone, graft, genomeOf, pick, toWarrior, MAXLEN } from './genes.js';
 
@@ -25,7 +26,12 @@ export async function evolve({
   onLog = () => {}, onRound = () => {},
 }) {
   const units = makeGenePool(sources);
-  const ops = makeOperators(units);
+  const geo = settings.topology === 'torus' && (settings.sizeY ?? 1) > 1 ? makeGeometry(settings) : null;
+  const ops = makeOperators(units, geo);
+  // On a plane or volume the archive gets a third dimension, the warrior's
+  // shape (how many axes its writes spread over), so row-bound, flat and
+  // volumetric species each keep their own elites.
+  const niche = (sp) => (geo ? `${sp.key},${sp.shape}` : sp.key);
   const opNames = Object.keys(ops);
   const chooser = makeChooser(opNames);
   const champions = kings.map((w) => ({ round: 0, name: w.name, g: genomeOf(w), w: strip(w) }));
@@ -50,9 +56,9 @@ export async function evolve({
   }
   const place = (archive, x) => {
     if (!x) return false;
-    const cur = archive.get(x.species.key);
+    const cur = archive.get(niche(x.species));
     if (cur && cur.fit >= x.fit) return false;
-    archive.set(x.species.key, x);
+    archive.set(niche(x.species), x);
     return true;
   };
 
@@ -109,7 +115,7 @@ export async function evolve({
   const final = [...archive.values()].sort((a, b) => b.fit - a.fit);
   return {
     champions, history,
-    archive: final.map((x) => ({ cell: x.species.key, species: x.species, fit: x.fit, g: x.g })),
+    archive: final.map((x) => ({ cell: niche(x.species), species: x.species, fit: x.fit, g: x.g })),
     operators: Object.fromEntries(Object.entries(chooser.credit).map(([o, c]) => [o, { tried: c.tries - 2, improved: c.wins - 1 }])),
   };
 }

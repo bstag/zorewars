@@ -88,3 +88,23 @@ test('evolver genes: grafts keep both programs running and round-trip through Re
     if (child) assert.ok(compile(toRedcode(child)).ok);
   }
 });
+
+test('evolver on a volume: 3D mutations move numbers off the row, and species get a shape', async () => {
+  const { makeGeometry } = await import('../src/engine/geometry.js');
+  const VOL = { topology: 'torus', sizeX: 40, sizeY: 20, sizeZ: 10, coreSize: 8000 };
+  const geo = makeGeometry(VOL);
+  const ops = makeOperators({}, geo);
+  assert.ok(ops.axis && ops.rotate && ops.lift && !makeOperators({}).lift);
+  const g = genomeOf(compile(read('warriors/dwarf.red'), 'redcode', VOL));
+  let offRow = 0;
+  for (let k = 0; k < 200; k++) {
+    const c = ops.lift(g);
+    assert.equal(c.code.length, g.code.length);
+    offRow += c.code.some((i) => [i.a, i.b].some((v) => { const [, y, z] = geo.decode(v); return y || z; })) ? 1 : 0;
+  }
+  assert.ok(offRow > 150, 'lift gives a field a part along y or z');
+  const vrc = toRedcode(ops.lift(g), { geo, coreSize: 8000 });
+  assert.ok(compile(vrc, 'redcode', VOL).ok, 'vector output compiles on the volume');
+  const shape = (f) => measureSpecies(compile(read(`warriors/${f}`), 'javascript', VOL), { ...VOL, maxProcesses: 8000, maxCycles: 80000, maxLength: 100 }).shape;
+  assert.equal(shape('volume/lift.js'), 3);     // a line through the layers
+});

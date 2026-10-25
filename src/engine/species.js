@@ -50,12 +50,21 @@ export function measureSpecies(compiled, settings = {}) {
   }
   const w = vm.warriors[0];
   const axes = speciesAxes(cfg);
+  // On a torus: how many axes the cells it wrote (or was loaded into) spread
+  // over: 1 = one row, 2 = one layer (or a plane), 3 = through the volume.
+  let shape = 1;
+  if (vm.geo && (cfg.sizeY ?? 1) > 1) {
+    const ys = new Set(), zs = new Set();
+    for (let k = 0; k < cfg.coreSize; k++) if (vm.owner[k] === 0) { const [, y, z] = vm.geo.decode(k); ys.add(y); zs.add(z); }
+    shape = zs.size > 1 ? 3 : ys.size > 1 ? 2 : 1;
+  }
   const p = bin(w.peak, axes.processes.edges);
   const c = bin(coverage, axes.coverage.edges);
   return {
     processes: w.peak,
     coverage,
     survives: w.alive,               // false: it kills itself when alone
+    shape,
     cell: [p, c],
     key: `${p},${c}`,
     hint: speciesHint(p, c, axes),

@@ -64,7 +64,10 @@ export function graft(g, u) {
 }
 
 const NUMS = [1, 2, 3, 4, 5, 7, 8, 13, 16, 97, 1471, 2365, 2667, 3044, 3364];
-export function makeOperators(units) {
+// geo (a plane or volume's geometry, see src/engine/geometry.js) adds
+// operators that treat a number as the point it is: plain retunes mostly
+// move along x, so on their own they rarely reach other rows or layers.
+export function makeOperators(units, geo = null) {
   const ops = {
     retune(g) {   // change one number: nudge it, or try a known-good step
       const c = clone(g); const i = pick(c.code); const f = Math.random() < 0.5 ? 'a' : 'b';
@@ -91,17 +94,41 @@ export function makeOperators(units) {
       return prepend(g, { op: 'SPL', mod: 'B', aMode: '$', a: 1, bMode: '$', b: 0 });
     },
   };
+  if (geo) {
+    const dims = geo.Z > 1 ? 3 : 2, size = [geo.X, geo.Y, geo.Z];
+    const field = (g) => { const c = clone(g); const i = pick(c.code); return [c, i, Math.random() < 0.5 ? 'a' : 'b']; };
+    Object.assign(ops, {
+      axis(g) {     // nudge one axis of a vector, or set it anywhere along that axis
+        const [c, i, f] = field(g); const v = geo.decode(i[f]); const k = rnd(dims);
+        v[k] = Math.random() < 0.6 ? v[k] + (1 + rnd(3)) * (Math.random() < 0.5 ? -1 : 1) : rnd(size[k]);
+        i[f] = geo.encode(...v);
+        return c;
+      },
+      rotate(g) {   // swap two axes of a vector: a row attack becomes a column or depth attack
+        const [c, i, f] = field(g); const v = geo.decode(i[f]); const a = rnd(dims); const b = (a + 1 + rnd(dims - 1)) % dims;
+        [v[a], v[b]] = [v[b], v[a]];
+        i[f] = geo.encode(...v);
+        return c;
+      },
+      lift(g) {     // give a plain step a part along another axis: off the row, through the layers
+        const [c, i, f] = field(g); const v = geo.decode(i[f]); const k = 1 + rnd(dims - 1);
+        v[k] = (1 + rnd(size[k] - 1)) * (Math.random() < 0.5 ? -1 : 1);
+        i[f] = geo.encode(...v);
+        return c;
+      },
+    });
+  }
   for (const role of Object.keys(units)) ops[`graft_${role}`] = (g) => graft(g, pick(units[role]));
   return ops;
 }
 
 // Symptom (see diagnoseRounds) -> the operators that address it.
 export const CURE = {
-  suicide: ['retune', 'retune', 'trim', 'tweak'],
+  suicide: ['retune', 'retune', 'trim', 'tweak', 'axis'],
   early: ['trim', 'procs', 'graft_paper'],
   late: ['graft_paper', 'procs'],
   converted: ['graft_paper', 'graft_clear', 'procs'],
-  tie: ['graft_stone', 'graft_scan', 'graft_clear', 'retune'],
+  tie: ['graft_stone', 'graft_scan', 'graft_clear', 'retune', 'lift', 'rotate'],
 };
 
 // Picks an operator from a warrior's symptoms, weighted by how often each
@@ -137,8 +164,8 @@ export function toWarrior(g, name = 'Evolved', coreSize = 8000) {
   return { ok: true, name, author: 'ZoreWars Evolver', start: g.start, instructions: g.code.map((i) => ({ ...i, a: norm(i.a), b: norm(i.b) })) };
 }
 
-export function toRedcode(g, { name = 'Evolved', strategy = '', coreSize = 8000 } = {}) {
-  const sv = (v) => { v = ((v % coreSize) + coreSize) % coreSize; return v > coreSize / 2 ? v - coreSize : v; };
+export function toRedcode(g, { name = 'Evolved', strategy = '', coreSize = 8000, geo = null } = {}) {
+  const sv = (v) => { v = ((v % coreSize) + coreSize) % coreSize; return geo ? geo.format(v) : v > coreSize / 2 ? v - coreSize : v; };
   return [
     ';redcode-94', `;name ${name}`, ';author ZoreWars Evolver', ...(strategy ? [`;strategy ${strategy}`] : []),
     `        ORG     ${g.start}`,
