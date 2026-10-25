@@ -82,6 +82,8 @@ The longest a single stride can run before repeating is lcm(X, Y, Z). It covers 
 
 Larger volumes need rules that grow with them, as the 94x hill does for 55,440 cells: cycles in proportion (about 10 per cell), processes, and minimum distance. Classic Dwarf kills itself on 41×20×9, since 4 doesn't divide the odd row, so coprime volumes need their own step tables, like the ring's "optima" numbers. The 3D view draws 8,000 cells in 3–4 ms, so it would take roughly 30 ms for 64,000 cells. That calls for slices by default, blocks of 2×2×2 cells drawn as one point when zoomed out, or WebGL points. The VM's cost per cycle doesn't change; only rounds get longer.
 
+**Tested on 41×20×9 (it didn't hold, yet).** On the coprime volume (30 rounds against the field that can play there and the classics, seed 4242), clears still lead: Plane Queen 2.32, Volume Queen 2.26, Two-Pass Clear 2.07, Volume Silk 1.99, Fast Silk 1.85, Battleship 1.59, Seeker 0.58. Cubist and Dwarf kill themselves there, since their steps assume even sizes. An evolver run from scratch (6 generations) found warriors that use the volume, such as a paper/stone hybrid whose copier and stone both step through all three axes (2.05). But its best champions (2.24–2.25) are again a core clear run by two processes, plus spare parts. A stride that *can* reach every cell still takes 7,380 steps to do it, and a clear covers the same cells in the same time with no gaps and no risk to itself. So coprime sizes bring strides back in theory, but clears stay the stronger choice at this size. Stones would need step tables built for the volume, as the ring's "optima" numbers were.
+
 A suggested ladder: **41×20×9** as a second small volume (the coprime opposite of 40×20×10, which shows the geometry deciding the metagame), then **125×64×9** as "the big one".
 
 ### Redcode for 3D
@@ -100,6 +102,7 @@ Ideas 3 and 4 are the smallest steps and the most useful to evolution. Idea 1 is
 
 ### Evolution for 3D
 
+- **Results so far:** with `axis`, `rotate`, `lift` and the shape niche, a 6-generation run on 40×20×10 (started from Volume Queen, Broadside and Battleship) filled 39 species cells, 19 of them volume-shaped. `lift` improved its parent in 19 of 96 tries, about as often as `retune` (31 of 154). Its champions (2.30–2.32) tie Volume Queen (2.34) within noise and are variants of it: the 3D mutations show up as a depth vector on the kill bomb and an idling third process. Clears remain the volume's local optimum. Finding something better probably needs a fitness that rewards beating clears specifically, or larger volumes where a sweep takes longer.
 - **Vector-aware mutation (built):** on a torus the evolver also has `axis` (nudge one axis of a number, or set it anywhere along that axis), `rotate` (swap two axes) and `lift` (give a plain step a y or z part). The older retunes treat a number as one number, so most of them stay in the same row.
 - **Seed with 2D winners lifted to 3D:** Plane Queen, Two-Pass Clear and Plane Silk, with their constants rewritten as vectors.
 - **A shape dimension for MAP-Elites (built):** `measureSpecies` reports `shape`, how many axes the cells a warrior wrote alone spread over (1 a row, 2 a layer, 3 the volume). On a torus it is the archive's third dimension, so diagonal and volumetric species get their own cells instead of competing with row-bound ones.
