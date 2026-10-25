@@ -26,6 +26,7 @@
   {"file":"bandit.js","name":"Bandit","category":"P-space bandit","language":"javascript"},
   {"file":"hedgehog.js","name":"Hedgehog","category":"Quickscan + stone/imp","language":"javascript"},
   {"file":"hydra.js","name":"Hydra","category":"Quickscan + paper/stone","language":"javascript"},
+  {"file":"gremlin.red","name":"Gremlin (ring)","category":"DJN stream (evolved from scratch)","language":"redcode","benchmark":false},
   {"file":"plane/plaid.js","name":"Plaid","category":"Plane stone","language":"javascript","battlefield":"torus:100x80","benchmark":false},
   {"file":"plane/climber.js","name":"Climber","category":"Plane mover","language":"javascript","battlefield":"torus:100x80","benchmark":false},
   {"file":"plane/planesilk.js","name":"Plane Silk","category":"Plane paper","language":"javascript","battlefield":"torus:100x80","benchmark":false},
@@ -81,5 +82,7 @@
   {"file":"javascript/evolvedsilk.js","name":"Evolved Silk","category":"Silk paper (evolved)","language":"javascript","convertedFrom":"evolvedsilk.red","benchmark":false},
   {"file":"python/evolvedsilk.py","name":"Evolved Silk","category":"Silk paper (evolved)","language":"python","convertedFrom":"evolvedsilk.red","benchmark":false},
   {"file":"javascript/redqueen.js","name":"Red Queen","category":"Scanner + paper (evolved)","language":"javascript","convertedFrom":"redqueen.red","benchmark":false},
-  {"file":"python/redqueen.py","name":"Red Queen","category":"Scanner + paper (evolved)","language":"python","convertedFrom":"redqueen.red","benchmark":false}
+  {"file":"python/redqueen.py","name":"Red Queen","category":"Scanner + paper (evolved)","language":"python","convertedFrom":"redqueen.red","benchmark":false},
+  {"file":"javascript/gremlin.js","name":"Gremlin (ring)","category":"DJN stream (evolved from scratch)","language":"javascript","convertedFrom":"gremlin.red","benchmark":false},
+  {"file":"python/gremlin.py","name":"Gremlin (ring)","category":"DJN stream (evolved from scratch)","language":"python","convertedFrom":"gremlin.red","benchmark":false}
 ]

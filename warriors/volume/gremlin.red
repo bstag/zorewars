@@ -23,8 +23,10 @@
 ; its own code and dies within a few hundred cycles. Papers are many
 ; redundant copies and shrug it off: it loses to them. The other lines are
 ; evolutionary leftovers that run a few times at the start, launching
-; processes into the stream. The comments were added afterwards; the
-; instructions are exactly as evolved.
+; processes into the stream. Its strategy needs nothing 3D: warriors/gremlin.red
+; is the same program for the classic ring (TRN made NOP, vectors cut to
+; their x part). The comments were added afterwards; the instructions are
+; exactly as evolved.
         ORG     0
         SPL.B   $1, $0
         SPL.B   $11, $0
