@@ -73,7 +73,7 @@ export async function cmdHill(args, h) {
 export async function cmdSpecies(args, h) {
   const settings = h.settingsFrom(args.flags);
   const json = !!args.flags.json;
-  const refs = args._.length ? h.expandRefs(args._) : h.libraryRefs();
+  const refs = args._.length ? h.expandRefs(args._) : h.libraryRefs(settings);
   const warriors = await h.loadAll(refs, settings, json);
   const axes = speciesAxes(settings);
   const rows = warriors.map((w) => ({ name: w.name, file: w.file, ...measureSpecies(w, settings) }));

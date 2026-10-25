@@ -33,6 +33,18 @@ Every process has a heading, one of ±x, ±y, ±z (stored beside its program cou
 
 What it showed: a vertical imp now works (Column Imp covers its 80-cell column). A stone standing in a column (Pillar) beats the same stone lying in a row (Plaid) in most matchups (7-3-10 head to head, 8-12 instead of 2-18 against the clears), because it is one cell wide in every row. In the full plane tournament, linear clears and papers still lead; imps are weak in 2D, since one row or column is a thin line.
 
+### Code length and validation
+
+A warrior's code lies along its row, and its labels are plain numbers. Only numbers in [-X/2, X/2) are pure x steps, so on a torus a warrior may be at most half a row long (50 instructions on 100×80, 63 on 125×64); the assembler explains this when a warrior is longer. The differential fuzzer found the bug this rule fixes: code longer than half a row was loaded across two rows while execution wrapped within one.
+
+The plane has no outside reference like pMARS, so `scripts/plane-reference.js` is a second, independent interpreter written from these rules. `scripts/plane-fuzz.js` runs random programs (2D and 3D) through both and compares every cell and process after every step: 581,477 steps agree (see COMPLIANCE.md).
+
+### Tuning on the plane
+
+`zorewars hill`, `tune`, `evolve` and `species` take `--torus`; the field is the library warriors that can play there (see `inLibraryFor` in `src/engine/index.js`) and, with `--classics`, the Hall of Fame originals that survive on the plane (15 of 34). With the honest tuner every plane warrior improved by more than its noise margin: Pillar 0.80 -> 1.10 (a 2×2 lattice), Climber 0.42 -> 0.64 (diagonal hops), Plane Silk 1.99 -> 2.15, Plaid 0.87 -> 1.00.
+
+The evolver on the plane (`zorewars evolve --torus 100x80`, started from Two-Pass Clear, Papercut and Plane Silk as champions) found the plane's best warrior so far, Plane Queen: 2.39 points per round against the plane field and 2.32 against the 16 classics that can play there, ahead of Two-Pass Clear (2.17) and the tuned Plane Silk (2.14). It is Two-Pass Clear plus Fast Silk's copy loop with its SPL lost, so it sprays inert fragments of itself across the plane as decoys while the clear, which no geometry can hide from, does the killing.
+
 ### Open questions for the next step
 - 100×80 (new strategies forced) or 125×64 (classic strategies carry over) as the default plane?
 - 3D: z-slices are already drawn stacked; a WebGL view comes when warriors use z.

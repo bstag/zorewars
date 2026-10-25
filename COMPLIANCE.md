@@ -65,6 +65,17 @@ The pMARS simulator (`sim.c`), assembler (`asm.c`), placement (`pos.c`) and opti
 | Single operand | Allowed for any opcode | Only `DAT`, `JMP`, `SPL` and `NOP` |
 | Missing features | `FOR`/`ROF`, P-space, registers, `;assert` | Implemented (needed by 15 of the 35 originals) |
 
+## The plane and 3D (torus battlefields)
+
+pMARS has no torus battlefield, so the experimental plane (`--torus`) is checked two other ways:
+
+| Check | What is compared | Result |
+| --- | --- | --- |
+| Ring identity | A torus one row high (8000×1) against the classic ring: the library and the 34 Hall of Fame originals, every pair, 4 rounds each | **7,080 / 7,080** rounds identical (winner, cycle, survivors, positions) |
+| Reference interpreter | `scripts/plane-reference.js`, a second interpreter written from the rules with cells kept by (x, y, z) and its number/point mapping built by enumeration, against the VM on random programs, on 100×80, 125×64, 20×20×20 and 7×3×5 | **5,000** programs, **581,477** steps: every cell and every process (position and heading) identical after every step |
+
+Run them with `npm run fuzz` (the reference comparison; arguments: programs, steps, seed) and `npm test` (smaller versions of both). As a check that the comparison can catch bugs, three mistakes were planted in a copy of the reference interpreter (per-axis counting, a different TRN tie-break, DIV zeroing an axis); each was caught within 100 programs.
+
 ## Known differences
 
 - **Read/write limits** (pMARS `-R`/`-W`) are not implemented. Without them pMARS uses the whole core, as we do.

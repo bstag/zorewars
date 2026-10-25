@@ -16,7 +16,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { Worker } from 'node:worker_threads';
 import { fileURLToPath } from 'node:url';
-import { compile, DEFAULT_SETTINGS } from '../src/engine/index.js';
+import { compile, inLibraryFor, measureSpecies, DEFAULT_SETTINGS } from '../src/engine/index.js';
 import { fetchWarriorText, nameFromUrl } from '../cli/remote.js';
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
@@ -55,14 +55,19 @@ export function createPool(threads = os.cpus().length) {
 }
 
 // The library's benchmark warriors (Redcode and JavaScript), as opponents.
+// On a torus, warriors written for the ring may kill themselves (their
+// constants assume ring arithmetic); they would only be free wins, so they
+// are left out of the field.
+const usable = (w, settings) => w.ok && (settings.topology !== 'torus' || measureSpecies(w, settings).survives);
+
+// The library warriors for this battlefield (see inLibraryFor), as opponents.
 export function libraryOpponents(settings = DEFAULT_SETTINGS, { exclude = [] } = {}) {
-  const list = JSON.parse(fs.readFileSync(path.join(WARRIOR_DIR, 'index.json'), 'utf8'))
-    .filter((e) => (e.language === 'redcode' || e.language === 'javascript') && e.benchmark !== false);
+  const list = JSON.parse(fs.readFileSync(path.join(WARRIOR_DIR, 'index.json'), 'utf8')).filter((e) => inLibraryFor(e, settings));
   const out = [];
   for (const e of list) {
     if (exclude.includes(e.name) || exclude.includes(e.file)) continue;
     const w = compile(fs.readFileSync(path.join(WARRIOR_DIR, e.file), 'utf8'), e.language, settings);
-    if (w.ok) out.push({ name: w.name, group: 'library', file: e.file, category: e.category, w: strip(w) });
+    if (usable(w, settings)) out.push({ name: w.name, group: 'library', file: e.file, category: e.category, w: strip(w) });
   }
   return out;
 }
@@ -76,6 +81,7 @@ export async function classicOpponents(settings = DEFAULT_SETTINGS, { onError } 
       const { text, url } = await fetchWarriorText(h.url, { anyHost: true });
       const w = compile(text, 'redcode', settings);
       if (!w.ok) throw new Error(w.errors[0]?.message || 'does not compile');
+      if (!usable(w, settings)) throw new Error('kills itself on this battlefield');
       if (w.name === 'Unnamed') w.name = nameFromUrl(url);
       return { name: h.name, group: 'classic', w: strip(w) };
     } catch (e) {

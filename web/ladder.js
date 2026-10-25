@@ -9,12 +9,14 @@
 // Species map: where warriors sit by behaviour, measured alone in the core
 // (src/engine/species.js), with the library for comparison.
 
-import { compile, runRound, VM, mulberry32, roundPoints, smoothPoints, measureSpecies, speciesAxes, speciesHint } from '../src/engine/index.js';
+import { compile, runRound, VM, mulberry32, roundPoints, smoothPoints, measureSpecies, speciesAxes, speciesHint, inLibraryFor } from '../src/engine/index.js';
 import { WARRIOR_COLORS } from './arena.js';
 
 const LADDER_KEY = 'zorewars.ladder.v1';
 const LADDER_SIZE = 10;
 const LADDER_START = ['gatekeeper.js', 'bandit.js', 'chameleon.js', 'evolvedsilk.red', 'blitz.js', 'papercut.js', 'silk.red', 'oneshot.red'];
+// On a plane: warriors written for it, and classic ones that do well there.
+const LADDER_START_PLANE = ['plane/planequeen.red', 'plane/planesilk.js', 'plane/raster.js', 'plane/pillar.js', 'twopass.red', 'papercut.js', 'fastsilk.js', 'mice.red'];
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -40,7 +42,8 @@ export function initLadder(ctx) {
     const saved = safeGet(LADDER_KEY);
     if (saved && saved.rules === rulesKey(ctx.settings()) && Array.isArray(saved.members)) return saved;
     const lib = ctx.library();
-    const members = LADDER_START.map((f) => lib.find((e) => e.file === f)).filter(Boolean)
+    const start = ctx.settings().topology === 'torus' ? LADDER_START_PLANE : LADDER_START;
+    const members = start.map((f) => lib.find((e) => e.file === f)).filter(Boolean)
       .map((e) => ({ id: `lib:${e.file}`, name: e.name, language: e.language, source: e.source, origin: 'library', age: 0 }));
     return { rules: rulesKey(ctx.settings()), members, results: {} };
   }
@@ -194,7 +197,7 @@ export function initSpecies(ctx) {
   function measureLibrary(then) {
     const settings = ctx.settings();
     if (libCache.rules === rulesKey(settings)) { then(); return; }
-    const list = ctx.library().filter((e) => (e.language === 'redcode' || e.language === 'javascript') && e.benchmark !== false);
+    const list = ctx.library().filter((e) => inLibraryFor(e, settings));
     const rows = [];
     let i = 0;
     $('speciesInfo').textContent = 'Measuring the library…';
@@ -203,7 +206,10 @@ export function initSpecies(ctx) {
       while (i < list.length && performance.now() - t0 < 40) {
         const e = list[i++];
         const w = compile(e.source, e.language, settings);
-        if (w.ok) rows.push({ name: w.name, ...measureSpecies(w, settings) });
+        if (!w.ok) continue;
+        const m = measureSpecies(w, settings);
+        // On a plane, ring warriors that destroy themselves are left off the map.
+        if (m.survives || settings.topology !== 'torus') rows.push({ name: w.name, ...m });
       }
       if (i < list.length) { setTimeout(step, 0); return; }
       libCache = { rules: rulesKey(settings), rows };

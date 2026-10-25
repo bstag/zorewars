@@ -13,7 +13,8 @@
     "bench": "node scripts/benchmark.js",
     "compare": "node scripts/pmars-compare.js",
     "deploy": "wrangler deploy",
-    "build:editor": "node scripts/build-editor.js"
+    "build:editor": "node scripts/build-editor.js",
+    "fuzz": "node scripts/plane-fuzz.js"
   },
   "engines": {
     "node": ">=18"

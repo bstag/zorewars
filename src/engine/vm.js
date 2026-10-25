@@ -112,7 +112,10 @@ export class VM {
         throw new Error(`${w.name} is ${w.instructions.length} instructions long (max ${maxLength})`);
       }
       const base = positions[i];
-      const at = (k) => (this.geo ? this.geo.add(base, k) : base + k);   // code runs along x
+      if (this.geo && w.instructions.length > this.geo.maxCodeLength) {
+        throw new Error(`${w.name} is ${w.instructions.length} instructions long; on a ${this.geo.X}-wide torus the limit is ${this.geo.maxCodeLength}`);
+      }
+      const at = (k) => (this.geo ? this.geo.add(base, this.geo.encode(k, 0, 0)) : base + k);   // code runs along x
       w.instructions.forEach((ins, k) => this.poke(at(k), ins, i));
       const queue = new ProcessQueue(maxProcesses);
       queue.push(this.norm(at(w.start)));

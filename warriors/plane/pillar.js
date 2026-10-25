@@ -10,10 +10,14 @@ name("Pillar");
 author("ZoreWars");
 strategy("Lattice stone standing in a column: one cell wide per row, so row-based attacks rarely touch it.");
 if (SIZEY < 12) throw new Error("Pillar is for a plane: choose a Plane battlefield in Rules (CLI: --torus 100x80)");
-const pickX = [4, 5, 3, 2].find((g) => SIZEX % g === 0);
-const pickY = [4, 6, 2].find((g) => SIZEY % g === 0);
-if (!pickX || !pickY) throw new Error(`no lattice fits a ${SIZEX}x${SIZEY} plane`);
-const GX = pickX, GY = pickY;
+//
+// Tuned constants: `node cli/zorewars.js tune warriors/plane/pillar.js --torus 100x80`
+// SPACE {"GX":[2,3,4,5,10],"GY":[2,4,6,8,10,16]}
+const P = {"GX":2,"GY":2};
+// The lattice spacing must divide the plane on each axis (so a row of bombs
+// ends where it started) and be even along y (so "half a step" is a row).
+if (SIZEX % P.GX || SIZEY % P.GY || P.GY % 2) throw new Error(`a ${P.GX}x${P.GY} lattice doesn't fit a ${SIZEX}x${SIZEY} plane`);
+const GX = P.GX, GY = P.GY;
 
 // The vertical body: names of its lines, top to bottom.
 const NAMES = ['row', 'bomb', 'step', 'count', 'next', 'back', 'ptr', 'xcnt', 'dat0'];

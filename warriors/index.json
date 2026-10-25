@@ -33,6 +33,7 @@
   {"file":"plane/columnimp.js","name":"Column Imp","category":"Plane imp (vertical)","language":"javascript","battlefield":"torus:100x80","benchmark":false},
   {"file":"plane/pillar.js","name":"Pillar","category":"Plane stone (vertical)","language":"javascript","battlefield":"torus:100x80","benchmark":false},
   {"file":"plane/weave.js","name":"Weave","category":"Plane imps (row + column)","language":"javascript","battlefield":"torus:100x80","benchmark":false},
+  {"file":"plane/planequeen.red","name":"Plane Queen","category":"Plane clear + decoys (evolved)","language":"redcode","battlefield":"torus:100x80","benchmark":false},
   {"file":"dwarf.py","name":"Dwarf (Python)","category":"Stone (bomber)","language":"python"},
   {"file":"javascript/imp.js","name":"Imp","category":"Imp","language":"javascript","convertedFrom":"imp.red","benchmark":false},
   {"file":"python/imp.py","name":"Imp","category":"Imp","language":"python","convertedFrom":"imp.red","benchmark":false},

@@ -26,7 +26,7 @@ export function postMortem(vm) {
   const name = (i) => (i >= 0 ? vm.warriors[i]?.name ?? `warrior ${i + 1}` : 'nobody');
 
   // k instructions on from addr: along x on a torus (code runs along rows).
-  const step = (addr, k) => (vm.geo ? vm.geo.add(addr, vm.norm(k)) : addr + k);
+  const step = (addr, k) => (vm.geo ? vm.geo.add(addr, vm.geo.encode(k, 0, 0)) : addr + k);
 
   // Everything known about one cell: content, who wrote it, when, and how.
   const cell = (addr) => {

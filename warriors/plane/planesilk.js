@@ -5,7 +5,11 @@
 name("Plane Silk");
 author("ZoreWars");
 strategy("Small silk paper whose copies jump across rows as well as along them.");
-const LEVELS = 2, DX = 37, DY = 23, EX = 17, EY = 29;
+//
+// Tuned constants: `node cli/zorewars.js tune warriors/plane/planesilk.js --torus 100x80`
+// SPACE {"LEVELS":[1,3],"DX":[1,99],"DY":[1,79],"EX":[1,99],"EY":[0,79]}
+const P = {"LEVELS":3,"DX":10,"DY":67,"EX":30,"EY":42};
+const { LEVELS, DX, DY, EX, EY } = P;
 if (SIZEY < 2) throw new Error("Plane Silk is for a plane: choose a Plane battlefield in Rules (CLI: --torus 100x80)");
 
 org("start");

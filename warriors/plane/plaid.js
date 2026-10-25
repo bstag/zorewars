@@ -7,12 +7,14 @@ name("Plaid");
 author("ZoreWars");
 strategy("Plane stone: bombs a lattice of points, every GX cells along a row and every GY rows down.");
 if (SIZEY < 4) throw new Error("Plaid is for a plane: choose a Plane battlefield in Rules (CLI: --torus 100x80)");
+//
+// Tuned constants: `node cli/zorewars.js tune warriors/plane/plaid.js --torus 100x80`
+// SPACE {"GX":[2,3,4,5,10],"GY":[2,4,6,8,10,16]}
+const P = {"GX":4,"GY":2};
 // The lattice spacing must divide the plane on each axis (so a row of bombs
 // ends where it started) and be even along y (so "half a step" is a row).
-const pickX = [4, 5, 3, 2].find((g) => SIZEX % g === 0);
-const pickY = [4, 6, 2].find((g) => SIZEY % g === 0);
-if (!pickX || !pickY) throw new Error(`no lattice fits a ${SIZEX}x${SIZEY} plane`);
-const GX = pickX, GY = pickY;
+if (SIZEX % P.GX || SIZEY % P.GY || P.GY % 2) throw new Error(`a ${P.GX}x${P.GY} lattice doesn't fit a ${SIZEX}x${SIZEY} plane`);
+const GX = P.GX, GY = P.GY;
 
 org("row");
 label("row");  mov.ab(imm(SIZEX / GX), "xcnt");     // bombs per row

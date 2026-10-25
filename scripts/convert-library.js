@@ -15,7 +15,7 @@ import { pythonRunner } from '../cli/python.js';
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const W = path.join(ROOT, 'warriors');
 const index = JSON.parse(fs.readFileSync(path.join(W, 'index.json'), 'utf8'));
-const originals = index.filter((e) => e.language === 'redcode');
+const originals = index.filter((e) => e.language === 'redcode' && !e.battlefield);   // plane warriors stay Redcode
 const runPython = pythonRunner();
 if (!runPython) {
   console.error('Python is needed to verify the Python conversions (tried python3, python, py).');

@@ -9,7 +9,7 @@ import path from 'node:path';
 import http from 'node:http';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { compile, detectLanguage, runMatch, runTournament, DEFAULT_SETTINGS, listing, formatPostMortem, generateFromJS } from '../src/engine/index.js';
+import { compile, detectLanguage, runMatch, runTournament, DEFAULT_SETTINGS, listing, formatPostMortem, generateFromJS, inLibraryFor } from '../src/engine/index.js';
 import { convertWarrior, conversionCandidates } from '../src/engine/convert.js';
 import { runPythonFile, pythonRunner } from './python.js';
 import { fetchWarriorText, nameFromUrl } from './remote.js';
@@ -469,9 +469,9 @@ function printTable(rows) {
 }
 
 // The library's Redcode and JavaScript warriors, as @refs.
-function libraryRefs() {
+function libraryRefs(settings) {
   return JSON.parse(fs.readFileSync(path.join(WARRIOR_DIR, 'index.json'), 'utf8'))
-    .filter((e) => (e.language === 'redcode' || e.language === 'javascript') && e.benchmark !== false)
+    .filter((e) => inLibraryFor(e, settings))
     .map(builtinRef);
 }
 const devtools = async () => [await import('./devtools.js'), { loadAll, settingsFrom, usage, printTable, expandRefs, libraryRefs }];

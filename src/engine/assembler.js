@@ -445,6 +445,9 @@ export function assemble(source, settings = {}) {
   }
 
   if (!errors.length && instructions.length === 0) errors.push({ line: 0, message: 'program has no instructions' });
+  if (geo && instructions.length > geo.maxCodeLength && instructions.length <= cfg.maxLength) {
+    errors.push({ line: 0, message: `program is ${instructions.length} instructions long; on a ${geo.X}-wide torus the limit is ${geo.maxCodeLength} (half a row), so that every label stays on its own row` });
+  }
   if (instructions.length > cfg.maxLength) {
     errors.push({ line: 0, message: `program is ${instructions.length} instructions long; the limit is ${cfg.maxLength}` });
   }

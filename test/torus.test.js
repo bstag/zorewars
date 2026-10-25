@@ -110,3 +110,17 @@ test('headings: TRN turns a process along the dominant axis, and the ring refuse
   assert.ok(!compile('TRN $[0,1]').ok);                // the ring has no headings
   assert.match(compile('TRN $[0,1]').errors[0].message, /torus/);
 });
+
+test('the VM agrees with an independent reference interpreter on random programs (2D and 3D)', async () => {
+  const { fuzz } = await import('../scripts/plane-fuzz.js');
+  const r = fuzz({ programs: 200, steps: 400, seed: 11 });
+  assert.ok(r.ok, r.ok ? '' : `program ${r.program} (${r.shape}) step ${r.step}: ${r.diff.join('; ')}`);
+  assert.ok(r.compared > 5000, `only ${r.compared} steps compared`);
+});
+
+test('on a torus a warrior is at most half a row long, so labels stay on their row', () => {
+  const long = Array.from({ length: 51 }, () => 'NOP').join('\n');
+  const w = compile(long, 'redcode', PLANE);
+  assert.ok(!w.ok && /half a row/.test(w.errors[0].message));
+  assert.ok(compile(Array.from({ length: 50 }, () => 'NOP').join('\n'), 'redcode', PLANE).ok);
+});

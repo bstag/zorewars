@@ -61,6 +61,7 @@ node cli/zorewars.js evolve --generations 6
 | `src/engine/species.js` | Behaviour measurement for the species map, the evolver's archive and `zorewars species`. |
 | `web/ladder.js` | The arena's Ladder and Species map cards. |
 | `src/engine/geometry.js` | Torus geometry: numbers as points, per-axis arithmetic (the plane and, later, 3D). |
+| `scripts/plane-reference.js`, `scripts/plane-fuzz.js` | An independent interpreter for torus battlefields and the differential fuzzer that checks the VM against it (`npm run fuzz`). |
 | `src/engine/convert.js` | The Redcode → JavaScript / Python converter, with verification. |
 | `scripts/convert-library.js` | Regenerates and verifies `warriors/javascript/` and `warriors/python/`. |
 | `scripts/benchmark.js` | Round robin of the library; writes `warriors/benchmarks.json` (`npm run bench`). |

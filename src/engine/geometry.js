@@ -98,5 +98,9 @@ export function makeGeometry(settings) {
     if (y === 0 && z === 0) return String(x);
     return Z > 1 ? `[${x},${y},${z}]` : `[${x},${y}]`;
   }
-  return { X, Y, Z, N, decode, encode, position, add, sub, mul, div: divmod(false), mod: divmod(true), distance, format };
+  // A warrior's code runs along x, and its labels are plain numbers. Only
+  // numbers in [-X/2, X/2) are pure steps along x, so a warrior may be at most
+  // this long: then every label distance stays on its own row.
+  const maxCodeLength = Math.min(X - hx, hx + 1);
+  return { X, Y, Z, N, decode, encode, position, add, sub, mul, div: divmod(false), mod: divmod(true), distance, format, maxCodeLength };
 }
