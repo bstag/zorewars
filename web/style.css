@@ -172,6 +172,13 @@ select:focus, input:focus, textarea:focus, button:focus-visible { outline: 2px s
   background: rgba(5, 8, 18, 0.72); backdrop-filter: blur(2px); font-size: 15px;
 }
 .overlay[hidden] { display: none; }
+/* 2D/3D and spin buttons over the core */
+.view-tools { position: absolute; top: 6px; right: 6px; display: flex; gap: 4px; z-index: 2; }
+.view-tools[hidden], .view-btn[hidden] { display: none; }
+.view-btn { font: 600 11px/1 var(--mono); color: var(--text-2); background: rgba(14, 21, 41, 0.85); border: 1px solid var(--line-2);
+  border-radius: 6px; min-width: 30px; height: 26px; padding: 0 7px; cursor: pointer; }
+.view-btn:hover { color: var(--text); }
+.view-btn[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); }
 .overlay .big { font: 700 26px/1.2 var(--mono); letter-spacing: 0.04em; }
 .overlay .sub { color: var(--text-2); margin-top: 6px; }
 

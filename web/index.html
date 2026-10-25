@@ -96,6 +96,10 @@
 
       <div class="core-wrap" id="coreWrap">
         <canvas id="core" aria-label="Core memory visualisation"></canvas>
+        <div class="view-tools" id="viewTools" hidden>
+          <button class="view-btn" id="viewToggle" type="button">3D</button>
+          <button class="view-btn" id="spinToggle" type="button" title="Spin the view" aria-label="Spin" aria-pressed="true">⟳</button>
+        </div>
         <div class="overlay" id="overlay" hidden></div>
       </div>
       <p class="cell-peek" id="cellPeek" hidden></p>
@@ -192,6 +196,8 @@
             <option value="ring">Ring (classic Core War)</option>
             <option value="torus:100x80">Plane 100×80 (experimental)</option>
             <option value="torus:125x64">Plane 125×64 (experimental)</option>
+            <option value="torus:40x20x10">Volume 40×20×10 (experimental 3D)</option>
+            <option value="torus:20x20x20">Cube 20×20×20 (experimental 3D)</option>
           </select>
         </label>
         <div class="settings-grid">

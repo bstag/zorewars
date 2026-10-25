@@ -13,6 +13,7 @@ A browser-based programming game inspired by **Core War** (1984). Players write 
 - **Tutorial and reference**: [web/docs.html](web/docs.html), served at `/web/docs.html`.
 - **Battle the real classics**: import originals from the public archives (Koenigstuhl, Planar's archive) by URL, from a file, or by dropping a `.red` file onto the editor. In the CLI, use `classic:thermite` or any URL. Nothing is copied into the project.
 - **CLI for AI agents**: battles and tournaments with `--json` output, reproducible from a seed. See [AGENTS.md](AGENTS.md).
+- **3D (experimental)**: a 40×20×10 volume or a 20×20×20 cube, shown live in 3D in the arena (drag to turn it, pinch or wheel to zoom, or let it spin). Code can travel along any axis.
 - **The plane (experimental)**: the first step towards a 3D battlefield. The core can be a torus plane (100×80 or 125×64) where addresses are vectors such as `[0,1]`. Code flows along rows, and fixed strides can't cover the plane, so the strategies that win change. Classic battles are unaffected, and a plane one row high is proven identical to the ring. See [design/3d-battlefield.md](design/3d-battlefield.md).
 - **Developer tools**: `zorewars hill` (benchmark with loss diagnosis), `species` (behaviour map), `tune` (constant search) and `evolve` (Red Queen rounds of MAP-Elites, after [Digital Red Queen](https://github.com/SakanaAI/drq)), all using every CPU core.
 

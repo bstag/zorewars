@@ -45,6 +45,10 @@ The plane has no outside reference like pMARS, so `scripts/plane-reference.js` i
 
 The evolver on the plane (`zorewars evolve --torus 100x80`, started from Two-Pass Clear, Papercut and Plane Silk as champions) found the plane's best warrior so far, Plane Queen: 2.39 points per round against the plane field and 2.32 against the 16 classics that can play there, ahead of Two-Pass Clear (2.17) and the tuned Plane Silk (2.14). It is Two-Pass Clear plus Fast Silk's copy loop with its SPL lost, so it sprays inert fragments of itself across the plane as decoys while the clear, which no geometry can hide from, does the killing.
 
+### The 3D view
+
+`web/arena3d.js` draws a torus battlefield in 3D on a plain canvas (no WebGL or libraries): every cell at its (x, y, z) with perspective and depth sorting, coloured by owner with a glow for recent writes, running processes as white points, and faint dots for empty space. Drag to rotate, wheel or pinch to zoom; it spins until grabbed. It has the 2D grid's interface (layout, draw, addressAt), so hovering and pinning cells work the same. Volumes (40×20×10, 20×20×20) open in 3D; the 2D view lays their layers out side by side. The 40×20×10 volume is the default 3D battlefield because half a row (the code length limit) is 20 instructions there, against 10 on the cube.
+
 ### Open questions for the next step
 - 100×80 (new strategies forced) or 125×64 (classic strategies carry over) as the default plane?
 - 3D: z-slices are already drawn stacked; a WebGL view comes when warriors use z.

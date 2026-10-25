@@ -16,6 +16,18 @@ function mix(a, b, t) {
 }
 const rgb = (c) => `rgb(${c[0]},${c[1]},${c[2]})`;
 
+// palettes[w][level]: each warrior's colour from dim (settled) to bright
+// (just written). Shared by the 2D grid and the 3D view.
+export const GLOW = GLOW_LEVELS;
+export function makePalettes() {
+  const empty = hexToRgb(EMPTY);
+  return WARRIOR_COLORS.map((hex) => {
+    const c = hexToRgb(hex);
+    const dim = mix(empty, c, 0.42);
+    return Array.from({ length: GLOW_LEVELS + 1 }, (_, i) => rgb(mix(dim, mix(c, [255, 255, 255], 0.35), i / GLOW_LEVELS)));
+  });
+}
+
 export class CoreRenderer {
   constructor(canvas) {
     this.canvas = canvas;
@@ -25,25 +37,28 @@ export class CoreRenderer {
     this.cell = 4;
     this.hover = -1;
     this.pinned = -1;
-    // palettes[w][level] from dim (settled) to bright (just written)
-    const empty = hexToRgb(EMPTY);
-    this.palettes = WARRIOR_COLORS.map((hex) => {
-      const c = hexToRgb(hex);
-      const dim = mix(empty, c, 0.42);
-      return Array.from({ length: GLOW_LEVELS + 1 }, (_, i) => rgb(mix(dim, mix(c, [255, 255, 255], 0.35), i / GLOW_LEVELS)));
-    });
+    this.palettes = makePalettes();
   }
 
   // `geo`: the VM's torus geometry, or null for the classic ring. On a ring
   // the cells are simply wrapped into a 5:4 grid; on a torus each cell is
-  // drawn at its real (x, y), with z-slices stacked below each other.
+  // drawn at its real (x, y), with the z-slices of a volume side by side.
   layout(coreSize, geo = null) {
     this.coreSize = coreSize;
     this.geo = geo;
     const width = this.canvas.parentElement.clientWidth || 800;
+    // z-slices of a volume sit side by side in a grid, about 5:4 overall.
+    let perRow = 1;
+    if (geo && geo.Z > 1) {
+      let best = Infinity;
+      for (let k = 1; k <= geo.Z; k++) {
+        const ratio = (k * geo.X) / (Math.ceil(geo.Z / k) * geo.Y);
+        if (Math.abs(Math.log(ratio / 1.25)) < best) { best = Math.abs(Math.log(ratio / 1.25)); perRow = k; }
+      }
+    }
     if (geo) {
-      this.cols = geo.X;
-      this.rows = geo.Y * geo.Z;
+      this.cols = geo.X * perRow;
+      this.rows = geo.Y * Math.ceil(geo.Z / perRow);
     } else {
       // Aim for a 5:4 grid, e.g. 100 x 80 for the standard 8000-cell core.
       this.cols = Math.max(10, Math.round(Math.sqrt(coreSize * 1.25)));
@@ -54,7 +69,10 @@ export class CoreRenderer {
     this.cellAtGrid = new Int32Array(this.cols * this.rows).fill(-1);
     for (let i = 0; i < coreSize; i++) {
       let g = i;
-      if (geo) { const [x, y, z] = geo.position(i); g = (z * geo.Y + y) * geo.X + x; }
+      if (geo) {
+        const [x, y, z] = geo.position(i);
+        g = (Math.floor(z / perRow) * geo.Y + y) * this.cols + (z % perRow) * geo.X + x;
+      }
       this.gridOf[i] = g;
       this.cellAtGrid[g] = i;
     }

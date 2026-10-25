@@ -124,3 +124,16 @@ test('on a torus a warrior is at most half a row long, so labels stay on their r
   assert.ok(!w.ok && /half a row/.test(w.errors[0].message));
   assert.ok(compile(Array.from({ length: 50 }, () => 'NOP').join('\n'), 'redcode', PLANE).ok);
 });
+
+test('3D: a volume runs warriors along all three axes', () => {
+  const VOL = torus(40, 20, 10);
+  const lift = measureSpecies(compile(read('warriors/volume/lift.js'), 'javascript', VOL), VOL);
+  assert.equal(lift.coverage, 11);                      // the 10 layers of its z line, plus the launcher
+  const star = measureSpecies(compile(read('warriors/volume/star.js'), 'javascript', VOL), VOL);
+  assert.ok(star.survives && star.coverage > 60);      // a row, a column and a depth line
+  const g = makeGeometry(VOL);
+  assert.equal(g.maxCodeLength, 20);                   // half a row of 40
+  for (const f of ['lift', 'star', 'volumesilk']) {
+    assert.ok(!compile(read(`warriors/volume/${f}.js`), 'javascript', PLANE).ok, `${f} needs depth`);
+  }
+});

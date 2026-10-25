@@ -3,6 +3,7 @@
 import { compile, VM, runRound, mulberry32, DEFAULT_SETTINGS, listing, roundPoints, postMortem, generateFromJS } from '../src/engine/index.js';
 import { convertWarrior } from '../src/engine/convert.js';
 import { CoreRenderer, ProcessChart, WARRIOR_COLORS } from './arena.js';
+import { CoreView3D } from './arena3d.js';
 import { generateFromPython, pythonReady } from './python.js';
 import { createCodeEditor } from './editor.js';
 import { initLadder, initSpecies } from './ladder.js';
@@ -61,7 +62,27 @@ const state = {
   booting: true,
 };
 
-const renderer = new CoreRenderer($('core'));
+// Two views of the core share the canvas: the 2D grid, and a 3D view for
+// torus battlefields (automatic when the battlefield has depth; toggleable).
+const renderer2d = new CoreRenderer($('core'));
+const renderer3d = new CoreView3D($('core'));
+let renderer = renderer2d;
+function pickRenderer() {
+  const geo = state.vm?.geo ?? null;
+  const want3d = !!geo && (state.view3d ?? geo.Z > 1);
+  const next = want3d ? renderer3d : renderer2d;
+  $('viewTools').hidden = !geo;
+  $('viewToggle').textContent = want3d ? '2D' : '3D';
+  $('viewToggle').title = want3d ? 'Show the flat grid' : 'Show the battlefield in 3D (drag to turn it)';
+  $('spinToggle').hidden = !want3d;
+  $('spinToggle').setAttribute('aria-pressed', String(renderer3d.spin));
+  if (next === renderer) return;
+  renderer = next;
+  renderer3d.active = want3d;
+  $('core').style.touchAction = want3d ? 'none' : '';      // drags turn the view instead of scrolling
+  renderer.layout(state.settings.coreSize, geo);
+  state.dirtyFrame = true;
+}
 const chart = new ProcessChart($('chart'));
 
 // ---------------------------------------------------------------- storage
@@ -93,7 +114,7 @@ async function loadLibrary() {
     for (const e of list.filter((x) => x.language === lang)) {
       const o = document.createElement('option');
       o.value = e.file;
-      o.textContent = `${e.name} — ${e.category}${e.convertedFrom ? ' (converted)' : ''}${e.battlefield ? ' · plane' : ''}`;
+      o.textContent = `${e.name} — ${e.category}${e.convertedFrom ? ' (converted)' : ''}${e.battlefield ? (e.battlefield.split('x').length > 2 ? ' · 3D' : ' · plane') : ''}`;
       og.appendChild(o);
     }
     if (og.children.length) sel.appendChild(og);
@@ -289,7 +310,10 @@ function removeSlot() {
 const HILL_94X = { coreSize: 55440, maxProcesses: 10000, maxCycles: 500000, maxLength: 200, minDistance: 200 };
 function rulesHint(c) {
   if (!c) return null;
-  // Warriors written for the plane battlefield say so when compiled on the ring.
+  // Warriors written for a 3D battlefield, or the plane, say so when compiled elsewhere.
+  if ((state.settings.sizeZ ?? 1) < 2 && c.errors?.some((e) => /is for a 3D battlefield/.test(e.message))) {
+    return { settings: { ...state.settings, ...fieldSettings('torus:40x20x10') }, text: 'This warrior is written for the 3D battlefield (40×20×10, experimental). Switching applies to every warrior in the arena.' };
+  }
   if (state.settings.topology !== 'torus' && c.errors?.some((e) => /is for a plane/.test(e.message))) {
     return { settings: { ...state.settings, ...fieldSettings('torus:100x80') }, text: 'This warrior is written for the plane battlefield (100×80, experimental). Switching applies to every warrior in the arena.' };
   }
@@ -697,6 +721,8 @@ function frame() {
       state.dirtyFrame = true;
     }
   }
+  if (vm) pickRenderer();
+  if (renderer.animating) state.dirtyFrame = true;
   if (state.dirtyFrame && vm) {
     const fade = Math.min(40000, Math.max(24, state.stepsPerFrame * vm.warriors.length * 36));
     renderer.hover = state.hover;
@@ -866,6 +892,7 @@ function renderSettings() {
 }
 function applySettings(values) {
   state.settings = { ...state.settings, ...values };
+  state.view3d = undefined;          // each battlefield opens in its natural view
   safeSet(SETTINGS_KEY, state.settings);
   renderSettings();
   renderer.layout(state.settings.coreSize, state.vm?.geo ?? null);
@@ -1065,13 +1092,27 @@ function wireEvents() {
 
   const canvas = $('core');
   canvas.addEventListener('mousemove', (e) => {
+    if (renderer === renderer3d && renderer3d.pointers.size) return;   // turning the view
     const a = renderer.addressAt(e.clientX, e.clientY);
     if (a !== state.hover) { state.hover = a; state.dirtyFrame = true; }
   });
   canvas.addEventListener('mouseleave', () => { state.hover = -1; state.dirtyFrame = true; });
   canvas.addEventListener('click', (e) => {
+    if (renderer === renderer3d && renderer3d.consumeDrag()) return;   // the end of a drag, not a tap
     const a = renderer.addressAt(e.clientX, e.clientY);
     state.pinned = a === state.pinned ? -1 : a;
+    state.dirtyFrame = true;
+  });
+
+  $('viewToggle').addEventListener('click', () => {
+    const geo = state.vm?.geo;
+    if (!geo) return;
+    state.view3d = renderer !== renderer3d;
+    pickRenderer();
+  });
+  $('spinToggle').addEventListener('click', () => {
+    renderer3d.spin = !renderer3d.spin;
+    $('spinToggle').setAttribute('aria-pressed', String(renderer3d.spin));
     state.dirtyFrame = true;
   });
 

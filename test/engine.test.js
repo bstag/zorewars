@@ -207,8 +207,8 @@ test('every library warrior compiles and survives alone', () => {
   const list = JSON.parse(read('warriors/index.json'));
   for (const entry of list.filter((e) => e.language !== 'python')) {
     // Plane warriors ("battlefield": "torus:100x80") run on their own battlefield.
-    const [x, y] = (entry.battlefield ?? '').replace('torus:', '').split('x').map(Number);
-    const settings = entry.battlefield ? { ...DEFAULT_SETTINGS, topology: 'torus', sizeX: x, sizeY: y, sizeZ: 1, coreSize: x * y } : {};
+    const [x, y, z = 1] = (entry.battlefield ?? '').replace('torus:', '').split('x').map(Number);
+    const settings = entry.battlefield ? { ...DEFAULT_SETTINGS, topology: 'torus', sizeX: x, sizeY: y, sizeZ: z, coreSize: x * y * z } : {};
     const w = compile(read(`warriors/${entry.file}`), entry.language, settings);
     assert.ok(w.ok, `${entry.file}: ${JSON.stringify(w.errors)}`);
     const vm = new VM(settings);

@@ -90,6 +90,7 @@
       <a href="#cli">CLI &amp; AI agents</a>
       <a href="#rules">Rules &amp; scoring</a>
       <a href="#plane">The plane (experimental)</a>
+      <a href="#volume">3D: the volume</a>
       <a href="#glossary">Glossary &amp; history</a>
     </nav>
 
@@ -519,6 +520,9 @@ node cli/zorewars.js evolve --generations 6       <span class="cmt"># breed new 
         <li>A warrior can be at most half a row long on a plane (50 instructions on 100×80), so that every label is a step along its own row.</li>
         <li>Classic warriors mostly still run, but ones whose constants assume the ring may bomb themselves. The library's plane warriors (Plaid, Climber, Plane Silk, Raster, Column Imp, Pillar, Weave) are written for it.</li>
       </ul>
+      <h3 id="volume">3D: the volume (experimental)</h3>
+      <p>Choose <strong>Volume 40×20×10</strong> or <strong>Cube 20×20×20</strong> under <strong>Rules → Battlefield</strong> (CLI: <code>--torus 40x20x10</code>). Everything above works the same with a third axis: vectors are <code>[x,y,z]</code>, <code>SIZEZ</code> gives the depth, and <code>TRN $[0,0,1]</code> turns a process to travel through the layers. A warrior can be half a row long: 20 instructions on 40×20×10, 10 on the cube.</p>
+      <p>The arena shows a volume in 3D: drag to turn it, use the wheel or pinch to zoom, and press ⟳ to let it spin. Hover or tap a cell to read it, as on the grid. The <strong>2D</strong> button shows the layers side by side instead, and planes can be tilted in 3D with the same button. To start, try Lift (an imp that travels through depth), Star (imps along all three axes) and Volume Silk.</p>
       <p>A plane one row high is exactly the classic ring, and the tests check that battles there match the classic ones round for round. Background and open questions: <code>design/3d-battlefield.md</code>.</p>
 
       <h2 id="glossary">Glossary &amp; history</h2>
