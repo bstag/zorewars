@@ -2,3 +2,5 @@
 * text=auto eol=lf
 *.png binary
 *.ico binary
+# Captured pMARS outputs are kept byte for byte (CRLF); manifest.json hashes them.
+test/pmars-clean-room/** -text
