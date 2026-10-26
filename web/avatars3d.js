@@ -24,6 +24,10 @@
 //   live core, laid out like the 2D grid. Each avatar stands over where its
 //   processes are, tethered to the cell, and hits outside any body land on
 //   the cell that was written, so a bomber carpets the floor.
+// - In 3D (setSpace; the default on a volume): instead of the floor, the core
+//   floats as a cloud of cells in the 3D view's shape, the unwrapped box or
+//   the doughnut (arena3d.js shapePositions), and the avatars stand on their
+//   processes' cells inside it.
 //
 // Same interface as the other core views (layout, draw, addressAt, hover,
 // pinned, ingest, consumeDrag): a part's address is its cell, so clicking one
@@ -32,6 +36,7 @@
 import * as THREE from './vendor/three.js';
 import { AvatarModel, KINDS, LEGEND } from './avatar-model.js';
 import { WARRIOR_COLORS, colorIndex, gridLayout } from './arena.js';
+import { shapePositions } from './arena3d.js';
 import { OP } from '../src/engine/index.js';
 
 const { OrbitControls, EffectComposer, RenderPass, UnrealBloomPass, OutputPass } = THREE;
@@ -49,6 +54,7 @@ const SLOW_MS = 1600;           // slow motion after a knockout
 const SETTLE_MS = 4000;         // keep animating this long after the VM or the user last moved
 const SLOW = 0.3;
 const MAP_W = 6.4;              // the map's width in world units (the arena is about 6)
+const SPACE_W = 9.0;            // the 3D core's width in world units (roomy: an avatar is about 1.5 tall)
 const SPACING = 1.0;            // avatars on the map keep at least this far apart
 const BOMB = new THREE.Color('#ff8a3c');
 
@@ -155,6 +161,8 @@ export class AvatarView3D {
     this.dragMoved = false;
     this.mapChoice = null;              // null: map on a plane or volume, arena on the ring
     this.mapOn = false;
+    this.spaceChoice = undefined;       // the map in 3D: 'box', 'torus' or null (the floor); undefined: box on a volume
+    this.space = null;
     this.onMapChange = null;
 
     // No antialias here: the bloom composer renders through its own targets,
@@ -398,6 +406,7 @@ export class AvatarView3D {
     const n = W;
     this.rt.forEach((rt, w) => { rt.yaw = n > 1 && w === n - 1 ? Math.PI : 0; });
     this.setupMap(vm);
+    this.setupSpace(vm);
     this.mapOn = this.mapChoice ?? !!vm.geo;
     this.applyMap();
     this.flying = [];
@@ -445,21 +454,32 @@ export class AvatarView3D {
     if (this.rt) this.applyMap();
   }
 
+  // The map in 3D: 'box' or 'torus', or null for the flat floor.
+  setSpace(shape) {
+    this.spaceChoice = shape;
+    if (!this.rt) return;
+    this.setupSpace(this.vm);
+    this.applyMap();
+  }
+
   applyMap() {
     const on = this.mapOn;
     this.mapDirty = true;
     this.quietSince = performance.now();
-    this.mapMesh.visible = on;
+    this.mapMesh.visible = on && !this.space;
+    if (this.spaceMesh) this.spaceMesh.visible = on;
     for (const r of this.arenaRings) r.visible = !on;
+    this.controls.maxDistance = on && this.space ? SPACE_W * 2.2 : 12;
     this.floor.scale.setScalar(on ? 1.75 : 1);
-    this.cycleR = on ? Math.hypot(this.mapW, this.mapD) / 2 + 0.3 : 3.12;
+    this.cycleR = on ? (this.space ? SPACE_W / 2 + 0.6 : Math.hypot(this.mapW, this.mapD) / 2 + 0.3) : 3.12;
     this.cycleStep = -1;
     const n = this.rt.length;
-    this.home = on ? { dist: this.mapW * 0.95, height: this.mapW * 0.6 }
+    this.home = on && this.space ? { dist: SPACE_W * 1.2, height: this.spaceY + SPACE_W * 0.45 }
+      : on ? { dist: this.mapW * 0.95, height: this.mapW * 0.6 }
       : n > 2 ? { dist: 5.4, height: 1.55 } : { dist: 3.9, height: 1.2 };
     if (on) for (const rt of this.rt) { rt.anchor = -1; rt.snap = true; }
     else this.placeArena();
-    this.legend.textContent = `${LEGEND}${on ? ' · the floor is the core' : ''} · drag to turn`;
+    this.legend.textContent = `${LEGEND}${on ? (this.space ? ' · the cloud is the core' : ' · the floor is the core') : ''} · drag to turn`;
     this.onMapChange?.(on);
   }
 
@@ -499,14 +519,71 @@ export class AvatarView3D {
     this.mapPal = WARRIOR_COLORS.map((h) => { const c = hex(h); return [mix(empty, c, 0.42), mix(c, [255, 255, 255], 0.35)]; });
   }
 
-  // Where a cell is on the floor.
+  // The core in 3D: one point per cell, where the 3D view puts it, floating
+  // over the arena floor.
+  setupSpace(vm) {
+    if (this.spaceMesh) {
+      this.scene.remove(this.spaceMesh);
+      this.spaceMesh.geometry.dispose();
+      this.spaceMesh.material.dispose();
+      this.spaceMesh = null;
+    }
+    const choice = this.spaceChoice === undefined ? ((vm.geo?.Z ?? 1) > 1 ? 'box' : null) : this.spaceChoice;
+    this.space = vm.geo ? choice : null;
+    if (!this.space) return;
+    const sp = shapePositions(vm.size, vm.geo, this.space);
+    const k = SPACE_W / Math.max(...sp.dims);
+    this.spaceY = (sp.dims[1] * k) / 2 + 0.35;
+    this.spaceCell = sp.cellSize * k;
+    this.spacePos = new Float32Array(vm.size * 3);
+    for (let i = 0; i < vm.size * 3; i += 3) {
+      this.spacePos[i] = sp.pos[i] * k;
+      this.spacePos[i + 1] = sp.pos[i + 1] * k + this.spaceY;
+      this.spacePos[i + 2] = sp.pos[i + 2] * k;
+    }
+    const geom = new THREE.BufferGeometry();
+    geom.setAttribute('position', new THREE.BufferAttribute(this.spacePos, 3));
+    this.spaceColors = new Float32Array(vm.size * 3);
+    geom.setAttribute('color', new THREE.BufferAttribute(this.spaceColors, 3));
+    this.spaceMesh = new THREE.Points(geom, new THREE.PointsMaterial({
+      size: Math.max(0.03, this.spaceCell * 0.9), map: this.sprite, vertexColors: true, transparent: true, depthWrite: false, sizeAttenuation: true,
+    }));
+    this.spaceMesh.visible = this.mapOn;
+    this.scene.add(this.spaceMesh);
+  }
+
+  // Where a cell is on the floor (or in the 3D core).
   cellFloor(cell, out) {
+    if (this.space) return out.fromArray(this.spacePos, cell * 3);
     const { gridOf, cols, rows } = this.grid;
     const g = gridOf[cell], gx = g % cols, gy = (g - gx) / cols;
     return out.set(((gx + 0.5) / cols - 0.5) * this.mapW, 0.02, ((gy + 0.5) / rows - 0.5) * this.mapD);
   }
 
+  // The 3D core's colours, as on the floor (empty cells faint, so the shape shows).
+  updateSpace(vm, fade) {
+    const C = this.spaceColors;
+    const { owner, lastWrite, op, a, b, steps } = vm;
+    const pal = this.mapPal;
+    for (let i = 0; i < vm.size; i++) {
+      const o = owner[i], k = i * 3;
+      if (o < 0) {
+        const v = op[i] === OP.DAT && a[i] === 0 && b[i] === 0 ? 0.11 : 0.3;
+        C[k] = v * 0.8; C[k + 1] = v * 0.9; C[k + 2] = v * 1.3;
+        continue;
+      }
+      const [dim, bright] = pal[colorIndex(o) % pal.length];
+      const age = steps - lastWrite[i];
+      const t = age < fade ? 1 - age / fade : 0;
+      const f = (op[i] === OP.DAT ? 0.6 : 1) / 255;
+      for (let c = 0; c < 3; c++) C[k + c] = (dim[c] + (bright[c] - dim[c]) * t) * f;
+    }
+    for (const war of vm.warriors) for (const pc of war.queue) C.set([0.75, 0.78, 0.88], pc * 3);
+    this.spaceMesh.geometry.attributes.color.needsUpdate = true;
+  }
+
   updateMap(vm, fade) {
+    if (this.space) { this.updateSpace(vm, fade); return; }
     const data = this.mapTex.image.data;
     const { gridOf, cols, rows } = this.grid;
     const { owner, lastWrite, op, a, b, steps } = vm;
@@ -546,7 +623,15 @@ export class AvatarView3D {
       const war = vm.warriors[w];
       if (war.alive && war.queue.size && (moved || rt.anchor < 0)) {      // the processes only move when the VM does
         let best = war.queue.buf[war.queue.head];
-        if (rt.anchor >= 0) {
+        if (rt.anchor >= 0 && this.space) {               // nearest in the 3D core
+          const P = this.spacePos, k0 = rt.anchor * 3;
+          let bestD = Infinity;
+          for (const pc of war.queue) {
+            const dx = P[pc * 3] - P[k0], dy = P[pc * 3 + 1] - P[k0 + 1], dz = P[pc * 3 + 2] - P[k0 + 2];
+            const d = dx * dx + dy * dy + dz * dz;
+            if (d < bestD) { bestD = d; best = pc; if (!d) break; }
+          }
+        } else if (rt.anchor >= 0) {
           const g0 = gridOf[rt.anchor], x0 = g0 % cols, y0 = (g0 - x0) / cols;
           let bestD = Infinity;
           for (const pc of war.queue) {
@@ -558,7 +643,8 @@ export class AvatarView3D {
         rt.anchor = best;
       }
       if (rt.anchor < 0) rt.anchor = this.model.bodies[w].cells[0];
-      this.cellFloor(rt.anchor, rt.want).setY(0);
+      this.cellFloor(rt.anchor, rt.want);
+      if (!this.space) rt.want.setY(0);
       if (rt.snap) { this.moveStage(rt, rt.want); rt.snap = false; }
       else if (war.alive) rt.stage.lerp(rt.want, 1 - Math.exp(-dt * 2.5));
     });
@@ -567,32 +653,35 @@ export class AvatarView3D {
       for (let a = 0; a < this.rt.length; a++) {
         for (let b = a + 1; b < this.rt.length; b++) {
           const A = this.rt[a].stage, B = this.rt[b].stage;
-          let dx = B.x - A.x, dz = B.z - A.z, d = Math.hypot(dx, dz);
+          const up = this.space ? 1 : 0;                  // in the 3D core they keep apart in 3D
+          let dx = B.x - A.x, dy = (B.y - A.y) * up, dz = B.z - A.z, d = Math.hypot(dx, dy, dz);
           if (d >= SPACING) continue;
-          if (d < 1e-4) { dx = Math.cos(a + b); dz = Math.sin(a + b); d = 1; }
+          if (d < 1e-4) { dx = Math.cos(a + b); dy = 0; dz = Math.sin(a + b); d = 1; }
           const aMoves = vm.warriors[a].alive, bMoves = vm.warriors[b].alive;
-          const push = (SPACING - Math.hypot(B.x - A.x, B.z - A.z)) / ((aMoves && bMoves) ? 2 : 1);
-          if (aMoves) { A.x -= (dx / d) * push; A.z -= (dz / d) * push; }
-          if (bMoves) { B.x += (dx / d) * push; B.z += (dz / d) * push; }
+          const push = (SPACING - Math.hypot(B.x - A.x, (B.y - A.y) * up, B.z - A.z)) / ((aMoves && bMoves) ? 2 : 1);
+          if (aMoves) { A.x -= (dx / d) * push; A.y -= (dy / d) * push; A.z -= (dz / d) * push; }
+          if (bMoves) { B.x += (dx / d) * push; B.y += (dy / d) * push; B.z += (dz / d) * push; }
         }
       }
     }
-    for (const rt of this.rt) {
-      rt.stage.x = Math.max(-lim[0], Math.min(lim[0], rt.stage.x));
-      rt.stage.z = Math.max(-lim[1], Math.min(lim[1], rt.stage.z));
+    if (!this.space) {
+      for (const rt of this.rt) {
+        rt.stage.x = Math.max(-lim[0], Math.min(lim[0], rt.stage.x));
+        rt.stage.z = Math.max(-lim[1], Math.min(lim[1], rt.stage.z));
+      }
     }
   }
 
   // A glowing tether from each living avatar down to its process's cell.
   drawTethers(vm) {
     const { tmp, colors } = this;
-    const cell = this.mapW / this.grid.cols;
+    const cell = this.space ? this.spaceCell : this.mapW / this.grid.cols;
     this.rt.forEach((rt, w) => {
       if (!vm.warriors[w].alive || rt.anchor < 0) return;
       const at = this.cellFloor(rt.anchor, tmp.v2);
       const col = colors[colorIndex(w) % colors.length];
       this.put(this.markers, at, IDENTITY, cell * 2.2, 1, cell * 2.2, tmp.c.copy(col).multiplyScalar(2.2));
-      const from = tmp.v.copy(rt.stage).setY(0.03);
+      const from = tmp.v.copy(rt.stage).setY(this.space ? rt.stage.y + 0.03 : 0.03);
       const len = from.distanceTo(at);
       if (len < 0.02) return;
       const q = this.sq.a.setFromUnitVectors(Y, this.sq.dir.copy(at).sub(from).normalize());
@@ -662,6 +751,17 @@ export class AvatarView3D {
 
   // The core cell on the floor under a point of the canvas (fractions), or -1.
   floorCellAt(px, py) {
+    if (this.space) {                                  // the nearest cell of the 3D core on screen
+      const v = this.tmp.v, P = this.spacePos;
+      let best = -1, bestD = 0.02;
+      for (let i = 0; i < this.vm.size; i++) {
+        v.set(P[i * 3], P[i * 3 + 1], P[i * 3 + 2]).project(this.camera);
+        if (v.z > 1) continue;
+        const d = Math.hypot((v.x + 1) / 2 - px, (1 - v.y) / 2 - py);
+        if (d < bestD) { bestD = d; best = i; }
+      }
+      return best;
+    }
     const ray = this.tmp.v.set(px * 2 - 1, 1 - py * 2, 0.5).unproject(this.camera).sub(this.camera.position).normalize();
     if (ray.y >= -1e-4) return -1;
     const t = -this.camera.position.y / ray.y;
@@ -887,7 +987,7 @@ export class AvatarView3D {
     if (b.alive) {
       const v = Math.min(1, Math.log2(1 + b.total) / Math.log2(1 + vm.settings.maxProcesses));
       const s = 0.42 + 0.35 * v + 0.02 * Math.sin(this.t * 5);
-      tmp.v.copy(rt.stage).setY(0.006);
+      tmp.v.copy(rt.stage).setY((this.space ? rt.stage.y : 0) + 0.006);
       this.put(this.halos, tmp.v, this.sq.id, s, 1, s, tmp.c.copy(col).multiplyScalar(0.35 + 0.9 * v));
     }
 
@@ -898,7 +998,7 @@ export class AvatarView3D {
       for (let k = 0; k < dots; k++) {
         const a = this.t * (0.9 + 0.15 * (k % 4)) + (k * Math.PI * 2) / dots;
         const rad = 0.5 + 0.08 * (k % 3);
-        tmp.v.set(rt.stage.x + Math.cos(a) * rad, 0.85 + Math.sin(a * 1.7 + k) * 0.35, rt.stage.z + Math.sin(a) * rad);
+        tmp.v.set(rt.stage.x + Math.cos(a) * rad, (this.space ? rt.stage.y : 0) + 0.85 + Math.sin(a * 1.7 + k) * 0.35, rt.stage.z + Math.sin(a) * rad);
         this.put(this.sparks, tmp.v, qYaw, 0.024, 0.024, 0.024, tmp.c.copy(k < captive && b.captor >= 0 ? colors[colorIndex(b.captor) % colors.length] : col).multiplyScalar(2.2));
       }
     }
@@ -1107,7 +1207,7 @@ export class AvatarView3D {
     for (const cell of new Set([this.hover, this.pinned])) {
       if (cell < 0 || cell >= this.vm.size) continue;
       if (this.mapOn) {                                  // its real place on the floor
-        const s = (this.mapW / this.grid.cols) * 1.6;
+        const s = this.space ? this.spaceCell * 2 : (this.mapW / this.grid.cols) * 1.6;
         this.put(this.markers, this.cellFloor(cell, this.tmp.v2), IDENTITY, s, 1, s, this.tmp.c.setScalar(cell === this.pinned ? 2 : 1.1));
       }
       const part = this.model.partAt(cell);
@@ -1140,7 +1240,7 @@ export class AvatarView3D {
         const alive = this.rt.filter((rt, w) => this.model.bodies[w].alive);
         if (alive.length) {
           for (const rt of alive) target.add(rt.stage.clone().multiplyScalar(0.6 / alive.length));
-          target.y = 0.7;
+          target.y = this.space ? alive.reduce((y, rt) => y + rt.stage.y, 0) / alive.length + 0.7 : 0.7;
         }
       }
       let dist = this.home.dist, height = this.home.height;

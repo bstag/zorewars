@@ -25,6 +25,40 @@ const TRAIL = 90;
 const RING = 0.36;
 const TUBE = 0.15;
 
+// Where each cell sits in 3D, fitting about a unit cube round the origin:
+// unwrapped as a box ('box'), or bent into the doughnut the torus is
+// ('torus'): x runs round the ring, y round the tube, and the z layers are
+// nested tubes from the inside out. A plane (one layer) is exactly a torus's
+// surface; a volume's third wrap (z) can't be shown in 3D space, so its seam
+// lies between the innermost and outermost tube. Also used by the avatars'
+// map (avatars3d.js). Returns positions, the gap between neighbouring cells,
+// the extent along each axis, and the torus's radii (null for the box).
+export function shapePositions(coreSize, geo, shape = 'box') {
+  const [X, Y, Z] = geo ? [geo.X, geo.Y, geo.Z] : [coreSize, 1, 1];
+  const pos = new Float32Array(coreSize * 3);
+  const torus = shape === 'torus' && Y > 1;
+  const s = 1 / Math.max(X, Y, Z);
+  const thin = Z > 1 ? TUBE * 0.3 : TUBE;
+  for (let i = 0; i < coreSize; i++) {
+    const [x, y, z] = geo ? geo.position(i) : [i, 0, 0];
+    if (torus) {
+      const u = (2 * Math.PI * x) / X, v = (2 * Math.PI * y) / Y;
+      const r = Z > 1 ? thin + ((TUBE - thin) * z) / (Z - 1) : TUBE;
+      const across = RING + r * Math.cos(v);
+      pos[i * 3] = across * Math.cos(u);
+      pos[i * 3 + 1] = r * Math.sin(v);
+      pos[i * 3 + 2] = across * Math.sin(u);
+    } else {
+      pos[i * 3] = (x - (X - 1) / 2) * s;
+      pos[i * 3 + 1] = (y - (Y - 1) / 2) * s;
+      pos[i * 3 + 2] = (z - (Z - 1) / 2) * s;
+    }
+  }
+  if (!torus) return { pos, cellSize: s, dims: [X * s, Y * s, Z * s], rings: null };
+  const spacing = Math.min((2 * Math.PI * RING) / X, (2 * Math.PI * (thin + TUBE) / 2) / Y, Z > 1 ? (TUBE - thin) / (Z - 1) : Infinity);
+  return { pos, cellSize: Math.max(0.002, spacing), dims: [2 * (RING + TUBE), 2 * TUBE, 2 * (RING + TUBE)], rings: { R: RING, inner: thin, outer: TUBE } };
+}
+
 export class CoreView3D {
   constructor(canvas) {
     this.canvas = canvas;
@@ -157,39 +191,12 @@ export class CoreView3D {
     this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     this.w = width;
     this.h = height;
-    const [X, Y, Z] = geo ? [geo.X, geo.Y, geo.Z] : [coreSize, 1, 1];
-    const s = 1 / Math.max(X, Y, Z);
-    this.dims = [X * s, Y * s, Z * s];
-    this.cellSize = s;
-    this.pos = new Float32Array(coreSize * 3);
+    const shape = shapePositions(coreSize, geo, this.shape);
+    Object.assign(this, { pos: shape.pos, dims: shape.dims, cellSize: shape.cellSize, rings: shape.rings });
     this.coord = new Int16Array(coreSize * 3);       // integer (x, y, z), for slicing
-    const torus = this.shape === 'torus' && Y > 1;
-    if (torus) {
-      // The doughnut: x runs round the ring, y round the tube, and the z
-      // layers are nested tubes from the inside out. A plane (one layer) is
-      // exactly a torus's surface; a volume's third wrap (z) can't be shown
-      // in 3D space, so its seam lies between the innermost and outermost tube.
-      const thin = Z > 1 ? TUBE * 0.3 : TUBE;
-      this.rings = { R: RING, inner: thin, outer: TUBE };
-      this.dims = [2 * (RING + TUBE), 2 * TUBE, 2 * (RING + TUBE)];
-      const spacing = Math.min((2 * Math.PI * RING) / X, (2 * Math.PI * (thin + TUBE) / 2) / Y, Z > 1 ? (TUBE - thin) / (Z - 1) : Infinity);
-      this.cellSize = Math.max(0.002, spacing);
-    } else this.rings = null;
     for (let i = 0; i < coreSize; i++) {
       const [x, y, z] = geo ? geo.position(i) : [i, 0, 0];
       this.coord[i * 3] = x; this.coord[i * 3 + 1] = y; this.coord[i * 3 + 2] = z;
-      if (torus) {
-        const u = (2 * Math.PI * x) / X, v = (2 * Math.PI * y) / Y;
-        const r = Z > 1 ? this.rings.inner + ((TUBE - this.rings.inner) * z) / (Z - 1) : TUBE;
-        const across = RING + r * Math.cos(v);
-        this.pos[i * 3] = across * Math.cos(u);
-        this.pos[i * 3 + 1] = r * Math.sin(v);
-        this.pos[i * 3 + 2] = across * Math.sin(u);
-        continue;
-      }
-      this.pos[i * 3] = (x - (X - 1) / 2) * s;
-      this.pos[i * 3 + 1] = (y - (Y - 1) / 2) * s;
-      this.pos[i * 3 + 2] = (z - (Z - 1) / 2) * s;
     }
     this.sx = new Float32Array(coreSize);
     this.sy = new Float32Array(coreSize);

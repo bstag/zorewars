@@ -87,7 +87,10 @@ function loadAvatars3d() {
   import('./avatars3d.js')
     .then(({ AvatarView3D }) => {
       avatars3d = new AvatarView3D($('avatar3d'), $('avatarLabels'));
-      avatars3d.onMapChange = (on) => $('mapToggle').setAttribute('aria-pressed', String(on));
+      avatars3d.onMapChange = (on) => { $('mapToggle').setAttribute('aria-pressed', String(on)); updateShapeButton(); };
+      // The avatars' map: the floor, or the core in 3D (remembered in this browser).
+      const space = safeGet('zorewars.avatarSpace');
+      if (space) avatars3d.spaceChoice = space === 'floor' ? null : space;
       avatars3dState = 'ready';
     })
     .catch((e) => {
@@ -97,6 +100,32 @@ function loadAvatars3d() {
     .finally(() => { pickRenderer.last = null; pickRenderer(); });
 }
 let renderer = renderer2d;
+// The shape button: in the 3D view, box or doughnut; with the 3D avatars on
+// the map of a plane or volume, it cycles their map: floor, box, doughnut.
+const SHAPE_LABEL = { floor: '▭ Floor', box: '▢ Box', torus: '◯ Torus' };
+const SPACES = ['floor', 'box', 'torus'];
+const avatarSpace = () => avatars3d?.space ?? 'floor';
+function avatarMapShown(view = renderer) {
+  return view === avatars3d && !!avatars3d?.mapOn && !!state.vm?.geo;
+}
+function updateShapeButton(view = renderer) {
+  const b = $('shapeToggle');
+  if (avatarMapShown(view)) {
+    const nextSpace = SPACES[(SPACES.indexOf(avatarSpace()) + 1) % SPACES.length];
+    b.hidden = false;
+    b.textContent = SHAPE_LABEL[nextSpace];
+    b.title = `The avatars' map: now ${avatarSpace() === 'floor' ? 'the flat floor' : avatarSpace() === 'box' ? 'the core in 3D, as a box' : 'the core in 3D, as the doughnut'}. Click for ${nextSpace === 'floor' ? 'the flat floor' : nextSpace === 'box' ? 'the box' : 'the doughnut'}.`;
+    b.setAttribute('aria-pressed', String(avatarSpace() !== 'floor'));
+    return;
+  }
+  const in3d = view === renderer3d;
+  b.hidden = !in3d;
+  if (!in3d) return;
+  b.textContent = renderer3d.shape === 'torus' ? '▢ Box' : '◯ Torus';
+  b.setAttribute('aria-pressed', String(renderer3d.shape === 'torus'));
+  b.title = renderer3d.shape === 'torus' ? 'Show the battlefield unwrapped, as a box'
+    : 'Show the shape the battlefield wraps into: a doughnut (x round the ring, y round the tube, z layers as nested tubes)';
+}
 // Splashes and sparks where warriors overwrite and kill each other.
 const highlights = new Highlights();
 function pickRenderer() {
@@ -118,7 +147,8 @@ function pickRenderer() {
     $('viewToggle').textContent = want3d ? '2D' : '3D';
     $('viewToggle').title = want3d ? 'Show the flat grid' : 'Show the battlefield in 3D (drag to turn it)';
   }
-  for (const id of ['spinToggle', 'zoomOut', 'zoomIn', 'fitView', 'actionView', 'sliceToggle', 'shapeToggle']) $(id).hidden = !want3d;
+  for (const id of ['spinToggle', 'zoomOut', 'zoomIn', 'fitView', 'actionView', 'sliceToggle']) $(id).hidden = !want3d;
+  updateShapeButton(next);
   $('sliceBar').hidden = !want3d || renderer3d.slice.axis < 0;
   $('actionView').setAttribute('aria-pressed', String(renderer3d.follow));
   $('spinToggle').setAttribute('aria-pressed', String(renderer3d.spin));
@@ -1431,13 +1461,18 @@ function wireEvents() {
   // (remembered in this browser).
   const showShape = (shape) => {
     renderer3d.setShape(shape);
-    $('shapeToggle').textContent = shape === 'torus' ? '▢ Box' : '◯ Torus';
-    $('shapeToggle').setAttribute('aria-pressed', String(shape === 'torus'));
-    $('shapeToggle').title = shape === 'torus' ? 'Show the battlefield unwrapped, as a box' : $('shapeToggle').dataset.torusTitle;
+    updateShapeButton();
     state.dirtyFrame = true;
   };
-  $('shapeToggle').dataset.torusTitle = $('shapeToggle').title;
   $('shapeToggle').addEventListener('click', () => {
+    if (avatarMapShown()) {                            // the avatars' map: floor, box, doughnut
+      const space = SPACES[(SPACES.indexOf(avatarSpace()) + 1) % SPACES.length];
+      safeSet('zorewars.avatarSpace', space);
+      avatars3d.setSpace(space === 'floor' ? null : space);
+      updateShapeButton();
+      state.dirtyFrame = true;
+      return;
+    }
     const shape = renderer3d.shape === 'torus' ? 'box' : 'torus';
     safeSet('zorewars.shape', shape);
     showShape(shape);
