@@ -409,3 +409,17 @@ test("rule sets: '88 checks (as pMARS -8 accepts them) and no P-space", async ()
   assert.equal(RULESETS['94x'].coreSize, 55440);
   assert.equal(RULESETS.lp.maxProcesses, 8);
 });
+
+test("the preprocessor matches pMARS: EQU text, FOR counts with labels, macros, registers", () => {
+  // Expected values are pMARS 0.9.5's listing of the fixture.
+  const w = compile(read('test/fixtures/pmars-preprocessor.red'));
+  assert.ok(w.ok, JSON.stringify(w.errors));
+  const got = w.instructions.map((i) => `${i.op}.${i.mod} ${i.aMode}${i.a}, ${i.bMode}${i.b}`);
+  assert.deepEqual(got, [
+    'DAT.F #7, #-3', 'DAT.F $0, $0', 'DAT.F $3, $3', 'DAT.F $3, $3', 'DAT.F #10, #1', 'DAT.F $0, $0',
+    'DAT.F #20, #1', 'DAT.F $0, $0', 'DAT.F $9, $9', 'DAT.F $9, $9', 'LDP.AB #2257, #0', 'MOV.I $0, $5', 'MOV.I $5, $1',
+  ]);
+  assert.ok(w.warnings.some((x) => /pMARS register f/.test(x.message)), 'reading an unset register warns');
+  // Without END, pMARS discards a trailing label: still an error here.
+  assert.equal(compile('start dat 1, 2\n mov last, 0\nlast\n').ok, false);
+});
