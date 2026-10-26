@@ -35,6 +35,8 @@ Usage:
 Developer tools (use every CPU core):
   zorewars hill <warrior> [--classics] [--rounds 20]  score it against the library (and the classics),
                                                      opponent by opponent, with why rounds were lost
+                                                     (hill, tune, evolve: --hill koenigstuhl:94nop [--top 50]
+                                                     plays a real hill's top warriors instead)
   zorewars species [warrior...]                      where warriors sit on the behaviour map
                                                      (processes x cells executed); none = the library
   zorewars tune <warrior.js> [--candidates 40] [--seeds 3] [--write]

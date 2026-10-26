@@ -25,7 +25,9 @@ const done = (json) => { if (!json && process.stderr.isTTY) process.stderr.write
 
 async function opponents(h, settings, flags, exclude) {
   const json = !!flags.json;
-  const field = libraryOpponents(settings, { exclude });
+  // --hill koenigstuhl:94nop (or a folder): train against a real hill's top
+  // warriors instead of the library.
+  const field = flags.hill ? await hillOpponents(String(flags.hill), settings, flags) : libraryOpponents(settings, { exclude });
   if (flags.classics) {
     progress(json, 'Fetching the Hall of Fame classics from the public archives…');
     const missing = [];
@@ -49,6 +51,7 @@ export async function cmdHill(args, h) {
   const json = !!args.flags.json;
   const [w] = await h.loadAll(args._, settings, json);
   const field = await opponents(h, settings, args.flags, [w.name, path.basename(w.file)]);
+  if (args.flags.hill) Object.assign(settings, hillSettingsFor(settings));
   const pool = createPool();
   try {
     progress(json, `Playing ${field.length} opponents, ${settings.rounds} rounds each…`);
@@ -107,6 +110,7 @@ export async function cmdTune(args, h) {
   const source = fs.readFileSync(file, 'utf8');
   const [w] = await h.loadAll([file], settings, json);
   const field = await opponents(h, settings, args.flags, [w.name, path.basename(file)]);
+  if (args.flags.hill) Object.assign(settings, hillSettingsFor(settings));
   const candidates = Math.max(1, parseInt(args.flags.candidates ?? '40', 10));
   const seeds = Math.max(1, parseInt(args.flags.seeds ?? '3', 10));
   const pool = createPool();
@@ -143,10 +147,11 @@ export async function cmdEvolve(args, h) {
   // other's champions; the library is only held out, to report progress.
   const scratch = !!args.flags.scratch;
   const library = libraryOpponents(settings);
-  const field = scratch ? [] : library;
+  const hill = args.flags.hill ? await hillOpponents(String(args.flags.hill), settings, args.flags) : null;
+  const field = scratch ? [] : hill ?? library;
   const extra = args._.length ? await h.loadAll(h.expandRefs(args._), settings, json) : [];
   const sources = [
-    ...field.map((o) => ({ w: o.w, role: roleOf(`${o.category} ${o.name}`) })),
+    ...(scratch ? [] : library).map((o) => ({ w: o.w, role: roleOf(`${o.category} ${o.name}`) })),
     ...extra.map((w) => ({ w: strip(w), role: roleOf(`${w.name} ${w.strategy || ''}`) || 'paper' })),
   ];
   const classics = args.flags.classics ? await opponents(h, settings, { ...args.flags, classics: true }, []).then((f) => f.filter((x) => x.group === 'classic')) : [];
@@ -156,6 +161,7 @@ export async function cmdEvolve(args, h) {
   const kings = args.flags.king ? await h.loadAll(h.expandRefs(String(args.flags.king).split(',')), settings, json) : [];
   for (const w of kings) sources.push({ w: strip(w), role: roleOf(`${w.name} ${w.strategy || ''}`) || 'paper' });
   const maxLength = Math.min(settings.maxLength, Math.max(4, parseInt(args.flags.genome ?? '40', 10)));
+  if (hill) Object.assign(settings, hillSettingsFor(settings));   // genomes keep the entry limit above
   fs.mkdirSync(out, { recursive: true });
   const pool = createPool();
   try {
@@ -216,6 +222,26 @@ async function fetchHill(name, top, json) {
   return out;
 }
 
+// Hill warriors aren't bound by the entry rules (the 94x hill's leaders use
+// P-space, and many are longer than a tournament's limit), so games against
+// them run with the limit raised; entries were checked when they compiled.
+function hillSettingsFor(settings) { return { ...settings, pSpace: undefined, maxLength: Math.max(settings.maxLength, 200) }; }
+async function hillFiles(spec, top, json) {
+  return spec.startsWith('koenigstuhl:') ? fetchHill(spec.slice(12).toLowerCase(), top, json)
+    : fs.readdirSync(spec).filter((f) => /\.(red|rc)$/i.test(f)).map((f) => path.join(spec, f)).slice(0, top);
+}
+async function hillOpponents(spec, settings, flags) {
+  const { compile } = await import('../src/engine/index.js');
+  const json = !!flags.json;
+  const out = [];
+  for (const f of await hillFiles(spec, Math.max(1, parseInt(flags.top ?? '50', 10)), json)) {
+    const w = compile(fs.readFileSync(f, 'utf8'), 'redcode', hillSettingsFor(settings));
+    if (w.ok) out.push({ name: w.name, group: 'hill', w: strip(w) });
+    else if (!json) console.error(`(skipped ${path.basename(f)}: ${w.errors[0].message})`);
+  }
+  return out;
+}
+
 export async function cmdPushoff(args, h) {
   const { roundRobin, pushOff } = await import('../tools/pushoff.js');
   const { compile } = await import('../src/engine/index.js');
@@ -223,13 +249,9 @@ export async function cmdPushoff(args, h) {
   const settings = h.settingsFrom(args.flags);
   if (!args._.length || !args.flags.hill) h.usage('pushoff <entry...> --hill koenigstuhl:94nop|88|lp|94x (or a folder) [--rules NAME] [--length 50] [--top 50] [--rounds 50]');
   const entries = await h.loadAll(h.expandRefs(args._), settings, json);
-  // Hill warriors aren't bound by the entry rules (the 94x hill's leaders use
-  // P-space, and many are longer than a tournament's limit).
-  const hillSettings = { ...settings, pSpace: undefined, maxLength: Math.max(settings.maxLength, 200) };
+  const hillSettings = hillSettingsFor(settings);
   const top = Math.max(2, parseInt(args.flags.top ?? '50', 10));
-  const spec = String(args.flags.hill);
-  const files = spec.startsWith('koenigstuhl:') ? await fetchHill(spec.slice(12).toLowerCase(), top, json)
-    : fs.readdirSync(spec).filter((f) => /\.(red|rc)$/i.test(f)).map((f) => path.join(spec, f)).slice(0, top);
+  const files = await hillFiles(String(args.flags.hill), top, json);
   const hill = [];
   for (const f of files) {
     const w = compile(fs.readFileSync(f, 'utf8'), 'redcode', hillSettings);
