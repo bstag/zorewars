@@ -712,7 +712,7 @@ export class AvatarView3D {
       if (rt.wasAlive && !b.alive) {
         this.slowUntil = now + SLOW_MS;
         this.focus = { w, i: -1, start: now, until: now + 2400 };
-        rt.fall = this.startFall(rt);
+        rt.fall = this.startFall(rt, b);
       }
       rt.wasAlive = b.alive;
     });
@@ -797,6 +797,7 @@ export class AvatarView3D {
       rt.slotR[j] = r;
       rt.slotCell[j] = own ? b.cells[j] : -1;
       if (fallen && own) {
+        if (j >= rt.fall.r.length) continue;
         pos.fromArray(rt.fall.pos, j * 3);
       } else {
         pos.copy(local).applyQuaternion(qYaw).add(rt.stage);
@@ -950,11 +951,13 @@ export class AvatarView3D {
   }
 
   // Falling apart: every part flies off, bounces and settles on the floor.
-  startFall(rt) {
-    const n = rt.drawn;
+  // A body knocked out before it was ever drawn (dead in its first cycles)
+  // has no parts placed yet: those start from where it stands.
+  startFall(rt, b) {
+    const n = Math.min(this.maxLen, Math.max(rt.drawn, b.cells.length));
     const fall = { pos: new Float32Array(n * 3), vel: new Float32Array(n * 3), axis: [], spin: new Float32Array(n), r: new Float32Array(n) };
     for (let j = 0; j < n; j++) {
-      rt.slotPos[j].toArray(fall.pos, j * 3);
+      (j < rt.drawn ? rt.slotPos[j] : rt.stage).toArray(fall.pos, j * 3);
       fall.vel.set([(hash(j * 3.1) - 0.5) * 1.6, 0.6 + hash(j * 5.3) * 1.8, (hash(j * 7.7) - 0.5) * 1.6], j * 3);
       fall.axis.push(new THREE.Vector3(hash(j) - 0.5, hash(j + 1) - 0.5, hash(j + 2) - 0.5).normalize());
       fall.spin[j] = 2 + hash(j * 9.1) * 6;

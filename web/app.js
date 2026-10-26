@@ -822,6 +822,7 @@ function sampleChart() {
 }
 
 function frame() {
+  requestAnimationFrame(frame);           // first, so one bad frame can't stop the loop
   const vm = state.vm;
   if (vm && state.running && !vm.done) {
     state.carry += state.stepsPerFrame * vm.warriors.filter((w) => w.alive).length;
@@ -862,7 +863,6 @@ function frame() {
     renderInspector();
   }
   state.dirtyFrame = false;
-  requestAnimationFrame(frame);
 }
 
 // Whether the arena can be seen: on a phone only on the Arena tab, and on
