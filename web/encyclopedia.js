@@ -166,8 +166,11 @@ async function main() {
   }</tbody></table>`;
 
   // Warrior cards.
+  // One warrior that can't be fetched gets a note; the rest still show.
   const cards = await Promise.all(data.warriors.map(async (entry) => {
-    const source = await fetch(`../warriors/${entry.file}`).then((r) => r.text());
+    const r = await fetch(`../warriors/${entry.file}`).catch(() => null);
+    if (!r?.ok) return `<article class="wcard" id="${esc(entry.id)}" data-family="${esc(entry.family)}" data-field="${fieldOf(entry)}" data-text="${esc(entry.name.toLowerCase())}"><header><div><h3>${esc(entry.name)}</h3></div></header><p class="bad">Could not load ${esc(entry.file)}${r ? ` (${r.status})` : ''}.</p></article>`;
+    const source = await r.text();
     const compiled = entry.language === 'python' ? { name: entry.name, instructions: [] } : compile(source, entry.language, settingsFor(entry.battlefield));
     const conversions = library.filter((e) => e.convertedFrom === entry.file);
     return card(entry, source, compiled, bench, names, conversions);
@@ -175,7 +178,7 @@ async function main() {
   $('#cards').innerHTML = cards.join('');
   applyFilter();
   $('#toc-warriors').innerHTML = data.warriors.map((w) => `<a href="#${esc(w.id)}">${esc(w.name)}</a>`).join('');
-  if (location.hash) document.querySelector(location.hash)?.scrollIntoView();
+  if (location.hash) document.getElementById(decodeURIComponent(location.hash.slice(1)))?.scrollIntoView();
 }
 
 main().catch((e) => {

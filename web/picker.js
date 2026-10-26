@@ -143,6 +143,6 @@ export function initPicker(ctx) {
       $('pickerSearch').focus();
       $('pickerSearch').select();
     },
-    refresh() { if (dlg.open) render(); },
+    refresh() { if (dlg.open) { renderChips(); render(); } },
   };
 }

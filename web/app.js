@@ -7,7 +7,7 @@ import { CoreView3D } from './arena3d.js';
 import { AvatarView } from './avatars.js';
 import { Highlights } from './highlights.js';
 import { initPicker } from './picker.js';
-import { generateFromPython, pythonReady } from './python.js';
+import { generateFromPython, loadPython, pythonReady } from './python.js';
 import { createCodeEditor } from './editor.js';
 import { initLadder, initSpecies } from './ladder.js';
 import './nav.js';
@@ -15,6 +15,10 @@ import './nav.js';
 const $ = (id) => document.getElementById(id);
 const MAX_SLOTS = 4;
 const STORAGE_KEY = 'zorewars.slots.v1';
+// Generators (JavaScript, Python) being run: one that never returns hangs the
+// tab, and its slot is saved, so it would hang every reload too. A source
+// still listed here at the next start is skipped until it is edited.
+const GENERATING_KEY = 'zorewars.generating.v1';
 const SETTINGS_KEY = 'zorewars.settings.v1';
 
 const TEMPLATES = {
@@ -205,10 +209,17 @@ const libraryFits = (e) => (state.libraryFit?.done ? state.libraryFit.fit.get(e.
 function pickLibrary(entry) {
   const slot = activeSlot();
   if (!isPristine(slot) && !confirm('Replace your edits with this warrior?')) return;
+  // A warrior for another battlefield (or other rules) offers to switch to its own.
+  const field = entry.battlefield ?? 'ring';
+  const switchTo = libraryFits(entry) === false && (fieldKey(state.settings) !== field || state.settings.rulesName)
+    && confirm(fieldKey(state.settings) !== field
+      ? `${entry.name} plays on ${field === 'ring' ? 'the ring' : `the ${field.replace('torus:', '')} battlefield`}. Switch to it?`
+      : `${entry.name} doesn't play under the ${state.settings.rulesName} rules. Switch to the standard rules?`);
   Object.assign(slot, { language: entry.language, source: entry.source, libFile: entry.file, origin: null, edited: false, compiled: null });
   saveSlots();
   renderEditor();
-  compileSlot(slot);
+  if (switchTo) applySettings(battlefieldSettings(field));   // recompiles every slot
+  else compileSlot(slot);
 }
 
 function libraryEntry(file) {
@@ -222,23 +233,39 @@ function makeSlot(file) {
   return { language: e?.language ?? 'redcode', source: e?.source ?? TEMPLATES.redcode, libFile: e ? file : null, compiled: null, status: 'idle', token: 0 };
 }
 
+function generating(source, on) {
+  const list = (safeGet(GENERATING_KEY) || []).filter((s) => s !== source);
+  safeSet(GENERATING_KEY, on ? [...list, source].slice(-8) : list);
+}
+
 async function compileSlot(slot) {
   const token = ++slot.token;
   slot.status = 'compiling';
   if (slot === activeSlot()) renderEditorStatus();
   let result;
+  const generator = slot.language !== 'redcode', source = slot.source;
+  const hung = generator && (safeGet(GENERATING_KEY) || []).includes(source);
   try {
+    if (hung) {
+      throw new Error("This warrior's code didn't finish running last time (an endless loop?), so it wasn't run again. Edit it to try again.");
+    }
     if (slot.language === 'python') {
       if (!pythonReady()) {
         slot.statusText = 'Loading Python in your browser (about 10 MB, first time only)…';
         if (slot === activeSlot()) renderEditorStatus();
       }
-      const redcode = await generateFromPython(slot.source, state.settings);
+      await loadPython();             // a slow download is not a hang
+      generating(source, true);
+      const redcode = await generateFromPython(source, state.settings);
+      generating(source, false);
       result = compile(redcode, 'redcode', state.settings);
     } else {
-      result = compile(slot.source, slot.language, state.settings);
+      if (generator) generating(source, true);
+      result = compile(source, slot.language, state.settings);
+      if (generator) generating(source, false);
     }
   } catch (e) {
+    if (generator && !hung) generating(source, false);
     const msg = String(e.message || e).split('\n').filter(Boolean).slice(-3).join('\n');
     result = { ok: false, errors: [{ line: 0, message: msg }], warnings: [], instructions: [] };
   }
@@ -1083,6 +1110,10 @@ function renderSettings() {
   $('setCoreSize').disabled = state.settings.topology === 'torus';   // fixed by the plane's size
 }
 const NO_HILL_RULES = { rulesName: '', dialect: undefined, pSpace: undefined };
+// A battlefield with the standard rules (the ring also gets its default sizes).
+const battlefieldSettings = (field) => (field === 'ring'
+  ? { ...DEFAULT_SETTINGS, ...fieldSettings('ring'), ...NO_HILL_RULES }
+  : { ...NO_HILL_RULES, ...fieldSettings(field) });
 function applySettings(values) {
   state.settings = { ...state.settings, ...values };
   state.view3d = undefined;          // each battlefield opens in its natural view
@@ -1463,9 +1494,7 @@ async function boot() {
     history.replaceState(null, '', location.pathname);
     // The first warrior's battlefield: a plane or 3D warrior opens on its own.
     const field = libraryEntry(requested[0]).battlefield ?? 'ring';
-    if (fieldKey(state.settings) !== field) {
-      applySettings(field === 'ring' ? { ...DEFAULT_SETTINGS, ...fieldSettings('ring'), ...NO_HILL_RULES } : { ...NO_HILL_RULES, ...fieldSettings(field) });
-    }
+    if (fieldKey(state.settings) !== field || state.settings.rulesName || state.settings.dialect) applySettings(battlefieldSettings(field));
   } else if (Array.isArray(saved) && saved.length) {
     state.slots = saved.slice(0, MAX_SLOTS).map((s) => ({ ...makeSlot(null), ...s, compiled: null }));
   } else {

@@ -104,7 +104,16 @@ export function initLadder(ctx) {
     const total = pairs.length * rounds;
     let k = 0, r = 0, done = 0, acc = null, pspaces = null;
     job = { cancel: false };
+    render();                         // the button now says Stop
     const step = () => {
+      // New rules make this ladder's warriors and results stale: start over.
+      if (rulesKey(ctx.settings()) !== rulesKey(settings)) {
+        job = null;
+        ladder = load();
+        fillGaps();
+        render('The rules changed: setting the ladder up again for them…');
+        return;
+      }
       try {
         slice();
       } catch (e) {

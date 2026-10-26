@@ -32,7 +32,20 @@ async function getPyodide() {
   return pyodidePromise;
 }
 
-export async function generateFromPython(source, settings) {
+// Loads Pyodide without running anything (so a caller can tell loading from running).
+export const loadPython = () => getPyodide();
+
+// One run at a time: the source and settings go through Pyodide's shared
+// globals, so a second run starting before the first has read them would
+// swap its program in.
+let queue = Promise.resolve();
+export function generateFromPython(source, settings) {
+  const run = queue.then(() => generate(source, settings));
+  queue = run.catch(() => {});
+  return run;
+}
+
+async function generate(source, settings) {
   const py = await getPyodide();
   py.globals.set('__zw_source', source);
   py.globals.set('__zw_coresize', settings.coreSize);
