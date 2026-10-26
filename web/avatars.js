@@ -18,7 +18,7 @@
 // inspector.
 
 import { AvatarModel, LEGEND } from './avatar-model.js';
-import { WARRIOR_COLORS } from './arena.js';
+import { WARRIOR_COLORS, colorIndex } from './arena.js';
 
 const BACKGROUND = '#050812';
 const FLIGHT_MS = 420;
@@ -28,7 +28,7 @@ const BODY_HEIGHT = 1.45;        // world units, feet to head
 const CAMERA_DISTANCE = 3.4;
 const CAMERA_HEIGHT = 1.15;
 
-const colorOf = (w) => WARRIOR_COLORS[w % WARRIOR_COLORS.length];
+const colorOf = (w) => WARRIOR_COLORS[colorIndex(w) % WARRIOR_COLORS.length];
 function rgba(hex, a) {
   const n = parseInt(hex.slice(1), 16);
   return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;

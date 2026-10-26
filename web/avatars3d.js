@@ -31,7 +31,7 @@
 
 import * as THREE from './vendor/three.js';
 import { AvatarModel, KINDS, LEGEND } from './avatar-model.js';
-import { WARRIOR_COLORS, gridLayout } from './arena.js';
+import { WARRIOR_COLORS, colorIndex, gridLayout } from './arena.js';
 import { OP } from '../src/engine/index.js';
 
 const { OrbitControls, EffectComposer, RenderPass, UnrealBloomPass, OutputPass } = THREE;
@@ -370,7 +370,7 @@ export class AvatarView3D {
     this.legs = this.batch(geo.link, mat.body, W * 2, true);
     this.chips = this.batch(geo.chip, mat.glow, T * 3);
     this.webs = this.batch(geo.web, mat.glowWire, T);
-    this.glows = this.batch(geo.ball, mat.glow, T * 3 + W * 2);
+    this.glows = this.batch(geo.ball, mat.glow, T * 4 + W * 2);   // up to 4 per part, 2 irises per head
     this.halos = this.batch(geo.halo, mat.glowFlat, W);
     this.sparks = this.batch(geo.ball, mat.glow, W * MAX_SPARKS);
     this.shots = this.batch(geo.ball, mat.glow, MAX_FLYING * (TRAIL + 1));
@@ -416,8 +416,8 @@ export class AvatarView3D {
       el.className = 'avatar-label';
       el.innerHTML = '<b></b><i><span></span></i><small></small>';
       el.querySelector('b').textContent = b.name || `Warrior ${w + 1}`;
-      el.querySelector('b').style.color = WARRIOR_COLORS[w % WARRIOR_COLORS.length];
-      el.querySelector('span').style.background = WARRIOR_COLORS[w % WARRIOR_COLORS.length];
+      el.querySelector('b').style.color = WARRIOR_COLORS[colorIndex(w) % WARRIOR_COLORS.length];
+      el.querySelector('span').style.background = WARRIOR_COLORS[colorIndex(w) % WARRIOR_COLORS.length];
       this.overlay.append(el);
       return { el, bar: el.querySelector('span'), text: el.querySelector('small'), last: '' };
     });
@@ -428,7 +428,15 @@ export class AvatarView3D {
   placeArena() {
     const n = this.rt.length;
     const R = n > 2 ? 1.75 : 1.1;
-    this.rt.forEach((rt, w) => rt.stage.set(n > 1 ? -R + (2 * R * w) / (n - 1) : 0, 0, n > 2 ? (w % 2 ? 0.45 : -0.25) : 0));
+    this.rt.forEach((rt, w) => this.moveStage(rt, this.tmp.v.set(n > 1 ? -R + (2 * R * w) / (n - 1) : 0, 0, n > 2 ? (w % 2 ? 0.45 : -0.25) : 0)));
+  }
+  // Moves a body to a new spot at once; a fallen one's pieces go with it.
+  moveStage(rt, to) {
+    if (rt.fall) {
+      const p = rt.fall.pos;
+      for (let k = 0; k < p.length; k += 3) { p[k] += to.x - rt.stage.x; p[k + 1] += to.y - rt.stage.y; p[k + 2] += to.z - rt.stage.z; }
+    }
+    rt.stage.copy(to);
   }
 
   setMap(on) {
@@ -512,7 +520,7 @@ export class AvatarView3D {
         const c = op[i] === OP.DAT && a[i] === 0 && b[i] === 0 ? E : U;
         r = c[0]; gg = c[1]; bb = c[2];
       } else {
-        const [dim, bright] = pal[o % pal.length];
+        const [dim, bright] = pal[colorIndex(o) % pal.length];
         const age = steps - lastWrite[i];
         const t = age < fade ? 1 - age / fade : 0;
         const f = op[i] === OP.DAT ? 0.6 : 1;          // bombs and data darker than code
@@ -551,7 +559,7 @@ export class AvatarView3D {
       }
       if (rt.anchor < 0) rt.anchor = this.model.bodies[w].cells[0];
       this.cellFloor(rt.anchor, rt.want).setY(0);
-      if (rt.snap) { rt.stage.copy(rt.want); rt.snap = false; }
+      if (rt.snap) { this.moveStage(rt, rt.want); rt.snap = false; }
       else if (war.alive) rt.stage.lerp(rt.want, 1 - Math.exp(-dt * 2.5));
     });
     const lim = [this.mapW / 2 - 0.3, this.mapD / 2 - 0.3];
@@ -582,7 +590,7 @@ export class AvatarView3D {
     this.rt.forEach((rt, w) => {
       if (!vm.warriors[w].alive || rt.anchor < 0) return;
       const at = this.cellFloor(rt.anchor, tmp.v2);
-      const col = colors[w % colors.length];
+      const col = colors[colorIndex(w) % colors.length];
       this.put(this.markers, at, IDENTITY, cell * 2.2, 1, cell * 2.2, tmp.c.copy(col).multiplyScalar(2.2));
       const from = tmp.v.copy(rt.stage).setY(0.03);
       const len = from.distanceTo(at);
@@ -764,7 +772,7 @@ export class AvatarView3D {
   drawWarrior(vm, w, now, dt) {
     const b = this.model.bodies[w], L = this.layouts[w], rt = this.rt[w];
     const { tmp, colors } = this;
-    const col = colors[w % colors.length];
+    const col = colors[colorIndex(w) % colors.length];
     const n = b.cells.length;
     const to = b.morph > 0.01 && b.morphTo >= 0 && b.alive ? b.morphTo : -1;
     const TB = to >= 0 ? this.model.bodies[to] : null, TL = to >= 0 ? this.layouts[to] : null;
@@ -813,13 +821,13 @@ export class AvatarView3D {
       let kind, dmg = null, enemy = -1, act = 0, procs = 0;
       if (useTarget) {
         kind = tOwn ? TB.origKind[j] : null;
-        c.copy(colors[to % colors.length]);
+        c.copy(colors[colorIndex(to) % colors.length]);
       } else if (own) {
         kind = b.kind[j]; dmg = b.damage[j]; enemy = b.enemy[j]; act = b.active[j]; procs = b.procs[j];
-        c.copy(dmg === 'converted' ? colors[enemy % colors.length] : col);
+        c.copy(dmg === 'converted' ? colors[colorIndex(enemy) % colors.length] : col);
       }
       if (!kind) continue;
-      if (TL && !useTarget) c.lerp(colors[to % colors.length], e * 1.6);
+      if (TL && !useTarget) c.lerp(colors[colorIndex(to) % colors.length], e * 1.6);
       if (fallen) { c.set('#475569'); act = 0; procs = 0; }
       if (dmg === 'stunned') c.multiplyScalar(0.5);
 
@@ -827,20 +835,20 @@ export class AvatarView3D {
       if (fallen) q.setFromAxisAngle(rt.fall.axis[j], rt.fall.spin[j] * this.t);
       if (dmg === 'bombed') {
         this.put(this.shards, pos, q, r, r, r, tmp.c.set('#1c2030'));
-        if (!fallen) this.put(this.glows, pos, q, r * 1.08, r * 1.08, r * 1.08, tmp.c.copy(colors[enemy % colors.length]).multiplyScalar(0.07 + 0.05 * Math.sin(this.t * 6 + j)));
+        if (!fallen) this.put(this.glows, pos, q, r * 1.08, r * 1.08, r * 1.08, tmp.c.copy(colors[colorIndex(enemy) % colors.length]).multiplyScalar(0.07 + 0.05 * Math.sin(this.t * 6 + j)));
       } else {
         this.drawPart(kind, pos, q, r, c, act, j, fwd, side, fallen);
       }
       if (dmg === 'stunned' && !fallen) {
         const qs = this.sq.a.setFromAxisAngle(Y, this.t * 0.9 + j);
-        this.put(this.webs, pos, qs, r * 1.55, r * 1.55, r * 1.55, tmp.c.copy(colors[enemy % colors.length]).multiplyScalar(1.6));
+        this.put(this.webs, pos, qs, r * 1.55, r * 1.55, r * 1.55, tmp.c.copy(colors[colorIndex(enemy) % colors.length]).multiplyScalar(1.6));
       }
       if (dmg === 'chipped' && !fallen) {
         for (let k = 0; k < 3; k++) {
           const a = hash(j * 5 + k) * Math.PI * 2, el = (hash(j * 7 + k) - 0.5) * 2;
           const dir = this.sq.dir.set(Math.cos(a), el, Math.sin(a)).normalize();
           const qc = this.sq.a.setFromUnitVectors(Y, dir);
-          this.put(this.chips, tmp.v.copy(pos).addScaledVector(dir, r * 0.95), qc, r * 0.3, r * 0.5, r * 0.3, tmp.c.copy(colors[enemy % colors.length]).multiplyScalar(1.4));
+          this.put(this.chips, tmp.v.copy(pos).addScaledVector(dir, r * 0.95), qc, r * 0.3, r * 0.5, r * 0.3, tmp.c.copy(colors[colorIndex(enemy) % colors.length]).multiplyScalar(1.4));
         }
       }
       if (!fallen) {
@@ -855,7 +863,7 @@ export class AvatarView3D {
     // Spine links between consecutive parts, and legs to the floor.
     if (!fallen) {
       const body = W.body.copy(col);
-      if (to >= 0) body.lerp(colors[to % colors.length], e);
+      if (to >= 0) body.lerp(colors[colorIndex(to) % colors.length], e);
       const lc = tmp.c.copy(body).multiplyScalar(0.55);
       for (let j = 1; j < N; j++) {
         const a = rt.slotPos[j - 1], z = rt.slotPos[j];
@@ -891,7 +899,7 @@ export class AvatarView3D {
         const a = this.t * (0.9 + 0.15 * (k % 4)) + (k * Math.PI * 2) / dots;
         const rad = 0.5 + 0.08 * (k % 3);
         tmp.v.set(rt.stage.x + Math.cos(a) * rad, 0.85 + Math.sin(a * 1.7 + k) * 0.35, rt.stage.z + Math.sin(a) * rad);
-        this.put(this.sparks, tmp.v, qYaw, 0.024, 0.024, 0.024, tmp.c.copy(k < captive && b.captor >= 0 ? colors[b.captor % colors.length] : col).multiplyScalar(2.2));
+        this.put(this.sparks, tmp.v, qYaw, 0.024, 0.024, 0.024, tmp.c.copy(k < captive && b.captor >= 0 ? colors[colorIndex(b.captor) % colors.length] : col).multiplyScalar(2.2));
       }
     }
   }
@@ -935,7 +943,7 @@ export class AvatarView3D {
 
   drawHeadEyes(b, pos, r, fwd, side, fallen, w) {
     const { tmp, colors } = this;
-    const iris = fallen ? null : b.capture > 0.25 && b.lastCaptor >= 0 ? colors[b.lastCaptor % colors.length] : null;
+    const iris = fallen ? null : b.capture > 0.25 && b.lastCaptor >= 0 ? colors[colorIndex(b.lastCaptor) % colors.length] : null;
     const blink = !fallen && Math.sin(this.t * 0.6 + w * 2.1) > 0.985 ? 0.15 : 1;
     for (const s of [-1, 1]) {
       const at = tmp.v.copy(pos).addScaledVector(fwd, r * 0.72).addScaledVector(side, s * r * 0.4);
@@ -1004,7 +1012,7 @@ export class AvatarView3D {
       }
       keep.push(p);
       const lift = 0.35 + a.distanceTo(z) * 0.3;
-      const base = p.kind === 'bombed' ? BOMB : colors[p.attacker % colors.length];
+      const base = p.kind === 'bombed' ? BOMB : colors[colorIndex(p.attacker) % colors.length];
       const glow = p.minor ? 0.7 : 3;
       for (let k = 0; k <= TRAIL; k++) {
         const tk = t - k * 0.045;
@@ -1025,7 +1033,7 @@ export class AvatarView3D {
 
   // A blow lands: sparks, a shock ring and, for the big ones, a flash of light.
   impact(kind, at, attacker, minor) {
-    const color = new THREE.Color().copy(this.colors[attacker % this.colors.length]);
+    const color = new THREE.Color().copy(this.colors[colorIndex(attacker) % this.colors.length]);
     const spec = {
       kill: { n: 46, speed: 3.0, colors: ['#ffffff', '#fecaca', '#fca5a5'], ring: '#ffffff', light: '#ffe4e6', peak: 7, grav: 2, size: 0.38 },
       bombed: { n: 30, speed: 2.2, colors: ['#ff8a3c', '#fde68a', '#f97316'], ring: '#fb923c', light: '#fb923c', peak: 5, grav: 4 },

@@ -3,6 +3,12 @@
 import { OP } from '../src/engine/index.js';
 
 export const WARRIOR_COLORS = ['#22d3ee', '#f472b6', '#fbbf24', '#a3e635', '#a78bfa', '#fb923c'];
+// Warriors are numbered by their place in the round, but each keeps the
+// colour of its editor slot (a slot that doesn't compile sits the round out).
+let colorSlots = [];
+export function setColorSlots(roster) { colorSlots = roster.slice(); }
+export const colorIndex = (w) => colorSlots[w] ?? w;
+export const warriorColors = () => WARRIOR_COLORS.map((_, w) => WARRIOR_COLORS[colorIndex(w) % WARRIOR_COLORS.length]);
 const EMPTY = '#111a30';
 const UNOWNED = '#334155';
 const GLOW_LEVELS = 12;
@@ -133,7 +139,7 @@ export class CoreRenderer {
       }
       const age = now - lastWrite[i];
       const level = age < fadeSteps ? Math.round(GLOW_LEVELS * (1 - age / fadeSteps)) : 0;
-      const pal = this.palettes[w % this.palettes.length];
+      const pal = this.palettes[colorIndex(w) % this.palettes.length];
       if (isDat) {
         // Data and bombs are drawn as dots so code stands out as solid blocks.
         ctx.fillStyle = EMPTY;
@@ -166,7 +172,7 @@ export class CoreRenderer {
 
     // Battle highlights: splashes for overrides, sparks for kills (highlights.js).
     if (highlights) {
-      highlights.draw(ctx, performance.now(), (c) => [(grid[c] % cols) * cell + inner / 2, Math.floor(grid[c] / cols) * cell + inner / 2, cell], WARRIOR_COLORS);
+      highlights.draw(ctx, performance.now(), (c) => [(grid[c] % cols) * cell + inner / 2, Math.floor(grid[c] / cols) * cell + inner / 2, cell], warriorColors());
     }
     for (const [addr, color] of [[this.hover, 'rgba(255,255,255,0.8)'], [this.pinned, '#fbbf24']]) {
       if (addr < 0) continue;
@@ -230,7 +236,7 @@ export class ProcessChart {
 
     this.series.forEach((s, i) => {
       if (!s.length) return;
-      ctx.strokeStyle = WARRIOR_COLORS[i % WARRIOR_COLORS.length];
+      ctx.strokeStyle = WARRIOR_COLORS[colorIndex(i) % WARRIOR_COLORS.length];
       ctx.lineWidth = 1.6;
       ctx.beginPath();
       s.forEach((v, k) => {

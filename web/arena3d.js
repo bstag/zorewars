@@ -13,7 +13,7 @@
 // pinned), so the arena can swap between them. Plain canvas, no libraries.
 
 import { OP } from '../src/engine/index.js';
-import { makePalettes, GLOW, WARRIOR_COLORS } from './arena.js';
+import { makePalettes, GLOW, colorIndex, warriorColors } from './arena.js';
 
 const BACKGROUND = '#050812';
 const EMPTY_DOT = 'rgba(120, 140, 190, 0.16)';
@@ -295,7 +295,7 @@ export class CoreView3D {
       } else {
         const age = steps - lastWrite[i];
         const level = age < fadeSteps ? Math.round(GLOW * (1 - age / fadeSteps)) : 0;
-        ctx.fillStyle = this.palettes[w % this.palettes.length][level];
+        ctx.fillStyle = this.palettes[colorIndex(w) % this.palettes.length][level];
       }
       if (op[i] === OP.DAT) {
         const d = size * 0.45;            // data and bombs as smaller dots
@@ -342,7 +342,7 @@ export class CoreView3D {
     }
     // Battle highlights.
     if (highlights) {
-      highlights.draw(ctx, now, (cell) => (slicing && !this.inSlice(cell) ? null : [this.sx[cell], this.sy[cell], this.cellSize * this.scale[cell]]), WARRIOR_COLORS);
+      highlights.draw(ctx, now, (cell) => (slicing && !this.inSlice(cell) ? null : [this.sx[cell], this.sy[cell], this.cellSize * this.scale[cell]]), warriorColors());
     }
     for (const [addr, color] of [[this.hover, 'rgba(255,255,255,0.85)'], [this.pinned, '#fbbf24']]) {
       if (addr < 0 || addr >= n) continue;

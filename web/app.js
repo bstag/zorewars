@@ -2,7 +2,7 @@
 
 import { compile, VM, runRound, mulberry32, DEFAULT_SETTINGS, RULESETS, listing, roundPoints, postMortem, generateFromJS, fitsBattlefield } from '../src/engine/index.js';
 import { convertWarrior } from '../src/engine/convert.js';
-import { CoreRenderer, ProcessChart, WARRIOR_COLORS } from './arena.js';
+import { CoreRenderer, ProcessChart, WARRIOR_COLORS, setColorSlots } from './arena.js';
 import { CoreView3D } from './arena3d.js';
 import { AvatarView } from './avatars.js';
 import { Highlights } from './highlights.js';
@@ -210,6 +210,7 @@ function pickLibrary(entry) {
   renderEditor();
   compileSlot(slot);
 }
+
 function libraryEntry(file) {
   return state.library.find((e) => e.file === file);
 }
@@ -255,10 +256,9 @@ async function compileSlot(slot) {
   }
 }
 
-let compileTimer = null;
 function scheduleCompile(slot, delay) {
-  clearTimeout(compileTimer);
-  compileTimer = setTimeout(() => compileSlot(slot), delay);
+  clearTimeout(slot.compileTimer);         // per slot: an edit elsewhere must not cancel this one
+  slot.compileTimer = setTimeout(() => compileSlot(slot), delay);
 }
 
 function activeSlot() {
@@ -607,8 +607,10 @@ function newRound() {
   stopRunning();
   const roster = state.slots.map((s, i) => (s.compiled?.ok ? i : -1)).filter((i) => i >= 0);
   state.roster = roster;
+  setColorSlots(roster);
   if (!roster.length) {
     state.vm = null;
+    forgetRound();
     showOverlay('No runnable warriors', 'Fix the compile errors to start a round.');
     renderScoreboard();
     return;
@@ -630,6 +632,7 @@ function newRound() {
     state.roundSetup = { warriors, positions, firstTurn, pspaces: pspacesAtStart };
   } catch (e) {
     state.vm = null;
+    forgetRound();
     showOverlay('Could not load warriors', e.message);
     return;
   }
@@ -650,6 +653,13 @@ function newRound() {
   renderScoreboard();
   updateCycle();
   state.dirtyFrame = true;
+}
+
+// The post-mortem and its replay describe a round that no longer applies.
+function forgetRound() {
+  state.roundSetup = null;
+  state.report = null;
+  $('pmCard').hidden = true;
 }
 
 function colorName(k, name) {
@@ -800,12 +810,19 @@ function finishFast() {
   stopRunning();
   finishing = true;
   $('finishBtn').disabled = true;
+  const vm = state.vm;               // a new round or new settings end this finish
   const chunk = () => {
-    stepVM(Infinity, 30);
-    sampleChart();
-    state.dirtyFrame = true;
-    if (state.vm && !state.vm.done) setTimeout(chunk, 0);
-    else { finishing = false; $('finishBtn').disabled = false; }
+    let more = false;
+    try {
+      if (state.vm !== vm) return;
+      stepVM(Infinity, 30);
+      sampleChart();
+      state.dirtyFrame = true;
+      more = !vm.done;
+    } finally {
+      if (more) setTimeout(chunk, 0);
+      else { finishing = false; $('finishBtn').disabled = false; }
+    }
   };
   chunk();
 }
@@ -1002,7 +1019,8 @@ function runTournamentUI() {
   const warriors = roster.map((i) => state.slots[i].compiled);
   const stats = warriors.map((w) => ({ name: w.name, wins: 0, losses: 0, ties: 0, score: 0 }));
   const rng = mulberry32((Math.random() * 2 ** 32) >>> 0);
-  const pspaces = warriors.map(() => VM.freshPSpace(state.settings));
+  const settings = state.settings;   // the rules the warriors were compiled for
+  const pspaces = warriors.map(() => VM.freshPSpace(settings));
   const t = { cancel: false, done: 0 };
   state.tournament = t;
   $('tourBtn').textContent = 'Stop';
@@ -1015,10 +1033,23 @@ function runTournamentUI() {
     $('tourBar').style.width = `${(t.done / rounds) * 100}%`;
   };
 
+  const stop = () => { state.tournament = null; $('tourBtn').textContent = 'Run'; };
   const next = () => {
     const t0 = performance.now();
+    try {
+      playSlice(t0);
+    } catch (e) {
+      stop();
+      $('tourResults').insertAdjacentHTML('beforeend', `<p class="muted small">Stopped: ${escapeHtml(e.message)}</p>`);
+      return;
+    }
+    render();
+    if (t.done < rounds && !t.cancel) setTimeout(next, 0);
+    else stop();
+  };
+  const playSlice = (t0) => {
     while (t.done < rounds && !t.cancel && performance.now() - t0 < 40) {
-      const res = runRound(warriors, state.settings, { seed: Math.floor(rng() * 2 ** 32), firstTurn: t.done % warriors.length, pspaces });
+      const res = runRound(warriors, settings, { seed: Math.floor(rng() * 2 ** 32), firstTurn: t.done % warriors.length, pspaces });
       stats.forEach((s, k) => {
         const points = roundPoints(warriors.length, res.survivors.length);
         if (res.winner === k) { s.wins++; s.score += points; }
@@ -1027,9 +1058,6 @@ function runTournamentUI() {
       });
       t.done++;
     }
-    render();
-    if (t.done < rounds && !t.cancel) setTimeout(next, 0);
-    else { state.tournament = null; $('tourBtn').textContent = 'Run'; }
   };
   next();
 }
@@ -1062,6 +1090,12 @@ function applySettings(values) {
   renderSettings();
   renderer.layout(state.settings.coreSize, state.vm?.geo ?? null);
   state.vm = null;
+  if (state.tournament) state.tournament.cancel = true;
+  forgetRound();
+  state.pinned = state.hover = -1;  // cells of the old core
+  // All of them are compiling before any finishes, so the round starts once,
+  // with every slot compiled for the new rules.
+  for (const s of state.slots) s.status = 'compiling';
   state.slots.forEach((s) => compileSlot(s));
   refreshLibraryFit();
 }
