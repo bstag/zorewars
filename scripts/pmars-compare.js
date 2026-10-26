@@ -48,7 +48,7 @@ async function loadWarriors() {
   const list = [];
   const lib = JSON.parse(fs.readFileSync(path.join(ROOT, 'warriors/index.json'), 'utf8'));
   for (const e of lib) {
-    if (e.language === 'python' || e.convertedFrom) continue;
+    if (e.language === 'python' || e.convertedFrom || e.battlefield) continue;   // pMARS has no planes or volumes
     let file = path.join(ROOT, 'warriors', e.file);
     let text = fs.readFileSync(file, 'utf8');
     if (e.language === 'javascript') {

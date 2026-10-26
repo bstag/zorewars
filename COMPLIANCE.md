@@ -17,6 +17,8 @@ Games with three or more warriors use ZoreWars' own placement (see below). They 
 
 The warriors are the ZoreWars library, two P-space test warriors, and 34 Hall of Fame originals from 1984 to 2026, fetched from the public archives when the test runs. They include `FOR`/`ROF` loops, pMARS registers, P-space, imp spirals, silk papers, quickscans and vampires.
 
+**Hill archive.** The 567 warriors of the public hill collection [n1LS/redcode-warriors](https://github.com/n1LS/redcode-warriors) (fetched for the test, not stored here) were assembled by both on 25 October 2026: **564 identical**, 2 rejected by both (one empty file, one missing a comma between operands), and 1 different (below). This found two gaps, now fixed: a label on the `END` line (`last end start`) is the address just past the last instruction, and an `EQU` can stand for a whole instruction (`d01 equ spl 0,1`, then `d01` on its own line), as pMARS's EQU is text substitution. A re-run of `npm run compare` after the fix: 64/64 assembled, 1,891/1,891 rounds, 30/30 matches and 42/42 P-space matches identical.
+
 As a sanity check that the P-space test can catch bugs, it was run against a deliberately broken engine that forgets round results. 21 of 39 matches then differed.
 
 ## Run it yourself
@@ -84,6 +86,7 @@ Run them with `npm run fuzz` (the reference comparison; arguments: programs, ste
 - **`;assert`**: a false assertion is a warning in ZoreWars (the arena offers to switch rules); pMARS refuses to run the warrior.
 - **Placement with 3 or more warriors** is ZoreWars' own: every start is at least the minimum distance from every other, measured round the ring. The same warriors and seed give different positions than pMARS, so 3+ warrior matches can't be replayed in pMARS.
 - **More than 4 warriors** are not supported in the arena; the engine and CLI have no limit.
+- **`dat#9` with no space** after the opcode: pMARS reads it as `DAT #0, #90` (one hill warrior, Asian Flu, has this line); ZoreWars reads `DAT #0, #9`. This looks like a pMARS tokenizer quirk on malformed input, and isn't copied.
 - **pMARS's alternative RNG** (`-F` with a non-numeric argument, RC5-based) and permutation mode (`-P`) are not reproduced.
 
 ## Licensing note

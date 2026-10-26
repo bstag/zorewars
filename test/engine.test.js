@@ -333,3 +333,16 @@ test('trace keeps the last instructions and marks the fatal one', () => {
   assert.equal(t.length, 10);
   assert.equal(t.at(-1).died, 'enemyCode');
 });
+
+test('assembler: pMARS forms used by hill warriors (label on END, EQU as an instruction)', () => {
+  // A label on the END line is the address just past the last instruction.
+  const a = compile('top mov #(btm-top), 1\n    dat 0, 0\nbtm end top');
+  assert.ok(a.ok, JSON.stringify(a.errors));
+  assert.equal(a.instructions[0].a, 2);
+  // EQU is text substitution: a name can stand for a whole instruction,
+  // also inside FOR loops, and CURLINE counts it ('for CURLINE<5' is a
+  // condition, evaluated once: one more copy here). Checked against pMARS.
+  const b = compile('d01 equ spl 0, 1\nd02 equ dat 0, 2\ny for 2\nd&y\nrof\nfor CURLINE<5\nd01\nrof\nend');
+  assert.ok(b.ok, JSON.stringify(b.errors));
+  assert.deepEqual(b.instructions.map((i) => i.op), ['SPL', 'DAT', 'SPL']);
+});

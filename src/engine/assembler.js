@@ -199,6 +199,21 @@ function preprocess(source, constants, errors) {
     .replace(new RegExp(`&${counter}(?!\\w)`, 'g'), String(k).padStart(2, '0'))
     .replace(new RegExp(`(?<![\\w&.])${counter}(?!\\w)`, 'g'), String(k));
 
+  // pMARS's EQU is text substitution, so an EQU can stand for a whole
+  // instruction ('d01 equ spl 0,1' ... 'd01'). Expand such a name where an
+  // opcode is expected, so CURLINE and FOR counts see the instruction.
+  const expandEquInstruction = (l, c) => {
+    const toks = c.trim().split(/\s+/);
+    for (let t = 0; t < toks.length; t++) {
+      const name = toks[t].replace(/:$/, '');
+      if (equs.has(name) && isInstruction(equs.get(name))) {
+        return { ...l, text: [...toks.slice(0, t), equs.get(name), ...toks.slice(t + 1)].join(' ') };
+      }
+      if (!/^[A-Za-z_]\w*:?$/.test(toks[t]) || opcodeOf(name)) break;
+    }
+    return l;
+  };
+
   function run(lines) {
     for (let i = 0; i < lines.length; i++) {
       const l = lines[i];
@@ -208,7 +223,7 @@ function preprocess(source, constants, errors) {
       const m = FOR_RE.exec(c);
       if (!m) {
         if (ROF_RE.test(c)) errors.push({ line: l.lineNo, message: 'ROF without a matching FOR' });
-        else out.push(l);
+        else out.push(eq ? l : expandEquInstruction(l, c));
         continue;
       }
       let depth = 1;
@@ -280,6 +295,7 @@ export function assemble(source, settings = {}) {
   const equs = new Map();   // name -> { text, line }
   const lines = [];         // instruction lines
   let startExpr = null;
+  let endLabels = [];
   let startLine = 0;
 
   const asserts = [];
@@ -338,6 +354,7 @@ export function assemble(source, settings = {}) {
     }
     if (opInfo.op === 'END') {
       if (rest) { startExpr = rest; startLine = lineNo; }
+      endLabels = pending.map((name) => ({ name, lineNo }));   // e.g. 'last end start'
       break;
     }
     if (opInfo.mod && !MODIFIERS.includes(opInfo.mod)) {
@@ -363,6 +380,12 @@ export function assemble(source, settings = {}) {
       labels.set(name, idx);
     }
   });
+  // A label on the END line itself (as in 'last end start') is the address
+  // just past the last instruction, as in pMARS; many hill warriors use it.
+  for (const { name, lineNo } of endLabels) {
+    if (labels.has(name) || equs.has(name)) errors.push({ line: lineNo, message: `duplicate label '${name}'` });
+    labels.set(name, instrLines.length);
+  }
   // pMARS discards labels that follow the last instruction; so do we.
   for (const name of trailingLabels) {
     const line = lines.filter((l) => l.labelsOnly?.includes(name)).at(-1)?.lineNo ?? 0;
