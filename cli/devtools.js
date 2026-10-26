@@ -216,7 +216,12 @@ async function fetchHill(name, top, json) {
   const out = [];
   for (const [k, f] of files.entries()) {
     const local = path.join(cache, path.basename(f));
-    if (!fs.existsSync(local)) fs.writeFileSync(local, await (await fetch(base + f)).text());
+    if (!fs.existsSync(local)) {
+      const res = await fetch(base + f);
+      const text = await res.text();
+      if (!res.ok || /^\s*<!DOCTYPE|^\s*<html/i.test(text)) { if (!json) console.error(`(could not fetch ${path.basename(f)})`); continue; }
+      fs.writeFileSync(local, text);
+    }
     out.push(local);
     progress(json, `hill: ${k + 1}/${files.length}`);
   }
