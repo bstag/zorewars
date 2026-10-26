@@ -639,7 +639,7 @@
         "Its own slow clear in time reaches the enemy clear's code, which stays where it started. When its own clear comes round to the marker, it leaps on and starts again."
       ],
       "strengths": ["Beats every forward clear and stone: Volume Queen 29-1, Plane Queen 28-2, Two-Pass Clear 26-4."],
-      "weaknesses": ["Loses to papers (0-28 against Fast Silk): their copies keep tripping the marker, and they outnumber it.", "Blind to a front from the other side: Backdraft and Gremlin beat it 0-10 (10 rounds each). 1.92 points per round overall."],
+      "weaknesses": ["Loses to papers (0-28 against Fast Silk): their copies keep tripping the marker, and they outnumber it.", "Blind to a front from the other side: Backdraft and Gremlin beat it 10-0 (10 rounds each). 1.92 points per round overall."],
       "tryIt": "Battle it against Volume Queen with <code>node cli/zorewars.js battle warriors/volume/leapfrog.js warriors/volume/volumequeen.js --torus 40x20x10 -r 5 --report</code> and find the leap in the timeline.",
       "opponent": "volume/volumequeen.js"
     },
