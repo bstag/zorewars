@@ -159,7 +159,9 @@ async function main() {
   // Hall of fame: historical warriors, linked to their originals.
   const byId = Object.fromEntries(data.warriors.map((w) => [w.id, w]));
   // "Fight" imports the original into the arena against our version of the idea.
-  const fight = (h) => `index.html?url=${encodeURIComponent(h.url)}&vs=${encodeURIComponent(byId[h.ours]?.file || 'dwarf.red')}`;
+  // An original written for other rules (Frontwards: the 94x hill) brings them along.
+  const fight = (h) => `index.html?url=${encodeURIComponent(h.url)}&vs=${encodeURIComponent(byId[h.ours]?.file || 'dwarf.red')}${
+    h.rules ? `&rules=${encodeURIComponent(h.rules)}` : ''}${h.maxLength ? `&length=${h.maxLength}` : ''}`;
   $('#hof').innerHTML = `<table class="ref"><thead><tr><th>Year</th><th>Warrior</th><th>Author</th><th>Family</th><th>Why it matters</th><th>Ours</th><th></th></tr></thead><tbody>${
     data.hallOfFame.map((h) => `<tr><td class="yr">${esc(h.year)}</td><td><a href="${esc(h.url)}">${esc(h.name)}</a></td><td>${esc(h.author)}</td><td>${esc(h.family)}</td><td>${esc(h.note)}</td><td>${
       h.ours && byId[h.ours] ? `<a href="#${esc(h.ours)}">${esc(byId[h.ours].name)}</a>` : ''}</td><td><a class="btn fight" href="${fight(h)}" title="Load the original into the arena">Fight</a></td></tr>`).join('')

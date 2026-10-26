@@ -1482,6 +1482,14 @@ async function boot() {
     state.slots = [makeSlot(null), makeSlot(vs)];
     state.slots[0].source = `; Loading ${remote}…\n`;
     pendingImport = remote;
+    // &rules=94x-hill&length=201: the rules the original was written for
+    // (pMARS needs warriors at least their length apart); otherwise the
+    // classic ring.
+    const rules = RULESETS[params.get('rules')];
+    const length = parseInt(params.get('length'), 10) || 0;
+    applySettings(rules
+      ? { ...fieldSettings('ring'), ...NO_HILL_RULES, ...rules, rulesName: params.get('rules'), ...(length ? { maxLength: length, minDistance: Math.max(rules.minDistance, length) } : {}) }
+      : { ...DEFAULT_SETTINGS, ...fieldSettings('ring'), ...NO_HILL_RULES });
     history.replaceState(null, '', location.pathname);
   }
   // ?load=imp.red,dwarf.red opens library warriors (used by the encyclopedia).
