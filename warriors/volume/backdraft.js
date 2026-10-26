@@ -14,20 +14,24 @@ strategy("Backward core clear in one process: stun traps then DATs, each pass st
 if (SIZEZ < 2) throw new Error("Backdraft is for a 3D battlefield: choose a Volume in Rules (CLI: --torus 40x20x10)");
 //
 // Tuned constants: `node cli/zorewars.js tune warriors/volume/backdraft.js --torus 40x20x10`
-// SPACE {"TRAP":["spl","pair"],"PROCS":[1,2]}
-const P = {"TRAP":"pair","PROCS":1};
+// SPACE {"TRAP":["spl","pair"],"PROCS":[1,2],"P1":[-40,10],"P2":[-40,10]}
+const P = {"TRAP":"pair","PROCS":1,"P1":0,"P2":0};
+// P1, P2: how much shorter (or longer) each pass is than "all the way round
+// to just short of us". An evolved variant with a slightly shorter first pass
+// beat Backdraft 19-11 head to head, but against the whole field no length
+// beat the full one by more than the noise (it scored 2.48 to 2.51).
 const PAIR = P.TRAP === "pair";
 
 label("ptr");   dat.f(0, 0);                                  // the pointer: it counts down from just behind us
 org("go");
 label("go");    if (P.PROCS === 2) spl(1);                    // (a second process for the clear)
 label("lap");   mov.ab(imm(0), "ptr");
-mov.ab(imm(PAIR ? `(${CORESIZE}-len)/2` : `${CORESIZE}-len`), "left");
+mov.ab(imm(PAIR ? `(${CORESIZE}-len+${P.P1})/2` : `${CORESIZE}-len+${P.P1}`), "left");
 label("pass1"); mov.i("stun", predec("ptr"));                 // pass 1: traps, walking backward
 if (PAIR) mov.i("jump", predec("ptr"));
 djn.b("pass1", "left");
 mov.ab(imm(0), "ptr");
-mov.ab(imm(`${CORESIZE}-len`), "left");
+mov.ab(imm(`${CORESIZE}-len+${P.P2}`), "left");
 label("pass2"); mov.i("kill", predec("ptr"));                 // pass 2: DATs
 djn.b("pass2", "left");
 jmp("lap");                                                   // and again

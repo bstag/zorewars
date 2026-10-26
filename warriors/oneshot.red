@@ -21,9 +21,11 @@ scan    SEQ.I   last-scan-step, last-scan-step+gap  ; two cells identical?
 found   MOV.AB  scan, cptr      ; aim the clear at the hit (scan's A-field) ...
         ADD.AB  #scan-cptr-8, cptr  ; ... converted to be relative to cptr, minus 8
 go      MOV.B   cptr, start     ; remember where the clear began (B-field to B-field)
+        SPL     #0, 0           ; a swarm: every process runs the clear, so one hit can't stop it
 stun    MOV.I   spl0, >cptr     ; pass 1: SPL 0 on each cell, then move on
         JMN.B   stun, cptr      ; until the pointer wraps round to cptr itself
         MOV.B   start, cptr     ; rewind to where we began
+        SPL     #0, 0           ; a swarm for the DAT pass too
 kill    MOV.I   dat0, >cptr     ; pass 2: DAT on each cell
         JMP     kill            ; ends by rewriting cptr forever, never reaching us
 inc     DAT.F   #step, #step

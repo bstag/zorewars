@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-24",
+ "generated": "2026-10-26",
  "rounds": 100,
  "seed": 1,
  "ranking": [
@@ -10,7 +10,7 @@
   },
   {
    "file": "bandit.js",
-   "scorePerRound": 1.953,
+   "scorePerRound": 1.927,
    "rank": 2
   },
   {
@@ -20,107 +20,107 @@
   },
   {
    "file": "fastsilk.js",
-   "scorePerRound": 1.776,
+   "scorePerRound": 1.758,
    "rank": 4
   },
   {
    "file": "chameleon.js",
-   "scorePerRound": 1.76,
+   "scorePerRound": 1.742,
    "rank": 5
   },
   {
    "file": "hydra.js",
-   "scorePerRound": 1.748,
+   "scorePerRound": 1.735,
    "rank": 6
   },
   {
    "file": "evolvedsilk.red",
-   "scorePerRound": 1.743,
+   "scorePerRound": 1.72,
    "rank": 7
   },
   {
    "file": "blitz.js",
-   "scorePerRound": 1.72,
+   "scorePerRound": 1.695,
    "rank": 8
   },
   {
    "file": "papercut.js",
-   "scorePerRound": 1.689,
+   "scorePerRound": 1.667,
    "rank": 9
   },
   {
    "file": "hedgehog.js",
-   "scorePerRound": 1.643,
+   "scorePerRound": 1.629,
    "rank": 10
   },
   {
    "file": "silk.red",
-   "scorePerRound": 1.614,
+   "scorePerRound": 1.574,
    "rank": 11
   },
   {
-   "file": "mice.red",
-   "scorePerRound": 1.386,
+   "file": "oneshot.red",
+   "scorePerRound": 1.494,
    "rank": 12
   },
   {
-   "file": "oneshot.red",
-   "scorePerRound": 1.324,
+   "file": "mice.red",
+   "scorePerRound": 1.377,
    "rank": 13
   },
   {
    "file": "seeker.red",
-   "scorePerRound": 1.212,
+   "scorePerRound": 1.224,
    "rank": 14
   },
   {
    "file": "scanner.red",
-   "scorePerRound": 1.151,
+   "scorePerRound": 1.14,
    "rank": 15
   },
   {
    "file": "impring.red",
-   "scorePerRound": 1.14,
+   "scorePerRound": 1.133,
    "rank": 16
   },
   {
    "file": "twopass.red",
-   "scorePerRound": 1.101,
+   "scorePerRound": 1.102,
    "rank": 17
   },
   {
    "file": "stunner.red",
-   "scorePerRound": 1.07,
+   "scorePerRound": 1.068,
    "rank": 18
   },
   {
    "file": "quickscan.js",
-   "scorePerRound": 1.006,
+   "scorePerRound": 1.004,
    "rank": 19
   },
   {
    "file": "stoneimp.red",
-   "scorePerRound": 0.991,
+   "scorePerRound": 0.985,
    "rank": 20
   },
   {
    "file": "dwarf.red",
-   "scorePerRound": 0.976,
+   "scorePerRound": 0.974,
    "rank": 21
   },
   {
    "file": "vampire.red",
-   "scorePerRound": 0.93,
+   "scorePerRound": 0.929,
    "rank": 22
   },
   {
    "file": "sweeper.red",
-   "scorePerRound": 0.893,
+   "scorePerRound": 0.891,
    "rank": 23
   },
   {
    "file": "carpet.js",
-   "scorePerRound": 0.864,
+   "scorePerRound": 0.862,
    "rank": 24
   },
   {
@@ -130,7 +130,7 @@
   },
   {
    "file": "gemini.red",
-   "scorePerRound": 0.358,
+   "scorePerRound": 0.346,
    "rank": 26
   }
  ],
@@ -302,9 +302,9 @@
      "t": 8
     },
     "oneshot.red": {
-     "w": 33,
-     "l": 62,
-     "t": 5
+     "w": 26,
+     "l": 54,
+     "t": 20
     },
     "silk.red": {
      "w": 4,
@@ -397,10 +397,10 @@
      "t": 21
     }
    },
-   "wins": 697,
-   "losses": 1454,
-   "ties": 349,
-   "score": 2440,
+   "wins": 690,
+   "losses": 1446,
+   "ties": 364,
+   "score": 2434,
    "played": 2500
   },
   "gemini.red": {
@@ -436,9 +436,9 @@
      "t": 16
     },
     "oneshot.red": {
-     "w": 8,
-     "l": 60,
-     "t": 32
+     "w": 6,
+     "l": 87,
+     "t": 7
     },
     "silk.red": {
      "w": 0,
@@ -531,10 +531,10 @@
      "t": 10
     }
    },
-   "wins": 98,
-   "losses": 1801,
-   "ties": 601,
-   "score": 895,
+   "wins": 96,
+   "losses": 1828,
+   "ties": 576,
+   "score": 864,
    "played": 2500
   },
   "mice.red": {
@@ -570,9 +570,9 @@
      "t": 12
     },
     "oneshot.red": {
-     "w": 35,
-     "l": 49,
-     "t": 16
+     "w": 24,
+     "l": 48,
+     "t": 28
     },
     "silk.red": {
      "w": 0,
@@ -665,10 +665,10 @@
      "t": 96
     }
    },
-   "wins": 761,
-   "losses": 558,
-   "ties": 1181,
-   "score": 3464,
+   "wins": 750,
+   "losses": 557,
+   "ties": 1193,
+   "score": 3443,
    "played": 2500
   },
   "impring.red": {
@@ -704,9 +704,9 @@
      "t": 70
     },
     "oneshot.red": {
-     "w": 8,
-     "l": 78,
-     "t": 14
+     "w": 0,
+     "l": 79,
+     "t": 21
     },
     "silk.red": {
      "w": 0,
@@ -799,10 +799,10 @@
      "t": 37
     }
    },
-   "wins": 536,
-   "losses": 723,
-   "ties": 1241,
-   "score": 2849,
+   "wins": 528,
+   "losses": 724,
+   "ties": 1248,
+   "score": 2832,
    "played": 2500
   },
   "scanner.red": {
@@ -838,9 +838,9 @@
      "t": 6
     },
     "oneshot.red": {
-     "w": 47,
-     "l": 53,
-     "t": 0
+     "w": 36,
+     "l": 57,
+     "t": 7
     },
     "silk.red": {
      "w": 4,
@@ -933,10 +933,10 @@
      "t": 18
     }
    },
-   "wins": 878,
-   "losses": 1379,
-   "ties": 243,
-   "score": 2877,
+   "wins": 867,
+   "losses": 1383,
+   "ties": 250,
+   "score": 2851,
    "played": 2500
   },
   "seeker.red": {
@@ -972,9 +972,9 @@
      "t": 6
     },
     "oneshot.red": {
-     "w": 37,
-     "l": 55,
-     "t": 8
+     "w": 50,
+     "l": 49,
+     "t": 1
     },
     "silk.red": {
      "w": 0,
@@ -1067,10 +1067,10 @@
      "t": 41
     }
    },
-   "wins": 785,
-   "losses": 1041,
-   "ties": 674,
-   "score": 3029,
+   "wins": 798,
+   "losses": 1035,
+   "ties": 667,
+   "score": 3061,
    "played": 2500
   },
   "oneshot.red": {
@@ -1081,69 +1081,69 @@
      "t": 100
     },
     "dwarf.red": {
-     "w": 62,
-     "l": 33,
-     "t": 5
+     "w": 54,
+     "l": 26,
+     "t": 20
     },
     "gemini.red": {
-     "w": 60,
-     "l": 8,
-     "t": 32
+     "w": 87,
+     "l": 6,
+     "t": 7
     },
     "mice.red": {
-     "w": 49,
-     "l": 35,
-     "t": 16
-    },
-    "impring.red": {
-     "w": 78,
-     "l": 8,
-     "t": 14
-    },
-    "scanner.red": {
-     "w": 53,
-     "l": 47,
-     "t": 0
-    },
-    "seeker.red": {
-     "w": 55,
-     "l": 37,
-     "t": 8
-    },
-    "silk.red": {
-     "w": 6,
-     "l": 66,
+     "w": 48,
+     "l": 24,
      "t": 28
     },
+    "impring.red": {
+     "w": 79,
+     "l": 0,
+     "t": 21
+    },
+    "scanner.red": {
+     "w": 57,
+     "l": 36,
+     "t": 7
+    },
+    "seeker.red": {
+     "w": 49,
+     "l": 50,
+     "t": 1
+    },
+    "silk.red": {
+     "w": 8,
+     "l": 17,
+     "t": 75
+    },
     "vampire.red": {
-     "w": 54,
+     "w": 57,
      "l": 34,
-     "t": 12
+     "t": 9
     },
     "sweeper.red": {
-     "w": 78,
-     "l": 22,
+     "w": 80,
+     "l": 20,
      "t": 0
     },
     "twopass.red": {
-     "w": 91,
-     "l": 9,
+     "w": 90,
+     "l": 10,
      "t": 0
     },
     "stunner.red": {
-     "w": 39,
-     "l": 46,
-     "t": 15
+     "w": 45,
+     "l": 47,
+     "t": 8
     },
     "stoneimp.red": {
-     "w": 59,
-     "l": 9,
-     "t": 32
+     "w": 57,
+     "l": 0,
+     "t": 43
     },
     "evolvedsilk.red": {
-     "w": 4,
-     "l": 59,
-     "t": 37
+     "w": 6,
+     "l": 31,
+     "t": 63
     },
     "redqueen.red": {
      "w": 30,
@@ -1152,13 +1152,13 @@
     },
     "carpet.js": {
      "w": 59,
-     "l": 38,
-     "t": 3
+     "l": 35,
+     "t": 6
     },
     "quickscan.js": {
      "w": 64,
-     "l": 35,
-     "t": 1
+     "l": 33,
+     "t": 3
     },
     "gatekeeper.js": {
      "w": 36,
@@ -1166,45 +1166,45 @@
      "t": 0
     },
     "papercut.js": {
-     "w": 11,
-     "l": 59,
-     "t": 30
+     "w": 16,
+     "l": 34,
+     "t": 50
     },
     "fastsilk.js": {
-     "w": 1,
-     "l": 55,
-     "t": 44
+     "w": 3,
+     "l": 33,
+     "t": 64
     },
     "blitz.js": {
-     "w": 9,
-     "l": 70,
-     "t": 21
+     "w": 10,
+     "l": 39,
+     "t": 51
     },
     "chameleon.js": {
-     "w": 13,
-     "l": 69,
-     "t": 18
+     "w": 18,
+     "l": 48,
+     "t": 34
     },
     "bandit.js": {
-     "w": 7,
-     "l": 72,
-     "t": 21
+     "w": 36,
+     "l": 54,
+     "t": 10
     },
     "hedgehog.js": {
-     "w": 7,
-     "l": 56,
-     "t": 37
+     "w": 16,
+     "l": 43,
+     "t": 41
     },
     "hydra.js": {
-     "w": 7,
-     "l": 53,
-     "t": 40
+     "w": 8,
+     "l": 37,
+     "t": 55
     }
    },
-   "wins": 932,
-   "losses": 1054,
-   "ties": 514,
-   "score": 3310,
+   "wins": 1013,
+   "losses": 791,
+   "ties": 696,
+   "score": 3735,
    "played": 2500
   },
   "silk.red": {
@@ -1245,9 +1245,9 @@
      "t": 61
     },
     "oneshot.red": {
-     "w": 66,
-     "l": 6,
-     "t": 28
+     "w": 17,
+     "l": 8,
+     "t": 75
     },
     "vampire.red": {
      "w": 87,
@@ -1335,10 +1335,10 @@
      "t": 99
     }
    },
-   "wins": 872,
-   "losses": 210,
-   "ties": 1418,
-   "score": 4034,
+   "wins": 823,
+   "losses": 212,
+   "ties": 1465,
+   "score": 3934,
    "played": 2500
   },
   "vampire.red": {
@@ -1380,8 +1380,8 @@
     },
     "oneshot.red": {
      "w": 34,
-     "l": 54,
-     "t": 12
+     "l": 57,
+     "t": 9
     },
     "silk.red": {
      "w": 2,
@@ -1470,9 +1470,9 @@
     }
    },
    "wins": 582,
-   "losses": 1338,
-   "ties": 580,
-   "score": 2326,
+   "losses": 1341,
+   "ties": 577,
+   "score": 2323,
    "played": 2500
   },
   "sweeper.red": {
@@ -1513,8 +1513,8 @@
      "t": 8
     },
     "oneshot.red": {
-     "w": 22,
-     "l": 78,
+     "w": 20,
+     "l": 80,
      "t": 0
     },
     "silk.red": {
@@ -1603,10 +1603,10 @@
      "t": 16
     }
    },
-   "wins": 592,
-   "losses": 1451,
+   "wins": 590,
+   "losses": 1453,
    "ties": 457,
-   "score": 2233,
+   "score": 2227,
    "played": 2500
   },
   "twopass.red": {
@@ -1647,8 +1647,8 @@
      "t": 31
     },
     "oneshot.red": {
-     "w": 9,
-     "l": 91,
+     "w": 10,
+     "l": 90,
      "t": 0
     },
     "silk.red": {
@@ -1737,10 +1737,10 @@
      "t": 65
     }
    },
-   "wins": 691,
-   "losses": 1129,
+   "wins": 692,
+   "losses": 1128,
    "ties": 680,
-   "score": 2753,
+   "score": 2756,
    "played": 2500
   },
   "stunner.red": {
@@ -1781,9 +1781,9 @@
      "t": 45
     },
     "oneshot.red": {
-     "w": 46,
-     "l": 39,
-     "t": 15
+     "w": 47,
+     "l": 45,
+     "t": 8
     },
     "silk.red": {
      "w": 0,
@@ -1871,10 +1871,10 @@
      "t": 34
     }
    },
-   "wins": 694,
-   "losses": 1214,
-   "ties": 592,
-   "score": 2674,
+   "wins": 695,
+   "losses": 1220,
+   "ties": 585,
+   "score": 2670,
    "played": 2500
   },
   "stoneimp.red": {
@@ -1915,9 +1915,9 @@
      "t": 62
     },
     "oneshot.red": {
-     "w": 9,
-     "l": 59,
-     "t": 32
+     "w": 0,
+     "l": 57,
+     "t": 43
     },
     "silk.red": {
      "w": 0,
@@ -2005,10 +2005,10 @@
      "t": 51
     }
    },
-   "wins": 433,
-   "losses": 888,
-   "ties": 1179,
-   "score": 2478,
+   "wins": 424,
+   "losses": 886,
+   "ties": 1190,
+   "score": 2462,
    "played": 2500
   },
   "evolvedsilk.red": {
@@ -2049,9 +2049,9 @@
      "t": 33
     },
     "oneshot.red": {
-     "w": 59,
-     "l": 4,
-     "t": 37
+     "w": 31,
+     "l": 6,
+     "t": 63
     },
     "silk.red": {
      "w": 0,
@@ -2139,10 +2139,10 @@
      "t": 99
     }
    },
-   "wins": 1032,
-   "losses": 207,
-   "ties": 1261,
-   "score": 4357,
+   "wins": 1004,
+   "losses": 209,
+   "ties": 1287,
+   "score": 4299,
    "played": 2500
   },
   "redqueen.red": {
@@ -2317,9 +2317,9 @@
      "t": 17
     },
     "oneshot.red": {
-     "w": 38,
+     "w": 35,
      "l": 59,
-     "t": 3
+     "t": 6
     },
     "silk.red": {
      "w": 0,
@@ -2407,10 +2407,10 @@
      "t": 24
     }
    },
-   "wins": 579,
+   "wins": 576,
    "losses": 1498,
-   "ties": 423,
-   "score": 2160,
+   "ties": 426,
+   "score": 2154,
    "played": 2500
   },
   "quickscan.js": {
@@ -2451,9 +2451,9 @@
      "t": 3
     },
     "oneshot.red": {
-     "w": 35,
+     "w": 33,
      "l": 64,
-     "t": 1
+     "t": 3
     },
     "silk.red": {
      "w": 6,
@@ -2541,10 +2541,10 @@
      "t": 21
     }
    },
-   "wins": 721,
+   "wins": 719,
    "losses": 1427,
-   "ties": 352,
-   "score": 2515,
+   "ties": 354,
+   "score": 2511,
    "played": 2500
   },
   "gatekeeper.js": {
@@ -2719,9 +2719,9 @@
      "t": 41
     },
     "oneshot.red": {
-     "w": 59,
-     "l": 11,
-     "t": 30
+     "w": 34,
+     "l": 16,
+     "t": 50
     },
     "silk.red": {
      "w": 0,
@@ -2809,10 +2809,10 @@
      "t": 95
     }
    },
-   "wins": 1024,
-   "losses": 325,
-   "ties": 1151,
-   "score": 4223,
+   "wins": 999,
+   "losses": 330,
+   "ties": 1171,
+   "score": 4168,
    "played": 2500
   },
   "fastsilk.js": {
@@ -2853,9 +2853,9 @@
      "t": 43
     },
     "oneshot.red": {
-     "w": 55,
-     "l": 1,
-     "t": 44
+     "w": 33,
+     "l": 3,
+     "t": 64
     },
     "silk.red": {
      "w": 0,
@@ -2943,10 +2943,10 @@
      "t": 99
     }
    },
-   "wins": 1057,
-   "losses": 174,
-   "ties": 1269,
-   "score": 4440,
+   "wins": 1035,
+   "losses": 176,
+   "ties": 1289,
+   "score": 4394,
    "played": 2500
   },
   "blitz.js": {
@@ -2987,9 +2987,9 @@
      "t": 41
     },
     "oneshot.red": {
-     "w": 70,
-     "l": 9,
-     "t": 21
+     "w": 39,
+     "l": 10,
+     "t": 51
     },
     "silk.red": {
      "w": 0,
@@ -3077,10 +3077,10 @@
      "t": 91
     }
    },
-   "wins": 1048,
-   "losses": 296,
-   "ties": 1156,
-   "score": 4300,
+   "wins": 1017,
+   "losses": 297,
+   "ties": 1186,
+   "score": 4237,
    "played": 2500
   },
   "chameleon.js": {
@@ -3121,9 +3121,9 @@
      "t": 38
     },
     "oneshot.red": {
-     "w": 69,
-     "l": 13,
-     "t": 18
+     "w": 48,
+     "l": 18,
+     "t": 34
     },
     "silk.red": {
      "w": 11,
@@ -3211,10 +3211,10 @@
      "t": 90
     }
    },
-   "wins": 1095,
-   "losses": 289,
-   "ties": 1116,
-   "score": 4401,
+   "wins": 1074,
+   "losses": 294,
+   "ties": 1132,
+   "score": 4354,
    "played": 2500
   },
   "bandit.js": {
@@ -3255,9 +3255,9 @@
      "t": 12
     },
     "oneshot.red": {
-     "w": 72,
-     "l": 7,
-     "t": 21
+     "w": 54,
+     "l": 36,
+     "t": 10
     },
     "silk.red": {
      "w": 0,
@@ -3345,10 +3345,10 @@
      "t": 36
     }
    },
-   "wins": 1413,
-   "losses": 444,
-   "ties": 643,
-   "score": 4882,
+   "wins": 1395,
+   "losses": 473,
+   "ties": 632,
+   "score": 4817,
    "played": 2500
   },
   "hedgehog.js": {
@@ -3389,9 +3389,9 @@
      "t": 37
     },
     "oneshot.red": {
-     "w": 56,
-     "l": 7,
-     "t": 37
+     "w": 43,
+     "l": 16,
+     "t": 41
     },
     "silk.red": {
      "w": 1,
@@ -3479,10 +3479,10 @@
      "t": 82
     }
    },
-   "wins": 941,
-   "losses": 275,
-   "ties": 1284,
-   "score": 4107,
+   "wins": 928,
+   "losses": 284,
+   "ties": 1288,
+   "score": 4072,
    "played": 2500
   },
   "hydra.js": {
@@ -3523,9 +3523,9 @@
      "t": 41
     },
     "oneshot.red": {
-     "w": 53,
-     "l": 7,
-     "t": 40
+     "w": 37,
+     "l": 8,
+     "t": 55
     },
     "silk.red": {
      "w": 1,
@@ -3613,10 +3613,10 @@
      "t": 82
     }
    },
-   "wins": 1033,
-   "losses": 195,
-   "ties": 1272,
-   "score": 4371,
+   "wins": 1017,
+   "losses": 196,
+   "ties": 1287,
+   "score": 4338,
    "played": 2500
   }
  }

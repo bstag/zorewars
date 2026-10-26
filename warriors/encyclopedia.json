@@ -217,7 +217,8 @@
         "Same probe pair as Seeker: <code>SEQ.I</code> on two cells 6 apart, moving 12 per pass.",
         "On a hit, <code>MOV.AB scan, cptr</code> and <code>ADD.AB</code> turn the probe's address (relative to <code>scan</code>) into one relative to <code>cptr</code>, 8 cells early.",
         "<code>JMN.B stun, cptr</code> keeps the stun pass going until the pointer wraps round to <code>cptr</code> itself, just before our own code.",
-        "<code>MOV.B start, cptr</code> rewinds, and the DAT pass runs until it gets stuck rewriting <code>cptr</code>, which stops it safely."
+        "<code>MOV.B start, cptr</code> rewinds, and the DAT pass runs until it gets stuck rewriting <code>cptr</code>, which stops it safely.",
+        "Each pass starts with <code>SPL #0, 0</code>: a swarm of processes runs the clear, so a single bomb on it can't stop it (an idea from John Metcalf's Oneshot '88). That lifted it from 1.23 to 1.34 points per round against the library and the classics."
       ],
       "strengths": ["Second in the library benchmark.", "Spends no time bombing empty core."],
       "weaknesses": ["Only clears from the hit forward. A paper with copies behind the hit survives, which is why Silk beats it.", "Can't hurt an Imp: one cell of difference isn't enough to catch it."],

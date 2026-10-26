@@ -22,6 +22,7 @@ Ideas from the strongest of 567 public hill warriors ([n1LS/redcode-warriors](ht
 | File | Field | Idea | Result | Why |
 | --- | --- | --- | --- | --- |
 | `snare.js` | 40×20×10 | A small scanner that lays SPL 0 / JMP -1 traps on what it finds (after Shears), then a DAT pass | Beats Volume Queen 21-9, loses to nearly everything else | Trapping one find at a time is too slow against clears and streams |
+| `leapfrog2.js` | 80×10×10 | Leapfrog with wires on both sides, leaping away from whichever front trips one (an answer to Backdraft) | Backdraft 6-13-11 (Leapfrog 0-30); Volume Queen 20-9 (Leapfrog 29-1); Fast Silk 0-25 | Two checks a step leave its clear too slow to win |
 | `oneshot2.red` | ring | One-Shot rewritten to scan and clear backward with trap pairs (after Oneshot '88) | 1.17 (One-Shot 1.20, Oneshot '88 2.19) | Direction wasn't Oneshot '88's edge on the ring: its clear is a self-multiplying SPL 0 swarm in 10 instructions |
 | (decoys) | ring | One-Shot with 30-60 junk cells before or after it (after '88 test IV) | 1.19-1.20 (no change) | Not kept as a file |
 

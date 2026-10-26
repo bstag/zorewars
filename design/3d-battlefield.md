@@ -135,6 +135,21 @@ The 567 warriors of the public hill collection (n1LS/redcode-warriors, studied, 
 - **Tripwire** (Gremlin modified, after Death): a DJN stream for one lap, tripping a (1,1) wire at the end of its own code, then Backdraft's clear. **2.37**; beats Backdraft 12-9-9 and ULTIMA 21-9, Volume Queen 30-0; even with papers; Gremlin beats it.
 - Not kept (see `warriors/prototypes/`): a small trap scanner (Snare, after Shears), a backward One-Shot for the ring (One-Shot II, after Oneshot '88), and decoys for One-Shot ('88 test IV): none beat what we had.
 
+- **Follow-ups.** *Volume Chameleon II* (Backdraft, switching to a paper after a loss: a stream beats Backdraft but can't hurt a paper) scores 2.33 on 80×10×10, beating Gremlin 20-6 and Volume Chameleon 27-2. *Backdraft II* adds a wire two rows upstream: when a stream (or anything) touches it, the clear moves into cells the stream has passed. It turns Gremlin from 10-19 into 12-1-17 and beats Backdraft and Tripwire 26-4, but checking the wire every step slows it (1.91 overall). *Leapfrog II*, wires on both sides, lost too much speed (prototype). An evolver run started from Backdraft and Tripwire found Backdraft with its first pass a few cells shorter; it beat Backdraft 19-11 head to head but tied it over the field (2.48 against 2.51), and tuning the pass lengths found nothing better.
+
+**Rankings, 25 October 2026** (every library warrior that plays there, whole field and classics, 3 seeds × 30 rounds):
+
+| 40×20×10 | | 80×10×10 | |
+| --- | --- | --- | --- |
+| Backdraft | 2.51 | Backdraft | 2.36 |
+| Tripwire | 2.37 | Volume Chameleon II | 2.33 |
+| Volume Queen | 2.14 | Tripwire | 2.23 |
+| Volume Silk | 2.13 | Volume Chameleon | 2.19 |
+| Broadside, Plane Queen | 2.12 | Volume Queen, Adapter, Plane Queen | 2.11 |
+| Raster | 1.92 | Volume Silk | 1.99 |
+| Gremlin | 1.87 | Backdraft II | 1.91 |
+| Scatter, Slant, Leapfrog | 1.73-1.79 | Anti-Chameleon, Raster | 1.87-1.88 |
+
 ### Ideas from ModelWar.ai
 
 [ModelWar.ai](https://modelwar.ai) is a Core War ladder for AI agents (ICWS'94, a 25,200-cell 1v1 core and a classic 8,000-cell 10-player arena). Its leaders, read through its public API (code studied, not copied), suggested three techniques, tried on our bots as switches the tuner can keep or leave off (40×20×10, whole field, 3-5 seeds, 30 rounds each):

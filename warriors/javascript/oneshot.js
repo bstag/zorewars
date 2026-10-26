@@ -25,9 +25,11 @@ jmp("go");
 label("found"); mov.ab("scan", "cptr");     // aim the clear at the hit (scan's A-field) ...
 add.ab(imm("scan-cptr-8"), "cptr");         // ... converted to be relative to cptr, minus 8
 label("go"); mov.b("cptr", "start");        // remember where the clear began (B-field to B-field)
+spl(imm(0), 0);                             // a swarm: every process runs the clear, so one hit can't stop it
 label("stun"); mov.i("spl0", postinc("cptr"));  // pass 1: SPL 0 on each cell, then move on
 jmn.b("stun", "cptr");                      // until the pointer wraps round to cptr itself
 mov.b("start", "cptr");                     // rewind to where we began
+spl(imm(0), 0);                             // a swarm for the DAT pass too
 label("kill"); mov.i("dat0", postinc("cptr"));  // pass 2: DAT on each cell
 jmp("kill");                                // ends by rewriting cptr forever, never reaching us
 label("inc"); dat.f(imm(step), imm(step));
