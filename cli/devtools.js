@@ -146,7 +146,9 @@ export async function cmdEvolve(args, h) {
   // --scratch: none of that. Random programs, scored only against each
   // other's champions; the library is only held out, to report progress.
   const scratch = !!args.flags.scratch;
-  const library = libraryOpponents(settings);
+  // Under '88 rules the library (ICWS'94) doesn't assemble, so its genes come
+  // from the '94 build and the evolver bends each child into '88 (legal88).
+  const library = libraryOpponents(settings.dialect === '88' ? { ...settings, dialect: undefined } : settings);
   const hill = args.flags.hill ? await hillOpponents(String(args.flags.hill), settings, args.flags) : null;
   const field = scratch ? [] : hill ?? library;
   const extra = args._.length ? await h.loadAll(h.expandRefs(args._), settings, json) : [];
@@ -176,7 +178,7 @@ export async function cmdEvolve(args, h) {
         done(json);
         const c = rec.champion;
         const file = path.join(out, `redqueen-${rec.round}.red`);
-        fs.writeFileSync(file, toRedcode(c.g, { name: c.name, coreSize: settings.coreSize, geo, strategy: `Champion of Red Queen generation ${rec.round} (zorewars evolve): ${c.species.hint}, ${c.species.processes} processes, ${c.species.coverage} cells.` }));
+        fs.writeFileSync(file, toRedcode(c.g, { name: c.name, coreSize: settings.coreSize, geo, dialect: settings.dialect, strategy: `Champion of Red Queen generation ${rec.round} (zorewars evolve): ${c.species.hint}, ${c.species.processes} processes, ${c.species.coverage} cells.` }));
         if (json) return;
         const vs = c.vsAncestors ? ` | vs ancestors ${(c.vsAncestors.reduce((s, x) => s + x.pts, 0) / c.vsAncestors.length).toFixed(2)} pts/round` : '';
         const held = c.heldOut ? ` | held-out ${scratch ? 'library' : 'classics'} ${c.heldOut.score.toFixed(2)}` : '';
@@ -186,7 +188,7 @@ export async function cmdEvolve(args, h) {
     for (const x of r.archive) {
       const [p, c, shape] = x.cell.split(',');
       const tag = `p${p}-c${c}${shape ? `-s${shape}` : ''}`;
-      fs.writeFileSync(path.join(out, `elite-${tag}.red`), toRedcode(x.g, { name: `Elite ${tag.replaceAll('-', ' ')}`, coreSize: settings.coreSize, geo, strategy: `Best evolved ${x.species.hint} (${x.species.processes} processes, ${x.species.coverage} cells), zorewars evolve.` }));
+      fs.writeFileSync(path.join(out, `elite-${tag}.red`), toRedcode(x.g, { name: `Elite ${tag.replaceAll('-', ' ')}`, coreSize: settings.coreSize, geo, dialect: settings.dialect, strategy: `Best evolved ${x.species.hint} (${x.species.processes} processes, ${x.species.coverage} cells), zorewars evolve.` }));
     }
     fs.writeFileSync(path.join(out, 'evolve.json'), JSON.stringify(r, null, 1));
     if (json) { console.log(JSON.stringify({ ok: true, out, champions: r.champions.map(({ w, ...c }) => c), archive: r.archive, operators: r.operators }, null, 2)); return; }

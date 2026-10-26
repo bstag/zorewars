@@ -5,6 +5,8 @@
 // without names. Operators only append or prepend code (or edit in place), so
 // the relative addresses inside the old code keep working.
 
+import { defaultModifier } from '../src/engine/constants.js';
+
 export const MAXLEN = 40;
 export const ROLES = ['paper', 'stone', 'scan', 'clear', 'imp'];
 
@@ -67,6 +69,24 @@ const NUMS = [1, 2, 3, 4, 5, 7, 8, 13, 16, 97, 1471, 2365, 2667, 3044, 3364];
 const OPS_ALL = ['MOV', 'ADD', 'SUB', 'MUL', 'DIV', 'MOD', 'JMP', 'JMZ', 'JMN', 'DJN', 'SPL', 'SEQ', 'SNE', 'SLT', 'NOP', 'DAT'];
 const MODS_ALL = ['A', 'B', 'AB', 'BA', 'F', 'X', 'I'];
 const MODES_ALL = ['#', '$', '@', '<', '>', '*', '{', '}'];
+
+// ICWS'88 (pMARS -8, the '88 tournament): eleven opcodes, # $ @ < only,
+// limits on immediates and no modifiers, so each instruction runs with the
+// modifier the '94 standard gives that '88 code. legal88 bends an evolved
+// instruction into that, in place; the evolver applies it to every child.
+const OPS88 = ['DAT', 'MOV', 'ADD', 'SUB', 'JMP', 'JMZ', 'JMN', 'DJN', 'SEQ', 'SPL', 'SLT'];
+const OP_TO88 = { MUL: 'ADD', DIV: 'SUB', MOD: 'SUB', SNE: 'SEQ', NOP: 'JMP', TRN: 'JMP', LDP: 'MOV', STP: 'MOV' };
+const MODE_TO88 = { '>': '<', '{': '<', '}': '<', '*': '@' };
+export function legal88(i) {
+  if (!OPS88.includes(i.op)) i.op = OP_TO88[i.op] ?? 'MOV';
+  i.aMode = MODE_TO88[i.aMode] ?? i.aMode;
+  i.bMode = MODE_TO88[i.bMode] ?? i.bMode;
+  if (i.op === 'DAT') { if (!'#<'.includes(i.aMode)) i.aMode = '#'; if (!'#<'.includes(i.bMode)) i.bMode = '#'; }
+  if (['MOV', 'ADD', 'SUB', 'SEQ'].includes(i.op) && i.bMode === '#') i.bMode = '$';
+  if (['JMP', 'JMZ', 'JMN', 'DJN', 'SPL'].includes(i.op) && i.aMode === '#') i.aMode = '$';
+  i.mod = defaultModifier(i.op, i.aMode, i.bMode);
+  return i;
+}
 
 // A random program for evolving from scratch: random opcodes, modifiers and
 // modes; each number is a small step (within the program, mostly) or any
@@ -187,8 +207,15 @@ export function toWarrior(g, name = 'Evolved', coreSize = 8000) {
   return { ok: true, name, author: 'ZoreWars Evolver', start: g.start, instructions: g.code.map((i) => ({ ...i, a: norm(i.a), b: norm(i.b) })) };
 }
 
-export function toRedcode(g, { name = 'Evolved', strategy = '', coreSize = 8000, geo = null } = {}) {
+export function toRedcode(g, { name = 'Evolved', strategy = '', coreSize = 8000, geo = null, dialect = null } = {}) {
   const sv = (v) => { v = ((v % coreSize) + coreSize) % coreSize; return geo ? geo.format(v) : v > coreSize / 2 ? v - coreSize : v; };
+  if (dialect === '88') {   // no modifiers, CMP for SEQ, and the start on the END line
+    return [
+      ';redcode', `;name ${name}`, ';author ZoreWars Evolver', ...(strategy ? [`;strategy ${strategy}`] : []),
+      ...g.code.map((i, k) => `${k === g.start ? 'start' : ''}`.padEnd(8) + `${(i.op === 'SEQ' ? 'CMP' : i.op).padEnd(8)}${i.aMode}${sv(i.a)}, ${i.bMode}${sv(i.b)}`),
+      '        END     start', '',
+    ].join('\n');
+  }
   return [
     ';redcode-94', `;name ${name}`, ';author ZoreWars Evolver', ...(strategy ? [`;strategy ${strategy}`] : []),
     `        ORG     ${g.start}`,

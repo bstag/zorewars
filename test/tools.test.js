@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { compile, runMatch, measureSpecies, speciesAxes, diagnoseRounds } from '../src/engine/index.js';
+import { compile, runMatch, measureSpecies, speciesAxes, diagnoseRounds, RULESETS } from '../src/engine/index.js';
 import { parseTunable, withConstants } from '../tools/tune.js';
-import { makeGenePool, makeOperators, genomeOf, graft, toWarrior, toRedcode, roleOf, randomGenome } from '../tools/genes.js';
+import { makeGenePool, makeOperators, genomeOf, graft, toWarrior, toRedcode, roleOf, randomGenome, legal88 } from '../tools/genes.js';
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const read = (f) => fs.readFileSync(path.join(root, f), 'utf8');
@@ -155,4 +155,16 @@ test('push-off: a clone is worth less than a different warrior of the same stren
   // An exact clone has no diversity, so it scores 0 like a warrior that wins
   // nothing, and is pushed off first.
   assert.ok(['A', 'B'].includes(r[4].name) && r[4].div === 0);
+});
+
+test("legal88 bends random programs into ICWS'88 that assembles under the '88 rules", () => {
+  for (let k = 0; k < 200; k++) {
+    const g = randomGenome(10);
+    g.code.forEach(legal88);
+    const text = toRedcode(g, { dialect: '88' });
+    const w = compile(text, 'redcode', RULESETS['88']);
+    assert.ok(w.ok, `${text}\n${JSON.stringify(w.errors)}`);
+    assert.deepEqual(w.instructions.map(({ op, mod, aMode, bMode }) => [op, mod, aMode, bMode]), g.code.map(({ op, mod, aMode, bMode }) => [op, mod, aMode, bMode]));
+    assert.equal(w.start, g.start);
+  }
 });

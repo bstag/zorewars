@@ -18,7 +18,7 @@
 import { measureSpecies } from '../src/engine/index.js';
 import { makeGeometry } from '../src/engine/geometry.js';
 import { evaluate, strip } from './hill.js';
-import { makeGenePool, makeOperators, makeChooser, crossover, fits, clone, graft, genomeOf, pick, toWarrior, randomGenome, MAXLEN } from './genes.js';
+import { makeGenePool, makeOperators, makeChooser, crossover, fits, clone, graft, genomeOf, pick, toWarrior, randomGenome, legal88, MAXLEN } from './genes.js';
 
 export async function evolve({
   pool, sources, opponents, heldOut = [], settings,
@@ -42,6 +42,7 @@ export async function evolve({
 
   async function assess(g, round) {
     if (!fits(g, maxLength)) return null;
+    if (settings.dialect === '88') g.code.forEach(legal88);   // every child stays ICWS'88
     const w = toWarrior(g, 'Evolved', coreSize);
     const species = measureSpecies(w, settings);
     if (!species.survives) return null;              // kills itself when alone
@@ -74,6 +75,7 @@ export async function evolve({
     const alive = [];
     for (let tries = 0; alive.length < Math.max(batchSize, 40) && tries < 20000; tries++) {
       const g = randomGenome(4 + Math.floor(Math.random() * (maxLength - 3)), { coreSize, geo });
+      if (settings.dialect === '88') g.code.forEach(legal88);
       if (measureSpecies(toWarrior(g, 'Random', coreSize), settings).survives) alive.push(g);
     }
     if (!alive.length) throw new Error('no random program survived alone');
