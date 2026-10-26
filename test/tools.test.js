@@ -157,6 +157,30 @@ test('push-off: a clone is worth less than a different warrior of the same stren
   assert.ok(['A', 'B'].includes(r[4].name) && r[4].div === 0);
 });
 
+test('push-off readings: results reproduce the points reading, and every variant still sinks a clone', async () => {
+  const { pushOff } = await import('../tools/pushoff.js');
+  // Win/loss/tie results for five warriors (10 rounds a pair); A and B are
+  // clones, so each plays itself as it plays the other.
+  const R = [
+    [[4, 4, 2], [4, 4, 2], [6, 2, 2], [9, 1, 0], [3, 7, 0]],
+    [[4, 4, 2], [4, 4, 2], [6, 2, 2], [9, 1, 0], [3, 7, 0]],
+    [[2, 6, 2], [2, 6, 2], [5, 5, 0], [8, 0, 2], [7, 1, 2]],
+    [[1, 9, 0], [1, 9, 0], [0, 8, 2], [0, 0, 10], [2, 8, 0]],
+    [[7, 3, 0], [7, 3, 0], [1, 7, 2], [8, 2, 0], [5, 5, 0]],
+  ];
+  const results = R.map((row) => row.map(([w, l, t]) => ({ w, l, t, rounds: 10 })));
+  const scores = results.map((row, i) => row.map((r, j) => (i === j ? 0 : (3 * r.w + r.t) / r.rounds)));
+  const names = ['A', 'B', 'C', 'D', 'E'];
+  const plain = pushOff(scores, names).map((x) => x.name);
+  assert.deepEqual(pushOff(scores, names, { results }).map((x) => x.name), plain, 'results with the default reading change nothing');
+  for (const features of ['points', 'wlt', 'wl']) for (const metric of ['sd', 'eq6', 'euclid']) for (const self of [false, true]) for (const field of ['original', 'current']) {
+    const r = pushOff(scores, names, { results, features, metric, self, field });
+    assert.equal(r.length, 5);
+    assert.ok(['A', 'B'].includes(r[4].name), `${features}/${metric}/${self}/${field}: a clone goes first`);
+  }
+  assert.throws(() => pushOff(scores, names, { features: 'wlt' }), /needs the win\/loss\/tie results/);
+});
+
 test("legal88 bends random programs into ICWS'88 that assembles under the '88 rules", () => {
   for (let k = 0; k < 200; k++) {
     const g = randomGenome(10);

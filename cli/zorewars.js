@@ -43,7 +43,7 @@ Developer tools (use every CPU core):
                                                      search the warrior's // SPACE for better constants
   zorewars evolve [warrior...] [--generations 6] [--king w.js] [--genome 40] [--scratch] [--ties 0.5] [--out evolved]
                                                      breed warriors: Red Queen rounds of MAP-Elites
-  zorewars pushoff <entry...> --hill koenigstuhl:94nop|88|lp|94x [--rules NAME] [--length 50] [--top 50]
+  zorewars pushoff <entry...> --hill koenigstuhl:94nop|88|lp|94x [--rules NAME] [--length 50] [--top 50] [--save f]
                                                      predict a tournament place: round robin with a hill's
                                                      top warriors, then the iterative diversity push-off
 
@@ -96,7 +96,7 @@ function parseArgs(argv) {
     const a = argv[i];
     if (a.startsWith('--')) {
       const key = a.slice(2);
-      if (['json', 'help', 'report', 'classics', 'write', 'scratch'].includes(key)) args.flags[key] = true;
+      if (['json', 'help', 'report', 'classics', 'write', 'scratch', 'self'].includes(key)) args.flags[key] = true;
       else args.flags[key] = argv[++i];
     } else if (a === '-h') args.flags.help = true;
     else if (/^-[A-Za-z]$/.test(a) && PMARS_FLAGS[a[1]]) args.flags[PMARS_FLAGS[a[1]]] = argv[++i];
