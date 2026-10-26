@@ -4,12 +4,14 @@
 // challenger plays every warrior on it; if it ranks in the top LADDER_SIZE it
 // stays and the bottom warrior drops off. Every warrior on the hill has had to
 // beat the ones that were there before it (the "Red Queen" idea from Digital
-// Red Queen, Sakana AI / MIT). Ranked by points per round, then smooth score.
+// Red Queen, Sakana AI / MIT). Ranked by points per round, then smooth score,
+// or by the Core War Tournament Weekend's diversity push-off (pushOff): a
+// warrior that wins its own way outranks a stronger one that has a twin.
 //
 // Species map: where warriors sit by behaviour, measured alone in the core
 // (src/engine/species.js), with the library for comparison.
 
-import { compile, runRound, VM, mulberry32, roundPoints, smoothPoints, measureSpecies, speciesAxes, speciesHint, inLibraryFor } from '../src/engine/index.js';
+import { compile, runRound, VM, mulberry32, roundPoints, smoothPoints, measureSpecies, speciesAxes, speciesHint, inLibraryFor, pushOff } from '../src/engine/index.js';
 import { WARRIOR_COLORS } from './arena.js';
 
 const LADDER_KEY = 'zorewars.ladder.v1';
@@ -62,12 +64,31 @@ export function initLadder(ctx) {
       return { m, pts: n ? pts / n : 0, smooth: n ? smooth / n : 0, w, l, t, n };
     }).sort((a, b) => b.pts - a.pts || b.smooth - a.smooth);
   }
+  // The same rows in push-off order, each with its diversity and push-off
+  // score. Members that haven't played everyone yet go last, unranked.
+  const pushoffMode = () => $('ladderRank').value === 'pushoff';
+  function ranked() {
+    const rows = standings();
+    if (!pushoffMode()) return rows;
+    const full = rows.filter((r) => r.n === rows.length - 1);
+    if (full.length < 3) return rows;
+    const scores = full.map((a) => full.map((b) => { const r = a === b ? null : result(a.m.id, b.m.id); return r ? (3 * r.w + r.t) / r.rounds : 0; }));
+    const order = pushOff(scores, full.map((r) => r.m.name));
+    return [...order.map((o) => ({ ...full[o.index], div: o.div, score: o.score })), ...rows.filter((r) => !full.includes(r))];
+  }
 
   function render(status) {
     if (status !== undefined) $('ladderStatus').innerHTML = status;
-    const rows = standings();
-    $('ladderTable').innerHTML = `<table class="results ladder"><thead><tr><th>#</th><th>Warrior</th><th title="Points per round against the rest of the ladder (win 3, tie 1)">Pts</th><th title="Smooth score: a loss counts the share of the round survived">Smooth</th><th title="Challenges survived since joining">Age</th></tr></thead><tbody>${
-      rows.map((r, i) => `<tr${r.m.origin === 'you' ? ' class="you"' : ''} title="${r.w} wins, ${r.l} losses, ${r.t} ties"><td>${i + 1}</td><td class="name">${r.m.origin === 'you' ? '<span class="dot" style="background:var(--accent)"></span>' : ''}${esc(r.m.name)}</td><td>${r.n ? r.pts.toFixed(2) : '…'}</td><td>${r.n ? r.smooth.toFixed(2) : '…'}</td><td>${r.m.age}</td></tr>`).join('')
+    const rows = ranked();
+    const po = pushoffMode();
+    const extra = po
+      ? '<th title="SD-score to the most similar warrior: how differently it wins and loses">Div</th><th title="Push-off score: points per round × diversity, when it was pushed off">Score</th>'
+      : '<th title="Smooth score: a loss counts the share of the round survived">Smooth</th>';
+    const cells = (r) => (po
+      ? `<td>${r.div !== undefined ? r.div.toFixed(2) : '…'}</td><td>${r.score !== undefined ? r.score.toFixed(2) : '…'}</td>`
+      : `<td>${r.n ? r.smooth.toFixed(2) : '…'}</td>`);
+    $('ladderTable').innerHTML = `<table class="results ladder"><thead><tr><th>#</th><th>Warrior</th><th title="Points per round against the rest of the ladder (win 3, tie 1)">Pts</th>${extra}<th title="Challenges survived since joining">Age</th></tr></thead><tbody>${
+      rows.map((r, i) => `<tr${r.m.origin === 'you' ? ' class="you"' : ''} title="${r.w} wins, ${r.l} losses, ${r.t} ties"><td>${i + 1}</td><td class="name">${r.m.origin === 'you' ? '<span class="dot" style="background:var(--accent)"></span>' : ''}${esc(r.m.name)}</td><td>${r.n ? r.pts.toFixed(2) : '…'}</td>${cells(r)}<td>${r.m.age}</td></tr>`).join('')
     }</tbody></table>`;
     const slot = ctx.activeSlot();
     const name = slot?.compiled?.ok ? slot.compiled.name : null;
@@ -84,6 +105,21 @@ export function initLadder(ctx) {
     let k = 0, r = 0, done = 0, acc = null, pspaces = null;
     job = { cancel: false };
     const step = () => {
+      try {
+        slice();
+      } catch (e) {
+        // A round that can't be played ends the run; the ladder stays usable.
+        job = null;
+        render(`Stopped: ${esc(e.message)}`);
+        return;
+      }
+      if (k < pairs.length && !job.cancel) { setTimeout(step, 0); return; }
+      const cancelled = job.cancel;
+      job = null;
+      save();
+      onDone(cancelled);
+    };
+    const slice = () => {
       const t0 = performance.now();
       while (k < pairs.length && !job.cancel && performance.now() - t0 < 40) {
         const [a, b] = pairs[k];
@@ -101,11 +137,6 @@ export function initLadder(ctx) {
         }
       }
       $('ladderBar').style.width = `${(done / total) * 100}%`;
-      if (k < pairs.length && !job.cancel) { setTimeout(step, 0); return; }
-      const cancelled = job.cancel;
-      job = null;
-      save();
-      onDone(cancelled);
     };
     step();
   }
@@ -141,7 +172,7 @@ export function initLadder(ctx) {
       ladder.members.push(me);
       play(pairs, roundsWanted(), (cancelled) => {
         if (cancelled) { removeMember(me); save(); render('Challenge stopped.'); return; }
-        const rows = standings();
+        const rows = ranked();
         const place = rows.findIndex((r) => r.m === me) + 1;
         let msg;
         if (rows.length > LADDER_SIZE) {
@@ -174,6 +205,7 @@ export function initLadder(ctx) {
 
   $('ladderChallenge').addEventListener('click', challenge);
   $('ladderReset').addEventListener('click', reset);
+  $('ladderRank').addEventListener('change', () => { if (ladder) render(); });
   // The ladder is set up the first time the card is opened.
   $('ladderCard').addEventListener('toggle', () => {
     if (!$('ladderCard').open) return;
@@ -192,27 +224,36 @@ export function initLadder(ctx) {
 
 export function initSpecies(ctx) {
   let libCache = { rules: null, rows: [] };
+  let measuring = null;               // the rules being measured, while a measurement runs
   let selected = null;
 
   function measureLibrary(then) {
     const settings = ctx.settings();
-    if (libCache.rules === rulesKey(settings)) { then(); return; }
+    const rules = rulesKey(settings);
+    if (libCache.rules === rules) { then(); return; }
+    if (measuring === rules) return;  // already under way; it calls `then` when done
+    measuring = rules;
     const list = ctx.library().filter((e) => inLibraryFor(e, settings));
     const rows = [];
     let i = 0;
     $('speciesInfo').textContent = 'Measuring the library…';
     const step = () => {
+      if (measuring !== rules) return;  // the rules changed: a newer measurement took over
       const t0 = performance.now();
       while (i < list.length && performance.now() - t0 < 40) {
         const e = list[i++];
-        const w = compile(e.source, e.language, settings);
-        if (!w.ok) continue;
-        const m = measureSpecies(w, settings);
+        let w, m;
+        try {
+          w = compile(e.source, e.language, settings);
+          if (!w.ok) continue;
+          m = measureSpecies(w, settings);
+        } catch { continue; }           // one warrior that can't be measured is left off
         // On a plane, ring warriors that destroy themselves are left off the map.
         if (m.survives || settings.topology !== 'torus') rows.push({ name: w.name, ...m });
       }
       if (i < list.length) { setTimeout(step, 0); return; }
-      libCache = { rules: rulesKey(settings), rows };
+      measuring = null;
+      libCache = { rules, rows };
       then();
     };
     step();

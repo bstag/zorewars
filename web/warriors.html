@@ -34,9 +34,6 @@
     table.ref th { color: var(--muted); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
     table.ref td.yr { font-family: var(--mono); color: var(--text-2); white-space: nowrap; }
     .btn.fight { padding: 3px 10px; font-size: 12px; text-decoration: none; color: var(--text); }
-    .chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 16px 0; }
-    .chip { border: 1px solid var(--line); background: var(--bg-2); color: var(--text-2); border-radius: 999px; padding: 4px 12px; cursor: pointer; font-size: 13px; }
-    .chip[aria-pressed="true"] { color: var(--text); border-color: var(--accent); background: rgba(34, 211, 238, 0.1); }
 
     .wcard { border: 1px solid var(--line); border-radius: 12px; background: linear-gradient(180deg, var(--panel), var(--bg-2)); padding: 18px 20px; margin: 18px 0; scroll-margin-top: 72px; }
     .wcard[hidden] { display: none; }
@@ -64,6 +61,8 @@
     .listing td { padding: 2px 10px; vertical-align: top; border-bottom: 1px solid #0f1730; }
     .listing td.code { white-space: pre; color: #e2e8f0; width: 1%; }
     .listing td.why { color: #7dd3fc; font-family: var(--sans); font-size: 13px; min-width: 200px; }
+    .enc-search { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; color: var(--text); font: inherit; margin-top: 8px; }
+    .chips + .chips { margin-top: -6px; }
     .listing tr.note td { color: #8193b2; font-family: var(--sans); font-size: 13px; font-style: italic; padding-top: 8px; background: #080d1a; }
     .matchups { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; margin-top: 12px; font-size: 13px; }
     .matchups h5 { margin: 0 0 4px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 500; }
@@ -108,7 +107,7 @@
 
     <main class="enc">
       <h1>Warrior Encyclopedia</h1>
-      <p class="lead">The classic Core War strategies, rebuilt for ZoreWars and explained line by line. Every one is in the arena's Library menu and in the <code>warriors/</code> folder.</p>
+      <p class="lead">The classic Core War strategies, rebuilt for ZoreWars and explained line by line, plus the new warriors written for ZoreWars' plane and 3D battlefields. Every one is in the arena's warrior picker and in the <code>warriors/</code> folder.</p>
 
       <h2 id="count">How many warriors exist?</h2>
       <p>Thousands. Core War has been played since 1984, and players have published their programs to newsgroups, tournament archives and "hills" (standing tournaments) ever since. The two big public archives:</p>
@@ -132,8 +131,11 @@
       <p>The most recent name is worth noticing. <strong>Arvon</strong>, credited to "Stefan Kammann &amp; Forge-AI", topped the Koenigstuhl 94nop recursive ranking in 2026. Its strategy notes describe a quickscan whose parameters came from a data-driven coverage model, followed by a silk paper and a stone. AI-assisted warriors are already competing at the top: exactly the kind of loop the ZoreWars CLI is built for.</p>
 
       <h2 id="warriors">The warriors</h2>
-      <p>Each card explains the idea, walks through the code line by line (the explanations are the comments in the source file), and shows real results from the benchmark. <strong>Watch it fight</strong> opens the warrior in the arena against a suitable opponent.</p>
+      <p>Each card explains the idea, walks through the code line by line (the explanations are the comments in the source file), and shows real results from the benchmark. <strong>Watch it fight</strong> opens the warrior in the arena against a suitable opponent. Plane and 3D warriors fight on their own battlefields (experimental), so their matchups aren't in the ring benchmark.</p>
+      <input type="search" id="encSearch" class="enc-search" placeholder="Search warriors by name, family or idea…" aria-label="Search warriors">
+      <div class="chips" id="fieldFilters" role="group" aria-label="Filter by battlefield"></div>
       <div class="chips" id="filters" role="group" aria-label="Filter by family"></div>
+      <p class="muted small" id="encCount" role="status"></p>
       <div id="cards"><p class="muted">Loading warriors…</p></div>
     </main>
   </div>

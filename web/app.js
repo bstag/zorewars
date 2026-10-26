@@ -6,6 +6,7 @@ import { CoreRenderer, ProcessChart, WARRIOR_COLORS } from './arena.js';
 import { CoreView3D } from './arena3d.js';
 import { AvatarView } from './avatars.js';
 import { Highlights } from './highlights.js';
+import { initPicker } from './picker.js';
 import { generateFromPython, pythonReady } from './python.js';
 import { createCodeEditor } from './editor.js';
 import { initLadder, initSpecies } from './ladder.js';
@@ -189,31 +190,26 @@ function refreshLibraryFit() {
   };
   step();
 }
+// The library button names the active slot's library warrior (while it is
+// unedited); the picker (picker.js) lists the library.
 function renderLibrarySelect() {
-  const sel = $('librarySelect');
-  const keep = sel.value;
-  const fit = state.libraryFit?.done ? state.libraryFit.fit : null;
-  const runs = (e) => !fit || fit.get(e.file) !== false;
-  sel.innerHTML = '<option value="">Load a classic…</option>';
-  const label = (e) => `${e.name} — ${e.category}${e.convertedFrom ? ' (converted)' : ''}${e.battlefield ? (e.battlefield.split('x').length > 2 ? ' · 3D' : ' · plane') : ''}`;
-  const add = (title, entries) => {
-    if (!entries.length) return;
-    const og = document.createElement('optgroup');
-    og.label = title;
-    for (const e of entries) {
-      const o = document.createElement('option');
-      o.value = e.file;
-      o.textContent = label(e);
-      og.appendChild(o);
-    }
-    sel.appendChild(og);
-  };
-  const groups = { redcode: 'Redcode', javascript: 'JavaScript', python: 'Python' };
-  for (const [lang, title] of Object.entries(groups)) add(title, state.library.filter((x) => x.language === lang && runs(x)));
-  add('For other battlefields (pick one to switch)', state.library.filter((x) => !runs(x)));
-  sel.value = keep;
+  const slot = activeSlot();
+  const e = slot?.libFile && libraryEntry(slot.libFile)?.source === slot.source ? libraryEntry(slot.libFile) : null;
+  $('libraryLabel').textContent = e ? e.name : 'Choose a warrior…';
+  state.picker?.refresh();
 }
+// Whether a library warrior plays on the current battlefield: undefined
+// while that is still being checked.
+const libraryFits = (e) => (state.libraryFit?.done ? state.libraryFit.fit.get(e.file) !== false : undefined);
 
+function pickLibrary(entry) {
+  const slot = activeSlot();
+  if (!isPristine(slot) && !confirm('Replace your edits with this warrior?')) return;
+  Object.assign(slot, { language: entry.language, source: entry.source, libFile: entry.file, origin: null, edited: false, compiled: null });
+  saveSlots();
+  renderEditor();
+  compileSlot(slot);
+}
 function libraryEntry(file) {
   return state.library.find((e) => e.file === file);
 }
@@ -302,7 +298,7 @@ function renderEditor() {
   state.editor.setLanguage(slot.language);
   state.editor.setValue(slot.source);
   $('languageSelect').value = slot.language;
-  $('librarySelect').value = slot.libFile && libraryEntry(slot.libFile)?.source === slot.source ? slot.libFile : '';
+  renderLibrarySelect();
   refreshPanels();
   const origin = $('originText');
   origin.hidden = !slot.origin;
@@ -1206,16 +1202,8 @@ function wireMobile() {
 
 function wireEvents() {
 
-  $('librarySelect').addEventListener('change', (e) => {
-    const entry = libraryEntry(e.target.value);
-    if (!entry) return;
-    const slot = activeSlot();
-    if (!isPristine(slot) && !confirm('Replace your edits with this warrior?')) { renderEditor(); return; }
-    Object.assign(slot, { language: entry.language, source: entry.source, libFile: entry.file, origin: null, edited: false, compiled: null });
-    saveSlots();
-    renderEditor();
-    compileSlot(slot);
-  });
+  state.picker = initPicker({ library: () => state.library, fits: libraryFits, onPick: pickLibrary });
+  $('libraryBtn').addEventListener('click', () => state.picker.open());
 
   $('languageSelect').addEventListener('change', (e) => {
     const slot = activeSlot();
@@ -1370,7 +1358,9 @@ function wireEvents() {
   // with its syntax checks, limited process, 94x); none of them has P-space.
   $('setRules').addEventListener('change', () => {
     const name = $('setRules').value;
-    applySettings(name ? { ...fieldSettings('ring'), ...NO_HILL_RULES, ...RULESETS[name], rulesName: name } : { ...NO_HILL_RULES });
+    // "94nop@50": a hill's rules with a tournament's length limit.
+    const [hill, length] = name.split('@');
+    applySettings(name ? { ...fieldSettings('ring'), ...NO_HILL_RULES, ...RULESETS[hill], ...(length ? { maxLength: +length } : {}), rulesName: name } : { ...NO_HILL_RULES });
   });
 
   document.addEventListener('keydown', (e) => {
@@ -1437,6 +1427,11 @@ async function boot() {
     state.slots = requested.map((f) => makeSlot(f));
     saveSlots();
     history.replaceState(null, '', location.pathname);
+    // The first warrior's battlefield: a plane or 3D warrior opens on its own.
+    const field = libraryEntry(requested[0]).battlefield ?? 'ring';
+    if (fieldKey(state.settings) !== field) {
+      applySettings(field === 'ring' ? { ...DEFAULT_SETTINGS, ...fieldSettings('ring'), ...NO_HILL_RULES } : { ...NO_HILL_RULES, ...fieldSettings(field) });
+    }
   } else if (Array.isArray(saved) && saved.length) {
     state.slots = saved.slice(0, MAX_SLOTS).map((s) => ({ ...makeSlot(null), ...s, compiled: null }));
   } else {

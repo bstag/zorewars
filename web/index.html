@@ -52,10 +52,10 @@
       </div>
 
       <div class="editor-toolbar">
-        <label class="field">
+        <div class="field">
           <span>Library</span>
-          <select id="librarySelect"></select>
-        </label>
+          <button type="button" class="btn library-btn" id="libraryBtn" title="Search the warrior library" aria-haspopup="dialog"><span class="label" id="libraryLabel">Choose a warrior…</span></button>
+        </div>
         <label class="field">
           <span>Language</span>
           <select id="languageSelect">
@@ -194,6 +194,18 @@
           <button class="btn" id="ladderChallenge">Challenge</button>
           <label class="field inline"><span>Rounds</span><input type="number" id="ladderRounds" min="2" max="200" value="20"></label>
         </div>
+        <label class="field inline"><span>Rank by</span>
+          <select id="ladderRank">
+            <option value="points">Points per round</option>
+            <option value="pushoff">Diversity push-off (Tournament Weekend)</option>
+          </select>
+        </label>
+        <label class="field inline"><span>Rank by</span>
+          <select id="ladderRank">
+            <option value="points">Points per round</option>
+            <option value="pushoff">Diversity push-off (Tournament Weekend)</option>
+          </select>
+        </label>
         <div class="progress small" aria-hidden="true"><div id="ladderBar"></div></div>
         <p class="small ladder-status" id="ladderStatus" role="status"></p>
         <div id="ladderTable"></div>
@@ -222,10 +234,18 @@
         <label class="field"><span>Hill rules</span>
           <select id="setRules">
             <option value="">ZoreWars (custom)</option>
-            <option value="94nop">94nop: classic, no P-space</option>
-            <option value="88">ICWS'88</option>
-            <option value="lp">Limited process (8)</option>
-            <option value="94x">94x: 55,440 cells</option>
+            <optgroup label="Koenigstuhl hills">
+              <option value="94nop">94nop: classic, no P-space</option>
+              <option value="88">ICWS'88</option>
+              <option value="lp">Limited process (8)</option>
+              <option value="94x">94x: 55,440 cells</option>
+            </optgroup>
+            <optgroup label="Core War Tournament Weekend (50 instructions)">
+              <option value="94nop@50">94nop, 50 instructions</option>
+              <option value="88@50">ICWS'88, 50 instructions</option>
+              <option value="lp@50">Limited process, 50 instructions</option>
+              <option value="94x@50">94x, 50 instructions</option>
+            </optgroup>
           </select>
         </label>
         <div class="settings-grid">
@@ -270,6 +290,20 @@
         <button class="btn ghost" id="importCancel" type="button">Cancel</button>
       </div>
     </form>
+  </dialog>
+
+  <dialog class="dialog picker" id="pickerDialog" aria-labelledby="pickerTitle">
+    <h3 id="pickerTitle">Choose a warrior</h3>
+    <input type="search" id="pickerSearch" placeholder="Search by name, family, author or strategy…" spellcheck="false" aria-controls="pickerList" aria-label="Search warriors">
+    <div class="chips" id="pickerFamilies" role="group" aria-label="Filter by family"></div>
+    <ul class="picker-list" id="pickerList" role="listbox" aria-label="Warriors"></ul>
+    <p class="muted small" id="pickerCount" role="status"></p>
+    <div class="picker-opts">
+      <label><input type="checkbox" id="pickerAllFields"> Warriors for other battlefields</label>
+      <label><input type="checkbox" id="pickerVersions"> JavaScript and Python versions</label>
+      <label class="field inline"><span>Sort</span><select id="pickerSort"><option value="family">By family</option><option value="name">By name</option></select></label>
+      <button class="btn ghost" id="pickerClose" type="button">Close</button>
+    </div>
   </dialog>
 
   <script type="module" src="app.js"></script>

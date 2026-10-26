@@ -415,3 +415,30 @@ table.results.ladder td.name { max-width: 150px; }
 }
 /* While editing on a touch screen the symbol bar takes the tab bar's place. */
 body.editing .tabbar { display: none; }
+
+/* Filter chips (warrior picker, encyclopedia) */
+.chips { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0; }
+.chip { border: 1px solid var(--line); background: var(--bg-2); color: var(--text-2); border-radius: 999px; padding: 4px 12px; cursor: pointer; font-size: 13px; }
+.chip[aria-pressed="true"] { color: var(--text); border-color: var(--accent); background: rgba(34, 211, 238, 0.1); }
+
+/* Warrior picker */
+.library-btn { width: 100%; justify-content: flex-start; min-width: 0; }
+.library-btn .label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dialog.picker { width: min(680px, calc(100vw - 32px)); }
+.dialog.picker[open] { display: flex; flex-direction: column; max-height: calc(100dvh - 32px); }
+.picker input[type="search"] { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; margin-top: 10px; color: var(--text); font: inherit; }
+.picker-list { list-style: none; margin: 0; padding: 0; flex: 1 1 auto; min-height: 120px; max-height: 480px; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; }
+.picker-list li { padding: 8px 12px; border-bottom: 1px solid var(--line); cursor: pointer; }
+.picker-list li:last-child { border-bottom: 0; }
+.picker-list li[aria-selected="true"], .picker-list li:hover { background: var(--panel-2); }
+.picker-list li.elsewhere { opacity: 0.7; }
+.picker-list li.empty { color: var(--muted); cursor: default; }
+.pick-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.pick-top b { color: var(--text); }
+.pick-fam { color: var(--accent); font-size: 12px; }
+.picker .badge { font-size: 11px; color: var(--text-2); border: 1px solid var(--line-2); border-radius: 6px; padding: 0 6px; }
+.pick-cat { color: var(--text-2); font-size: 12px; }
+.pick-why { color: var(--muted); font-size: 12px; margin-top: 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.pick-note { color: #fbbf24; font-size: 12px; margin-top: 2px; }
+.picker-opts { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; font-size: 13px; color: var(--text-2); }
+.picker-opts .btn { margin-left: auto; }

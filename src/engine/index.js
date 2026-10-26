@@ -14,6 +14,7 @@ export { topologyFor, ringTopology } from './topology.js';
 export { mulberry32, pmarsRng } from './random.js';
 export { postMortem, formatPostMortem, diagnoseRounds } from './report.js';
 export { measureSpecies, speciesAxes, speciesHint } from './species.js';
+export { pushOff } from './pushoff.js';
 
 // Which library entries (warriors/index.json) take part on a battlefield, in
 // benchmarks, ladders, species maps and the CLI's developer tools. On the

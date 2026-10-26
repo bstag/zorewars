@@ -331,7 +331,7 @@ node cli/zorewars.js trace @dwarf @scanner --round 3 --last 40         <span cla
       <ul>
         <li>In the arena, below a compiled Redcode warrior, click <strong>Convert to JavaScript</strong> or <strong>Python</strong>. The conversion opens in a new slot, so you can read the two side by side or make them fight.</li>
         <li>From the command line: <code>zorewars convert classic:thermite --to py</code> or <code>zorewars convert mine.red --to js --out mine.js</code>.</li>
-        <li>Every library warrior already has converted versions in <code>warriors/javascript/</code> and <code>warriors/python/</code>, and in the Library menu marked "(converted)".</li>
+        <li>Every library warrior already has converted versions in <code>warriors/javascript/</code> and <code>warriors/python/</code>, and in the warrior picker under "JavaScript and Python versions".</li>
       </ul>
       <pre><code><span class="cmt"># Seeker, converted from Redcode by ZoreWars.</span>
 step = 12                                   <span class="cmt"># how far the scan moves each time</span>
@@ -404,7 +404,7 @@ label(<span class="lbl">"bomb"</span>); dat.f(imm(0), imm(0))</code></pre>
         <li>In the CLI, use a URL or <code>classic:name</code> anywhere a warrior goes.</li>
       </ul>
       <p>Imports are fetched when you use them and kept only in your browser. Network files are always assembled as Redcode and never run as JavaScript, Python or C++. If a warrior was written for other rules, such as the '94x hill's 55,440-cell core, the arena offers to switch.</p>
-      <p>Every warrior below is in the arena's <strong>Library</strong> menu and the <code>warriors/</code> folder. The <a href="warriors.html">Warrior Encyclopedia</a> covers more families (imp rings, silk papers, CMP scanners, one-shots, quickscans), with each warrior's code explained line by line, its history and benchmark results.</p>
+      <p>Every warrior below is in the arena's warrior picker (the <strong>Library</strong> button: search by name, family, author or strategy, filter by family) and the <code>warriors/</code> folder. The <a href="warriors.html">Warrior Encyclopedia</a> covers more families (imp rings, silk papers, CMP scanners, one-shots, quickscans), with each warrior's code explained line by line, its history and benchmark results.</p>
       <table class="ref">
         <thead><tr><th>Warrior</th><th>Family</th><th>Idea</th></tr></thead>
         <tbody>
@@ -510,7 +510,7 @@ node cli/zorewars.js evolve --generations 6       <span class="cmt"># breed new 
           <tr><td>Min distance</td><td>100 cells between warriors at load</td></tr>
         </tbody>
       </table>
-      <p><strong>Hill rules</strong> (in Rules, or <code>--rules</code> in the CLI) switch to a standard hill's settings, the ones tournaments use: <strong>94nop</strong> (the classic settings, no P-space), <strong>ICWS'88</strong> (the same, and the editor flags anything that isn't '88 Redcode: only <code>DAT MOV ADD SUB JMP JMZ JMN DJN CMP SPL SLT</code>, the modes <code># $ @ &lt;</code>, no modifiers and no <code>ORG</code>, exactly as <code>pmars -8</code> checks), <strong>limited process</strong> (8 processes, 200 cells apart) and <strong>94x</strong> (55,440 cells, 500,000 cycles). For a tournament's length limit, set Max length (CLI: <code>--length 50</code>).</p>
+      <p><strong>Hill rules</strong> (in Rules, or <code>--rules</code> in the CLI) switch to a standard hill's settings, the ones tournaments use: <strong>94nop</strong> (the classic settings, no P-space), <strong>ICWS'88</strong> (the same, and the editor flags anything that isn't '88 Redcode: only <code>DAT MOV ADD SUB JMP JMZ JMN DJN CMP SPL SLT</code>, the modes <code># $ @ &lt;</code>, no modifiers and no <code>ORG</code>, exactly as <code>pmars -8</code> checks), <strong>limited process</strong> (8 processes, 200 cells apart) and <strong>94x</strong> (55,440 cells, 500,000 cycles). For a tournament's length limit, set Max length (CLI: <code>--length 50</code>), or pick one of the <strong>Core War Tournament Weekend</strong> presets: the same four hills with warriors limited to 50 instructions.</p>
       <p><code>zorewars pushoff</code> predicts a tournament place: your warriors join the top of a Koenigstuhl hill, everyone plays everyone, and an iterative push-off ranks them by average score times <em>diversity</em> (how differently a warrior scores from its nearest look-alike). A warrior that wins its own way ranks above a strong clone.</p>
       <ul>
         <li>Warrior 1 is loaded at address 0; the others at random addresses at least the minimum distance apart. Two-warrior placement uses the same generator and rule as pMARS, so <code>--fixed N</code> (pMARS's <code>-F N</code>) replays a pMARS match exactly. Games with more warriors use ZoreWars' own placement.</li>
@@ -519,7 +519,7 @@ node cli/zorewars.js evolve --generations 6       <span class="cmt"># breed new 
         <li>ZoreWars is tested against pMARS, the reference simulator: identical assembly for 53 warriors and identical results for thousands of rounds. See <code>COMPLIANCE.md</code>.</li>
         <li>Tournaments are round robin: every pair plays a match and the table is ranked by total points.</li>
         <li>The <strong>smooth score</strong> is shown alongside: like the normal score, but a lost round is worth the share of the cycle limit the warrior survived, from 0 to just under 1. Dying at cycle 70,000 is better than dying at cycle 2,000, even though both are losses. It gives tuners and evolvers something to climb when everything loses.</li>
-        <li>The arena's <strong>Ladder</strong> is a king-of-the-hill: a challenger plays everyone on it, and if it ranks in the top 10 it stays and the bottom warrior drops off. Warriors are ranked by points per round, then by smooth score.</li>
+        <li>The arena's <strong>Ladder</strong> is a king-of-the-hill: a challenger plays everyone on it, and if it ranks in the top 10 it stays and the bottom warrior drops off. Warriors are ranked by points per round, then by smooth score, or, with <strong>Rank by: Diversity push-off</strong>, the way the Tournament Weekend ranks them: average score times diversity, pushing off the lowest again and again. Try it with the Tournament Weekend rules to see which of your warriors would survive.</li>
       </ul>
       <p>Change the rules in the arena's <strong>Rules</strong> panel or with CLI flags. Warriors that use <code>CORESIZE</code> and friends adapt automatically.</p>
 

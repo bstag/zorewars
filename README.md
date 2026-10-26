@@ -28,7 +28,7 @@ No runtime dependencies; Node.js 18+ (Wrangler, for Cloudflare deploys, needs No
 npm start
 ```
 
-Then open http://localhost:8080. Pick warriors from the Library menu, press **Run**, and hover over the core to read memory.
+Then open http://localhost:8080. Pick warriors with the **Library** button (search and filter the whole library), press **Run**, and hover over the core to read memory.
 
 **Hosting:** there's no build step; the repository root is the website. Deploy it to Cloudflare (Workers + Static Assets, with a tiny Worker that proxies archive downloads) or to GitHub Pages (fully static). See [DEPLOY.md](DEPLOY.md).
 

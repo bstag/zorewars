@@ -382,6 +382,391 @@
       "weaknesses": ["Scanners with SPL carpets, such as Agony II and Gatekeeper, freeze the paper.", "89 instructions: the quickscan and boot code make it a big target until it has booted."],
       "tryIt": "Compare Hydra and Hedgehog with <code>node cli/zorewars.js hill warriors/hydra.js --classics</code>: same quickscan and stone, different partner.",
       "opponent": "stunner.red"
+    },
+    {
+      "id": "gremlinring", "file": "gremlin.red", "name": "Gremlin (ring)", "language": "redcode", "family": "Stream", "era": "ZoreWars 2026 (evolved)",
+      "summary": "The volume's Gremlin, moved to the classic ring. It spends nearly all its time on one instruction, <code>DJN.F #10, {-10</code>, which loops on itself while its pointer walks backward through the core, taking one off both fields of every cell it passes.",
+      "how": [
+        "The first four lines start processes and send them on; the stream is line 13, and its pointer is the A-field of line 3 (<code>JMP.B $5</code>).",
+        "<code>DJN</code> with an immediate target jumps to itself, so it loops. Each pass, <code>{-10</code> steps that pointer one cell back, and <code>DJN.F</code> takes one off both fields of the cell it points at.",
+        "Clears and stones depend on exact numbers: their pointer, their counter, their bombs. Nudged by one, they write over their own code.",
+        "This is the 3D original with only its leftovers changed: each <code>TRN</code> is a <code>NOP</code> and each vector is cut to its x part. The other lines are evolutionary leftovers that run a few times at the start."
+      ],
+      "strengths": ["Beats Two-Pass Clear 30-0, Vampire 28-1 and Dwarf 22-7 on the ring.", "Alone, it spends 79,971 of 80,000 cycles on the one stream instruction, so there is almost nothing else to break."],
+      "weaknesses": ["Scanners (Gatekeeper, Red Queen, Hedgehog) and papers beat it: 1.18 points per round against the library and the classics.", "Papers are many redundant copies, and an off-by-one in a few of them changes nothing."],
+      "tryIt": "Run <code>node cli/zorewars.js battle warriors/gremlin.red warriors/twopass.red -r 10 --report</code> and read the clear's ending code: which of its numbers did the stream change?",
+      "opponent": "twopass.red"
+    },
+    {
+      "id": "plaid", "file": "plane/plaid.js", "name": "Plaid", "language": "javascript", "family": "Stone", "era": "ZoreWars 2026", "battlefield": "torus:100x80",
+      "summary": "A stone for the plane. No single step covers a 100×80 torus (a fixed step repeats after at most 400 cells), so Plaid bombs a lattice with two loops: every GX cells along a row, then GY rows down.",
+      "how": [
+        "The inner loop drops a <code>DAT</code> through <code>ptr</code> and adds GX to it, SIZEX/GX times, which brings x back to where it started.",
+        "<code>ADD.AB #[0,GY], ptr</code> moves the pointer to the next lattice row.",
+        "The first bomb lands half a lattice step below its own row, and every row it bombs is an odd multiple of GY/2 away, so it never hits itself.",
+        "The generator refuses a lattice that doesn't divide the plane, or an odd GY."
+      ],
+      "strengths": ["Never bombs itself on any plane its lattice fits.", "The tuner raised it from 0.87 to 1.00 points per round (GX 4, GY 2)."],
+      "weaknesses": ["Its code lies along one row, the row-based attacks' target: Pillar, the same stone standing in a column, beats it 7-3-10.", "Stride-based stones fell to about 1.0 points per round on the plane, where linear clears and papers lead."],
+      "tryIt": "Run <code>node cli/zorewars.js check warriors/plane/plaid.js --torus 125x64</code>. Why does the generator refuse GX 4 there, and which GX would fit?",
+      "opponent": "plane/pillar.js"
+    },
+    {
+      "id": "climber", "file": "plane/climber.js", "name": "Climber", "language": "javascript", "family": "Self-mover", "era": "ZoreWars 2026", "battlefield": "torus:100x80",
+      "summary": "Code only ever flows along a row, so to travel vertically Climber copies its whole body DY rows down (and DX cells across), then jumps into the copy. The old body stays behind as a decoy.",
+      "how": [
+        "Each copy starts by setting its own <code>src</code>, <code>dst</code> and <code>cnt</code>, because the copy was taken while the original was mid-count.",
+        "<code>MOV.I &lt;src, &lt;dst</code> copies the body last cell first; <code>DJN</code> counts the cells.",
+        "<code>JMP hop+HOP</code> continues in the copy, where the next hop begins."
+      ],
+      "strengths": ["Leaves a decoy body on every row it visits.", "Tuning made its hops diagonal (DX 19, DY 45) and raised it from 0.42 to 0.64 points per round."],
+      "weaknesses": ["One process: a single bomb on the live copy ends it.", "Papers and clears beat it almost every round (0-10 against Fast Silk, Papercut and Plane Queen, 10 rounds each)."],
+      "tryIt": "Set <code>DX: 0</code> so it hops straight down, and compare both with <code>node cli/zorewars.js hill warriors/plane/climber.js --torus 100x80</code>.",
+      "opponent": "plane/plaid.js"
+    },
+    {
+      "id": "planesilk", "file": "plane/planesilk.js", "name": "Plane Silk", "language": "javascript", "family": "Paper", "era": "ZoreWars 2026", "battlefield": "torus:100x80",
+      "inspiredBy": "Fast Silk's copy loop with two-dimensional copy distances. Its constants come from <code>zorewars tune</code>.",
+      "summary": "A small silk paper whose copies jump across rows as well as along them. Each pass copies the body DX cells across and DY rows down, and the distance changes by (EX, EY) every pass, so the copies spread over the whole plane rather than along one stripe.",
+      "how": [
+        "LEVELS <code>SPL 1</code>s start 2^LEVELS processes.",
+        "<code>SPL [DX,DY]</code> starts a process in the copy; three <code>MOV.I</code>s copy three cells per pass.",
+        "<code>ADD.A #[EX,EY], seed</code> moves the next target, and <code>MOV.F seed, silk</code> resets the pointers before the loop jumps back."
+      ],
+      "strengths": ["Nearly unkillable on the plane: in a 17-warrior plane tournament the papers lost 0 to 8 of 320 rounds.", "Tuning raised it from 1.99 to 2.15 points per round."],
+      "weaknesses": ["Against other papers almost every round is a tie.", "Plane Queen's SPL 0 pass holds it: 1 win, 4 losses and 5 ties in 10 rounds."],
+      "tryIt": "Retune it yourself: <code>node cli/zorewars.js tune warriors/plane/planesilk.js --torus 100x80</code>. Does any EY near 0 (copies that stay in a few rows) survive the tuner?",
+      "opponent": "plane/planequeen.red"
+    },
+    {
+      "id": "raster", "file": "plane/raster.js", "name": "Raster", "language": "javascript", "family": "Core clear", "era": "ZoreWars 2026", "battlefield": "torus:100x80",
+      "summary": "A two-pass core clear for the plane. Pointer increments count as plain numbers, so <code>&gt;ptr</code> walks every cell row by row, like a TV raster: first with <code>SPL 0</code>, then with <code>DAT</code>.",
+      "how": [
+        "Pass 1: <code>MOV.I stun, &gt;ptr</code> with <code>DJN</code> counting CORESIZE - 2×SIZEX cells.",
+        "Both passes start a row below its own and stop a row above, so Raster never clears its own row.",
+        "<code>MOV.AB #[0,1], ptr</code> rewinds the pointer for pass 2 with <code>DAT</code>; then it idles on <code>JMP 0</code>."
+      ],
+      "strengths": ["No geometry can hide from it: the counter reaches every cell outside its own two rows.", "Linear clears topped the 17-warrior plane tournament: Raster scored 2.15 points per round, second to Two-Pass Clear."],
+      "weaknesses": ["Papers tie or beat it: 0-4-6 against Plane Silk and Fast Silk, 0-6-4 against Papercut (10 rounds each).", "Gremlin's stream beats it 0-10."],
+      "tryIt": "Run it on the volume: <code>node cli/zorewars.js hill warriors/plane/raster.js --torus 40x20x10</code>. A clear doesn't care about the shape; what changes?",
+      "opponent": "plane/planesilk.js"
+    },
+    {
+      "id": "columnimp", "file": "plane/columnimp.js", "name": "Column Imp", "language": "javascript", "family": "Imp", "era": "ZoreWars 2026", "battlefield": "torus:100x80",
+      "summary": "An imp that crawls down a column instead of along a row. It shows the plane's one new instruction, <code>TRN</code>, which turns a process to face another direction.",
+      "how": [
+        "<code>MOV.I imp, [1,1]</code> puts a copy of the imp in the cell below the <code>TRN</code>.",
+        "<code>TRN [0,1]</code> turns the process to face down (+y), so its next instruction is that copy.",
+        "The imp, <code>MOV.I 0, [0,1]</code>, copies itself one row down and moves there, round its 80-cell column forever."
+      ],
+      "strengths": ["Ties most stones and scanners: Dwarf, Stunner and Gatekeeper all 10 ties in 10."],
+      "weaknesses": ["A column is a thin line on the plane: it never kills anything and scored 0.63 points per round against the library (10 rounds each).", "Clears and papers beat it: 0-10 against Two-Pass Clear and Fast Silk."],
+      "tryIt": "Change <code>TRN [0,1]</code> to <code>TRN [0,-1]</code> and the copy's place to match, so it crawls up. Does direction matter against Raster?",
+      "opponent": "plane/raster.js"
+    },
+    {
+      "id": "pillar", "file": "plane/pillar.js", "name": "Pillar", "language": "javascript", "family": "Stone", "era": "ZoreWars 2026", "battlefield": "torus:100x80",
+      "inspiredBy": "Plaid's lattice stone, stood on end.",
+      "summary": "A lattice stone whose code stands in a column. In every row it is only one cell wide, so row-based attacks such as Plaid's lattice almost never touch it.",
+      "how": [
+        "The body is written as ordinary lines whose operands are vertical offsets: line i refers to line j as <code>[0, j-i]</code>.",
+        "The launcher copies line i to the cell i+1 rows below the <code>TRN</code>, then <code>TRN [0,1]</code> turns the process to face down.",
+        "It runs the body top to bottom; the <code>JMP</code> keeps its heading, so the loop stays vertical. The body bombs a lattice like Plaid's."
+      ],
+      "strengths": ["Beats Plaid 7-3-10 head to head, and goes 8-12 against the clears where Plaid goes 2-18.", "Tuning to a 2×2 lattice raised it from 0.80 to 1.10 points per round."],
+      "weaknesses": ["Papers beat it every round (0-10 against Fast Silk, Papercut and Plane Silk, 10 rounds each).", "Still a stone with one process: one hit on its column ends it."],
+      "tryIt": "Run <code>node cli/zorewars.js battle warriors/plane/pillar.js warriors/plane/plaid.js --torus 100x80 -r 20</code>, then watch one round in the arena and see where Plaid's bombs land.",
+      "opponent": "plane/plaid.js"
+    },
+    {
+      "id": "weave", "file": "plane/weave.js", "name": "Weave", "language": "javascript", "family": "Imp", "era": "ZoreWars 2026", "battlefield": "torus:100x80",
+      "inspiredBy": "Imp along a row plus Column Imp.",
+      "summary": "Imps along a row and down a column at the same time: a moving cross that sweeps one row and one column of the plane over and over. Enemy processes that run into an imp cell become imps too, so rounds it can't win tend to end in ties.",
+      "how": [
+        "<code>SPL down</code> gives the column imp its own process; the first process jumps to the row imp, <code>MOV.I 0, 1</code>.",
+        "The second process puts a column imp below a <code>TRN [0,1]</code> and turns onto it, as Column Imp does."
+      ],
+      "strengths": ["Turns many stone and scanner matchups into ties."],
+      "weaknesses": ["Almost never wins: 0.73 points per round against the library (10 rounds each), nearly all of it from ties.", "Clears beat it: 0-10 against Two-Pass Clear and Plane Queen."],
+      "tryIt": "Add a third <code>SPL</code> and a second row imp half a row away. Does a wider net turn any losses into ties?",
+      "opponent": "plane/planequeen.red"
+    },
+    {
+      "id": "planequeen", "file": "plane/planequeen.red", "name": "Plane Queen", "language": "redcode", "family": "Core clear", "era": "ZoreWars 2026 (evolved)", "battlefield": "torus:100x80",
+      "inspiredBy": "Found by <code>zorewars evolve --torus 100x80</code>, started from Two-Pass Clear, Papercut and Plane Silk as champions. Lines 3-10 are Two-Pass Clear unchanged; lines 11-17 are Fast Silk's copy loop.",
+      "summary": "A two-pass core clear run by two processes, plus a copy loop that leaves one decoy and ends. It was the best warrior on the plane when added: 2.39 points per round against the plane field.",
+      "how": [
+        "Two <code>SPL</code>s start one process for the decoy loop and two for the clear.",
+        "The clear is Two-Pass Clear: <code>SPL 0</code> into every cell, then <code>DAT</code> into every cell, its pointer counting row by row.",
+        "Evolution lost the <code>SPL</code> that would start each copy, and the loop's last jump lands on the clear's <code>DAT</code>: it copies three cells once and ends.",
+        "That matters: a sprayer that kept looping would be caught by its own <code>SPL 0</code> pass and fill its own queue, starving the clear."
+      ],
+      "strengths": ["Two clear processes survive losing one: worth about 0.15 points per round over Two-Pass Clear.", "Scores 2.32 points per round against the 16 classics that can play on the plane."],
+      "weaknesses": ["The decoy adds nothing measurable: without it the warrior scores the same.", "Gremlin's stream breaks its clear: 0-30 on the volume."],
+      "tryIt": "Delete the first <code>SPL.B $11, $0</code> and compare with <code>node cli/zorewars.js hill warriors/plane/planequeen.red --torus 100x80</code>. Then delete the second <code>SPL</code> too.",
+      "opponent": "plane/planesilk.js"
+    },
+    {
+      "id": "lift", "file": "volume/lift.js", "name": "Lift", "language": "javascript", "family": "Imp", "era": "ZoreWars 2026", "battlefield": "torus:40x20x10",
+      "summary": "An imp that travels through the depth of the volume. After one <code>TRN</code>, every step goes one layer further in, round and round the z axis.",
+      "how": [
+        "<code>MOV.I imp, [1,0,1]</code> puts a copy of the imp one layer in from the <code>TRN</code>.",
+        "<code>TRN [0,0,1]</code> turns the process to face +z, so its next instruction is that copy.",
+        "The imp, <code>MOV.I 0, [0,0,1]</code>, copies itself one layer in and moves there."
+      ],
+      "strengths": ["Hard to catch: it tied Two-Pass Clear and Plane Queen in all 10 rounds, and Volume Queen in 8."],
+      "weaknesses": ["Never kills: 0.61 points per round against the library (10 rounds each).", "Papers and Leapfrog beat it: 0-10 against Volume Silk, Broadside and Leapfrog."],
+      "tryIt": "The evolver invented this same depth imp by itself (<code>warriors/prototypes/evolved-depth-imp.red</code>). Compare the two with <code>node cli/zorewars.js battle</code> and <code>--torus 40x20x10</code>.",
+      "opponent": "volume/leapfrog.js"
+    },
+    {
+      "id": "star", "file": "volume/star.js", "name": "Star", "language": "javascript", "family": "Imp", "era": "ZoreWars 2026", "battlefield": "torus:40x20x10",
+      "summary": "Three imps leaving one point along x, y and z: one crawls along its row, one down its column and one through the layers. Together they sweep three lines of the volume, turning any enemy process they meet into an imp.",
+      "how": [
+        "Two <code>SPL</code>s give it three processes; one jumps straight to the row imp.",
+        "The other two each put an imp next to a <code>TRN</code> and turn onto it: <code>TRN [0,1,0]</code> faces down, <code>TRN [0,0,1]</code> faces into the volume."
+      ],
+      "strengths": ["Ties most stones and scanners: 0.72 points per round against the library (10 rounds each), nearly all of it from ties."],
+      "weaknesses": ["Never wins a round on its own.", "Clears and papers beat it: it lost 8 of 10 rounds to Volume Queen, Papercut and Fast Silk."],
+      "tryIt": "Remove the depth imp and run <code>node cli/zorewars.js hill warriors/volume/star.js --torus 40x20x10</code> before and after. How much is the third axis worth?",
+      "opponent": "volume/volumequeen.js"
+    },
+    {
+      "id": "volumesilk", "file": "volume/volumesilk.js", "name": "Volume Silk", "language": "javascript", "family": "Paper", "era": "ZoreWars 2026", "battlefield": "torus:40x20x10",
+      "inspiredBy": "Fast Silk and Plane Silk, with copy distances in all three dimensions.",
+      "summary": "The small silk paper again, its copies jumping across rows, columns and layers, so they fill the volume rather than one plane.",
+      "how": [
+        "LEVELS <code>SPL 1</code>s start 2^LEVELS processes.",
+        "<code>SPL [DX,DY,DZ]</code> starts a process in the copy; three <code>MOV.I</code>s copy three cells per pass.",
+        "<code>ADD.A #[EX,EY,EZ], seed</code> moves the next target elsewhere in the volume, and <code>MOV.F</code> resets the pointers.",
+        "SIDE can give the <code>JMP</code>'s spare operand a free decrement of a far cell; here it changes nothing measurable (±0.01), so it is off."
+      ],
+      "strengths": ["One of the volume's strongest warriors: 2.13 points per round on 40×20×10.", "Lost no round to a stone, scanner or imp in a 10-round hill run."],
+      "weaknesses": ["Ties other papers nearly every round.", "Volume Queen's SPL 0 pass beats it more often than not (1-6-3 in 10 rounds)."],
+      "tryIt": "Set <code>SIDE: 2</code> and compare with <code>node cli/zorewars.js hill warriors/volume/volumesilk.js --torus 40x20x10 --seed 4242</code>. Scatter gained from it; does Volume Silk?",
+      "opponent": "volume/volumequeen.js"
+    },
+    {
+      "id": "cubist", "file": "volume/cubist.js", "name": "Cubist", "language": "javascript", "family": "Stone", "era": "ZoreWars 2026", "battlefield": "torus:40x20x10",
+      "inspiredBy": "Plaid, with a third loop.",
+      "summary": "A stone for the volume. Plaid's lattice stays in its own layer, because its loops never move along z; Cubist adds a third loop and bombs a lattice through the whole volume.",
+      "how": [
+        "The inner loop bombs every GX cells along a row; the middle loop adds <code>[0,GY,0]</code> for the next lattice row; the outer loop adds <code>[0,0,GZ]</code> for the next layer.",
+        "Each loop ends where it began on its axis, because each spacing divides its axis.",
+        "The first bomb is half a lattice step below its own row and half a step into the volume from its own layer, so it never hits itself."
+      ],
+      "strengths": ["Beats the plane's stones and Climber on the volume (Climber 6-0-4, Plaid 4-1-5 in 10 rounds)."],
+      "weaknesses": ["0.64 points per round against the library: a 4×4×2 lattice is too sparse to find papers, and clears reach it first.", "Gremlin's stream makes it bomb itself: 0-10, every round a suicide."],
+      "tryIt": "Run <code>node cli/zorewars.js check warriors/volume/cubist.js --torus 41x20x9</code>. Why does it refuse, and why can no lattice like this fit a volume with odd sides?",
+      "opponent": "volume/gremlin.red"
+    },
+    {
+      "id": "slant", "file": "volume/slant.js", "name": "Slant", "language": "javascript", "family": "Paper", "era": "ZoreWars 2026", "battlefield": "torus:40x20x10",
+      "summary": "A replicator that cuts diagonally through the volume. A bug makes it work better than intended: after its first diagonal hop, each process lays a chain of copies one body length apart and scribbles stray values along a diagonal.",
+      "how": [
+        "Each copy resets its pointers, copies the whole body HOP away (across rows, columns and layers at once) last cell first, and <code>SPL</code>s a process into the copy.",
+        "The <code>ADD.AB</code> meant to steer HOP adds to the B-field of the aim line, which is the destination, not the hop.",
+        "So from the second pass on the aim line writes the hop value into a cell further along a diagonal each time, and <code>dst</code> keeps pointing at the last copy: each new copy lands right behind the one before."
+      ],
+      "strengths": ["Its accidental chains score better than the steering it was meant to have: 1.84 points per round as written, 1.76 with <code>ADD.A</code>.", "Beats stones and imps; ties nearly every other paper."],
+      "weaknesses": ["Clears beat it: 1-8-1 against Volume Queen and 0-10 against Plane Queen (10 rounds each).", "The free side-effect decrements that help Scatter hurt Slant (1.84 to 1.20), because they land on its own chains."],
+      "tryIt": "Change <code>add.ab(imm(STEER), \"aim\")</code> to <code>add.a</code>, which turns Slant into Scatter, and watch where the copies go in the 3D view.",
+      "opponent": "volume/volumequeen.js"
+    },
+    {
+      "id": "scatter", "file": "volume/scatter.js", "name": "Scatter", "language": "javascript", "family": "Paper", "era": "ZoreWars 2026", "battlefield": "torus:40x20x10",
+      "inspiredBy": "Slant with the steering it was meant to have. The free side effect in spare operands comes from Mercenary on <a href=\"https://modelwar.ai\">ModelWar.ai</a> (studied, not copied).",
+      "summary": "Slant as it was meant to work: each process copies the whole body HOP away, starts a process in the copy, then turns HOP by STEER, so every copy lands somewhere new. Alone, it runs code in about 4,400 cells against Slant's 2,000.",
+      "how": [
+        "The copy loop is Slant's: reset the pointers, copy the body last cell first, <code>SPL</code> into the copy.",
+        "<code>ADD.A #STEER, aim</code> changes the hop itself (the A-field), so the next copy goes somewhere else.",
+        "The <code>SPL</code> and <code>JMP</code> carry a spare operand that decrements a far cell's B-field; every copy runs it from a new place, so the decrements land all over the volume."
+      ],
+      "strengths": ["The side effect is worth about 0.06 points per round (1.85 against 1.79 without, 5 seeds).", "Beats Leapfrog 10-0 and Battleship 9-0-1 (10 rounds each)."],
+      "weaknesses": ["Tuned, it still scores less than Slant (1.76 against 1.84): Slant's chains win.", "Clears beat it: 0-10 against Volume Queen and Plane Queen."],
+      "tryIt": "Set <code>SIDE: 0</code> and run <code>node cli/zorewars.js hill warriors/volume/scatter.js --torus 40x20x10</code> with three seeds. Is the 0.06 bigger than the noise?",
+      "opponent": "volume/backdraft.js"
+    },
+    {
+      "id": "battleship", "file": "volume/battleship.js", "name": "Battleship", "language": "javascript", "family": "Scanner", "era": "ZoreWars 2026", "battlefield": "torus:40x20x10",
+      "summary": "A scanner that digs through the volume, checking every cell in turn, and fires a 3D block salvo around anything it finds.",
+      "how": [
+        "The scan is one instruction: <code>JMZ.F dig, &gt;ptr</code> jumps to itself while the cell is empty, and the pointer counts as a plain number, so it walks every cell, row by row and layer by layer.",
+        "On a find it aims at the near corner of a block W cells along x, 3 rows down and 3 layers deep, and bombs it with three nested <code>DJN</code> loops.",
+        "The dig starts two rows from its own code and <code>SLT</code> stops it two rows short of coming home, so a salvo can't land on Battleship itself."
+      ],
+      "strengths": ["Beats stones and clears: 20-0 against Dwarf, 15-5 against Two-Pass Clear."],
+      "weaknesses": ["Papers have too many copies to sink: 0-10 against Mice and Slant, 0-9-1 against Volume Silk (10 rounds each).", "One process, one cell per scan step: 1.71 points per round on the volume."],
+      "tryIt": "Try <code>BOMB: \"spl\"</code> (Fleet's choice) and see whether stunning the find helps against papers.",
+      "opponent": "volume/volumesilk.js"
+    },
+    {
+      "id": "broadside", "file": "volume/broadside.js", "name": "Broadside", "language": "javascript", "family": "Paper", "era": "ZoreWars 2026", "battlefield": "torus:40x20x10",
+      "inspiredBy": "Fast Silk's three-cells-per-process copy loop, with a bomb line in every copy.",
+      "summary": "A small silk paper whose copies bomb as they go. Each pass copies the body somewhere new and drops one <code>DAT</code> one diagonal step further from where that copy is, so many copies bomb side by side along parallel diagonals.",
+      "how": [
+        "The copy loop is Volume Silk's: <code>SPL</code> into the copy, three <code>MOV.I</code>s, then <code>ADD.A</code> and <code>MOV.F</code> to move and reset the target.",
+        "<code>MOV.I seed, @hit</code> drops the seed (a <code>DAT</code>) where <code>hit</code> points, and <code>ADD.AB #[BX,BY,BZ], hit</code> moves it one diagonal step on.",
+        "The first bomb is off its own row and layer."
+      ],
+      "strengths": ["2.12 points per round on 40×20×10, level with Plane Queen.", "Beats stones, scanners and imps, and Leapfrog 7-0-3."],
+      "weaknesses": ["Papers saturate the volume: against other papers almost every round is a tie.", "Volume Queen beats it more often than not (1-7-2 in 10 rounds)."],
+      "tryIt": "Delete the two bomb lines and compare scores. How much does the bombing add to a paper that already survives?",
+      "opponent": "volume/volumequeen.js"
+    },
+    {
+      "id": "volumequeen", "file": "volume/volumequeen.js", "name": "Volume Queen", "language": "javascript", "family": "Core clear", "era": "ZoreWars 2026", "battlefield": "torus:40x20x10",
+      "inspiredBy": "Plane Queen, the evolver's best plane warrior, rewritten as a generator. The <code>qscan</code> mode comes from Pyre-Swept on <a href=\"https://modelwar.ai\">ModelWar.ai</a> (studied, not copied).",
+      "summary": "A two-pass core clear run by two processes, plus a process that sprays N decoys and stops. Its pointer counts as a plain number, so it reaches every cell of the volume. It was the best on the volume when added (2.34 points per round).",
+      "how": [
+        "<code>SPL spray</code> and <code>SPL 1</code> start one sprayer and two clear processes.",
+        "The clear is Two-Pass Clear: <code>SPL 0</code> into every cell, then <code>DAT</code>, sparing its own code.",
+        "The sprayer runs Fast Silk's copy loop N times, leaving fragments of the warrior in other rows and layers, then runs into a <code>DAT</code> and ends, so its own <code>SPL 0</code> pass can't trap it.",
+        "MODE <code>stone</code> sprays <code>DAT</code>s instead; MODE <code>qscan</code> probes two pairs of cells first and starts the SPL pass at a find."
+      ],
+      "strengths": ["Two clear processes beat one (2.19) and four (0.90).", "An evolver run on the volume, started from Plane Queen, ended at the same design: clears are the volume's local optimum."],
+      "weaknesses": ["Its front is predictable and its code never moves: Leapfrog beats it 29-1, and Backdraft and Tripwire 30-0.", "Gremlin's stream breaks its numbers and it overwrites its own code (1-29)."],
+      "tryIt": "Try <code>MODE: \"qscan\"</code> with <code>node cli/zorewars.js hill warriors/volume/volumequeen.js --torus 40x20x10</code>. Why do four probes rarely find anything?",
+      "opponent": "volume/leapfrog.js"
+    },
+    {
+      "id": "leapfrog", "file": "volume/leapfrog.js", "name": "Leapfrog", "language": "javascript", "family": "Anti-clear", "era": "ZoreWars 2026", "battlefield": "torus:40x20x10",
+      "summary": "An answer to core clears. A clear can't be hidden from, but its front is predictable and its code never moves. Leapfrog watches a marker on the side the front comes from, and when the front reaches it, copies itself behind the front.",
+      "how": [
+        "It plants a marker SENT rows up, the side a forward clear arrives from.",
+        "Its loop clears one cell of its own (forward, from just past itself), then <code>SEQ.I</code> checks the marker.",
+        "When either pass of an enemy clear changes the marker, it copies its whole body HOPY rows further up, behind the front, and jumps into the copy. One process, so nothing is left behind to be stunned.",
+        "Its own slow clear in time reaches the enemy clear's code, which stays where it started. When its own clear comes round to the marker, it leaps on and starts again."
+      ],
+      "strengths": ["Beats every forward clear and stone: Volume Queen 29-1, Plane Queen 28-2, Two-Pass Clear 26-4."],
+      "weaknesses": ["Loses to papers (0-28 against Fast Silk): their copies keep tripping the marker, and they outnumber it.", "Blind to a front from the other side: Backdraft and Gremlin beat it 0-10 (10 rounds each). 1.92 points per round overall."],
+      "tryIt": "Battle it against Volume Queen with <code>node cli/zorewars.js battle warriors/volume/leapfrog.js warriors/volume/volumequeen.js --torus 40x20x10 -r 5 --report</code> and find the leap in the timeline.",
+      "opponent": "volume/volumequeen.js"
+    },
+    {
+      "id": "volumechameleon", "file": "volume/volumechameleon.js", "name": "Volume Chameleon", "language": "javascript", "family": "P-space", "era": "ZoreWars 2026", "battlefield": "torus:80x10x10",
+      "inspiredBy": "Chameleon's P-space switch, playing Leapfrog and Volume Queen's clear.",
+      "summary": "A P-space switcher built on the volume's triangle: Leapfrog beats clears, papers beat Leapfrog, and a clear ties papers. It plays Leapfrog, switches to the clear after a lost round, and back after losing with that.",
+      "how": [
+        "<code>LDP</code> reads the last round's result (0 means lost) and the strategy it played, kept at P-space cell KEY.",
+        "After a loss it adds 1 and takes it modulo 2; a win or a tie keeps the strategy. <code>STP</code> saves it for the next round.",
+        "Strategy 0 starts Leapfrog; strategy 1 starts Volume Queen's clear with two processes. The clear comes first in the code, so it spares everything after it."
+      ],
+      "strengths": ["2.39 points per round on 80×10×10 when added, ahead of Volume Queen and Plane Queen (2.25)."],
+      "weaknesses": ["The fastest papers beat Leapfrog outright and can win against the clear too.", "Predictable: Anti-Chameleon, which switches after every decided round, beats it 26-2-2."],
+      "tryIt": "Run <code>node cli/zorewars.js battle warriors/volume/volumechameleon.js warriors/papercut.js --torus 80x10x10 -r 10 --report</code> and find the round where it switches.",
+      "opponent": "volume/antichameleon.js"
+    },
+    {
+      "id": "antichameleon", "file": "volume/antichameleon.js", "name": "Anti-Chameleon", "language": "javascript", "family": "P-space", "era": "ZoreWars 2026", "battlefield": "torus:80x10x10",
+      "inspiredBy": "Built to read Volume Chameleon. It carries Volume Silk and Leapfrog.",
+      "summary": "A counter-switcher. Volume Chameleon keeps its strategy after a win and switches after a loss, always between the same two. Anti-Chameleon plays a paper or Leapfrog and switches after every decided round, so it is always a step ahead of it.",
+      "how": [
+        "<code>LDP</code> reads the last result (0 lost, 1 won, 2 tied, -1 first round) and the strategy it played.",
+        "With SWITCHWIN on, <code>SLT</code> keeps the strategy only after a tie or on the first round; any win or loss switches.",
+        "Strategy 0 is Volume Silk's paper (placed last, so its copies take the cells after it); strategy 1 is Leapfrog."
+      ],
+      "strengths": ["Beats Volume Chameleon 26-2-2 over 30 rounds."],
+      "weaknesses": ["Against warriors that never switch, switching after a win throws away a winning strategy: 11-12-7 against Volume Queen.", "1.98 points per round against the whole field, to Volume Chameleon's 2.33; its paper only ties other papers."],
+      "tryIt": "Set <code>SWITCHWIN: 0</code> (the classic switch-after-loss rule) and compare its record against Volume Chameleon and Volume Queen.",
+      "opponent": "volume/volumechameleon.js"
+    },
+    {
+      "id": "adapter", "file": "volume/adapter.js", "name": "Adapter", "language": "javascript", "family": "Anti-clear", "era": "ZoreWars 2026", "battlefield": "torus:80x10x10",
+      "inspiredBy": "Leapfrog and Volume Queen's clear in one program.",
+      "summary": "Leapfrog whose marker is a sensor. When the marker changes, Adapter looks at what changed it: a clear's front or a bomb means leap; copied code means a paper, so it turns into Volume Queen's clear on the spot. It remembers what it saw in P-space and opens the next round with the answer.",
+      "how": [
+        "<code>LDP</code> reads what it saw last: 0 (a clear, a bomber, or nothing yet) starts Leapfrog; 1 (a paper) starts the clear.",
+        "Leapfrog's loop clears one cell, then checks the marker. When it has changed, one <code>JMZ.F</code> on the marker tells the two cases apart: both fields zero is a clear's <code>SPL 0</code> or <code>DAT 0</code>, or a bomb.",
+        "Zero: <code>STP</code> 0, copy the whole program (clear included) HOPY rows up and continue there. Non-zero: <code>STP</code> 1 and start the two-process clear."
+      ],
+      "strengths": ["2.21 points per round on 80×10×10: Papercut 19-6, Battleship 20-10, Volume Queen 20-10, close to even with Volume Chameleon (10-13-7).", "Checking both fields matters: matching the clear's exact bombs misread Battleship's <code>DAT $0,$0</code> as a paper and lost 7-23."],
+      "weaknesses": ["The fastest papers still beat it: 3-5-2 against Fast Silk (10 rounds).", "Like Leapfrog, it watches only the side a forward clear comes from: Backdraft and Tripwire beat it 0-10 (10 rounds each)."],
+      "tryIt": "Make it open with Leapfrog after every loss, to look again. It scored 2.02 instead of 2.21 that way. Find the matchup that costs it most.",
+      "opponent": "papercut.js"
+    },
+    {
+      "id": "gremlin", "file": "volume/gremlin.red", "name": "Gremlin", "language": "redcode", "family": "Stream", "era": "ZoreWars 2026 (evolved)", "battlefield": "torus:40x20x10",
+      "summary": "Evolved from random programs by <code>zorewars evolve --scratch</code>: 20 generations on the 100×80 plane, then 12 on 40×20×10, with no library code or opponents. It rediscovered a classic DJN stream that walks backward through memory taking one off both fields of every cell.",
+      "how": [
+        "Almost all its time (79,971 of 80,000 cycles alone) is one instruction, <code>DJN.F #10, {-10</code>, which jumps to itself.",
+        "Each pass, <code>{-10</code> steps the A-field of line 3 one back and uses it as a pointer; <code>DJN.F</code> takes one off both fields of that cell.",
+        "A clear depends on exact numbers. Nudged by one, Volume Queen's clear writes over its own code and dies within a few hundred cycles.",
+        "The <code>TRN</code>s and vectors are leftovers in lines that never matter, so the same program works on the ring."
+      ],
+      "strengths": ["Beats Volume Queen 29-1, Volume Chameleon 26-3, Adapter 28-1, and Plane Queen and Leapfrog 30-0.", "A second from-scratch run found a DJN stream again, independently."],
+      "weaknesses": ["Papers shrug it off: they are many redundant copies. 1.87 points per round on 40×20×10.", "Its evolver scored it 0.14 against its own ancestors: only the held-out library showed what it could do."],
+      "tryIt": "Run <code>node cli/zorewars.js battle warriors/volume/gremlin.red warriors/volume/volumequeen.js --torus 40x20x10 -r 5 --report</code> and read how Volume Queen dies.",
+      "opponent": "volume/volumequeen.js"
+    },
+    {
+      "id": "backdraft", "file": "volume/backdraft.js", "name": "Backdraft", "language": "javascript", "family": "Core clear", "era": "ZoreWars 2026", "battlefield": "torus:40x20x10",
+      "inspiredBy": "ULTIMA RATIO REGUM, a 12-instruction backward clear from the public hill archive (<a href=\"https://github.com/n1LS/redcode-warriors\">n1LS/redcode-warriors</a>, studied, not copied), which scored 2.53 on 40×20×10.",
+      "summary": "A core clear that runs backward. Its front arrives from the side forward clears never come from, which every lookout in the library (Leapfrog, Adapter, Volume Chameleon) leaves unwatched. One process lays stun traps, then DATs, each pass stopping just short of itself, over and over.",
+      "how": [
+        "Pass 1: <code>MOV.I stun, &lt;ptr</code> and <code>MOV.I jump, &lt;ptr</code> lay <code>SPL 0</code> / <code>JMP -1</code> pairs walking backward. A process on the <code>JMP</code> jumps back onto the <code>SPL</code>.",
+        "Pass 2: <code>MOV.I kill, &lt;ptr</code> lays <code>DAT</code>s over the same cells.",
+        "Each pass is counted to stop just short of its own code; then <code>JMP lap</code> starts again, so it keeps clearing all round."
+      ],
+      "strengths": ["The best warrior on both volumes: 2.51 points per round on 40×20×10, 2.36 on 80×10×10.", "Beats Leapfrog and Volume Queen 30-0, and papers 13-8 and 14-9."],
+      "weaknesses": ["Gremlin beats it 16-12: a stream breaks a clear's numbers.", "The details matter: 2.06 with <code>SPL 0</code> alone instead of the trap pair, 1.35 with two processes."],
+      "tryIt": "Set <code>PROCS: 2</code> and watch the two processes drift apart. Why does a shared counter split them?",
+      "opponent": "volume/leapfrog.js"
+    },
+    {
+      "id": "tripwire", "file": "volume/tripwire.js", "name": "Tripwire", "language": "javascript", "family": "Stream", "era": "ZoreWars 2026", "battlefield": "torus:40x20x10",
+      "inspiredBy": "After Death, a 1980s warrior from the public hill archive (studied, not copied): a stream that trips its own wire. Gremlin's stream and Backdraft's clear.",
+      "summary": "A DJN stream for one lap through the volume, then Backdraft's backward clear. The stream breaks the exact numbers clears and scanners rely on; the clear finishes what a stream can't break, such as papers.",
+      "how": [
+        "<code>DJN.F go, {sp</code> takes one off both fields of a cell and loops, its pointer walking backward.",
+        "The wire is a <code>DAT #1, #1</code> at the very end of its code, the last cell the stream reaches. Taking one off it leaves (0,0), so the <code>DJN</code> falls through.",
+        "<code>JMN</code> sees the wire cut and starts the backward clear: <code>SPL 0</code> / <code>JMP -1</code> pairs, then <code>DAT</code>s, over and over."
+      ],
+      "strengths": ["2.37 points per round on 40×20×10, second to Backdraft.", "Beats Backdraft 12-9-9, ULTIMA RATIO REGUM 21-9 and Volume Queen 30-0."],
+      "weaknesses": ["About even with papers.", "Gremlin beats it: its own clear has the exact numbers a stream breaks."],
+      "tryIt": "Run it alone with <code>node cli/zorewars.js trace warriors/volume/tripwire.js --torus 40x20x10 --last 20</code>: which pass is it in when the round ends? Then make the wire <code>DAT #2, #2</code> and predict what changes.",
+      "opponent": "volume/backdraft.js"
+    },
+    {
+      "id": "volumechameleon2", "file": "volume/volumechameleon2.js", "name": "Volume Chameleon II", "language": "javascript", "family": "P-space", "era": "ZoreWars 2026", "battlefield": "torus:80x10x10",
+      "inspiredBy": "Volume Chameleon's switch, carrying Backdraft and Volume Silk.",
+      "summary": "A P-space switcher on the new triangle: Backdraft beats nearly everything, a DJN stream breaks Backdraft, and a stream can't hurt a paper. It plays Backdraft, switches to Volume Silk after a lost round, and back after losing with that.",
+      "how": [
+        "<code>LDP</code> reads the last result and the strategy it played; after a loss it switches, and <code>STP</code> remembers.",
+        "Strategy 0 jumps into Backdraft (first in the code, so its passes spare everything after it); strategy 1 starts the paper (last, so its copies take the cells after it)."
+      ],
+      "strengths": ["2.33 points per round on 80×10×10, second only to Backdraft.", "Beats Gremlin 20-6 and Volume Chameleon 27-2."],
+      "weaknesses": ["It has to lose a round to switch, so its first rounds against a stream are played with Backdraft.", "Against fast papers it only ties (0-2-8 against Fast Silk, 10 rounds)."],
+      "tryIt": "Run <code>node cli/zorewars.js battle warriors/volume/volumechameleon2.js warriors/volume/gremlin.red --torus 80x10x10 -r 10 --report</code> and find the round it switches to the paper.",
+      "opponent": "volume/gremlin.red"
+    },
+    {
+      "id": "backdraft2", "file": "volume/backdraft2.js", "name": "Backdraft II", "language": "javascript", "family": "Core clear", "era": "ZoreWars 2026", "battlefield": "torus:80x10x10",
+      "inspiredBy": "Backdraft, with a wire like Leapfrog's marker on the side a backward stream comes from.",
+      "summary": "Backdraft with a wire against DJN streams. When a stream, or anything else, touches the wire, the clear copies itself into cells the stream has already passed and starts again there.",
+      "how": [
+        "A wire cell sits WIRE rows on from its code, the side a backward stream arrives from. Both passes stop just short of it, so only others trip it.",
+        "Every step of both passes checks the wire with <code>SEQ.I</code>.",
+        "When it has changed, it copies the whole program HOPY rows on and jumps into the copy's first line."
+      ],
+      "strengths": ["Turns Gremlin from 10-19 into 12-1-17.", "Beats Backdraft and Tripwire 26-4."],
+      "weaknesses": ["Checking the wire every step slows it: 1.91 points per round on 80×10×10, against Backdraft's 2.36.", "Forward clears now beat it: 1-19 against Volume Queen (20 rounds, seed 7)."],
+      "tryIt": "Run <code>node cli/zorewars.js battle warriors/volume/backdraft2.js warriors/volume/volumequeen.js --torus 80x10x10 -r 5 --report</code> and read what kills it.",
+      "opponent": "volume/gremlin.red"
+    },
+    {
+      "id": "fleet", "file": "volume/fleet.js", "name": "Fleet", "language": "javascript", "family": "Hybrid", "era": "ZoreWars 2026", "battlefield": "torus:80x10x10",
+      "inspiredBy": "Battleship plus Slant: the Red Queen recipe (scanner plus replicator) in 3D. At 31 instructions it needs 80×10×10, where code may be 40 long.",
+      "summary": "Battleship's digging scanner and Slant's replicator in one program. The scanner hunts papers' copies while the replicator outlasts the stones that beat scanners.",
+      "how": [
+        "<code>SPL go</code> gives the replicator its own process; the other runs the scanner.",
+        "The scanner is Battleship's: <code>JMZ.F</code> on <code>&gt;ptr</code> through every cell, a block salvo of <code>SPL 0</code>s around each find.",
+        "The replicator is Slant's, accidental steering included, one process per copy, so it takes few of the scanner's turns."
+      ],
+      "strengths": ["Slant's chains suit it: with the steering \"fixed\" (<code>ADD.A</code>) Fleet drops from 1.66 to 1.16 points per round.", "Beats Battleship 10-0 and Gremlin 9-1 (10 rounds each)."],
+      "weaknesses": ["Ties papers instead of beating them: in 3D the scanner can't find copies faster than they are made.", "Clears beat it: 0-10 against Two-Pass Clear and Volume Chameleon II."],
+      "tryIt": "Set <code>BOMB: \"dat\"</code> and compare with <code>node cli/zorewars.js hill warriors/volume/fleet.js --torus 80x10x10</code>.",
+      "opponent": "volume/volumesilk.js"
     }
   ],
 

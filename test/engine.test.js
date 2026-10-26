@@ -218,6 +218,37 @@ test('every library warrior compiles and survives alone', () => {
   }
 });
 
+test('every library warrior is in the encyclopedia, under the same family', () => {
+  const list = JSON.parse(read('warriors/index.json'));
+  const enc = JSON.parse(read('warriors/encyclopedia.json')).warriors;
+  for (const entry of list) {
+    const original = entry.convertedFrom ?? entry.sameAs ?? entry.file;
+    const card = enc.find((w) => w.file === original);
+    assert.ok(card, `${original} has no encyclopedia entry`);
+    assert.equal(entry.family, card.family, `${entry.file}: family in index.json differs from the encyclopedia`);
+    assert.equal(entry.battlefield, card.battlefield, `${entry.file}: battlefield differs from the encyclopedia`);
+  }
+});
+
+test('the library has no duplicate warriors, except declared versions', () => {
+  // Two entries with the same code must say so: convertedFrom (a conversion)
+  // or sameAs (a hand-written example of the same warrior in another language).
+  const list = JSON.parse(read('warriors/index.json'));
+  const seen = new Map();
+  for (const entry of list.filter((e) => e.language !== 'python')) {
+    const [x, y, z = 1] = (entry.battlefield ?? '').replace('torus:', '').split('x').map(Number);
+    const settings = entry.battlefield ? { ...DEFAULT_SETTINGS, topology: 'torus', sizeX: x, sizeY: y, sizeZ: z, coreSize: x * y * z } : {};
+    const w = compile(read(`warriors/${entry.file}`), entry.language, settings);
+    const key = `${entry.battlefield ?? 'ring'}|${w.start}|${w.instructions.map((i) => `${i.op}.${i.mod} ${i.aMode}${i.a},${i.bMode}${i.b}`).join(';')}`;
+    const twin = seen.get(key);
+    if (twin) {
+      const originalOf = (e) => e?.convertedFrom ?? e?.sameAs ?? e?.file;
+      assert.equal(originalOf(entry), originalOf(list.find((e) => e.file === twin)),
+        `${entry.file} has the same code as ${twin}: mark it convertedFrom or sameAs, or remove it`);
+    } else seen.set(key, entry.file);
+  }
+});
+
 test('replicator beats a bomber most of the time', () => {
   const mice = compile(read('warriors/mice.red'));
   const dwarf = compile(read('warriors/dwarf.red'));

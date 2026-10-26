@@ -33,7 +33,7 @@ for (const e of originals) {
     const r = await convertWarrior(source, lang, { compile, toRedcode });
     const file = `${lang}/${base}.${ext}`;
     fs.writeFileSync(path.join(W, file), r.code);
-    entries.push({ file, name: e.name, category: e.category, language: lang, convertedFrom: e.file, benchmark: false });
+    entries.push({ file, name: e.name, category: e.category, family: e.family, language: lang, convertedFrom: e.file, benchmark: false });
     console.log(`${file.padEnd(28)} ${r.level} (${r.instructions} instructions)`);
   }
 }
