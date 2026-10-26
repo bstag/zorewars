@@ -1105,9 +1105,33 @@ function fieldSettings(key) {
   const [x, y, z = 1] = key.slice(6).split('x').map(Number);
   return { topology: 'torus', sizeX: x, sizeY: y, sizeZ: z, coreSize: x * y * z };
 }
+// Custom sizes: any torus up to MAX_CELLS (the 3D view slows down beyond it).
+const MAX_CELLS = 200000;
+const PRESET_FIELDS = () => [...$('setField').options].map((o) => o.value).filter((v) => v !== 'custom');
+// The battlefield the menu describes: a preset, or the custom sizes (null if invalid).
+function chosenField() {
+  if ($('setField').value !== 'custom') return $('setField').value;
+  const [x, y, z] = ['setSizeX', 'setSizeY', 'setSizeZ'].map((id) => parseInt($(id).value, 10));
+  if (![x, y, z].every(Number.isFinite) || x < 4 || y < 2 || z < 1 || x * y * z > MAX_CELLS) return null;
+  return `torus:${x}x${y}${z > 1 ? `x${z}` : ''}`;
+}
+function renderCustomField() {
+  const custom = $('setField').value === 'custom';
+  $('customField').hidden = !custom;
+  if (!custom) return;
+  const key = chosenField();
+  const [x, y, z] = ['setSizeX', 'setSizeY', 'setSizeZ'].map((id) => parseInt($(id).value, 10) || 0);
+  $('customInfo').textContent = key
+    ? `${(x * y * z).toLocaleString()} cells; warriors up to ${Math.floor(x / 2)} instructions (half a row). Experimental: library warriors written for other sizes may not survive here.`
+    : `Width at least 4, height at least 2, at most ${MAX_CELLS.toLocaleString()} cells.`;
+  if (key) $('setCoreSize').value = x * y * z;
+}
 function renderSettings() {
   for (const [k, id] of Object.entries(SETTING_INPUTS)) $(id).value = state.settings[k];
-  $('setField').value = fieldKey(state.settings);
+  const key = fieldKey(state.settings);
+  $('setField').value = PRESET_FIELDS().includes(key) ? key : 'custom';
+  if ($('setField').value === 'custom') [$('setSizeX').value, $('setSizeY').value, $('setSizeZ').value] = [state.settings.sizeX, state.settings.sizeY, state.settings.sizeZ ?? 1];
+  renderCustomField();
   $('setRules').value = state.settings.rulesName || '';
   $('setCoreSize').disabled = state.settings.topology === 'torus';   // fixed by the plane's size
 }
@@ -1413,13 +1437,22 @@ function wireEvents() {
       if (!Number.isFinite(n) || n < +$(id).min) { $(id).focus(); return; }
       v[k] = n;
     }
-    applySettings({ ...v, ...fieldSettings($('setField').value) });
+    const field = chosenField();
+    if (!field) { $('setSizeX').focus(); return; }
+    applySettings({ ...v, ...fieldSettings(field) });
   });
   $('setField').addEventListener('change', () => {
-    const f = fieldSettings($('setField').value);
+    if ($('setField').value === 'custom' && !$('setSizeX').value) {
+      // Start from the current battlefield (or a small volume).
+      const s = state.settings.topology === 'torus' ? state.settings : { sizeX: 41, sizeY: 20, sizeZ: 9 };
+      [$('setSizeX').value, $('setSizeY').value, $('setSizeZ').value] = [s.sizeX, s.sizeY, s.sizeZ ?? 1];
+    }
+    const f = fieldSettings(chosenField() ?? 'torus:4x2');
     $('setCoreSize').disabled = f.topology === 'torus';
     if (f.coreSize) $('setCoreSize').value = f.coreSize;
+    renderCustomField();
   });
+  for (const id of ['setSizeX', 'setSizeY', 'setSizeZ']) $(id).addEventListener('input', renderCustomField);
   $('resetSettings').addEventListener('click', () => applySettings({ ...DEFAULT_SETTINGS, ...fieldSettings('ring'), ...NO_HILL_RULES }));
   // Hill rules: a standard hill's settings on the classic ring (94nop, '88
   // with its syntax checks, limited process, 94x); none of them has P-space.

@@ -56,14 +56,14 @@ export function initPicker(ctx) {
 
   // The library under the two checkboxes: these warriors' families are the chips.
   function pool() {
-    const allFields = $('pickerAllFields').checked, versions = $('pickerVersions').checked;
+    const allFields = $('pickerAllFields').checked, versions = $('pickerVersions').checked, experimental = $('pickerExperimental').checked;
     return ctx.library().map((e) => ({ e, p: annotate(e), fits: ctx.fits(e) }))
       .map((x, _, all) => {
         // A version is listed when asked for, or when it plays here and its
         // original doesn't (the '88 versions under ICWS'88 rules).
         const original = originalOf(x.e) && all.find((y) => y.e.file === originalOf(x.e));
         const showVersion = versions || (original && original.fits === false && x.fits !== false);
-        return { ...x, inPool: (allFields || x.fits !== false) && (!originalOf(x.e) || showVersion) };
+        return { ...x, inPool: (allFields || x.fits !== false) && (!originalOf(x.e) || showVersion) && (experimental || !x.e.experimental) };
       });
   }
 
@@ -93,7 +93,7 @@ export function initPicker(ctx) {
     state.rows = shown;
     state.cursor = Math.min(state.cursor, Math.max(0, shown.length - 1));
     $('pickerList').innerHTML = shown.map(({ e, p, fits }, i) => {
-      const badges = [FIELD_BADGE[p.field], LANG_BADGE[e.language], e.dialect === '88' ? "'88" : '', e.convertedFrom ? 'converted' : '', e.sameAs ? 'example' : '', e.adaptedFrom ? 'adapted' : ''].filter(Boolean);
+      const badges = [FIELD_BADGE[p.field], LANG_BADGE[e.language], e.dialect === '88' ? "'88" : '', e.convertedFrom ? 'converted' : '', e.sameAs ? 'example' : '', e.adaptedFrom ? 'adapted' : '', e.experimental ? 'prototype' : ''].filter(Boolean);
       return `<li role="option" id="pick-${i}" data-i="${i}" aria-selected="${i === state.cursor}" class="${fits === false ? 'elsewhere' : ''}">
         <div class="pick-top"><b>${esc(e.name)}</b><span class="pick-fam">${esc(p.family)}</span>${badges.map((b) => `<span class="badge">${esc(b)}</span>`).join('')}</div>
         <div class="pick-cat">${esc(e.category)}${p.author ? ` · ${esc(p.author)}` : ''}</div>
@@ -127,7 +127,7 @@ export function initPicker(ctx) {
     renderChips();
     render();
   });
-  for (const id of ['pickerSearch', 'pickerAllFields', 'pickerVersions', 'pickerSort']) {
+  for (const id of ['pickerSearch', 'pickerAllFields', 'pickerVersions', 'pickerExperimental', 'pickerSort']) {
     $(id).addEventListener(id === 'pickerSearch' ? 'input' : 'change', () => { state.cursor = 0; if (id !== 'pickerSearch') renderChips(); render(); });
   }
   $('pickerSearch').addEventListener('keydown', (ev) => {

@@ -228,9 +228,17 @@
             <option value="torus:125x64">Plane 125×64 (experimental)</option>
             <option value="torus:40x20x10">Volume 40×20×10 (experimental 3D)</option>
             <option value="torus:80x10x10">Volume 80×10×10 (experimental 3D, longer warriors)</option>
+            <option value="torus:41x20x9">Volume 41×20×9 (experimental 3D, coprime: strides reach every cell)</option>
             <option value="torus:20x20x20">Cube 20×20×20 (experimental 3D)</option>
+            <option value="custom">Custom size…</option>
           </select>
         </label>
+        <div class="settings-grid" id="customField" hidden>
+          <label class="field"><span>Width (X)</span><input type="number" id="setSizeX" min="4" max="1000"></label>
+          <label class="field"><span>Height (Y)</span><input type="number" id="setSizeY" min="2" max="1000"></label>
+          <label class="field"><span>Depth (Z, 1 = a plane)</span><input type="number" id="setSizeZ" min="1" max="1000"></label>
+          <p class="muted small" id="customInfo"></p>
+        </div>
         <label class="field"><span>Hill rules</span>
           <select id="setRules">
             <option value="">ZoreWars (custom)</option>
@@ -302,6 +310,7 @@
     <div class="picker-opts">
       <label><input type="checkbox" id="pickerAllFields"> Warriors for other battlefields</label>
       <label><input type="checkbox" id="pickerVersions"> JavaScript and Python versions</label>
+      <label title="Ideas that didn't make the library, with their results: warriors/prototypes/README.md"><input type="checkbox" id="pickerExperimental"> Experimental prototypes</label>
       <label class="field inline"><span>Sort</span><select id="pickerSort"><option value="family">By family</option><option value="name">By name</option></select></label>
       <button class="btn ghost" id="pickerClose" type="button">Close</button>
     </div>

@@ -25,6 +25,7 @@ export { toICWS88 } from './to88.js';
 // rules (dialect '88), the library is its '88 versions (warriors/88/).
 export function inLibraryFor(entry, settings = {}) {
   if (entry.language !== 'redcode' && entry.language !== 'javascript') return false;
+  if (entry.experimental) return false;       // prototypes (warriors/prototypes/) are only in the picker
   if (settings.dialect === '88' || entry.dialect === '88') return settings.dialect === '88' && entry.dialect === '88';
   if (entry.convertedFrom) return false;
   if (settings.topology === 'torus') return entry.benchmark !== false || !!entry.battlefield;

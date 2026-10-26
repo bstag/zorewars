@@ -212,6 +212,7 @@ test('every library warrior compiles and survives alone', () => {
     const w = compile(read(`warriors/${entry.file}`), entry.language, settings);
     assert.ok(w.ok, `${entry.file}: ${JSON.stringify(w.errors)}`);
     const vm = new VM(settings);
+    if (entry.experimental) continue;   // prototypes may fail alone (see warriors/prototypes/README.md)
     vm.load([w], { seed: 3 });
     vm.run();
     assert.ok(vm.warriors[0].alive, `${entry.file} killed itself`);
@@ -221,7 +222,7 @@ test('every library warrior compiles and survives alone', () => {
 test('every library warrior is in the encyclopedia, under the same family', () => {
   const list = JSON.parse(read('warriors/index.json'));
   const enc = JSON.parse(read('warriors/encyclopedia.json')).warriors;
-  for (const entry of list) {
+  for (const entry of list.filter((e) => !e.experimental)) {   // prototypes are described in their README
     const original = entry.convertedFrom ?? entry.sameAs ?? entry.adaptedFrom ?? entry.file;
     const card = enc.find((w) => w.file === original);
     assert.ok(card, `${original} has no encyclopedia entry`);
