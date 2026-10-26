@@ -1,12 +1,14 @@
 // ZoreWars arena: editors, live battle view, inspector and tournaments.
 
-import { compile, VM, runRound, mulberry32, DEFAULT_SETTINGS, RULESETS, listing, roundPoints, postMortem, generateFromJS, fitsBattlefield } from '../src/engine/index.js';
+import { compile, VM, mulberry32, DEFAULT_SETTINGS, RULESETS, listing, roundPoints, postMortem, generateFromJS } from '../src/engine/index.js';
 import { convertWarrior } from '../src/engine/convert.js';
 import { CoreRenderer, ProcessChart, WARRIOR_COLORS, setColorSlots } from './arena.js';
 import { CoreView3D } from './arena3d.js';
 import { AvatarView } from './avatars.js';
 import { Highlights } from './highlights.js';
 import { initPicker } from './picker.js';
+import { scanLibraryFit } from './library-fit.js';
+import { createSimulationRunner } from './simulation.js';
 import { generateFromPython, loadPython, pythonReady } from './python.js';
 import { createCodeEditor } from './editor.js';
 import { initLadder, initSpecies } from './ladder.js';
@@ -195,36 +197,23 @@ async function loadLibrary() {
 // Which library warriors can play on the current battlefield (they compile
 // there and, on a torus, survive alone): those are listed first, the rest in
 // a last group, where picking one explains what it needs and offers to
-// switch. Checked in short slices after every change of battlefield.
+// switch. Yield within long solo battles as well as between warriors.
 const battlefieldKey = (s) => [s.topology ?? 'ring', s.sizeX, s.sizeY, s.sizeZ, s.coreSize, s.maxLength, s.maxProcesses, s.maxCycles, s.dialect, s.pSpace].join('/');
 function refreshLibraryFit() {
   const key = battlefieldKey(state.settings);
   if (state.libraryFit?.key === key) return;
-  const fit = new Map();
-  state.libraryFit = { key, fit, done: false };
-  const todo = state.library.filter((e) => e.language !== 'python');
-  let i = 0;
-  const step = () => {
-    if (state.libraryFit.key !== key) return;            // the battlefield changed again
-    const t0 = performance.now();
-    while (i < todo.length && performance.now() - t0 < 25) {
-      const e = todo[i++];
-      let ok = false;
-      // Plane and 3D warriors belong on a torus, even those that compile on the ring.
-      if (e.battlefield && state.settings.topology !== 'torus') ok = false;
-      else try { ok = fitsBattlefield(compile(e.source, e.language, state.settings), state.settings); } catch { ok = false; }
-      fit.set(e.file, ok);
-    }
-    if (i < todo.length) { setTimeout(step, 0); return; }
-    // Python warriors run in Pyodide: they follow the Redcode warrior they mirror.
-    for (const e of state.library.filter((x) => x.language === 'python')) {
-      const twin = e.convertedFrom ?? state.library.find((x) => x.name === e.name.replace(/ \(Python\)$/, '') && x.language === 'redcode')?.file;
-      fit.set(e.file, twin ? fit.get(twin) !== false : state.settings.topology !== 'torus');
-    }
-    state.libraryFit.done = true;
+  state.libraryFit?.controller.abort();
+  const job = { key, fit: new Map(), done: false, controller: new AbortController() };
+  state.libraryFit = job;
+  scanLibraryFit(state.library, state.settings, { signal: job.controller.signal }).then((fit) => {
+    // Identity matters when rules change A -> B -> A while a scan is pending.
+    if (!fit || state.libraryFit !== job) return;
+    job.fit = fit;
+    job.done = true;
     renderLibrarySelect();
-  };
-  step();
+  }).catch((error) => {
+    if (state.libraryFit === job) console.warn('Could not check warrior compatibility:', error);
+  });
 }
 // The library button names the active slot's library warrior (while it is
 // unedited); the picker (picker.js) lists the library.
@@ -1082,6 +1071,7 @@ function runTournamentUI() {
   const pspaces = warriors.map(() => VM.freshPSpace(settings));
   const t = { cancel: false, done: 0 };
   state.tournament = t;
+  const runner = createSimulationRunner({ cancelled: () => t.cancel });
   $('tourBtn').textContent = 'Stop';
 
   const render = () => {
@@ -1093,10 +1083,10 @@ function runTournamentUI() {
   };
 
   const stop = () => { state.tournament = null; $('tourBtn').textContent = 'Run'; };
-  const next = () => {
+  const next = async () => {
     const t0 = performance.now();
     try {
-      playSlice(t0);
+      await playSlice(t0);
     } catch (e) {
       stop();
       $('tourResults').insertAdjacentHTML('beforeend', `<p class="muted small">Stopped: ${escapeHtml(e.message)}</p>`);
@@ -1106,9 +1096,10 @@ function runTournamentUI() {
     if (t.done < rounds && !t.cancel) setTimeout(next, 0);
     else stop();
   };
-  const playSlice = (t0) => {
+  const playSlice = async (t0) => {
     while (t.done < rounds && !t.cancel && performance.now() - t0 < 40) {
-      const res = runRound(warriors, settings, { seed: Math.floor(rng() * 2 ** 32), firstTurn: t.done % warriors.length, pspaces });
+      const res = await runner.round(warriors, settings, { seed: Math.floor(rng() * 2 ** 32), firstTurn: t.done % warriors.length, pspaces });
+      if (!res) break;
       stats.forEach((s, k) => {
         const points = roundPoints(warriors.length, res.survivors.length);
         if (res.winner === k) { s.wins++; s.score += points; }

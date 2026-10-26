@@ -25,6 +25,31 @@ test('geometry: every number is exactly one point, and steps wrap per axis', () 
   assert.equal(g.format(g.encode(3, -2)), '[3,-2]');
 });
 
+test('geometry: repeated shapes reuse calculations without sharing a mutable facade', () => {
+  const first = makeGeometry(PLANE);
+  const second = makeGeometry({ ...PLANE });
+  assert.notEqual(first, second);
+  assert.equal(first.add, second.add, 'reuse the private lookup tables and their operations');
+  const expected = second.encode(3, -2);
+  first.add = () => -1;
+  first.format = () => 'changed';
+  first.X = 1;
+  const third = makeGeometry(PLANE);
+  assert.equal(third.X, 100);
+  assert.equal(third.add(third.encode(1, -1), third.encode(2, -1)), expected);
+  assert.equal(third.format(expected), '[3,-2]');
+
+  // Equal core sizes can have different geometry. Replacing the cached
+  // shape must also leave already-running battles' tables intact.
+  const other = makeGeometry(torus(125, 64));
+  assert.notEqual(other.add, third.add);
+  assert.deepEqual(other.decode(other.add(other.encode(62, 0), 1)), [-62, 0, 0]);
+  assert.equal(third.add(third.encode(1, -1), third.encode(2, -1)), expected);
+  assert.notEqual(makeGeometry(PLANE).add, third.add, 'retain only the most recent shape');
+  assert.throws(() => makeGeometry({ ...PLANE, coreSize: 7999 }), /needs coreSize/);
+  assert.equal(makeGeometry(DEFAULT_SETTINGS), null);
+});
+
 test('torus(8000,1,1) is the classic ring: identical battles for the library', () => {
   const ring = { ...DEFAULT_SETTINGS };
   const line = torus(8000, 1);

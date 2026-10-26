@@ -11,8 +11,9 @@
 // Species map: where warriors sit by behaviour, measured alone in the core
 // (src/engine/species.js), with the library for comparison.
 
-import { compile, runRound, VM, mulberry32, roundPoints, smoothPoints, measureSpecies, speciesAxes, speciesHint, inLibraryFor, pushOff } from '../src/engine/index.js';
+import { compile, VM, mulberry32, roundPoints, smoothPoints, speciesAxes, speciesHint, inLibraryFor, pushOff } from '../src/engine/index.js';
 import { WARRIOR_COLORS } from './arena.js';
+import { createSimulationRunner } from './simulation.js';
 
 const LADDER_KEY = 'zorewars.ladder.v1';
 const LADDER_SIZE = 10;
@@ -106,8 +107,9 @@ export function initLadder(ctx) {
     const total = pairs.length * rounds;
     let k = 0, r = 0, done = 0, acc = null, pspaces = null;
     job = { cancel: false };
+    const runner = createSimulationRunner({ cancelled: () => job.cancel || rulesKey(ctx.settings()) !== rulesKey(settings) });
     render();                         // the button now says Stop
-    const step = () => {
+    const step = async () => {
       // New rules make this ladder's warriors and results stale: start over.
       if (rulesKey(ctx.settings()) !== rulesKey(settings)) {
         job = null;
@@ -117,7 +119,7 @@ export function initLadder(ctx) {
         return;
       }
       try {
-        slice();
+        await slice();
       } catch (e) {
         // A round that can't be played ends the run; the ladder stays usable.
         job = null;
@@ -130,12 +132,13 @@ export function initLadder(ctx) {
       save();
       onDone(cancelled);
     };
-    const slice = () => {
+    const slice = async () => {
       const t0 = performance.now();
       while (k < pairs.length && !job.cancel && performance.now() - t0 < 40) {
         const [a, b] = pairs[k];
         if (r === 0) { acc = { w: 0, l: 0, t: 0, smooth: 0, bs: 0 }; pspaces = [VM.freshPSpace(settings), VM.freshPSpace(settings)]; }
-        const res = runRound([compileMember(a), compileMember(b)], settings, { seed: Math.floor(rng() * 2 ** 32), firstTurn: r % 2, pspaces });
+        const res = await runner.round([compileMember(a), compileMember(b)], settings, { seed: Math.floor(rng() * 2 ** 32), firstTurn: r % 2, pspaces });
+        if (!res) break;
         const points = roundPoints(2, res.survivors.length);
         if (res.winner === 0) acc.w++; else if (res.winner === 1) acc.l++; else acc.t++;
         acc.smooth += smoothPoints(res, 0, points, settings.maxCycles);
@@ -235,53 +238,79 @@ export function initLadder(ctx) {
 
 export function initSpecies(ctx) {
   let libCache = { rules: null, rows: [] };
-  let measuring = null;               // the rules being measured, while a measurement runs
+  let measuring = null;
+  let ownJob = null;
+  let ownRows = [];
   let selected = null;
+  const ownCache = new WeakMap();
+  async function measureOwn() {
+    const settings = ctx.settings(), rules = rulesKey(settings);
+    const task = {};
+    ownJob = task;
+    const runner = createSimulationRunner({ cancelled: () => ownJob !== task || rulesKey(ctx.settings()) !== rules });
+    const rows = [];
+    for (const [k, slot] of ctx.slots().entries()) {
+      const compiled = slot.compiled;
+      if (!compiled?.ok) continue;
+      let result = ownCache.get(compiled);
+      try {
+        if (result?.rules !== rules) {
+          const measured = await runner.species(compiled, settings);
+          if (!measured) return;
+          result = { rules, measured };
+          ownCache.set(compiled, result);
+        }
+      } catch { continue; }
+      rows.push({ compiled, k, rules, name: compiled.name, color: WARRIOR_COLORS[k], ...result.measured });
+    }
+    if (ownJob !== task || rulesKey(ctx.settings()) !== rules) return;
+    ownJob = null;
+    ownRows = rows;
+    render();
+  }
 
-  function measureLibrary(then) {
+  async function measureLibrary(then) {
     const settings = ctx.settings();
     const rules = rulesKey(settings);
-    if (libCache.rules === rules) { then(); return; }
-    if (measuring === rules) return;  // already under way; it calls `then` when done
-    measuring = rules;
+    if (libCache.rules === rules) { measuring = null; then(); return; }
+    if (measuring?.rules === rules) return;
+    const task = { rules };
+    measuring = task;
+    const runner = createSimulationRunner({ cancelled: () => measuring !== task || rulesKey(ctx.settings()) !== rules });
     const list = ctx.library().filter((e) => inLibraryFor(e, settings));
     const rows = [];
-    let i = 0;
     $('speciesInfo').textContent = 'Measuring the library…';
-    const step = () => {
-      if (measuring !== rules) return;  // the rules changed: a newer measurement took over
-      const t0 = performance.now();
-      while (i < list.length && performance.now() - t0 < 40) {
-        const e = list[i++];
-        let w, m;
-        try {
-          w = compile(e.source, e.language, settings);
-          if (!w.ok) continue;
-          m = measureSpecies(w, settings);
-        } catch { continue; }           // one warrior that can't be measured is left off
-        // On a plane, ring warriors that destroy themselves are left off the map.
-        if (m.survives || settings.topology !== 'torus') rows.push({ name: w.name, ...m });
-      }
-      if (i < list.length) { setTimeout(step, 0); return; }
-      measuring = null;
-      libCache = { rules, rows };
-      then();
-    };
-    step();
+    for (const e of list) {
+      if (measuring !== task) return;
+      let w, m;
+      try {
+        w = compile(e.source, e.language, settings);
+        if (!w.ok) continue;
+        m = await runner.species(w, settings);
+        if (!m) return;
+      } catch { continue; }           // one warrior that can't be measured is left off
+      // On a plane, ring warriors that destroy themselves are left off the map.
+      if (m.survives || settings.topology !== 'torus') rows.push({ name: w.name, ...m });
+    }
+    if (measuring !== task || rulesKey(ctx.settings()) !== rules) return;
+    measuring = null;
+    libCache = { rules, rows };
+    then();
   }
 
   function render() {
     const settings = ctx.settings();
     const axes = speciesAxes(settings);
     const procs = (p) => `${axes.processes.labels[p]} ${axes.processes.labels[p] === '1' ? 'process' : 'processes'}`;
-    const mine = ctx.slots().map((s, k) => ({ s, k })).filter(({ s }) => s.compiled?.ok)
-      .map(({ s, k }) => ({ name: s.compiled.name, color: WARRIOR_COLORS[k], ...measureSpecies(s.compiled, settings) }));
+    const rules = rulesKey(settings);
+    const mine = ownRows.filter((r) => r.rules === rules && ctx.slots()[r.k]?.compiled === r.compiled);
+    const library = libCache.rules === rules ? libCache.rows : [];
     const P = axes.processes.labels.length, C = axes.coverage.labels.length;
     let html = '<div class="species-grid" style="grid-template-columns: auto repeat(' + P + ', 1fr)">';
     for (let c = C - 1; c >= 0; c--) {
       html += `<div class="sp-y">${esc(axes.coverage.labels[c])}</div>`;
       for (let p = 0; p < P; p++) {
-        const lib = libCache.rows.filter((r) => r.cell[0] === p && r.cell[1] === c);
+        const lib = library.filter((r) => r.cell[0] === p && r.cell[1] === c);
         const you = mine.filter((r) => r.cell[0] === p && r.cell[1] === c);
         const sel = selected === `${p},${c}`;
         html += `<button class="sp-cell${sel ? ' sel' : ''}${lib.length || you.length ? ' used' : ''}" data-cell="${p},${c}" aria-label="${esc(procs(p))}, ${esc(axes.coverage.labels[c])} cells: ${lib.length + you.length} warriors">${
@@ -295,11 +324,11 @@ export function initSpecies(ctx) {
     let info;
     if (selected) {
       const [p, c] = selected.split(',').map(Number);
-      const here = [...mine.map((r) => ({ ...r, you: true })), ...libCache.rows].filter((r) => r.cell[0] === p && r.cell[1] === c);
+      const here = [...mine.map((r) => ({ ...r, you: true })), ...library].filter((r) => r.cell[0] === p && r.cell[1] === c);
       info = `<b>${esc(procs(p))} × ${esc(axes.coverage.labels[c])} cells</b> · usually ${esc(speciesHint(p, c, axes))}<br>${
         here.length ? here.map((r) => `${r.you ? `<span class="dot" style="background:${r.color}"></span>` : ''}${esc(r.name)} <span class="muted">(${plural(r.processes, 'process', 'processes')}, ${plural(r.coverage, 'cell', 'cells')})</span>`).join(' · ') : '<span class="muted">Nobody here yet.</span>'}`;
     } else {
-      info = mine.map((r) => `<span class="dot" style="background:${r.color}"></span><b>${esc(r.name)}</b>: ${r.survives ? esc(r.hint) : 'kills itself when alone'} <span class="muted">(${plural(r.processes, 'process', 'processes')}, ${plural(r.coverage, 'cell', 'cells')})</span>`).join('<br>') || 'No working warriors in the editor.';
+      info = mine.map((r) => `<span class="dot" style="background:${r.color}"></span><b>${esc(r.name)}</b>: ${r.survives ? esc(r.hint) : 'kills itself when alone'} <span class="muted">(${plural(r.processes, 'process', 'processes')}, ${plural(r.coverage, 'cell', 'cells')})</span>`).join('<br>') || (ownJob ? 'Measuring your warriors…' : 'No working warriors in the editor.');
       info += '<br><span class="muted">Tap a cell to see who lives there.</span>';
     }
     $('speciesInfo').innerHTML = info;
@@ -311,6 +340,13 @@ export function initSpecies(ctx) {
     selected = selected === b.dataset.cell ? null : b.dataset.cell;
     render();
   });
-  $('speciesCard').addEventListener('toggle', () => { if ($('speciesCard').open) measureLibrary(render); });
-  return { refresh: () => { if ($('speciesCard').open) measureLibrary(render); } };
+  const refresh = () => {
+    if (!$('speciesCard').open) return;
+    return Promise.all([measureLibrary(render), measureOwn()]);
+  };
+  $('speciesCard').addEventListener('toggle', () => {
+    if ($('speciesCard').open) refresh();
+    else { measuring = null; ownJob = null; }
+  });
+  return { refresh };
 }

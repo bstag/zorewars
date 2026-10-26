@@ -88,7 +88,8 @@ export class VM {
     this.curPc = -1;
     this.contacts = [];          // first write by each warrior into another's memory
     this.contactSeen = new Set();
-    this.trace = this.traceSize ? [] : null;
+    this._trace = this.traceSize ? [] : null;
+    this._traceExposed = false;
     this.warriors = [];
     this.turn = 0;
     this.cycle = 0;
@@ -228,9 +229,15 @@ export class VM {
       warrior.foreignSteps++;
       if (!warrior.foreignFirst) warrior.foreignFirst = { cycle: this.cycle, pc, owner: codeOwner, instruction: this.disassemble(pc) };
     }
-    if (this.trace) {
-      this.trace.push({ step: this.steps, cycle: this.cycle, warrior: w, pc, instruction: this.disassemble(pc), processes: warrior.queue.size + 1 });
-      if (this.trace.length > this.traceSize) this.trace.shift();
+    if (this._trace) {
+      this._trace.push(this._traceExposed
+        ? { step: this.steps, cycle: this.cycle, warrior: w, pc, instruction: this.disassemble(pc), processes: warrior.queue.size + 1 }
+        : {
+          step: this.steps, cycle: this.cycle, warrior: w, pc,
+          op: this.op[pc], mod: this.mod[pc], am: this.aMode[pc], bm: this.bMode[pc], a: this.a[pc], b: this.b[pc],
+          format: this.geo?.format, size: this.size, processes: warrior.queue.size + 1,
+        });
+      if (this._trace.length > this.traceSize) this._trace.shift();
     }
     const writerPc = this.writerPc[pc], writeCycle = this.writeCycle[pc];
 
@@ -243,7 +250,7 @@ export class VM {
       warrior.deaths[cause]++;
       warrior.lastDeath = { cycle: this.cycle, step: this.steps, pc, instruction: this.disassemble(pc), cause, codeOwner, writerPc, writeCycle };
       if (this.events && cause === 'enemyCode' && this.events.length < this.eventLimit) this.events.push(pc, codeOwner, w, 1);
-      if (this.trace) this.trace.at(-1).died = cause;
+      if (this._trace) this._trace.at(-1).died = cause;
     }
     if (warrior.queue.size > warrior.peak) warrior.peak = warrior.queue.size;
 
@@ -383,7 +390,31 @@ export class VM {
   // Keep the last `size` executed instructions (see the CLI's trace command).
   enableTrace(size) {
     this.traceSize = size;
-    this.trace = [];
+    this._trace = [];
+    this._traceExposed = false;
+  }
+
+  // Most traces are read after a round. Capture the instruction register
+  // before execution, but format only the entries that survive in the tail.
+  // Once exposed, keep the array live with ordinary text entries, including
+  // for callers that retain its reference while the VM continues running.
+  get trace() {
+    if (this._trace && !this._traceExposed) {
+      for (let i = 0; i < this._trace.length; i++) {
+        const { step, cycle, warrior, pc, op, mod, am, bm, a, b, format, size, processes, died } = this._trace[i];
+        const sa = format ? format(a) : a > size / 2 ? a - size : a;
+        const sb = format ? format(b) : b > size / 2 ? b - size : b;
+        const instruction = `${OPCODES[op]}.${MODIFIERS[mod]} ${MODES[am]}${sa}, ${MODES[bm]}${sb}`;
+        this._trace[i] = { step, cycle, warrior, pc, instruction, processes, ...(died ? { died } : {}) };
+      }
+      this._traceExposed = true;
+    }
+    return this._trace;
+  }
+
+  set trace(entries) {
+    this._trace = entries;
+    this._traceExposed = true;
   }
 
   execute(w, pc, queue) {

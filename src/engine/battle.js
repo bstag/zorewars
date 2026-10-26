@@ -13,22 +13,34 @@ export const TIE_POINTS = 1;
 
 // `report` adds a post-mortem (see report.js); `traceSize` keeps the last
 // that many executed instructions.
-export function runRound(warriors, settings = {}, { seed, positions: fixedPositions, firstTurn = 0, pspaces, report = false, traceSize = 0 } = {}) {
+// Preparing and finishing are shared by synchronous tools and the browser's
+// sliced runner. A cancelled browser round is discarded without recording it.
+export function createRound(warriors, settings = {}, { seed, positions: fixedPositions, firstTurn = 0, pspaces, report = false, traceSize = 0 } = {}) {
   const vm = new VM(settings);
   if (traceSize) vm.enableTrace(traceSize);
   const positions = vm.load(warriors, { seed, positions: fixedPositions, firstTurn, pspaces });
-  vm.run();
-  vm.recordResults();
   return {
-    winner: vm.winner,
-    cycles: vm.cycle,
-    positions,
-    firstTurn,
-    survivors: vm.warriors.filter((w) => w.alive).map((w) => w.index),
-    diedAt: vm.warriors.map((w) => w.diedAt),
-    ...(report ? { report: postMortem(vm) } : {}),
-    ...(traceSize ? { trace: vm.trace } : {}),
+    vm,
+    finish() {
+      vm.recordResults();
+      return {
+        winner: vm.winner,
+        cycles: vm.cycle,
+        positions,
+        firstTurn,
+        survivors: vm.warriors.filter((w) => w.alive).map((w) => w.index),
+        diedAt: vm.warriors.map((w) => w.diedAt),
+        ...(report ? { report: postMortem(vm) } : {}),
+        ...(traceSize ? { trace: vm.trace } : {}),
+      };
+    },
   };
+}
+
+export function runRound(warriors, settings = {}, options = {}) {
+  const round = createRound(warriors, settings, options);
+  round.vm.run();
+  return round.finish();
 }
 
 // Run a match between 2+ compiled warriors over several rounds. The first

@@ -17,12 +17,20 @@
 // torus(N,1,1) is the classic ring, which the tests check against the
 // pMARS-verified warriors.
 
+// Retain one shape's private, read-only tables and operations between
+// rounds. Each caller gets a fresh facade so changing its methods or
+// dimensions cannot affect another VM. Old VMs keep their own shape alive.
+let cachedGeometry = null;
+
 export function makeGeometry(settings) {
   if (settings.topology !== 'torus') return null;
   const X = settings.sizeX, Y = settings.sizeY ?? 1, Z = settings.sizeZ ?? 1;
   const N = X * Y * Z;
   if (!(X >= 1 && Y >= 1 && Z >= 1) || N !== settings.coreSize) {
     throw new Error(`torus ${X}x${Y}x${Z} needs coreSize ${N}, not ${settings.coreSize}`);
+  }
+  if (cachedGeometry && cachedGeometry.X === X && cachedGeometry.Y === Y && cachedGeometry.Z === Z) {
+    return { ...cachedGeometry };
   }
   const hx = Math.floor(X / 2), hy = Math.floor(Y / 2), hz = Math.floor(Z / 2);
   const wrap = (v, m) => ((v % m) + m) % m;
@@ -125,5 +133,6 @@ export function makeGeometry(settings) {
   // numbers in [-X/2, X/2) are pure steps along x, so a warrior may be at most
   // this long: then every label distance stays on its own row.
   const maxCodeLength = Math.min(X - hx, hx + 1);
-  return { X, Y, Z, N, decode, encode, position, add, sub, mul, div: divmod(false), mod: divmod(true), distance, format, maxCodeLength };
+  cachedGeometry = { X, Y, Z, N, decode, encode, position, add, sub, mul, div: divmod(false), mod: divmod(true), distance, format, maxCodeLength };
+  return { ...cachedGeometry };
 }

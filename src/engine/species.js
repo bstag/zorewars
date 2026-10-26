@@ -41,13 +41,16 @@ export function measureSpecies(compiled, settings = {}) {
   const cfg = { ...DEFAULT_SETTINGS, ...settings };
   const vm = new VM(cfg);
   vm.load([compiled], { seed: 1 });
-  const seen = new Uint8Array(cfg.coreSize);
+  vm.run(Math.max(0, Math.ceil(cfg.maxCycles)));
+  return speciesFromVM(vm);
+}
+
+// The VM already remembers every executed cell. Read those marks after a solo
+// run, whether it was completed synchronously or in browser time slices.
+export function speciesFromVM(vm) {
+  const cfg = vm.settings;
   let coverage = 0;
-  for (let s = 0; s < cfg.maxCycles; s++) {
-    const r = vm.step();
-    if (!r) break;
-    if (!seen[r.pc]) { seen[r.pc] = 1; coverage++; }
-  }
+  for (const last of vm.lastExec) if (last >= 0) coverage++;
   const w = vm.warriors[0];
   const axes = speciesAxes(cfg);
   // On a torus: how many axes the cells it wrote (or was loaded into) spread
