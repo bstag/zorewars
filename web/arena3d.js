@@ -21,6 +21,9 @@ const EDGE = 'rgba(120, 140, 190, 0.35)';
 const ACTION_ZOOM = 2.6;
 const FOLLOW_ZOOM = 2.8;
 const TRAIL = 90;
+// The torus shape: the ring's radius and the outermost tube's.
+const RING = 0.36;
+const TUBE = 0.15;
 
 export class CoreView3D {
   constructor(canvas) {
@@ -42,6 +45,7 @@ export class CoreView3D {
     this.tracked = -1;                // the process (cell) the camera is on
     this.trail = [];
     this.slice = { axis: -1, pos: 0, thick: 1 };   // axis -1: no slicing
+    this.shape = 'box';               // 'box': unwrapped; 'torus': the doughnut it wraps into
     this.active = false;
     this.dragMoved = false;
     this.pointers = new Map();
@@ -122,6 +126,11 @@ export class CoreView3D {
   stopFollowingWarrior() {
     if (this.followWarrior >= 0) this.fit();
   }
+  setShape(shape) {
+    this.shape = shape;
+    if (this.geo) this.layout(this.coreSize, this.geo);
+    this.fit();
+  }
   setSlice(axis, pos, thick) {
     this.slice = { axis, pos, thick };
     this.changed = true;
@@ -154,9 +163,30 @@ export class CoreView3D {
     this.cellSize = s;
     this.pos = new Float32Array(coreSize * 3);
     this.coord = new Int16Array(coreSize * 3);       // integer (x, y, z), for slicing
+    const torus = this.shape === 'torus' && Y > 1;
+    if (torus) {
+      // The doughnut: x runs round the ring, y round the tube, and the z
+      // layers are nested tubes from the inside out. A plane (one layer) is
+      // exactly a torus's surface; a volume's third wrap (z) can't be shown
+      // in 3D space, so its seam lies between the innermost and outermost tube.
+      const thin = Z > 1 ? TUBE * 0.3 : TUBE;
+      this.rings = { R: RING, inner: thin, outer: TUBE };
+      this.dims = [2 * (RING + TUBE), 2 * TUBE, 2 * (RING + TUBE)];
+      const spacing = Math.min((2 * Math.PI * RING) / X, (2 * Math.PI * (thin + TUBE) / 2) / Y, Z > 1 ? (TUBE - thin) / (Z - 1) : Infinity);
+      this.cellSize = Math.max(0.002, spacing);
+    } else this.rings = null;
     for (let i = 0; i < coreSize; i++) {
       const [x, y, z] = geo ? geo.position(i) : [i, 0, 0];
       this.coord[i * 3] = x; this.coord[i * 3 + 1] = y; this.coord[i * 3 + 2] = z;
+      if (torus) {
+        const u = (2 * Math.PI * x) / X, v = (2 * Math.PI * y) / Y;
+        const r = Z > 1 ? this.rings.inner + ((TUBE - this.rings.inner) * z) / (Z - 1) : TUBE;
+        const across = RING + r * Math.cos(v);
+        this.pos[i * 3] = across * Math.cos(u);
+        this.pos[i * 3 + 1] = r * Math.sin(v);
+        this.pos[i * 3 + 2] = across * Math.sin(u);
+        continue;
+      }
       this.pos[i * 3] = (x - (X - 1) / 2) * s;
       this.pos[i * 3 + 1] = (y - (Y - 1) / 2) * s;
       this.pos[i * 3 + 2] = (z - (Z - 1) / 2) * s;
@@ -200,7 +230,10 @@ export class CoreView3D {
     }
     const target = [this.pos[best * 3], this.pos[best * 3 + 1], this.pos[best * 3 + 2]];
     // Wrapping round the torus: jump straight there instead of sweeping across.
-    const far = prev >= 0 && target.some((v, k) => Math.abs(v - this.center[k]) > this.dims[k] / 2);
+    // (On the doughnut only the z seam jumps: from the innermost tube to the outermost.)
+    const far = prev >= 0 && (this.rings
+      ? Math.hypot(...target.map((v, k) => v - this.center[k])) > this.rings.outer
+      : target.some((v, k) => Math.abs(v - this.center[k]) > this.dims[k] / 2));
     if (far) this.center = target.slice();
     this.targetCenter = target;
     this.targetZoom = Math.max(this.targetZoom, FOLLOW_ZOOM);
@@ -275,7 +308,8 @@ export class CoreView3D {
       if (slicing && !this.inSlice(i)) continue;
       const empty = owner[i] < 0 && op[i] === OP.DAT && a[i] === 0 && b[i] === 0;
       if (empty && steps - lastExec[i] > fadeSteps) {
-        const r = Math.max(0.6, this.cellSize * this.scale[i] * (slicing ? 0.2 : 0.12));
+        // (On the doughnut the empty cells are the shape, so they show more.)
+        const r = Math.max(this.rings ? 1 : 0.6, this.cellSize * this.scale[i] * (slicing ? 0.2 : this.rings ? 0.3 : 0.12));
         ctx.rect(this.sx[i] - r / 2, this.sy[i] - r / 2, r, r);
       } else {
         keys[m++] = Math.round((this.depth[i] + 8) * 65536) * n + i;
@@ -357,16 +391,37 @@ export class CoreView3D {
   drawBox(cam) {
     const [dx, dy, dz] = this.dims.map((d) => d / 2);
     const [c0, c1, c2] = this.center;
-    const corner = (sx, sy, sz) => {
-      const x = sx * dx - c0, y = sy * dy - c1, z = sz * dz - c2;
+    const at = (x0, y0, z0) => {
+      const x = x0 - c0, y = y0 - c1, z = z0 - c2;
       const x1 = x * cam.cy + z * cam.syaw, z1 = -x * cam.syaw + z * cam.cy;
       const y2 = y * cam.cp - z1 * cam.sp, z2 = y * cam.sp + z1 * cam.cp;
       const k = cam.f / Math.max(0.05, cam.dist - z2);
       return [cam.ox + x1 * k, cam.oy + y2 * k];
     };
+    const corner = (sx, sy, sz) => at(sx * dx, sy * dy, sz * dz);
     const ctx = this.ctx;
     ctx.strokeStyle = EDGE;
     ctx.lineWidth = 1;
+    if (this.rings) {
+      // The doughnut's guides: the ring's centre line, and the seam where
+      // x = 0 meets the last column (a circle round the tube).
+      const { R, outer } = this.rings;
+      ctx.beginPath();
+      for (let k = 0; k <= 96; k++) {
+        const u = (2 * Math.PI * k) / 96, [px, py] = at(R * Math.cos(u), 0, R * Math.sin(u));
+        if (k) ctx.lineTo(px, py); else ctx.moveTo(px, py);
+      }
+      for (let k = 0; k <= 48; k++) {
+        const v = (2 * Math.PI * k) / 48, [px, py] = at(R + outer * 1.15 * Math.cos(v), outer * 1.15 * Math.sin(v), 0);
+        if (k) ctx.lineTo(px, py); else ctx.moveTo(px, py);
+      }
+      ctx.stroke();
+      ctx.font = '11px ui-monospace, monospace';
+      ctx.fillStyle = 'rgba(160, 175, 210, 0.75)';
+      const [sx, sy] = at(R + outer * 1.35, 0, 0);
+      ctx.fillText('x = 0', sx + 2, sy + 4);
+      return;
+    }
     ctx.beginPath();
     for (const [p0, p1] of [
       [[-1, -1, -1], [1, -1, -1]], [[-1, 1, -1], [1, 1, -1]], [[-1, -1, 1], [1, -1, 1]], [[-1, 1, 1], [1, 1, 1]],

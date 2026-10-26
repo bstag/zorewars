@@ -118,7 +118,7 @@ function pickRenderer() {
     $('viewToggle').textContent = want3d ? '2D' : '3D';
     $('viewToggle').title = want3d ? 'Show the flat grid' : 'Show the battlefield in 3D (drag to turn it)';
   }
-  for (const id of ['spinToggle', 'zoomOut', 'zoomIn', 'fitView', 'actionView', 'sliceToggle']) $(id).hidden = !want3d;
+  for (const id of ['spinToggle', 'zoomOut', 'zoomIn', 'fitView', 'actionView', 'sliceToggle', 'shapeToggle']) $(id).hidden = !want3d;
   $('sliceBar').hidden = !want3d || renderer3d.slice.axis < 0;
   $('actionView').setAttribute('aria-pressed', String(renderer3d.follow));
   $('spinToggle').setAttribute('aria-pressed', String(renderer3d.spin));
@@ -1427,6 +1427,22 @@ function wireEvents() {
     $('spinToggle').setAttribute('aria-pressed', String(renderer3d.spin));
     state.dirtyFrame = true;
   });
+  // The shape: the unwrapped box, or the doughnut the torus wraps into
+  // (remembered in this browser).
+  const showShape = (shape) => {
+    renderer3d.setShape(shape);
+    $('shapeToggle').textContent = shape === 'torus' ? '▢ Box' : '◯ Torus';
+    $('shapeToggle').setAttribute('aria-pressed', String(shape === 'torus'));
+    $('shapeToggle').title = shape === 'torus' ? 'Show the battlefield unwrapped, as a box' : $('shapeToggle').dataset.torusTitle;
+    state.dirtyFrame = true;
+  };
+  $('shapeToggle').dataset.torusTitle = $('shapeToggle').title;
+  $('shapeToggle').addEventListener('click', () => {
+    const shape = renderer3d.shape === 'torus' ? 'box' : 'torus';
+    safeSet('zorewars.shape', shape);
+    showShape(shape);
+  });
+  if (safeGet('zorewars.shape') === 'torus') showShape('torus');
 
   $('tourBtn').addEventListener('click', runTournamentUI);
 
