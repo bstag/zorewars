@@ -49,6 +49,8 @@
   {"file":"volume/antichameleon.js","name":"Anti-Chameleon","category":"3D P-space counter-switcher (paper / Leapfrog)","language":"javascript","battlefield":"torus:80x10x10","benchmark":false},
   {"file":"volume/adapter.js","name":"Adapter","category":"3D sensor (Leapfrog that turns into a clear)","language":"javascript","battlefield":"torus:80x10x10","benchmark":false},
   {"file":"volume/gremlin.red","name":"Gremlin","category":"3D DJN stream (evolved from scratch)","language":"redcode","battlefield":"torus:40x20x10","benchmark":false},
+  {"file":"volume/backdraft.js","name":"Backdraft","category":"3D backward clear","language":"javascript","battlefield":"torus:40x20x10","benchmark":false},
+  {"file":"volume/tripwire.js","name":"Tripwire","category":"3D DJN stream, then a backward clear","language":"javascript","battlefield":"torus:40x20x10","benchmark":false},
   {"file":"volume/fleet.js","name":"Fleet","category":"3D scanner + replicator hybrid","language":"javascript","battlefield":"torus:80x10x10","benchmark":false},
   {"file":"dwarf.py","name":"Dwarf (Python)","category":"Stone (bomber)","language":"python"},
   {"file":"javascript/imp.js","name":"Imp","category":"Imp","language":"javascript","convertedFrom":"imp.red","benchmark":false},

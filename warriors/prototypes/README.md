@@ -15,6 +15,16 @@ Scores are points per round (win 3, tie 1) from `zorewars hill <file> --torus <s
 | `dodgingqueen.js` | 80×10×10 | Volume Queen plus a watcher that moves the clear behind another clear's front | Ties nearly everything | Two clear processes share one DJN counter; after a move they split into an SPL pass and a DAT pass on alternate cells |
 | `dodgingqueen-one.js` | 80×10×10 | The same with one clear process | 1.77 (Volume Queen 2.25); beats clears 17-3 | Weaker against papers than a two-process clear |
 
+## Ideas from the hill archive
+
+Ideas from the strongest of 567 public hill warriors ([n1LS/redcode-warriors](https://github.com/n1LS/redcode-warriors), studied, not copied), written our own way. Two made the library: **Backdraft** (a backward clear, after ULTIMA RATIO REGUM: 2.53 on 40×20×10) and **Tripwire** (a DJN stream that turns into that clear when it trips its own wire, after Death: 2.37). These didn't:
+
+| File | Field | Idea | Result | Why |
+| --- | --- | --- | --- | --- |
+| `snare.js` | 40×20×10 | A small scanner that lays SPL 0 / JMP -1 traps on what it finds (after Shears), then a DAT pass | Beats Volume Queen 21-9, loses to nearly everything else | Trapping one find at a time is too slow against clears and streams |
+| `oneshot2.red` | ring | One-Shot rewritten to scan and clear backward with trap pairs (after Oneshot '88) | 1.17 (One-Shot 1.20, Oneshot '88 2.19) | Direction wasn't Oneshot '88's edge on the ring: its clear is a self-multiplying SPL 0 swarm in 10 instructions |
+| (decoys) | ring | One-Shot with 30-60 junk cells before or after it (after '88 test IV) | 1.19-1.20 (no change) | Not kept as a file |
+
 ## Scanners that copy
 
 | File | Field | Idea | Result | Why |

@@ -173,7 +173,7 @@ test('fitsBattlefield: which library warriors can play where', async () => {
 
 test('3D warriors: each survives alone on its battlefield and beats Dwarf there', () => {
   const VOL = torus(40, 20, 10), WIDE = torus(80, 10, 10);
-  for (const [f, s] of [['slant', VOL], ['battleship', VOL], ['broadside', VOL], ['volumequeen', VOL], ['leapfrog', VOL], ['scatter', VOL], ['fleet', WIDE], ['volumechameleon', WIDE], ['antichameleon', WIDE], ['adapter', WIDE]]) {
+  for (const [f, s] of [['slant', VOL], ['battleship', VOL], ['broadside', VOL], ['volumequeen', VOL], ['leapfrog', VOL], ['scatter', VOL], ['backdraft', VOL], ['tripwire', VOL], ['fleet', WIDE], ['volumechameleon', WIDE], ['antichameleon', WIDE], ['adapter', WIDE]]) {
     const w = compile(read(`warriors/volume/${f}.js`), 'javascript', s);
     assert.ok(w.ok, `${f} compiles`);
     assert.ok(measureSpecies(w, s).survives, `${f} survives alone`);
@@ -186,6 +186,10 @@ test('3D warriors: each survives alone on its battlefield and beats Dwarf there'
   const vq = compile(read('warriors/volume/volumequeen.js'), 'javascript', VOL);
   const m = runMatch([lf, vq], { ...VOL, rounds: 6 }, { seed: 11 });
   assert.ok(m.warriors[0].wins >= 4, `Leapfrog vs Volume Queen ${m.warriors[0].wins}-${m.warriors[0].losses}`);
+  // A backward clear: Leapfrog's lookout watches the other way
+  const bd = compile(read('warriors/volume/backdraft.js'), 'javascript', VOL);
+  const lf6 = runMatch([bd, lf], { ...VOL, rounds: 6 }, { seed: 3 });
+  assert.ok(lf6.warriors[0].wins >= 5, `Backdraft vs Leapfrog ${lf6.warriors[0].wins}-${lf6.warriors[0].losses}`);
   // Gremlin, evolved from random code, breaks the clear's arithmetic
   const gr = compile(read('warriors/volume/gremlin.red'), 'redcode', VOL);
   const g6 = runMatch([gr, vq], { ...VOL, rounds: 6 }, { seed: 3 });
@@ -198,9 +202,9 @@ test('3D warriors: each survives alone on its battlefield and beats Dwarf there'
 });
 
 test('prototypes: every 3D prototype still compiles on its battlefield', () => {
-  const field = (f) => /^(sentry|fleet-scatter|bullfrog|dodgingqueen|scannerswarm|shieldswarm)/.test(f) ? torus(80, 10, 10) : /coprime/.test(f) ? torus(41, 20, 9) : torus(40, 20, 10);
+  const field = (f) => /^(sentry|fleet-scatter|bullfrog|dodgingqueen|scannerswarm|shieldswarm)/.test(f) ? torus(80, 10, 10) : /coprime/.test(f) ? torus(41, 20, 9) : /^oneshot2/.test(f) ? { ...DEFAULT_SETTINGS } : torus(40, 20, 10);
   const files = fs.readdirSync(path.join(root, 'warriors/prototypes')).filter((f) => /\.(js|red)$/.test(f));
-  assert.ok(files.length >= 23);
+  assert.ok(files.length >= 25);
   for (const f of files) {
     const w = compile(read(`warriors/prototypes/${f}`), f.endsWith('.js') ? 'javascript' : 'redcode', field(f));
     assert.ok(w.ok, `${f}: ${JSON.stringify(w.errors)}`);
