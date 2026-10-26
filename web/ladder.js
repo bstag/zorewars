@@ -22,7 +22,7 @@ const LADDER_START_PLANE = ['plane/planequeen.red', 'plane/planesilk.js', 'plane
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const rulesKey = (s) => [s.topology ?? 'ring', s.sizeX, s.sizeY, s.sizeZ, s.coreSize, s.maxCycles, s.maxProcesses, s.maxLength, s.minDistance].join('/');
+const rulesKey = (s) => [s.topology ?? 'ring', s.sizeX, s.sizeY, s.sizeZ, s.coreSize, s.maxCycles, s.maxProcesses, s.maxLength, s.minDistance, s.dialect, s.pSpace].join('/');
 function safeGet(key) { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } }
 function safeSet(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* storage unavailable */ } }
 const plural = (n, one, many) => `${n.toLocaleString()} ${n === 1 ? one : many}`;
@@ -44,7 +44,9 @@ export function initLadder(ctx) {
     const saved = safeGet(LADDER_KEY);
     if (saved && saved.rules === rulesKey(ctx.settings()) && Array.isArray(saved.members)) return saved;
     const lib = ctx.library();
-    const start = ctx.settings().topology === 'torus' ? LADDER_START_PLANE : LADDER_START;
+    // Under ICWS'88 rules: the library's '88 warriors.
+    const start = ctx.settings().dialect === '88' ? lib.filter((e) => inLibraryFor(e, ctx.settings())).map((e) => e.file)
+      : ctx.settings().topology === 'torus' ? LADDER_START_PLANE : LADDER_START;
     const members = start.map((f) => lib.find((e) => e.file === f)).filter(Boolean)
       .map((e) => ({ id: `lib:${e.file}`, name: e.name, language: e.language, source: e.source, origin: 'library', age: 0 }));
     return { rules: rulesKey(ctx.settings()), members, results: {} };

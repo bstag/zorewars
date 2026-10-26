@@ -39,9 +39,9 @@ const authorOf = (e) => (e.language === 'redcode'
   ? e.source.match(/^\s*;\s*author\s+(.+)$/im)?.[1]
   : e.source.match(/author\(\s*(["'`])((?:\\.|(?!\1).)*)\1/)?.[2]) ?? '';
 
-// A version: a conversion of another library warrior, or a hand-written
-// example of the same code in another language (sameAs).
-const isVersion = (e) => !!(e.convertedFrom || e.sameAs);
+// A version: a conversion of another library warrior, a hand-written example
+// of the same code in another language (sameAs), or an ICWS'88 adaptation.
+const originalOf = (e) => e.convertedFrom || e.sameAs || e.adaptedFrom;
 
 // ctx: { library(), fits(entry) -> true/false/undefined (unknown yet), onPick(entry) }
 export function initPicker(ctx) {
@@ -58,7 +58,13 @@ export function initPicker(ctx) {
   function pool() {
     const allFields = $('pickerAllFields').checked, versions = $('pickerVersions').checked;
     return ctx.library().map((e) => ({ e, p: annotate(e), fits: ctx.fits(e) }))
-      .map((x) => ({ ...x, inPool: (allFields || x.fits !== false) && (versions || !isVersion(x.e)) }));
+      .map((x, _, all) => {
+        // A version is listed when asked for, or when it plays here and its
+        // original doesn't (the '88 versions under ICWS'88 rules).
+        const original = originalOf(x.e) && all.find((y) => y.e.file === originalOf(x.e));
+        const showVersion = versions || (original && original.fits === false && x.fits !== false);
+        return { ...x, inPool: (allFields || x.fits !== false) && (!originalOf(x.e) || showVersion) };
+      });
   }
 
   function visible() {
@@ -87,7 +93,7 @@ export function initPicker(ctx) {
     state.rows = shown;
     state.cursor = Math.min(state.cursor, Math.max(0, shown.length - 1));
     $('pickerList').innerHTML = shown.map(({ e, p, fits }, i) => {
-      const badges = [FIELD_BADGE[p.field], LANG_BADGE[e.language], e.convertedFrom ? 'converted' : '', e.sameAs ? 'example' : ''].filter(Boolean);
+      const badges = [FIELD_BADGE[p.field], LANG_BADGE[e.language], e.dialect === '88' ? "'88" : '', e.convertedFrom ? 'converted' : '', e.sameAs ? 'example' : '', e.adaptedFrom ? 'adapted' : ''].filter(Boolean);
       return `<li role="option" id="pick-${i}" data-i="${i}" aria-selected="${i === state.cursor}" class="${fits === false ? 'elsewhere' : ''}">
         <div class="pick-top"><b>${esc(e.name)}</b><span class="pick-fam">${esc(p.family)}</span>${badges.map((b) => `<span class="badge">${esc(b)}</span>`).join('')}</div>
         <div class="pick-cat">${esc(e.category)}${p.author ? ` · ${esc(p.author)}` : ''}</div>

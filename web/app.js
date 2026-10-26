@@ -166,7 +166,7 @@ async function loadLibrary() {
 // there and, on a torus, survive alone): those are listed first, the rest in
 // a last group, where picking one explains what it needs and offers to
 // switch. Checked in short slices after every change of battlefield.
-const battlefieldKey = (s) => [s.topology ?? 'ring', s.sizeX, s.sizeY, s.sizeZ, s.coreSize, s.maxLength, s.maxProcesses, s.maxCycles].join('/');
+const battlefieldKey = (s) => [s.topology ?? 'ring', s.sizeX, s.sizeY, s.sizeZ, s.coreSize, s.maxLength, s.maxProcesses, s.maxCycles, s.dialect, s.pSpace].join('/');
 function refreshLibraryFit() {
   const key = battlefieldKey(state.settings);
   if (state.libraryFit?.key === key) return;
@@ -180,7 +180,9 @@ function refreshLibraryFit() {
     while (i < todo.length && performance.now() - t0 < 25) {
       const e = todo[i++];
       let ok = false;
-      try { ok = fitsBattlefield(compile(e.source, e.language, state.settings), state.settings); } catch { ok = false; }
+      // Plane and 3D warriors belong on a torus, even those that compile on the ring.
+      if (e.battlefield && state.settings.topology !== 'torus') ok = false;
+      else try { ok = fitsBattlefield(compile(e.source, e.language, state.settings), state.settings); } catch { ok = false; }
       fit.set(e.file, ok);
     }
     if (i < todo.length) { setTimeout(step, 0); return; }

@@ -15,14 +15,17 @@ export { mulberry32, pmarsRng } from './random.js';
 export { postMortem, formatPostMortem, diagnoseRounds } from './report.js';
 export { measureSpecies, speciesAxes, speciesHint } from './species.js';
 export { pushOff } from './pushoff.js';
+export { toICWS88 } from './to88.js';
 
 // Which library entries (warriors/index.json) take part on a battlefield, in
 // benchmarks, ladders, species maps and the CLI's developer tools. On the
 // classic ring: the benchmark set. On a torus: that set plus the warriors
 // written for the plane ("battlefield" in the index). Python entries and
-// conversions are left out: they duplicate other entries.
+// conversions are left out: they duplicate other entries. Under ICWS'88
+// rules (dialect '88), the library is its '88 versions (warriors/88/).
 export function inLibraryFor(entry, settings = {}) {
   if (entry.language !== 'redcode' && entry.language !== 'javascript') return false;
+  if (settings.dialect === '88' || entry.dialect === '88') return settings.dialect === '88' && entry.dialect === '88';
   if (entry.convertedFrom) return false;
   if (settings.topology === 'torus') return entry.benchmark !== false || !!entry.battlefield;
   return entry.benchmark !== false && !entry.battlefield;

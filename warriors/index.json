@@ -55,6 +55,10 @@
   {"file":"volume/backdraft2.js","name":"Backdraft II","category":"3D backward clear with a wire (anti-stream)","family":"Core clear","language":"javascript","battlefield":"torus:80x10x10","benchmark":false},
   {"file":"volume/fleet.js","name":"Fleet","category":"3D scanner + replicator hybrid","family":"Hybrid","language":"javascript","battlefield":"torus:80x10x10","benchmark":false},
   {"file":"dwarf.py","name":"Dwarf (Python)","category":"Stone (bomber)","family":"Stone","language":"python","sameAs":"dwarf.red"},
+  {"file":"88/gemini-88.red","name":"Gemini '88","category":"Self-mover","family":"Self-mover","language":"redcode","dialect":"88","adaptedFrom":"gemini.red","benchmark":false},
+  {"file":"88/scout-88.red","name":"Scout '88","category":"B-scanner","family":"Scanner","language":"redcode","dialect":"88","adaptedFrom":"scanner.red","benchmark":false},
+  {"file":"88/impring-88.red","name":"Imp Ring '88","category":"Imp ring","family":"Imp","language":"redcode","dialect":"88","adaptedFrom":"impring.red","benchmark":false},
+  {"file":"88/stunner-88.red","name":"Stunner '88","category":"Stun bomber","family":"Stone","language":"redcode","dialect":"88","adaptedFrom":"stunner.red","benchmark":false},
   {"file":"javascript/imp.js","name":"Imp","category":"Imp","family":"Imp","language":"javascript","convertedFrom":"imp.red","benchmark":false},
   {"file":"python/imp.py","name":"Imp","category":"Imp","family":"Imp","language":"python","convertedFrom":"imp.red","benchmark":false},
   {"file":"javascript/dwarf.js","name":"Dwarf","category":"Stone (bomber)","family":"Stone","language":"javascript","convertedFrom":"dwarf.red","benchmark":false},
@@ -88,5 +92,9 @@
   {"file":"javascript/redqueen.js","name":"Red Queen","category":"Scanner + paper (evolved)","family":"Hybrid","language":"javascript","convertedFrom":"redqueen.red","benchmark":false},
   {"file":"python/redqueen.py","name":"Red Queen","category":"Scanner + paper (evolved)","family":"Hybrid","language":"python","convertedFrom":"redqueen.red","benchmark":false},
   {"file":"javascript/gremlin.js","name":"Gremlin (ring)","category":"DJN stream (evolved from scratch)","family":"Stream","language":"javascript","convertedFrom":"gremlin.red","benchmark":false},
-  {"file":"python/gremlin.py","name":"Gremlin (ring)","category":"DJN stream (evolved from scratch)","family":"Stream","language":"python","convertedFrom":"gremlin.red","benchmark":false}
+  {"file":"python/gremlin.py","name":"Gremlin (ring)","category":"DJN stream (evolved from scratch)","family":"Stream","language":"python","convertedFrom":"gremlin.red","benchmark":false},
+  {"file":"88/imp.red","name":"Imp","category":"Imp","family":"Imp","language":"redcode","dialect":"88","convertedFrom":"imp.red","benchmark":false},
+  {"file":"88/dwarf.red","name":"Dwarf","category":"Stone (bomber)","family":"Stone","language":"redcode","dialect":"88","convertedFrom":"dwarf.red","benchmark":false},
+  {"file":"88/mice.red","name":"Mice","category":"Paper (replicator)","family":"Paper","language":"redcode","dialect":"88","convertedFrom":"mice.red","benchmark":false},
+  {"file":"88/vampire.red","name":"Vampire","category":"Vampire","family":"Vampire","language":"redcode","dialect":"88","convertedFrom":"vampire.red","benchmark":false}
 ]

@@ -222,11 +222,25 @@ test('every library warrior is in the encyclopedia, under the same family', () =
   const list = JSON.parse(read('warriors/index.json'));
   const enc = JSON.parse(read('warriors/encyclopedia.json')).warriors;
   for (const entry of list) {
-    const original = entry.convertedFrom ?? entry.sameAs ?? entry.file;
+    const original = entry.convertedFrom ?? entry.sameAs ?? entry.adaptedFrom ?? entry.file;
     const card = enc.find((w) => w.file === original);
     assert.ok(card, `${original} has no encyclopedia entry`);
     assert.equal(entry.family, card.family, `${entry.file}: family in index.json differs from the encyclopedia`);
     assert.equal(entry.battlefield, card.battlefield, `${entry.file}: battlefield differs from the encyclopedia`);
+  }
+});
+
+test("the library's ICWS'88 warriors assemble as '88 and survive alone", async () => {
+  const { RULESETS } = await import('../src/engine/index.js');
+  const list = JSON.parse(read('warriors/index.json')).filter((e) => e.dialect === '88');
+  assert.ok(list.length >= 8, "the ICWS'88 rules need warriors to play with");
+  for (const entry of list) {
+    const w = compile(read(`warriors/${entry.file}`), entry.language, RULESETS['88']);
+    assert.ok(w.ok, `${entry.file}: ${JSON.stringify(w.errors)}`);
+    const vm = new VM(RULESETS['88']);
+    vm.load([w], { seed: 3 });
+    vm.run();
+    assert.ok(vm.warriors[0].alive, `${entry.file} killed itself`);
   }
 });
 
