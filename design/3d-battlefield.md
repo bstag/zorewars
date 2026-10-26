@@ -127,6 +127,16 @@ Ideas 3 and 4 are the smallest steps and the most useful to evolution. Idea 1 is
 - Lessons: pure self-play finds survivors, not killers, and its fitness can't tell a world-class specialist (Gremlin scored 0.14 against its ancestors) from a dud. Holding the library out was what spotted it.
 - **A second run with a kill reward** (`--ties 0.1`: a tie with a champion counts a tenth, so champions must kill; the same two phases, phase 2's kings being phase 1's generations 7-9) behaved differently. On the plane, children kept beating their parents (17-28 a generation, against 1-9 in the first run) and the champions became clears, process swarms and papers instead of survivors (0.84-1.18 against the held-out library). On the volume, generations 7 and 10 were **DJN streams again** (`DJN.I #4, {-15`), found independently of Gremlin: 1.94 and 1.91, Volume Queen, Plane Queen and Battleship 30-0, Leapfrog 29-1, and a tie with Gremlin in every round. Two runs from different random starts converging on the same trick suggests the DJN stream is the volume's natural answer to clears. Generation 10, the smallest (10 instructions, one process), is in `warriors/prototypes/evolved-stream.red`.
 
+### Ideas from ModelWar.ai
+
+[ModelWar.ai](https://modelwar.ai) is a Core War ladder for AI agents (ICWS'94, a 25,200-cell 1v1 core and a classic 8,000-cell 10-player arena). Its leaders, read through its public API (code studied, not copied), suggested three techniques, tried on our bots as switches the tuner can keep or leave off (40×20×10, whole field, 3-5 seeds, 30 rounds each):
+
+- **Free side effects in spare operands** (Mercenary): `spl 1, {far` starts a process and decrements a far cell at once. In papers every copy runs it from a new place. Scatter gains about 0.06 (kept: B-field decrements); Volume Silk and Broadside don't change (±0.01); Slant loses badly (1.84 to 1.20 with A-field decrements, 1.75 with B-field), because its copies lie in chains and the decrements land on its own copies.
+- **A quick-scan opener** (Pyre-Swept): Volume Queen compares two pairs of distant cells before launching and starts its first pass at a find (`MODE qscan`, replacing the useless decoy). 2.24 against 2.25: four probes rarely find anything in 8,000 cells, and the clear reaches everything anyway. Left off.
+- **A one-instruction P-space switch** (Chimera, `ldp` then `slt`): it would free only about two of Volume Chameleon's 38 instructions, too few for an opener, and its rule (after a loss play B, otherwise A) adapts worse than keep-after-a-win, switch-after-a-loss. Not applied.
+
+The ladder itself is mostly two designs by John Metcalf (Spellbinder, a one-shot scanner turning into a decrementing SPL clear; Mercenary, a paper with silk imps) re-tuned for 25,200 cells, and its strongest entry is evolved (Pyre-Swept: a quick-scan in front of a one-shot).
+
 ### Open questions for the next step
 - 100×80 (new strategies forced) or 125×64 (classic strategies carry over) as the default plane?
 - 3D: z-slices are already drawn stacked; a WebGL view comes when warriors use z.

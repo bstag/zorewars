@@ -7,8 +7,11 @@ strategy("Small silk paper whose copies jump across rows, columns and layers.");
 if (SIZEZ < 2) throw new Error("Volume Silk is for a 3D battlefield: choose a Volume in Rules (CLI: --torus 40x20x10)");
 //
 // Tuned constants: `node cli/zorewars.js tune warriors/volume/volumesilk.js --torus 40x20x10`
-// SPACE {"LEVELS":[1,3],"DX":[1,39],"DY":[0,19],"DZ":[1,9],"EX":[0,39],"EY":[0,19],"EZ":[0,9]}
-const P = {"LEVELS":3,"DX":29,"DY":14,"DZ":3,"EX":21,"EY":16,"EZ":5};
+// SPACE {"LEVELS":[1,3],"DX":[1,39],"DY":[0,19],"DZ":[1,9],"EX":[0,39],"EY":[0,19],"EZ":[0,9],"SIDE":[0,2],"FX":[0,39],"FY":[1,19],"FZ":[0,9]}
+const P = {"LEVELS":3,"DX":29,"DY":14,"DZ":3,"EX":21,"EY":16,"EZ":5,"SIDE":0,"FX":13,"FY":5,"FZ":3};
+// Free side effect (from Mercenary on ModelWar): an instruction's unused operand
+// can decrement a far cell for nothing. Every copy runs it from a new place.
+const SIDE = (x) => (P.SIDE === 1 ? apredec(vec(P.FX, P.FY, P.FZ)) : P.SIDE === 2 ? predec(vec(P.FX, P.FY, P.FZ)) : x);
 
 org("start");
 label("start");
@@ -17,5 +20,5 @@ label("silk"); spl(vec(P.DX, P.DY, P.DZ), imm(0));    // start a process in the 
 for (let i = 0; i < 3; i++) mov.i(postinc("silk"), apostinc("silk"));   // copy three cells
 add.a(imm(vec(P.EX, P.EY, P.EZ)), "seed");            // next copy: somewhere else in the volume
 mov.f("seed", "silk");
-jmp("silk");
+jmp("silk", SIDE(0));                                  // (its spare operand: see SIDE)
 label("seed"); dat.f(imm(vec(P.DX, P.DY, P.DZ)), imm(0));

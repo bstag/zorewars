@@ -16,8 +16,11 @@ strategy("Diagonal replicator: hops across rows, columns and layers, then lays a
 if (SIZEZ < 2) throw new Error("Slant is for a 3D battlefield: choose a Volume in Rules (CLI: --torus 40x20x10)");
 //
 // Tuned constants: `node cli/zorewars.js tune warriors/volume/slant.js --torus 40x20x10`
-// SPACE {"HX":[0,39],"HY":[1,19],"HZ":[1,9],"SX":[0,39],"SY":[0,19],"SZ":[0,9]}
-const P = {"HX":7,"HY":5,"HZ":3,"SX":11,"SY":3,"SZ":1};
+// SPACE {"HX":[0,39],"HY":[1,19],"HZ":[1,9],"SX":[0,39],"SY":[0,19],"SZ":[0,9],"SIDE":[0,2],"FX":[0,39],"FY":[1,19],"FZ":[0,9]}
+const P = {"HX":7,"HY":5,"HZ":3,"SX":11,"SY":3,"SZ":1,"SIDE":0,"FX":13,"FY":5,"FZ":3};
+// Free side effect (from Mercenary on ModelWar): an instruction's unused operand
+// can decrement a far cell for nothing. Every copy runs it from a new place.
+const SIDE = (x) => (P.SIDE === 1 ? apredec(vec(P.FX, P.FY, P.FZ)) : P.SIDE === 2 ? predec(vec(P.FX, P.FY, P.FZ)) : x);
 const HOP = vec(P.HX, P.HY, P.HZ), STEER = vec(P.SX, P.SY, P.SZ);
 
 org("go");
@@ -26,9 +29,9 @@ label("aim"); mov.ab(imm(`last-dst+${HOP}`), "dst");          // where this copy
 mov.ab(imm("last-go"), "cnt");
 label("copy"); mov.i(predec("src"), predec("dst"));            // copy the body, last cell first
 djn.b("copy", "cnt");
-spl(ind("dst"));                                               // start the copy at its first cell
+spl(ind("dst"), SIDE(0));                                               // start the copy at its first cell
 add.ab(imm(STEER), "aim");                                     // moves aim's destination along a diagonal (see the top)
-jmp("go");
+jmp("go", SIDE(0));
 label("src"); dat.f(0, 0);
 label("dst"); dat.f(0, 0);
 label("cnt"); dat.f(0, 0);
