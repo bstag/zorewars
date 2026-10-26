@@ -1,0 +1,6 @@
+Warning:
+        Missing ';assert'. Warrior may not work with the current setting
+Warning:
+        No instructions
+Number of warnings: 2
+

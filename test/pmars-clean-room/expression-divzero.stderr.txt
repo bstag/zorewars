@@ -1,0 +1,4 @@
+Error in line 2: 'dat #1/0,0'
+        Division by zero
+Number of errors: 1
+

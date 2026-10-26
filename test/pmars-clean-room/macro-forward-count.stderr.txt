@@ -1,0 +1,6 @@
+Error in line 2: 'for total'
+        Bad expression
+Error in line 4: 'rof'
+        Unopened FOR
+Number of errors: 2
+

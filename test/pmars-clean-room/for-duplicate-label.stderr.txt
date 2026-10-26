@@ -1,0 +1,4 @@
+Warning in line 3: 'fixed dat i,0'
+        Ignored, redefinition of label 'fixed'
+Number of warnings: 1
+

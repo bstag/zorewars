@@ -1,0 +1,4 @@
+Error in line 3: 'dat Alpha,alpha'
+        Undefined label or symbol: 'alpha'
+Number of errors: 1
+

@@ -1,0 +1,4 @@
+Warning in line 3: 'same dat 2,2'
+        Ignored, redefinition of label 'same'
+Number of warnings: 1
+

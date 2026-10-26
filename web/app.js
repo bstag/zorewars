@@ -1165,7 +1165,7 @@ function renderSettings() {
   $('setRules').value = state.settings.rulesName || '';
   $('setCoreSize').disabled = state.settings.topology === 'torus';   // fixed by the plane's size
 }
-const NO_HILL_RULES = { rulesName: '', dialect: undefined, pSpace: undefined };
+const NO_HILL_RULES = { rulesName: '', dialect: undefined, pSpace: undefined, assertErrors: undefined };
 // A battlefield with the standard rules (the ring also gets its default sizes).
 const battlefieldSettings = (field) => (field === 'ring'
   ? { ...DEFAULT_SETTINGS, ...fieldSettings('ring'), ...NO_HILL_RULES }

@@ -41,11 +41,11 @@ export const DEFAULT_SETTINGS = Object.freeze({
 // length (--length 50) and no P-space. '94x-hill' is the Koenigstuhl X hill
 // itself, where P-space is allowed (most of its leaders use it).
 export const RULESETS = Object.freeze({
-  '94nop': { coreSize: 8000, maxProcesses: 8000, maxCycles: 80000, maxLength: 100, minDistance: 100, pSpace: false },   // pmars -s 8000 -p 8000 -c 80000 -d 100
-  '88':    { coreSize: 8000, maxProcesses: 8000, maxCycles: 80000, maxLength: 100, minDistance: 100, pSpace: false, dialect: '88' },   // pmars -8 ...
-  lp:      { coreSize: 8000, maxProcesses: 8, maxCycles: 80000, maxLength: 100, minDistance: 200, pSpace: false },      // pmars -s 8000 -p 8 -c 80000 -d 200
-  '94x':   { coreSize: 55440, maxProcesses: 10000, maxCycles: 500000, maxLength: 200, minDistance: 200, pSpace: false },  // pmars -s 55440 -p 10000 -c 500000 -l 200 -d 200
-  '94x-hill': { coreSize: 55440, maxProcesses: 10000, maxCycles: 500000, maxLength: 200, minDistance: 200, pSpace: true },  // the same, with P-space
+  '94nop': { coreSize: 8000, maxProcesses: 8000, maxCycles: 80000, maxLength: 100, minDistance: 100, pSpace: false, assertErrors: true },   // pmars -s 8000 -p 8000 -c 80000 -d 100
+  '88':    { coreSize: 8000, maxProcesses: 8000, maxCycles: 80000, maxLength: 100, minDistance: 100, pSpace: false, dialect: '88', assertErrors: true },   // pmars -8 ...
+  lp:      { coreSize: 8000, maxProcesses: 8, maxCycles: 80000, maxLength: 100, minDistance: 200, pSpace: false, assertErrors: true },      // pmars -s 8000 -p 8 -c 80000 -d 200
+  '94x':   { coreSize: 55440, maxProcesses: 10000, maxCycles: 500000, maxLength: 200, minDistance: 200, pSpace: false, assertErrors: true },  // pmars -s 55440 -p 10000 -c 500000 -l 200 -d 200
+  '94x-hill': { coreSize: 55440, maxProcesses: 10000, maxCycles: 500000, maxLength: 200, minDistance: 200, pSpace: true, assertErrors: true },  // the same, with P-space
 });
 
 export const MODE_NAMES = {

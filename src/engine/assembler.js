@@ -221,7 +221,9 @@ function expandMacros(raw) {
       const body = [head[2]];
       let j = i + 1;
       for (; j < raw.length; j++) {
-        const m = /^equ\s+(.*)$/i.exec(codePart(raw[j].text));
+        const cj = codePart(raw[j].text);
+        if (!cj && raw[j].text.includes(';')) continue;     // a comment between the lines
+        const m = /^equ\s+(.*)$/i.exec(cj);
         if (!m) break;
         body.push(m[1]);
       }
@@ -251,10 +253,24 @@ function expandMacros(raw) {
 // counter's name is replaced by its value, and &counter by the value padded
 // to two digits, so bomb&i becomes bomb01, bomb02, ... "FOR 0" is the
 // customary way to comment out a block.
-function preprocess(source, constants, errors) {
+function preprocess(source, constants, errors, warnings, registers, cfg) {
   let raw = source.split(/\r?\n/).map((text, i) => ({ text, lineNo: i + 1, expanded: false }));
-  const start = raw.findIndex((l) => /^\s*;\s*redcode/i.test(l.text));
+  // The first ';redcode' line starts the program (text before it is ignored)
+  // and the next one ends it.
+  const marker = (l) => /^\s*;redcode/i.test(l.text);
+  const start = raw.findIndex(marker);
   if (start > 0) raw = raw.slice(start);
+  const next = raw.findIndex((l, k) => k > 0 && marker(l));
+  if (start >= 0 && next > 0) raw = raw.slice(0, next);
+  // A backslash just before the end of a line joins the next line, unless
+  // the line has a comment.
+  for (let k = 0; k < raw.length - 1; k++) {
+    if (/\\$/.test(raw[k].text) && !raw[k].text.includes(';')) {
+      raw[k] = { ...raw[k], text: raw[k].text.slice(0, -1) + raw[k + 1].text };
+      raw.splice(k + 1, 1);
+      k--;
+    }
+  }
   raw = expandMacros(raw);
 
   const equs = new Map();
@@ -265,26 +281,55 @@ function preprocess(source, constants, errors) {
   const labelPos = new Map();
   let instrCount = 0;
   const emit = (l) => {
-    out.push(l);
     const c = codePart(l.text);
-    if (/^[A-Za-z_]\w*:?\s+equ\b/i.test(c)) return;
+    if (/^[A-Za-z_]\w*:?\s+equ\b/i.test(c)) { out.push(l); return; }
+    const names = [];
+    let op = null;
     for (const t of c.replace(/:(?=\S)/g, ': ').split(/\s+/).filter(Boolean)) {
       const n = t.replace(/:$/, '');
-      if (!/^[A-Za-z_]\w*$/.test(n) || opcodeOf(n)) break;
-      if (!labelPos.has(n)) labelPos.set(n, instrCount);
+      op = /^[A-Za-z_][\w.]*$/.test(n) ? opcodeOf(n) : null;
+      if (op || !/^[A-Za-z_]\w*$/.test(n)) break;
+      names.push(n);
     }
+    // A line that defines a label again is left out entirely, with a
+    // warning, as in pMARS (so a loop body with a fixed label emits it once).
+    const dup = names.find((n) => labelPos.has(n));
+    if (dup) {
+      warnings.push({ line: l.lineNo, message: `duplicate label '${dup}': this line is ignored, as in pMARS` });
+      return;
+    }
+    for (const n of names) labelPos.set(n, instrCount);
+    // CURLINE in ORG and END is the position where they stand.
+    if (op && (op.op === 'ORG' || op.op === 'END')) l = { ...l, text: l.text.replace(/(?<![\w&.])CURLINE(?!\w)/g, String(instrCount)) };
+    out.push(l);
     if (isInstruction(c)) instrCount++;
   };
   const lookup = (name, seen = new Set()) => {
     if (equs.has(name) && !seen.has(name)) {
-      return evaluate(equs.get(name), (n) => lookup(n, new Set([...seen, name])));
+      return evaluate(equs.get(name), (n) => lookup(n, new Set([...seen, name])), registers);
     }
     if (labelPos.has(name)) return labelPos.get(name) - instrCount;
+    if (name === 'CURLINE') return instrCount;           // uppercase only, as in pMARS
     const up = name.toUpperCase();
-    if (up === 'CURLINE') return instrCount;
     if (up in constants) return constants[up];
-    if (/^[A-Za-z]$/.test(name)) return 0;                // a pMARS register nothing has set
+    if (/^[A-Za-z]$/.test(name)) return registers.get(name.toLowerCase()) ?? 0;   // pMARS registers a-z
     throw new Error(`'${name}' must be a constant or a label defined before the FOR`);
+  };
+  // A standalone ';assert' line runs where it stands, once per loop copy it
+  // is in, with labels counted from that position; it can set registers. A
+  // false one is an error under hill rules (as in pMARS), else a warning, so
+  // ring warriors can still play on other battlefields.
+  const runAssert = (l) => {
+    const m = /^\s*;\s*assert\b(.*)$/i.exec(l.text);
+    if (!m) return;
+    let ok;
+    try {
+      ok = evaluate(inlineEquText(m[1], (n) => equs.get(n)), lookup, registers);
+    } catch (e) {
+      warnings.push({ line: l.lineNo, message: `;assert could not be checked: ${e.message}` });
+      return;
+    }
+    if (!ok) (cfg.assertErrors ? errors : warnings).push({ line: l.lineNo, message: `;assert${m[1]} is false under these rules` });
   };
   // 4. pMARS's EQU is text substitution, so an EQU that uses the loop's
   // counter ('Lookat equ look+8*(qscan-1)') or pastes it ('length equ
@@ -329,6 +374,7 @@ function preprocess(source, constants, errors) {
     for (let i = 0; i < lines.length; i++) {
       const l = lines[i];
       const c = codePart(l.text);
+      if (!c) runAssert(l);
       const eq = /^([A-Za-z_]\w*)\s+equ\s+(.+)$/i.exec(c);
       if (eq) equs.set(eq[1], eq[2]);
       const m = FOR_RE.exec(c);
@@ -344,18 +390,23 @@ function preprocess(source, constants, errors) {
         if (FOR_RE.test(cj)) depth++;
         else if (ROF_RE.test(cj) && --depth === 0) break;
       }
-      if (j >= lines.length) {
-        errors.push({ line: l.lineNo, message: 'FOR without a matching ROF' });
-        return;
-      }
       const names = m[1].trim().split(/\s+/).filter(Boolean).map((n) => n.replace(/:$/, ''));
       const counter = names.pop();
       if (names.length) emit({ text: names.join(' '), lineNo: l.lineNo, expanded: l.expanded });
       let count = 0;
       try {
-        count = evaluate(inlineEquText(m[2], (n) => equs.get(n)), lookup);
+        count = evaluate(inlineEquText(m[2], (n) => equs.get(n)), lookup, registers);
       } catch (e) {
         errors.push({ line: l.lineNo, message: `FOR count: ${e.message}` });
+      }
+      // A FOR with no ROF: pMARS emits the rest of the program once (if the
+      // count is positive) and warns.
+      if (j >= lines.length) {
+        if (count > 0) {
+          warnings.push({ line: l.lineNo, message: 'FOR without a matching ROF: the rest is used once, as in pMARS' });
+          run(lines.slice(i + 1).map((b) => ({ lineNo: b.lineNo, expanded: true, text: counter ? substitute(b.text, counter, 1) : b.text })));
+        }
+        return;
       }
       total += Math.max(0, count) * (j - i - 1);
       if (total > 100000) {
@@ -397,21 +448,21 @@ export function assemble(source, settings = {}) {
     MINDISTANCE: cfg.minDistance,
     ROUNDS: cfg.rounds,
     PSPACESIZE: pSpaceSizeFor(cfg),
-    VERSION: 100,
-    WARRIORS: 2,
+    VERSION: 95,                        // pMARS 0.9.5
+    WARRIORS: cfg.warriors ?? 2,
   };
 
   // ---- Pass 1: parse lines, collect labels and EQUs ----
   const labels = new Map(); // name -> instruction index
   const equs = new Map();   // name -> { text, line }
   const lines = [];         // instruction lines
-  let startExpr = null;
+  let orgExpr = null, endExpr = null;
   let endLabels = [];
   let endSeen = false;
-  let startLine = 0;
+  let orgLine = 0, endLine = 0;
 
-  const asserts = [];
-  const srcLines = preprocess(source, constants, errors);
+  const registers = new Map(); // pMARS-style a=... assignments, from expansion on
+  const srcLines = preprocess(source, constants, errors, warnings, registers, cfg);
   for (const src of srcLines) {
     const lineNo = src.lineNo;
     let text = src.text;
@@ -422,8 +473,7 @@ export function assemble(source, settings = {}) {
       if (m && !src.expanded) {
         const key = m[1].toLowerCase();
         if (key === 'strategy') meta.strategy.push(m[2]);
-        else if (key === 'assert') asserts.push({ text: m[2], line: lineNo });
-        else meta[key] = m[2];
+        else if (key !== 'assert') meta[key] = m[2];      // asserts run in preprocess
       }
       text = text.slice(0, semi);
     }
@@ -452,13 +502,16 @@ export function assemble(source, settings = {}) {
     }
 
     if (opInfo.op === 'EQU') {
-      if (!pending.length) errors.push({ line: lineNo, message: 'EQU needs a name' });
-      for (const name of pending) equs.set(name, { text: rest, line: lineNo });
+      if (!pending.length) warnings.push({ line: lineNo, message: 'EQU without a name is ignored' });
+      for (const name of pending) {
+        if (equs.has(name)) errors.push({ line: lineNo, message: `EQU '${name}' is defined twice` });
+        equs.set(name, { text: rest, line: lineNo });
+      }
       continue;
     }
     if (opInfo.op === 'ORG') {
       if (cfg.dialect === '88') errors.push({ line: lineNo, message: "ICWS'88: ORG is not ICWS'88; give the start on the END line (END start)" });
-      startExpr = rest; startLine = lineNo;
+      orgExpr = rest; orgLine = lineNo;              // a later ORG replaces an earlier one
       continue;
     }
     if (opInfo.op === 'PIN') {
@@ -466,7 +519,7 @@ export function assemble(source, settings = {}) {
       continue;
     }
     if (opInfo.op === 'END') {
-      if (rest) { startExpr = rest; startLine = lineNo; }
+      if (rest) { endExpr = rest; endLine = lineNo; }
       endLabels = pending.map((name) => ({ name, lineNo }));   // e.g. 'last end start'
       endSeen = true;
       break;
@@ -516,7 +569,6 @@ export function assemble(source, settings = {}) {
 
   // ---- Pass 2: evaluate operands ----
   const equText = (n) => equs.get(n)?.text.trim();
-  const registers = new Map(); // pMARS-style a=... assignments
   const registerWarned = new Set();
   const makeLookup = (idx, stack = new Set()) => function lookup(name) {
     if (labels.has(name)) return labels.get(name) - idx;
@@ -525,8 +577,8 @@ export function assemble(source, settings = {}) {
       const next = new Set(stack); next.add(name);
       return evaluate(equs.get(name).text, makeLookup(idx, next), registers);
     }
+    if (name === 'CURLINE') return idx;                  // uppercase only, as in pMARS
     const up = name.toUpperCase();
-    if (up === 'CURLINE') return idx;
     if (up in constants) return constants[up];
     if (registers.has(name)) return registers.get(name);
     // pMARS's registers a-z (either case) read 0 until set: 'mov f, 0' is
@@ -587,13 +639,18 @@ export function assemble(source, settings = {}) {
     instructions.push({ op: l.op, mod, aMode: aOp.mode, a, bMode: bOp.mode, b, line: l.lineNo });
   });
 
-  let start = 0;
-  if (startExpr) {
-    try { start = evaluate(inlineEquText(startExpr, equText), makeLookup(0)); } catch (e) { errors.push({ line: startLine, message: `start: ${e.message}` }); }
-  }
+  // The start: ORG's, if it is not 0; otherwise END's. (pMARS ignores a
+  // nonzero END after a nonzero ORG, with a warning.)
+  const entry = (expr, line) => {
+    if (!expr) return 0;
+    try { return evaluate(inlineEquText(expr, equText), makeLookup(0), registers); } catch (e) { errors.push({ line, message: `start: ${e.message}` }); return 0; }
+  };
+  const org = entry(orgExpr, orgLine), end = entry(endExpr, endLine);
+  if (org && end && org !== end) warnings.push({ line: endLine, message: 'END gives a different start from ORG; ORG wins, as in pMARS' });
+  let start = org || end;
 
   // A lone word is a legal label, but an unused one is usually a typo'd opcode.
-  const referenced = [...instrLines.flatMap((l) => l.operands), ...[...equs.values()].map((e) => e.text), startExpr || ''].join(' ');
+  const referenced = [...instrLines.flatMap((l) => l.operands), ...[...equs.values()].map((e) => e.text), orgExpr || '', endExpr || ''].join(' ');
   for (const l of lines.filter((x) => x.labelsOnly)) {
     for (const name of l.labelsOnly) {
       if (!new RegExp(`(^|[^\w])${name}($|[^\w])`).test(referenced)) {
@@ -602,13 +659,6 @@ export function assemble(source, settings = {}) {
     }
   }
 
-  for (const a of asserts) {
-    try {
-      if (!evaluate(inlineEquText(a.text, equText), makeLookup(0), registers)) warnings.push({ line: a.line, message: `;assert ${a.text} is false under these rules` });
-    } catch (e) {
-      warnings.push({ line: a.line, message: `;assert could not be checked: ${e.message}` });
-    }
-  }
 
   if (!errors.length && instructions.length === 0) errors.push({ line: 0, message: 'program has no instructions' });
   if (geo && instructions.length > geo.maxCodeLength && instructions.length <= cfg.maxLength) {
@@ -618,7 +668,7 @@ export function assemble(source, settings = {}) {
     errors.push({ line: 0, message: `program is ${instructions.length} instructions long; the limit is ${cfg.maxLength}` });
   }
   if (instructions.length && (start < 0 || start >= instructions.length)) {
-    warnings.push({ line: startLine, message: `start offset ${start} is outside the program` });
+    warnings.push({ line: orgLine || endLine, message: `start offset ${start} is outside the program` });
   }
 
   errors.sort((x, y) => x.line - y.line);

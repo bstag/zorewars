@@ -1,0 +1,4 @@
+Error in line 3: ';assert anchor==0'
+        Assertion in this line fails
+Number of errors: 1
+

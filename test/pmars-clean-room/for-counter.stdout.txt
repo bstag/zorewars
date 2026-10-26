@@ -1,0 +1,5 @@
+       ORG          0
+       DAT.F  #     1, #     0     
+       DAT.F  #     2, #     1     
+       DAT.F  #     3, #     2     
+       END

@@ -1,0 +1,9 @@
+Error in line 3: 'beta equ alpha'
+        Recursive reference of label 'alpha'
+Error in line 4: 'dat alpha,0'
+        Unrecognized or improper placement of token: ','
+Warning:
+        No instructions
+Number of errors: 2
+Number of warnings: 1
+

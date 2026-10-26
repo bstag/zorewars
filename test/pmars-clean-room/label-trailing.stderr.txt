@@ -1,0 +1,7 @@
+Warning:
+        Discarding these labels: 'finish'
+Error in line 2: 'dat finish,0'
+        Undefined label or symbol: 'finish'
+Number of errors: 1
+Number of warnings: 1
+

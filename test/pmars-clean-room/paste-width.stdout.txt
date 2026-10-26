@@ -1,0 +1,13 @@
+       ORG          0
+       DAT.F  #     1, $     0     
+       DAT.F  #     2, $     0     
+       DAT.F  #     3, $     0     
+       DAT.F  #     4, $     0     
+       DAT.F  #     5, $     0     
+       DAT.F  #     6, $     0     
+       DAT.F  #     7, $     0     
+       DAT.F  #     8, $     0     
+       DAT.F  #     9, $     0     
+       DAT.F  #    10, $     0     
+       DAT.F  $   -10, $    -1     
+       END

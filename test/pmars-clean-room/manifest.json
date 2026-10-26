@@ -1,0 +1,1322 @@
+{
+  "reference": "pMARS v0.9.5, 03/01/2026, SERVER",
+  "capturedOn": "2026-10-26",
+  "workingDirectory": "test/pmars-clean-room",
+  "cases": [
+    {
+      "id": "equ-text",
+      "file": "equ-text.red",
+      "args": [
+        "-A",
+        "equ-text.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "equ-text.stdout.txt",
+      "stderr": "equ-text.stderr.txt",
+      "sourceSha256": "e6f581340e7296d739aa842b8cc1ffd731c6ea95d39a5202eeb0370494a6b034",
+      "stdoutSha256": "99bfed3b80afc23f3089e9eba09a960dd4658b75048efea9d1677cf5e2612443",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "equ-late-reference",
+      "file": "equ-late-reference.red",
+      "args": [
+        "-A",
+        "equ-late-reference.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "equ-late-reference.stdout.txt",
+      "stderr": "equ-late-reference.stderr.txt",
+      "sourceSha256": "76888d35939477560f2d93e5adbd93c10b62e61aa28b458e2dc321637af9ee2f",
+      "stdoutSha256": "a1b1c10772de23a3bfb24d603c7f33a1f8d1e69e8675c1d79d29401a3ecdf3cd",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "equ-mode-chain",
+      "file": "equ-mode-chain.red",
+      "args": [
+        "-A",
+        "equ-mode-chain.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "equ-mode-chain.stdout.txt",
+      "stderr": "equ-mode-chain.stderr.txt",
+      "sourceSha256": "d09fd657c2c1624f27060f9b577ef244ee3d7ce73f33243bda9891a01391fe51",
+      "stdoutSha256": "84065f2fa0c770cbd32160e231e570f5e63ab0ff3eecbb7ae942adfad617d7db",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "equ-instruction",
+      "file": "equ-instruction.red",
+      "args": [
+        "-A",
+        "equ-instruction.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "equ-instruction.stdout.txt",
+      "stderr": "equ-instruction.stderr.txt",
+      "sourceSha256": "6cf3e438372e2291d5671d211b5b2d787a5b1619b1217bc3a1aa38c333438cdc",
+      "stdoutSha256": "826fc8e07f8ad3d424bc25f24e05483c00068b27bc7e14222878ce16d45197dd",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "equ-multiline",
+      "file": "equ-multiline.red",
+      "args": [
+        "-A",
+        "equ-multiline.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "equ-multiline.stdout.txt",
+      "stderr": "equ-multiline.stderr.txt",
+      "sourceSha256": "ab5a06c364f729d195e1cfd5853c3a65754cc5cdf3950412b1e999a7045c02e9",
+      "stdoutSha256": "5bdeb3872098412882b1235318882246b5427a74153315468f1e83caff554473",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "equ-recursive",
+      "file": "equ-recursive.red",
+      "args": [
+        "-A",
+        "equ-recursive.red"
+      ],
+      "exitCode": 3,
+      "signal": null,
+      "error": null,
+      "stdout": "equ-recursive.stdout.txt",
+      "stderr": "equ-recursive.stderr.txt",
+      "sourceSha256": "ef0f6fa514f76b975bd8e44aeb9fb61497a30139044c437dc72ac0e027b19cfa",
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "456315c788b69fac5808ddf04c28b18c7d027a813d603c0d8dad88a3b3abe906"
+    },
+    {
+      "id": "equ-unused-recursive",
+      "file": "equ-unused-recursive.red",
+      "args": [
+        "-A",
+        "equ-unused-recursive.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "equ-unused-recursive.stdout.txt",
+      "stderr": "equ-unused-recursive.stderr.txt",
+      "sourceSha256": "adbbf936efbb393d7e2fc9b35d4b09295e7cf8cc4775064d0fba5d36f190e74e",
+      "stdoutSha256": "e18f3c9d0bd572faab27dad5abff985db6a5b1103b97f6138687762738ea1743",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "equ-no-label",
+      "file": "equ-no-label.red",
+      "args": [
+        "-A",
+        "equ-no-label.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "equ-no-label.stdout.txt",
+      "stderr": "equ-no-label.stderr.txt",
+      "sourceSha256": "8c60a900206d014a09fa65d4f0d07676f01c7a4ae6141a828b9cb07fa9fc746c",
+      "stdoutSha256": "e18f3c9d0bd572faab27dad5abff985db6a5b1103b97f6138687762738ea1743",
+      "stderrSha256": "48860fe4bf879c7b8b56cc4c1acb7341394187fbc138354344b7997de1d1bba9"
+    },
+    {
+      "id": "equ-duplicate",
+      "file": "equ-duplicate.red",
+      "args": [
+        "-A",
+        "equ-duplicate.red"
+      ],
+      "exitCode": 3,
+      "signal": null,
+      "error": null,
+      "stdout": "equ-duplicate.stdout.txt",
+      "stderr": "equ-duplicate.stderr.txt",
+      "sourceSha256": "3a1908b5a7262a1a3c7099d5300d3a206a9c50ab24dcf072abb34017bcaa8bfb",
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "eb17126e9c05196b31d0062da5e4977c13cd5833d3cb7ee3d8161153bcb8f869"
+    },
+    {
+      "id": "for-count-labels",
+      "file": "for-count-labels.red",
+      "args": [
+        "-A",
+        "for-count-labels.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "for-count-labels.stdout.txt",
+      "stderr": "for-count-labels.stderr.txt",
+      "sourceSha256": "1b389dea3e874d5ae6fdb8b0595add54e70a075eb52d65fbe05be69dfe8adb94",
+      "stdoutSha256": "fa3e4423b6a0247862b66958a306d485576cefdefdded35911c52dfd5ae8dbe4",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "for-counter",
+      "file": "for-counter.red",
+      "args": [
+        "-A",
+        "for-counter.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "for-counter.stdout.txt",
+      "stderr": "for-counter.stderr.txt",
+      "sourceSha256": "cc2d03c05ebf248f805faff1d38a1381694f4b6f3b89833740c6153a96245e51",
+      "stdoutSha256": "00e206686198c6eea1d453dc0aa3501818a333425874331096bda2013dbaf643",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "for-nested",
+      "file": "for-nested.red",
+      "args": [
+        "-A",
+        "for-nested.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "for-nested.stdout.txt",
+      "stderr": "for-nested.stderr.txt",
+      "sourceSha256": "76efb09dffbb656ab326c53973b0300f0638d85c84ba85f240675264c330bb49",
+      "stdoutSha256": "63be3e68889a292e8c0fad10bd0283ea11b85d0b8eba4ab826968c7bceecc321",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "for-zero-skips",
+      "file": "for-zero-skips.red",
+      "args": [
+        "-A",
+        "for-zero-skips.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "for-zero-skips.stdout.txt",
+      "stderr": "for-zero-skips.stderr.txt",
+      "sourceSha256": "3b3af12740cd55f308e128df7ebf60c108859f76cadb8eca7bed8a16dfd6b2d8",
+      "stdoutSha256": "e18f3c9d0bd572faab27dad5abff985db6a5b1103b97f6138687762738ea1743",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "for-negative",
+      "file": "for-negative.red",
+      "args": [
+        "-A",
+        "for-negative.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "for-negative.stdout.txt",
+      "stderr": "for-negative.stderr.txt",
+      "sourceSha256": "46421787a6d8f882bf1aa5f87199ca59f908a0b24dd22df4f00ff8f863d49d05",
+      "stdoutSha256": "b24c19c4c6291d65f94d48ef60f31b6d5f0c8040d7e8469b9773a4b1e986a076",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "for-forward-count",
+      "file": "for-forward-count.red",
+      "args": [
+        "-A",
+        "for-forward-count.red"
+      ],
+      "exitCode": 3,
+      "signal": null,
+      "error": null,
+      "stdout": "for-forward-count.stdout.txt",
+      "stderr": "for-forward-count.stderr.txt",
+      "sourceSha256": "6729dbee12038376340fbdce72e23d9a2de0e01bcfa41c6deeb85c6716a6bd47",
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "51c25aa75809e382522db0175ff7a8b86f2230826c250dedb61601e88e321d58"
+    },
+    {
+      "id": "for-counter-after",
+      "file": "for-counter-after.red",
+      "args": [
+        "-A",
+        "for-counter-after.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "for-counter-after.stdout.txt",
+      "stderr": "for-counter-after.stderr.txt",
+      "sourceSha256": "2f737b95bb10e550d12ac6475ac3129cf4beeafe1cd097a5ec9e4d169e3ca20f",
+      "stdoutSha256": "1b721df631cfcd6aadb160ce2fdc7ef10c96d2e89e8a1706b2cc5e0a4dff3cbd",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "for-unclosed-positive",
+      "file": "for-unclosed-positive.red",
+      "args": [
+        "-A",
+        "for-unclosed-positive.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "for-unclosed-positive.stdout.txt",
+      "stderr": "for-unclosed-positive.stderr.txt",
+      "sourceSha256": "72680ea3c84f28cd5751d75db71954e8d0c66ee4f6a934246e325b8f0586d922",
+      "stdoutSha256": "e18f3c9d0bd572faab27dad5abff985db6a5b1103b97f6138687762738ea1743",
+      "stderrSha256": "71d8f12bfe7e0b7fc7285c859a6467ff8bf6a22d41881dfae46b07000bd890ff"
+    },
+    {
+      "id": "for-unclosed-zero",
+      "file": "for-unclosed-zero.red",
+      "args": [
+        "-A",
+        "for-unclosed-zero.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "for-unclosed-zero.stdout.txt",
+      "stderr": "for-unclosed-zero.stderr.txt",
+      "sourceSha256": "6eeade13ecfe7331f5c85b470dfb3ef7b4573d3c39fc4d550ce41be5714b951a",
+      "stdoutSha256": "c50822d10fd59a84db96f68f72edd43684916d76bb2ad52c03f6571842f476c2",
+      "stderrSha256": "45dcef8f828029a7fe16ad853816f50018b872da0c46c234ebd230aa36c407e8"
+    },
+    {
+      "id": "rof-unopened",
+      "file": "rof-unopened.red",
+      "args": [
+        "-A",
+        "rof-unopened.red"
+      ],
+      "exitCode": 3,
+      "signal": null,
+      "error": null,
+      "stdout": "rof-unopened.stdout.txt",
+      "stderr": "rof-unopened.stderr.txt",
+      "sourceSha256": "83c1a5582f4ac64ab65fc4595d04d934051feaf09ec450a74263e0c53dddaf26",
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "afc7753376b854030c8f5266c32df689131c638a6273e6914256d61e50884119"
+    },
+    {
+      "id": "for-paste",
+      "file": "for-paste.red",
+      "args": [
+        "-A",
+        "for-paste.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "for-paste.stdout.txt",
+      "stderr": "for-paste.stderr.txt",
+      "sourceSha256": "26f3007ce8875b20264990143b9155cdf1cea023063da1a32f2739143de40619",
+      "stdoutSha256": "58f71e0e262969bc721a34fd60cf0f054aadbe39fcab24ddc5ebc78be1489840",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "paste-width",
+      "file": "paste-width.red",
+      "args": [
+        "-A",
+        "paste-width.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "paste-width.stdout.txt",
+      "stderr": "paste-width.stderr.txt",
+      "sourceSha256": "39d0239a06837495f3b7bf7e49b0c283e7274dad19cbdbfa2be42b4ecfb7b452",
+      "stdoutSha256": "cb085b0ded38994cc887c017e8ffd429b074118c138a8f06665f3178df056567",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "paste-noncounter",
+      "file": "paste-noncounter.red",
+      "args": [
+        "-A",
+        "paste-noncounter.red"
+      ],
+      "exitCode": 3,
+      "signal": null,
+      "error": null,
+      "stdout": "paste-noncounter.stdout.txt",
+      "stderr": "paste-noncounter.stderr.txt",
+      "sourceSha256": "03a8d0354333968c48af42953704a347b769b25c9f576ab594c6f9e7d49bb404",
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "d50315a885351c6c1ed405aa694ef4b3e5bcd16e95c2f48768768b9a7c79cbf0"
+    },
+    {
+      "id": "equ-counter-use",
+      "file": "equ-counter-use.red",
+      "args": [
+        "-A",
+        "equ-counter-use.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "equ-counter-use.stdout.txt",
+      "stderr": "equ-counter-use.stderr.txt",
+      "sourceSha256": "f3d6668104a1c5615e65c6fa26328b9726e7a973ba2dfa0ed7dd4013e38bf3f1",
+      "stdoutSha256": "d7b131f32cb4f79c507aa642309399a1b8d81793b5a80b198ed0fa05bef94561",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "curline",
+      "file": "curline.red",
+      "args": [
+        "-A",
+        "curline.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "curline.stdout.txt",
+      "stderr": "curline.stderr.txt",
+      "sourceSha256": "276abede057b78bf7c578c03582fcc5d85a0e98c3ebc9d29384938aed80484d5",
+      "stdoutSha256": "b026b00789fdd3fde20ac2db2247b3593f7a26df87003d7f023ef9124a575cdf",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "curline-lowercase",
+      "file": "curline-lowercase.red",
+      "args": [
+        "-A",
+        "curline-lowercase.red"
+      ],
+      "exitCode": 3,
+      "signal": null,
+      "error": null,
+      "stdout": "curline-lowercase.stdout.txt",
+      "stderr": "curline-lowercase.stderr.txt",
+      "sourceSha256": "a0cf82780a161a8d50d8b3e1ed4cb0b248adc192a3a028a8013a03c02ec44b03",
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "f9ce360375c442ce416074652cc9c1faf7468ac0e2e02744e7c39cff5c6273c8"
+    },
+    {
+      "id": "label-case",
+      "file": "label-case.red",
+      "args": [
+        "-A",
+        "label-case.red"
+      ],
+      "exitCode": 3,
+      "signal": null,
+      "error": null,
+      "stdout": "label-case.stdout.txt",
+      "stderr": "label-case.stderr.txt",
+      "sourceSha256": "dfb3436bff98f1410925f6dbe1534afb4050cab4e0eea179a0a27b2ae2ff5fe1",
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "00bbed6588399bc01eca2fc0a285f00fb58e3943208c6cede4b53f2718edcbf0"
+    },
+    {
+      "id": "multiple-labels",
+      "file": "multiple-labels.red",
+      "args": [
+        "-A",
+        "multiple-labels.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "multiple-labels.stdout.txt",
+      "stderr": "multiple-labels.stderr.txt",
+      "sourceSha256": "7efc36e50629a5e005d2f7d712abbc2957c501886398b8b41f7de6f835710181",
+      "stdoutSha256": "920ddfcbaa7801a9d6bf0007e5dcce77d408f8d6aa09f04bc13fffb6792e8fbe",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "label-forward",
+      "file": "label-forward.red",
+      "args": [
+        "-A",
+        "label-forward.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "label-forward.stdout.txt",
+      "stderr": "label-forward.stderr.txt",
+      "sourceSha256": "8c21d6ff2acd69e04fc179b717b645f59fd9cbb1b680703bc9709071dfaa24fa",
+      "stdoutSha256": "bbb583b98a523cbd941e21e971cd9a8a89e163d32c2832f0724cd1b3553cff9d",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "label-end",
+      "file": "label-end.red",
+      "args": [
+        "-A",
+        "label-end.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "label-end.stdout.txt",
+      "stderr": "label-end.stderr.txt",
+      "sourceSha256": "4ee05c794987fc56f9614d58212968c78aa9399bbf917fdea80873ad0bf78eda",
+      "stdoutSha256": "85ce959ff779b5fce6f92360d9f7312fe001f800ea361df941c4a09cabf174de",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "label-trailing",
+      "file": "label-trailing.red",
+      "args": [
+        "-A",
+        "label-trailing.red"
+      ],
+      "exitCode": 3,
+      "signal": null,
+      "error": null,
+      "stdout": "label-trailing.stdout.txt",
+      "stderr": "label-trailing.stderr.txt",
+      "sourceSha256": "eb70fa6e356f97d87f29f61227ae1aa882f3c2d0cb1edc05b1bca032ded4cf06",
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "6e493343be049a898a783f77b40fbe075d36466fd3e05dfbb4b868ca8e4eea25"
+    },
+    {
+      "id": "label-before-end",
+      "file": "label-before-end.red",
+      "args": [
+        "-A",
+        "label-before-end.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "label-before-end.stdout.txt",
+      "stderr": "label-before-end.stderr.txt",
+      "sourceSha256": "65d359343dadc4f2a1672d58efb38b238bb1a997762cb2e1ddb7438b63567c68",
+      "stdoutSha256": "85ce959ff779b5fce6f92360d9f7312fe001f800ea361df941c4a09cabf174de",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "end-stops",
+      "file": "end-stops.red",
+      "args": [
+        "-A",
+        "end-stops.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "end-stops.stdout.txt",
+      "stderr": "end-stops.stderr.txt",
+      "sourceSha256": "1446d93ea1a6169439a93b9f613c4fde1f281274b8c97025c1f46688ba21f823",
+      "stdoutSha256": "a4114fc006b02d8dc3b26d24bf465b2f9f415ca04574d73cb7612bdd8baea1d7",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "org-end",
+      "file": "org-end.red",
+      "args": [
+        "-A",
+        "org-end.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "org-end.stdout.txt",
+      "stderr": "org-end.stderr.txt",
+      "sourceSha256": "68756ba120b3a03acbe51a62650973f9d9ba901b002f235cf69ce623cb06d7ef",
+      "stdoutSha256": "cd6c29ce8880716aaf45c166199298eb870439d571fbe1c3a06735ba39718c5a",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "org-multiple",
+      "file": "org-multiple.red",
+      "args": [
+        "-A",
+        "org-multiple.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "org-multiple.stdout.txt",
+      "stderr": "org-multiple.stderr.txt",
+      "sourceSha256": "daee9c06c1da7a4986bcd64616476f022f0833e26812afa5a736770eb7b837fd",
+      "stdoutSha256": "cd6c29ce8880716aaf45c166199298eb870439d571fbe1c3a06735ba39718c5a",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "assert-false",
+      "file": "assert-false.red",
+      "args": [
+        "-A",
+        "assert-false.red"
+      ],
+      "exitCode": 3,
+      "signal": null,
+      "error": null,
+      "stdout": "assert-false.stdout.txt",
+      "stderr": "assert-false.stderr.txt",
+      "sourceSha256": "2e109995044d9c90a980749f1eee786ff1497af08d7105a7c0784fdde4f813eb",
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "0b8c4ab26d34feb28db910b5275fbae8852797a09bc3bf378565372ca63f0b28"
+    },
+    {
+      "id": "assert-forward",
+      "file": "assert-forward.red",
+      "args": [
+        "-A",
+        "assert-forward.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "assert-forward.stdout.txt",
+      "stderr": "assert-forward.stderr.txt",
+      "sourceSha256": "eeff4efb84f8a0cf933927d50427015f7fd6720db84d770c50fec86ad593fb68",
+      "stdoutSha256": "aa82530fe41f829d7e01efbececbec4a487248eea19089c30e4f82ca62b0d362",
+      "stderrSha256": "ff0d3fea68cc70b508126369313c1624f1cbe6d22fbbc903d80ad3ecf94b9533"
+    },
+    {
+      "id": "assert-inline",
+      "file": "assert-inline.red",
+      "args": [
+        "-A",
+        "assert-inline.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "assert-inline.stdout.txt",
+      "stderr": "assert-inline.stderr.txt",
+      "sourceSha256": "e4434cde72dafb50c5a4605084bde62b8d9106183dc3c25fe313105feb9f78b9",
+      "stdoutSha256": "e18f3c9d0bd572faab27dad5abff985db6a5b1103b97f6138687762738ea1743",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "assert-loop",
+      "file": "assert-loop.red",
+      "args": [
+        "-A",
+        "assert-loop.red"
+      ],
+      "exitCode": 3,
+      "signal": null,
+      "error": null,
+      "stdout": "assert-loop.stdout.txt",
+      "stderr": "assert-loop.stderr.txt",
+      "sourceSha256": "5a75e8d517ea6777d10785403ab2ed41eca6d618204a10cb16ab38b0c65d1695",
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "9134e925006bbc63d9c5211c7ebe9b2495a2af76ae3bf27e4f2ae25d3b2beab4"
+    },
+    {
+      "id": "register-order",
+      "file": "register-order.red",
+      "args": [
+        "-A",
+        "register-order.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "register-order.stdout.txt",
+      "stderr": "register-order.stderr.txt",
+      "sourceSha256": "4a4d0c0bf4dc6416866b7268d9dbded1764d5fff7149636e36284ce2a743a245",
+      "stdoutSha256": "1f5906fbca12a3b4fbde05ecc45d1df4d43eb6dcff68f5f97c2d38be6c936ade",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "register-phase",
+      "file": "register-phase.red",
+      "args": [
+        "-A",
+        "register-phase.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "register-phase.stdout.txt",
+      "stderr": "register-phase.stderr.txt",
+      "sourceSha256": "e66ea988eeaa70ffa21703ac7e28229b853dc4594b850582fd4a65056fd35620",
+      "stdoutSha256": "21038a4e328eaa9b1e858641d6b6b40c80662e1098a833541b1bf053a01c3a4c",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "register-label",
+      "file": "register-label.red",
+      "args": [
+        "-A",
+        "register-label.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "register-label.stdout.txt",
+      "stderr": "register-label.stderr.txt",
+      "sourceSha256": "210d408a042331ca3c206f0ada329c34418c1f2e361bb40c70c581044ee84429",
+      "stdoutSha256": "4cc758445c37ef13b742f4e32f50388008d3b53391623bbb55024a5497e8bc4d",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "expression-precedence",
+      "file": "expression-precedence.red",
+      "args": [
+        "-A",
+        "expression-precedence.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "expression-precedence.stdout.txt",
+      "stderr": "expression-precedence.stderr.txt",
+      "sourceSha256": "7afc75f7152f0e2a4ed9c76c621d542d14d6cad2c5d8ea62acf3eaa72e7383fb",
+      "stdoutSha256": "29182c0c8571e58e828c23bf3e2cb0a157f2538bdda7f0b4d8bc23336b4f0d23",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "expression-logical-side-effects",
+      "file": "expression-logical-side-effects.red",
+      "args": [
+        "-A",
+        "expression-logical-side-effects.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "expression-logical-side-effects.stdout.txt",
+      "stderr": "expression-logical-side-effects.stderr.txt",
+      "sourceSha256": "6bc97e3b5df0c2e64a704032e9e90a9843698df20d96951f1b8194e87527bcb3",
+      "stdoutSha256": "9deebb4adbfe6a58cf423a67c613600489ef345e19960665bbfc3791efd25c37",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "expression-no-shortcircuit",
+      "file": "expression-no-shortcircuit.red",
+      "args": [
+        "-A",
+        "expression-no-shortcircuit.red"
+      ],
+      "exitCode": 3,
+      "signal": null,
+      "error": null,
+      "stdout": "expression-no-shortcircuit.stdout.txt",
+      "stderr": "expression-no-shortcircuit.stderr.txt",
+      "sourceSha256": "2ec57ccb164662d25f5389b96830110579cf5a494e760d79245b9ec3c1097098",
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "407d1ff6b10eab74c475986d669b1bf39b6c83d5ec837b55c7c00f1b2b2914a4"
+    },
+    {
+      "id": "expression-assignment",
+      "file": "expression-assignment.red",
+      "args": [
+        "-A",
+        "expression-assignment.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "expression-assignment.stdout.txt",
+      "stderr": "expression-assignment.stderr.txt",
+      "sourceSha256": "9394499d07253e4422b2432ebdb73d7a66ebabe4fb6e57de8e1c2b7a8045c01d",
+      "stdoutSha256": "3605f3099e45a635e227a669470a536563b75c9f1075a3dca5d1c31f5f5f1e81",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "expression-divzero",
+      "file": "expression-divzero.red",
+      "args": [
+        "-A",
+        "expression-divzero.red"
+      ],
+      "exitCode": 3,
+      "signal": null,
+      "error": null,
+      "stdout": "expression-divzero.stdout.txt",
+      "stderr": "expression-divzero.stderr.txt",
+      "sourceSha256": "acd8bdb44fb51b1cee1d5e827aaf3d439b9d41abfe636971e4a7a1d41e6ec5c5",
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "9c7af9547f92bbb853be900c5f394bdcab24654e8e1f3492f13d61ba6b0c9212"
+    },
+    {
+      "id": "expression-wrap",
+      "file": "expression-wrap.red",
+      "args": [
+        "-A",
+        "expression-wrap.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "expression-wrap.stdout.txt",
+      "stderr": "expression-wrap.stderr.txt",
+      "sourceSha256": "1525995d445677bd2a62af750cef300b38573cd8c280e9ab693240f4f089f096",
+      "stdoutSha256": "4334aa6ffd0b345766f264bbfdea581d3563e9381efda5bdbc346470bbd5826e",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "line-continuation",
+      "file": "line-continuation.red",
+      "args": [
+        "-A",
+        "line-continuation.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "line-continuation.stdout.txt",
+      "stderr": "line-continuation.stderr.txt",
+      "sourceSha256": "71d53e3deb0b4f41f87ce2fc3407190b6fbcb7928e1f81d6c9a2d00cbd32189c",
+      "stdoutSha256": "227e0cb61a685c18c55290e4fbc90bb5d64ee9d002a3b24976937fa2225e827a",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "comment-continuation",
+      "file": "comment-continuation.red",
+      "args": [
+        "-A",
+        "comment-continuation.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "comment-continuation.stdout.txt",
+      "stderr": "comment-continuation.stderr.txt",
+      "sourceSha256": "a42fab781d3c0d9198736ef17dffb8b34e8eb30ccd42e5d1dd54f6df27ea5c46",
+      "stdoutSha256": "f91deee00176c0ebee72216a0f9748ef5f701c39825266aaa95d7080776c1b94",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "redcode-selection",
+      "file": "redcode-selection.red",
+      "args": [
+        "-A",
+        "redcode-selection.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "redcode-selection.stdout.txt",
+      "stderr": "redcode-selection.stderr.txt",
+      "sourceSha256": "2d1880643154870979249a5f605e8cffbeb483e304ac99668bde8805cfb5f021",
+      "stdoutSha256": "a4114fc006b02d8dc3b26d24bf465b2f9f415ca04574d73cb7612bdd8baea1d7",
+      "stderrSha256": "35e82497fad7aa64c8ad5503f9f96dde1e7e1ce2d0d08f4c1e154ac9cc9c8ee4"
+    },
+    {
+      "id": "missing-assert",
+      "file": "missing-assert.red",
+      "args": [
+        "-A",
+        "missing-assert.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "missing-assert.stdout.txt",
+      "stderr": "missing-assert.stderr.txt",
+      "sourceSha256": "93dc8eec8f354bb892d6a85ee552c46ddc9f33f59bf10037e9e00ff378f8c899",
+      "stdoutSha256": "e18f3c9d0bd572faab27dad5abff985db6a5b1103b97f6138687762738ea1743",
+      "stderrSha256": "35e82497fad7aa64c8ad5503f9f96dde1e7e1ce2d0d08f4c1e154ac9cc9c8ee4"
+    },
+    {
+      "id": "88-for-equ",
+      "file": "88-for-equ.red",
+      "args": [
+        "-A",
+        "-8",
+        "88-for-equ.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "88-for-equ.stdout.txt",
+      "stderr": "88-for-equ.stderr.txt",
+      "sourceSha256": "24b51c0eca1ebe6feb5183d766fd1b85c789efc44a88afd016ecafeeff099a12",
+      "stdoutSha256": "12726666abd0189fbbe1fe8c2ed12f6e410db28a96a3facd9d304d1191b9760d",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "88-org",
+      "file": "88-org.red",
+      "args": [
+        "-A",
+        "-8",
+        "88-org.red"
+      ],
+      "exitCode": 3,
+      "signal": null,
+      "error": null,
+      "stdout": "88-org.stdout.txt",
+      "stderr": "88-org.stderr.txt",
+      "sourceSha256": "28a70cc83ccd533eb9bc747278ad0ee63c6f85ec6f073cb7ee1abcbda6387334",
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "3f83bfbae763af8fd80efaca8c958e8b096c932efbf183eddc42d49f512b94e6"
+    },
+    {
+      "id": "88-modifier",
+      "file": "88-modifier.red",
+      "args": [
+        "-A",
+        "-8",
+        "88-modifier.red"
+      ],
+      "exitCode": 3,
+      "signal": null,
+      "error": null,
+      "stdout": "88-modifier.stdout.txt",
+      "stderr": "88-modifier.stderr.txt",
+      "sourceSha256": "ceb66466afc2d002b3ea060fa0a7d2fa8e794e1be0767cfaeccbe3b1835b63d5",
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "ae1dcbf0dac52d6fd7f959091f5bd99cdf7ab81b9c212ffd817d26c858ea40b9"
+    },
+    {
+      "id": "88-mode",
+      "file": "88-mode.red",
+      "args": [
+        "-A",
+        "-8",
+        "88-mode.red"
+      ],
+      "exitCode": 3,
+      "signal": null,
+      "error": null,
+      "stdout": "88-mode.stdout.txt",
+      "stderr": "88-mode.stderr.txt",
+      "sourceSha256": "e7793f5633e33e7dc3e770bca37b929607041480f3b3bbf9320e8d8d7fa0c928",
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "e74e2377ea6868786b5fe15ecc0aff0d08fa0e99c04f0deb35e0153f97876f28"
+    },
+    {
+      "id": "88-end",
+      "file": "88-end.red",
+      "args": [
+        "-A",
+        "-8",
+        "88-end.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "88-end.stdout.txt",
+      "stderr": "88-end.stderr.txt",
+      "sourceSha256": "d873fd024a6a0df5a2517cdd75802c750ee44e3edfb5a1f7591db919812b9789",
+      "stdoutSha256": "e7be191603231c05e2af7efb373b6225aaa8f64a40d4b77629bbe85ba64b2e23",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "predefined",
+      "file": "predefined.red",
+      "args": [
+        "-A",
+        "predefined.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "predefined.stdout.txt",
+      "stderr": "predefined.stderr.txt",
+      "sourceSha256": "dd157d1ce55c6ad4c7e213ff636d622bc639db68649d8c0238db75955ba631c1",
+      "stdoutSha256": "a80510db95c5b93f7a066347e5e604282127398be79389109de46ab4fdbaa4c2",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "blank",
+      "file": "blank.red",
+      "args": [
+        "-A",
+        "blank.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "blank.stdout.txt",
+      "stderr": "blank.stderr.txt",
+      "sourceSha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "stdoutSha256": "c50822d10fd59a84db96f68f72edd43684916d76bb2ad52c03f6571842f476c2",
+      "stderrSha256": "2aacf69f33a233b2255bc5a7bbdfcddc57632c2f25887fa183bcd5b5417dbefa"
+    },
+    {
+      "id": "for-empty",
+      "file": "for-empty.red",
+      "args": [
+        "-A",
+        "for-empty.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "for-empty.stdout.txt",
+      "stderr": "for-empty.stderr.txt",
+      "sourceSha256": "d4ed41e565c9435c457fcbd6d42b3a397de04922f53377b51f21174a1af5f058",
+      "stdoutSha256": "e18f3c9d0bd572faab27dad5abff985db6a5b1103b97f6138687762738ea1743",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "equ-capture-label",
+      "file": "equ-capture-label.red",
+      "args": [
+        "-A",
+        "equ-capture-label.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "equ-capture-label.stdout.txt",
+      "stderr": "equ-capture-label.stderr.txt",
+      "sourceSha256": "3fdac8b8768037cd14d9770db2dd13b57255450ac5e7feedb3cbf72be1690145",
+      "stdoutSha256": "c80a60f33913274c40928d4a84d464bc3c0d0c8342706aa6e772a69b3b6c5e4d",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "equ-multiline-comment",
+      "file": "equ-multiline-comment.red",
+      "args": [
+        "-A",
+        "equ-multiline-comment.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "equ-multiline-comment.stdout.txt",
+      "stderr": "equ-multiline-comment.stderr.txt",
+      "sourceSha256": "9bd92c532e82e90861c5e145fc9a615013b8d942138117d7fa5ce6c3d200dc49",
+      "stdoutSha256": "2fff5fa1b91fde77f9e3dcaa78ab9bd7175c583d61081243ec019a2c9ad94719",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "for-end",
+      "file": "for-end.red",
+      "args": [
+        "-A",
+        "for-end.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "for-end.stdout.txt",
+      "stderr": "for-end.stderr.txt",
+      "sourceSha256": "39d84caf9894d885c87895dbd9964c7366d11e3446fc9c413654a0ed576bddb4",
+      "stdoutSha256": "07f54315f8944c37a899a08f66efc73c222a384ca1a297bf36559356a1104d49",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "for-duplicate-label",
+      "file": "for-duplicate-label.red",
+      "args": [
+        "-A",
+        "for-duplicate-label.red"
+      ],
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "stdout": "for-duplicate-label.stdout.txt",
+      "stderr": "for-duplicate-label.stderr.txt",
+      "sourceSha256": "081f44a9e4d0cd050e1a79a123c274e278d9e367de71ab3d3ab4afdc3f373d27",
+      "stdoutSha256": "85ce959ff779b5fce6f92360d9f7312fe001f800ea361df941c4a09cabf174de",
+      "stderrSha256": "a28f5ef44aae279e823f38451d14add2af969f66ebcd2dfeb3e56381f92d9efe"
+    },
+    {
+      "id": "for-counter-shadow",
+      "file": "for-counter-shadow.red",
+      "args": [
+        "-A",
+        "for-counter-shadow.red"
+      ],
+      "exitCode": 3,
+      "signal": null,
+      "error": null,
+      "stdout": "for-counter-shadow.stdout.txt",
+      "stderr": "for-counter-shadow.stderr.txt",
+      "sourceSha256": "62841e65786a6542f32d7bb48665bc84f2bd8101f9893efda5556256df30c853",
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "4250f00279eecd43355774c30515488690b6f8c70e50ecbdb3bd8bc5416d5a68"
+    },
+    {
+      "id": "for-assert-label",
+      "file": "for-assert-label.red",
+      "args": [
+        "-A",
+        "for-assert-label.red"
+      ],
+      "exitCode": 3,
+      "signal": null,
+      "error": null,
+      "stdout": "for-assert-label.stdout.txt",
+      "stderr": "for-assert-label.stderr.txt",
+      "sourceSha256": "ea71ed15978d3b78d56fc87aba53e8ae9eaaed4498b23f9c9c75aae73b9462a9",
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "622925e7e3fded651cf3c6761bfbb215ec7f79739855c2ad9c633134f6aebff8"
+    },
+    {
+      "id": "org-end-conflict",
+      "file": "org-end-conflict.red",
+      "args": [
+        "-A",
+        "org-end-conflict.red"
+      ],
+      "stdout": "org-end-conflict.stdout.txt",
+      "stderr": "org-end-conflict.stderr.txt",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "sourceSha256": "38eff32e5fa18a17a551198ce6d5e1155b62cf9032e6bc9723e9928affc050dc",
+      "stdoutSha256": "9eb28cb4f3cb4b97f2c537a07885b2f6891d5e68ae213bd53fdac263139715e8",
+      "stderrSha256": "9d0b7535d8e204296c6469a3fe7baafc68e5e86bf05c25e9d0bc41c8d62d1ec1"
+    },
+    {
+      "id": "end-label-absolute",
+      "file": "end-label-absolute.red",
+      "args": [
+        "-A",
+        "end-label-absolute.red"
+      ],
+      "stdout": "end-label-absolute.stdout.txt",
+      "stderr": "end-label-absolute.stderr.txt",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "sourceSha256": "9707718438897ec006cda7b422d4b80408e5b8654124e03aafcf20aa0467ae66",
+      "stdoutSha256": "cd6c29ce8880716aaf45c166199298eb870439d571fbe1c3a06735ba39718c5a",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "org-forward",
+      "file": "org-forward.red",
+      "args": [
+        "-A",
+        "org-forward.red"
+      ],
+      "stdout": "org-forward.stdout.txt",
+      "stderr": "org-forward.stderr.txt",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "sourceSha256": "11c89cadc47f2011e999ae048aace05eaee8ae333abfb74928e3ff9e19ba07f8",
+      "stdoutSha256": "9eb28cb4f3cb4b97f2c537a07885b2f6891d5e68ae213bd53fdac263139715e8",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "macro-forward-count",
+      "file": "macro-forward-count.red",
+      "args": [
+        "-A",
+        "macro-forward-count.red"
+      ],
+      "stdout": "macro-forward-count.stdout.txt",
+      "stderr": "macro-forward-count.stderr.txt",
+      "exitCode": 3,
+      "signal": null,
+      "error": null,
+      "sourceSha256": "78387a177b581d931762dc1ae450b93ef22d8b38d6fb8b4b18633b12451ca21c",
+      "stdoutSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSha256": "0c6bf0618ffc76e5e4dbbf99119193c8eeb7f2c543a9b4ebf543ae97fcb24103"
+    },
+    {
+      "id": "macro-for",
+      "file": "macro-for.red",
+      "args": [
+        "-A",
+        "macro-for.red"
+      ],
+      "stdout": "macro-for.stdout.txt",
+      "stderr": "macro-for.stderr.txt",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "sourceSha256": "7fc3d0b7b4cb4d4460d340f16ffa034dd20b17ca653d0d66a04f311f09208148",
+      "stdoutSha256": "2f5b61b010b70fb3db6a28da0f5ee6529ea97aefe2583ac90d060a7b3bdafb39",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "register-reset-probe",
+      "file": "register-reset-probe.red",
+      "args": [
+        "-A",
+        "register-reset-probe.red"
+      ],
+      "stdout": "register-reset-probe.stdout.txt",
+      "stderr": "register-reset-probe.stderr.txt",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "sourceSha256": "e6b849767c268451383f2b137db8d90dcdb2466758bb3d553c091f4e716aeebe",
+      "stdoutSha256": "3d592507d19cfb0057f8f264e5c3230935f9e782054035b8e7a594c7a25646fd",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "curline-org",
+      "file": "curline-org.red",
+      "args": [
+        "-A",
+        "curline-org.red"
+      ],
+      "stdout": "curline-org.stdout.txt",
+      "stderr": "curline-org.stderr.txt",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "sourceSha256": "a78b1acb4886c17d43a1ce9979381f7a0a3a800bc834d6a4e2fe8e49f38bbd27",
+      "stdoutSha256": "adf45e7dd15285ab30a2703f71837999e9be5a83cda9d626a710a9f8597654a9",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "end-metadata",
+      "file": "end-metadata.red",
+      "args": [
+        "-A",
+        "end-metadata.red"
+      ],
+      "stdout": "end-metadata.stdout.txt",
+      "stderr": "end-metadata.stderr.txt",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "sourceSha256": "82d4a20f19f9e5c6363bca7598942e7888dd0334c402c733cce9a7005e6d2136",
+      "stdoutSha256": "e18f3c9d0bd572faab27dad5abff985db6a5b1103b97f6138687762738ea1743",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "identifier-underscore",
+      "file": "identifier-underscore.red",
+      "args": [
+        "-A",
+        "identifier-underscore.red"
+      ],
+      "stdout": "identifier-underscore.stdout.txt",
+      "stderr": "identifier-underscore.stderr.txt",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "sourceSha256": "64579b436baf2964e6edc99175c48c4f4b6d2d72dd28a3b9671a570f917342a9",
+      "stdoutSha256": "4cc758445c37ef13b742f4e32f50388008d3b53391623bbb55024a5497e8bc4d",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "opcode-case",
+      "file": "opcode-case.red",
+      "args": [
+        "-A",
+        "opcode-case.red"
+      ],
+      "stdout": "opcode-case.stdout.txt",
+      "stderr": "opcode-case.stderr.txt",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "sourceSha256": "70e384096f2c8124b65148beb49347f36ee79d9dc112ce8fb8f1e21a403c8cc6",
+      "stdoutSha256": "668131a6ac3c1ee4d9f557f8a57db7577f9d0b3d19658499d69e4583df8b2580",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "for-fraction",
+      "file": "for-fraction.red",
+      "args": [
+        "-A",
+        "for-fraction.red"
+      ],
+      "stdout": "for-fraction.stdout.txt",
+      "stderr": "for-fraction.stderr.txt",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "sourceSha256": "2ab7e71c7233e6db6b0d6a9b6623f8dffb806f49c451a84760d42dc6652697f2",
+      "stdoutSha256": "a70d2a7d44731a70762f7af9f78e6a383586699275d5855d994e6201af091a60",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "comparison-order",
+      "file": "comparison-order.red",
+      "args": [
+        "-A",
+        "comparison-order.red"
+      ],
+      "stdout": "comparison-order.stdout.txt",
+      "stderr": "comparison-order.stderr.txt",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "sourceSha256": "829f38cf291155c7f52264c884f54f13790726e880308e0658f9183a9aa577de",
+      "stdoutSha256": "b501639df1d6e428a934b4f45413eb2656664fe69d1aff55f041753381359507",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "for-register-mutation",
+      "file": "for-register-mutation.red",
+      "args": [
+        "-A",
+        "for-register-mutation.red"
+      ],
+      "stdout": "for-register-mutation.stdout.txt",
+      "stderr": "for-register-mutation.stderr.txt",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "sourceSha256": "53ccea0be20d86c2bc259c2123b33eb99cd0a8bb560dd929ac418e5e6f2550b0",
+      "stdoutSha256": "e8faad43628e64cd7e12be01c3cb184266acfa085043a5a356db18c49cf89601",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "label-duplicate",
+      "file": "label-duplicate.red",
+      "args": [
+        "-A",
+        "label-duplicate.red"
+      ],
+      "stdout": "label-duplicate.stdout.txt",
+      "stderr": "label-duplicate.stderr.txt",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "sourceSha256": "44a157e3750431800fa2e0f31bc028e4103853d60db03fe09f0826b383715518",
+      "stdoutSha256": "2cee5b62f6866d78ec232063001630dfcf52f8092d13731aec73c84c50cd9fff",
+      "stderrSha256": "98ee9e1b1173eb34a072fe56843254a15da54c86827e1efb7c149aa9d1b46ba8"
+    },
+    {
+      "id": "equ-paste-late",
+      "file": "equ-paste-late.red",
+      "args": [
+        "-A",
+        "equ-paste-late.red"
+      ],
+      "stdout": "equ-paste-late.stdout.txt",
+      "stderr": "equ-paste-late.stderr.txt",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "sourceSha256": "d4af4584b6a331eb41c3a2f810a24eff9860406a0d3a88eb7a99eefb2ea009eb",
+      "stdoutSha256": "cd26032b7479c119fbc7fb476d483ab02c6ba8b73ab13351862d32f90aa636a7",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "inline-comment-equ",
+      "file": "inline-comment-equ.red",
+      "args": [
+        "-A",
+        "inline-comment-equ.red"
+      ],
+      "stdout": "inline-comment-equ.stdout.txt",
+      "stderr": "inline-comment-equ.stderr.txt",
+      "exitCode": 0,
+      "signal": null,
+      "error": null,
+      "sourceSha256": "a5bae9eb28a5484502e70ec7b835a9c0f3cddcef1c4ce059b67cbb5c48122f2a",
+      "stdoutSha256": "7b3e62c15a76f5dd39101df2d2826b723d541fece7dc5af407cb4e5e7902e697",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "referenceBuild": {
+    "archive": "https://deb.debian.org/debian/pool/main/p/pmars/pmars_0.9.5.orig.tar.xz",
+    "archiveSha256": "4c194226446e0b4b34a2c2e98641bf0d9435d9c0314bb6d8ee555d95b8de0511",
+    "compiler": "Zig 0.13.0 cc (Windows x86_64)",
+    "flags": "-O2 -w -DEXT94 -DPERMUTATE -DRWLIMIT -DSERVER",
+    "executableSha256": "892c93d2dd3c75709bcb67e1ed3cc1287a921bf2dc2d13dd95a46818df43f8b2"
+  },
+  "summary": {
+    "cases": 81,
+    "accepted": 63,
+    "rejected": 18,
+    "warnings": 14,
+    "executionFailures": 0
+  }
+}

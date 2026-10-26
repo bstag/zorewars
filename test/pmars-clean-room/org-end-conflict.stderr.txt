@@ -1,0 +1,4 @@
+Warning in line 5: 'end 1'
+        Both opcodes ORG and END are used. Ignoring END
+Number of warnings: 1
+

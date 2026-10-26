@@ -28,6 +28,19 @@ The warriors are the ZoreWars library, two P-space test warriors, and 34 Hall of
 
 After the fixes the other checks were re-run and still agree: `npm run compare` (70/70 assembled, 4,422/4,422 single rounds, 100/100 matches, 42/42 P-space matches), the hill archive (564 identical, the same 1 different and 2 rejected by both), and the '88 accept/reject check below. `test/fixtures/pmars-preprocessor.red` holds one example of each construct, checked against pMARS.
 
+**Clean-room preprocessor corpus.** A separate agent read pMARS's assembler and wrote a behaviour specification with no code ([docs/clean-room/pmars-preprocessor-behaviour.md](docs/clean-room/pmars-preprocessor-behaviour.md)), plus 81 original probe programs whose outputs it captured from a pMARS 0.9.5 build ([test/pmars-clean-room/](test/pmars-clean-room/)). ZoreWars was then changed from the specification and the probes alone, without the source; `test/pmars-clean-room.test.js` runs every probe. Of the 81, 62 matched at first; now 79 do, and the other 2 are deliberate:
+- **Asserts** run where they stand during expansion, once per loop copy, with labels counted from there, and can set registers. A false `;assert` rejects the warrior under the hill rule sets (`--rules`, the arena's Hill rules), as in pMARS. Elsewhere it is a warning, so ring warriors can still play on planes and volumes.
+- **Registers** set while expanding (in FOR counts and asserts) carry into the operands, which are evaluated after all expansion.
+- **Duplicate labels:** a line that defines a label again is left out, with a warning (so a loop body with a fixed label emits it once).
+- **Start:** ORG wins unless it is 0, then END's; `CURLINE` in ORG or END is the position there.
+- **Input:** a trailing backslash joins lines (without a comment on the line); a second `;redcode` line ends the program.
+- **EQU edge cases:** a comment may sit between multi-line EQU lines; defining an EQU twice is an error; an unnamed EQU is a warning.
+- **Unclosed FOR:** with a positive count, the rest of the program is used once, with a warning.
+- **Names:** `CURLINE` is uppercase only; `VERSION` is 95; `WARRIORS` is the number of warriors in the battle (1 when assembling one alone).
+- **Deliberately different:** an empty program (`blank`, and `for-unclosed-zero`, where `FOR 0` swallows everything) is rejected. pMARS assembles it but can't run it; a ZoreWars warrior needs an instruction to play.
+
+Afterwards everything was re-run: the 703 corewar.dev warriors (all identical), `npm run compare` (70/70 assembled, 4,422/4,422 rounds, 100/100 matches, 72/72 P-space matches), the hill archive (564 identical, unchanged), and the '88 check (729/729). The specification lists what is still untested; the next step is a differential fuzzer seeded from these probes.
+
 **ICWS'88 checks.** `--rules 88` checks syntax the way `pmars -8` does. Every opcode and pair of modes was tried against pMARS to build the table (11 opcodes, `# $ @ <` only, no modifiers, no `ORG`, `DAT` operands `#` or `<`, no immediate B-operand for MOV/ADD/SUB/CMP or A-operand for the jumps and SPL). Accept/reject agrees with `pmars -8` on all **1,275** files tried: the 683 warriors of the Koenigstuhl '88 hill, the 567 of the hill archive, and our 25 Redcode warriors.
 
 As a sanity check that the P-space test can catch bugs, it was run against a deliberately broken engine that forgets round results. 21 of 39 matches then differed.

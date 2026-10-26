@@ -1,0 +1,7 @@
+Error in line 2: 'alpha equ 3'
+        Unrecognized or improper placement of token: '3'
+Warning in line 3: 'alpha equ 4'
+        Attempting to append a string to an undefined label
+Number of errors: 1
+Number of warnings: 1
+

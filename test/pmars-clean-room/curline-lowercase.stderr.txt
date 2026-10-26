@@ -1,0 +1,4 @@
+Error in line 2: 'dat #curline,0'
+        Undefined label or symbol: 'curline'
+Number of errors: 1
+

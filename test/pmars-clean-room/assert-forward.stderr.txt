@@ -1,0 +1,4 @@
+Warning in line 2: ';assert target==1'
+        Invalid ';assert' parameter
+Number of warnings: 1
+

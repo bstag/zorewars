@@ -1,0 +1,4 @@
+Error in line 3: 'cell&foo dat 0,0'
+        Unable to derefer and concatenate symbol 'foo'
+Number of errors: 1
+

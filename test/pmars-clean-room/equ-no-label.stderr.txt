@@ -1,0 +1,4 @@
+Warning in line 2: ' equ 3'
+        Attempting to append a string to an undefined label
+Number of warnings: 1
+
