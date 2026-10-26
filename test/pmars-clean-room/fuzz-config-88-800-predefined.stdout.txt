@@ -1,0 +1,8 @@
+       ORG          4
+       DAT    #    -1, #     1     
+       DAT    #     0, #     0     
+       DAT    #    20, #    20     
+       DAT    #    50, #    95     
+       DAT    #    -1, #     1     
+       END      START
+       END

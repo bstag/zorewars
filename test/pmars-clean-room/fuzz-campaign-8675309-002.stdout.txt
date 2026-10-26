@@ -1,0 +1,4 @@
+       ORG          0
+       SNE.F  $   100, {     0     
+       JMZ.BA {     0, $     0     
+       END

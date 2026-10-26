@@ -1,0 +1,7 @@
+Error in line 7: ' >((CURLINE))'
+        Unrecognized or improper placement of token: '>'
+Warning:
+        Missing ';assert'. Warrior may not work with the current setting
+Number of errors: 1
+Number of warnings: 1
+

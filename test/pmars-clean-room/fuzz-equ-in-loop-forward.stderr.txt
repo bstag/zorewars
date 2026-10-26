@@ -1,0 +1,9 @@
+Warning in line 5: 'ref equ cell&i'
+        Ignored, redefinition of label 'cell02'
+Warning in line 5: 'ref equ cell&i'
+        Attempting to append a string to an undefined label
+Error in line 4: 'cell&i dat #ref, 0'
+        Undefined label or symbol: 'cell'
+Number of errors: 1
+Number of warnings: 2
+

@@ -1,0 +1,4 @@
+Warning in line 3: 'lbl equ start'
+        Ignored, redefinition of label 'start'
+Number of warnings: 1
+

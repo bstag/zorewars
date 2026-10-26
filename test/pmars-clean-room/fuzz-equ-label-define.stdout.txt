@@ -1,0 +1,4 @@
+       ORG          0
+       DAT.F  $     1, $     2     
+       JMP.B  $    -1, $     0     
+       END

@@ -1,0 +1,22 @@
+Error in line 3: 'k equ 5'
+        Unrecognized or improper placement of token: '5'
+Warning in line 3: 'k equ 5'
+        Attempting to append a string to an undefined label
+Warning:
+        Missing ';assert'. Warrior may not work with the current setting
+Error:
+        Too many instructions (about 71 more)
+Error in line 6: 'mul  top&i + k<MINDISTANCE, (a=(i))'
+        Undefined label or symbol: 'top01'
+Error in line 6: 'mul  top&i + k<MINDISTANCE, (a=(i))'
+        Incomplete operand at instruction 'MUL'
+Error in line 8: 'seq.b  {x1 -b>k, $(5>= MINDISTANCE) '
+        Undefined label or symbol: 'x1'
+Error in line 8: 'seq.b  {x1 -b>k, $(5>= MINDISTANCE) '
+        Incomplete operand at instruction 'SEQ'
+Number of warnings: 170
+Duplicate errors/warnings found in line 6 (170)
+Duplicate errors/warnings found in line 6 (170)
+Duplicate errors/warnings found in line 3 (169)
+Duplicate errors/warnings found in line 3 (169)
+

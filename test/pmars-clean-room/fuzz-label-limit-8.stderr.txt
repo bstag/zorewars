@@ -1,0 +1,4 @@
+Error in line 10: 'l8 dat 0, 0'
+        Too many labels for a declaration (last: 'l8')
+Number of errors: 1
+

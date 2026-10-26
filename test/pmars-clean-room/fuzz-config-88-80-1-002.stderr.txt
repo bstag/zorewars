@@ -1,0 +1,10 @@
+Warning in line 3: 'imm equ top, CORESIZE'
+        Ignored, redefinition of label 'top'
+Warning in line 3: 'imm equ top, CORESIZE'
+        Attempting to append a string to an undefined label
+Warning:
+        Missing ';assert'. Warrior may not work with the current setting
+Number of warnings: 5
+Duplicate errors/warnings found in line 3 (2)
+Duplicate errors/warnings found in line 3 (2)
+

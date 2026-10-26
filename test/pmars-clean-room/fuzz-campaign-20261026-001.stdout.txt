@@ -1,0 +1,4 @@
+       ORG          0
+       SPL.B  $    -8, <     1     
+       SUB.AB <   111, @     1     
+       END

@@ -1,0 +1,4 @@
+Warning in line 4: 'mid||VERSION == 8'
+        Ignored, redefinition of label 'mid'
+Number of warnings: 1
+

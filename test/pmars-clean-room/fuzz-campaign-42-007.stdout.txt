@@ -1,0 +1,5 @@
+       ORG          0
+       NOP.BA $     1, @     0     
+       DAT.X  #     0, }     0     
+       SNE.AB *     1, $     1     
+       END

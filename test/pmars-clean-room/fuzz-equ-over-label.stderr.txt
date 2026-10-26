@@ -1,0 +1,4 @@
+Warning in line 4: 'k equ 5'
+        Ignored, redefinition of label 'k'
+Number of warnings: 1
+

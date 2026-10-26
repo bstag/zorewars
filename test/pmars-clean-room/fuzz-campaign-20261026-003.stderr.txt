@@ -1,0 +1,9 @@
+Warning:
+        Missing ';assert'. Warrior may not work with the current setting
+Error in line 7: 'm1'
+        Undefined label or symbol: 'ptr'
+Error in line 7: 'm1'
+        Incomplete operand at instruction 'MOV'
+Number of errors: 2
+Number of warnings: 1
+

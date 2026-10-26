@@ -1,0 +1,6 @@
+Error in line 3: 'block equ for unknown'
+        Bad expression
+Error in line 6: 'rof'
+        Unopened FOR
+Number of errors: 2
+

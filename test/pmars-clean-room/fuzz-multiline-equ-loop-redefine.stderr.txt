@@ -1,0 +1,9 @@
+Error in line 3: 'm1 equ sne.i  #(257) || CORESIZE, >q'
+        Improper placement of 'equ'
+Warning in line 4: ' equ jmz.a  *MINDISTANCE, (c=!z)'
+        Attempting to append a string to an undefined label
+Warning:
+        Missing ';assert'. Warrior may not work with the current setting
+Number of errors: 1
+Number of warnings: 2
+

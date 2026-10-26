@@ -1,0 +1,7 @@
+Error in line 3: 'alpha equ alpha'
+        Recursive reference of label 'alpha'
+Warning in line 4: 'alpha equ alpha'
+        Attempting to append a string to an undefined label
+Number of errors: 1
+Number of warnings: 1
+

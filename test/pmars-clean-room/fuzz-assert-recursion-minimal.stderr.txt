@@ -1,0 +1,9 @@
+Error in line 3: 'alpha equ alpha'
+        Recursive reference of label 'alpha'
+Error in line 4: ';assert alpha||1'
+        Unrecognized or improper placement of token: '||'
+Warning in line 4: ';assert alpha||1'
+        Invalid ';assert' parameter
+Number of errors: 2
+Number of warnings: 1
+

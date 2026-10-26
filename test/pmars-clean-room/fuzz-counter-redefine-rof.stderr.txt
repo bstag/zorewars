@@ -1,0 +1,5 @@
+Warning in line 4: 'i for 3'
+        Ignored, redefinition of label 'i'
+Number of warnings: 3
+Duplicate errors/warnings found in line 4 (3)
+

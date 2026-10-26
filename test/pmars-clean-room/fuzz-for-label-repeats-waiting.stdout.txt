@@ -1,0 +1,4 @@
+       ORG          0
+       DAT.F  $     7, $     7     
+       MOV.I  $     1, $     2     
+       END

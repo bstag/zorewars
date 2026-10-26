@@ -1,0 +1,4 @@
+Error in line 2: 'dat 0,1<2<3+4==5'
+        Bad expression
+Number of errors: 1
+

@@ -1,0 +1,6 @@
+Warning:
+        Unclosed ROF
+Warning:
+        Missing ';assert'. Warrior may not work with the current setting
+Number of warnings: 2
+

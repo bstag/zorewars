@@ -1,0 +1,7 @@
+Error in line 2: 'rof'
+        Unopened FOR
+Warning:
+        Missing ';assert'. Warrior may not work with the current setting
+Number of errors: 1
+Number of warnings: 1
+

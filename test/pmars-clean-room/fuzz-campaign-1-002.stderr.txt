@@ -1,0 +1,4 @@
+Error in line 2: 'dat.b  *4<6+8==-6'
+        Bad expression
+Number of errors: 1
+

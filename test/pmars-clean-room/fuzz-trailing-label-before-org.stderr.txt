@@ -1,0 +1,6 @@
+Warning:
+        Missing ';assert'. Warrior may not work with the current setting
+Warning:
+        Execution starts from outside of the program
+Number of warnings: 2
+

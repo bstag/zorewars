@@ -1,0 +1,9 @@
+Error in line 4: 'K2 equ cmp #(top), @-K2 && 1'
+        Improper placement of 'cmp'
+Error in line 5: 'nop $K2, 0'
+        Unrecognized or improper placement of token: ','
+Warning:
+        No instructions
+Number of errors: 2
+Number of warnings: 1
+

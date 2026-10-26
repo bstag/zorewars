@@ -1,0 +1,721 @@
+{
+  "date": "2026-10-26",
+  "reference": "pMARS 0.9.5 SERVER",
+  "executableSha256": "892c93d2dd3c75709bcb67e1ed3cc1287a921bf2dc2d13dd95a46818df43f8b2",
+  "conditions": {
+    "referenceArgs": [
+      "-A"
+    ],
+    "coreSize": 8000,
+    "warriors": 1,
+    "assertErrors": true,
+    "referenceTimeoutMs": 5000
+  },
+  "replay": "Copy the listed corpus files from test/pmars-clean-room into a separate directory, verify their SHA-256 hashes, then run node scripts/fuzz-pmars.js --pmars path/to/pmars --cases 3000 --seed SEED --corpus path/to/snapshot --out path/to/results for each recorded seed. The seed corpus is frozen before adding regressions.",
+  "assemblerBeforeSha256": "1dd066dd982ce89a54ffe1b50c257469b6fa0b2747fdfce42d84d7529d324875",
+  "assemblerAfterSha256": "8dd89d245f03ca272dd30471176649477a07473f0cc0adb9cf5202194c8ae880",
+  "discoveryTotals": {
+    "cases": 12000,
+    "accepted": 3400,
+    "rejected": 7494,
+    "skippedEmpty": 1025,
+    "timeouts": 10,
+    "crashes": 53,
+    "launchErrors": 0,
+    "mismatches": 18
+  },
+  "verificationTotals": {
+    "cases": 12000,
+    "accepted": 3410,
+    "rejected": 7502,
+    "skippedEmpty": 1025,
+    "timeouts": 10,
+    "crashes": 53,
+    "launchErrors": 0,
+    "mismatches": 0
+  },
+  "runs": [
+    {
+      "seed": 1,
+      "cases": 3000,
+      "discovery": {
+        "accepted": 869,
+        "rejected": 1837,
+        "timeout": 3,
+        "crash": 11,
+        "launch-error": 0,
+        "skippedEmpty": 277,
+        "mismatches": {
+          "we-reject": 2,
+          "we-accept": 1
+        },
+        "distinct": 3
+      },
+      "verification": {
+        "accepted": 871,
+        "rejected": 1838,
+        "timeout": 3,
+        "crash": 11,
+        "launch-error": 0,
+        "skippedEmpty": 277,
+        "mismatches": {},
+        "distinct": 0
+      }
+    },
+    {
+      "seed": 42,
+      "cases": 3000,
+      "discovery": {
+        "accepted": 849,
+        "rejected": 1876,
+        "timeout": 2,
+        "crash": 16,
+        "launch-error": 0,
+        "skippedEmpty": 250,
+        "mismatches": {
+          "we-accept": 5,
+          "length": 1,
+          "we-reject": 1
+        },
+        "distinct": 7
+      },
+      "verification": {
+        "accepted": 851,
+        "rejected": 1881,
+        "timeout": 2,
+        "crash": 16,
+        "launch-error": 0,
+        "skippedEmpty": 250,
+        "mismatches": {},
+        "distinct": 0
+      }
+    },
+    {
+      "seed": 8675309,
+      "cases": 3000,
+      "discovery": {
+        "accepted": 853,
+        "rejected": 1889,
+        "timeout": 3,
+        "crash": 12,
+        "launch-error": 0,
+        "skippedEmpty": 238,
+        "mismatches": {
+          "we-accept": 1,
+          "we-reject": 3,
+          "length": 1
+        },
+        "distinct": 5
+      },
+      "verification": {
+        "accepted": 857,
+        "rejected": 1890,
+        "timeout": 3,
+        "crash": 12,
+        "launch-error": 0,
+        "skippedEmpty": 238,
+        "mismatches": {},
+        "distinct": 0
+      }
+    },
+    {
+      "seed": 20261026,
+      "cases": 3000,
+      "discovery": {
+        "accepted": 829,
+        "rejected": 1892,
+        "timeout": 2,
+        "crash": 14,
+        "launch-error": 0,
+        "skippedEmpty": 260,
+        "mismatches": {
+          "we-reject": 2,
+          "we-accept": 1
+        },
+        "distinct": 3
+      },
+      "verification": {
+        "accepted": 831,
+        "rejected": 1893,
+        "timeout": 2,
+        "crash": 14,
+        "launch-error": 0,
+        "skippedEmpty": 260,
+        "mismatches": {},
+        "distinct": 0
+      }
+    }
+  ],
+  "regressions": [
+    "fuzz-campaign-1-001",
+    "fuzz-campaign-1-002",
+    "fuzz-campaign-1-003",
+    "fuzz-campaign-42-001",
+    "fuzz-campaign-42-002",
+    "fuzz-campaign-42-003",
+    "fuzz-campaign-42-004",
+    "fuzz-campaign-42-005",
+    "fuzz-campaign-42-006",
+    "fuzz-campaign-42-007",
+    "fuzz-campaign-8675309-001",
+    "fuzz-campaign-8675309-002",
+    "fuzz-campaign-8675309-003",
+    "fuzz-campaign-8675309-005",
+    "fuzz-campaign-20261026-001",
+    "fuzz-campaign-20261026-002",
+    "fuzz-campaign-20261026-003"
+  ],
+  "controls": [
+    "fuzz-comparison-middle-unary",
+    "fuzz-comparison-middle-parenthesized",
+    "fuzz-comparison-middle-not-equal",
+    "fuzz-comparison-middle-product-reject",
+    "fuzz-comparison-middle-chain-reject",
+    "fuzz-assert-recursion-minimal",
+    "fuzz-for-trailing-fixed-label"
+  ],
+  "corpus": [
+    {
+      "file": "88-end.red",
+      "sha256": "d873fd024a6a0df5a2517cdd75802c750ee44e3edfb5a1f7591db919812b9789"
+    },
+    {
+      "file": "88-for-equ.red",
+      "sha256": "24b51c0eca1ebe6feb5183d766fd1b85c789efc44a88afd016ecafeeff099a12"
+    },
+    {
+      "file": "88-mode.red",
+      "sha256": "e7793f5633e33e7dc3e770bca37b929607041480f3b3bbf9320e8d8d7fa0c928"
+    },
+    {
+      "file": "88-modifier.red",
+      "sha256": "ceb66466afc2d002b3ea060fa0a7d2fa8e794e1be0767cfaeccbe3b1835b63d5"
+    },
+    {
+      "file": "88-org.red",
+      "sha256": "28a70cc83ccd533eb9bc747278ad0ee63c6f85ec6f073cb7ee1abcbda6387334"
+    },
+    {
+      "file": "assert-false.red",
+      "sha256": "2e109995044d9c90a980749f1eee786ff1497af08d7105a7c0784fdde4f813eb"
+    },
+    {
+      "file": "assert-forward.red",
+      "sha256": "eeff4efb84f8a0cf933927d50427015f7fd6720db84d770c50fec86ad593fb68"
+    },
+    {
+      "file": "assert-inline.red",
+      "sha256": "e4434cde72dafb50c5a4605084bde62b8d9106183dc3c25fe313105feb9f78b9"
+    },
+    {
+      "file": "assert-loop.red",
+      "sha256": "5a75e8d517ea6777d10785403ab2ed41eca6d618204a10cb16ab38b0c65d1695"
+    },
+    {
+      "file": "blank.red",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "file": "comment-continuation.red",
+      "sha256": "a42fab781d3c0d9198736ef17dffb8b34e8eb30ccd42e5d1dd54f6df27ea5c46"
+    },
+    {
+      "file": "comparison-order.red",
+      "sha256": "829f38cf291155c7f52264c884f54f13790726e880308e0658f9183a9aa577de"
+    },
+    {
+      "file": "curline-lowercase.red",
+      "sha256": "a0cf82780a161a8d50d8b3e1ed4cb0b248adc192a3a028a8013a03c02ec44b03"
+    },
+    {
+      "file": "curline-org.red",
+      "sha256": "a78b1acb4886c17d43a1ce9979381f7a0a3a800bc834d6a4e2fe8e49f38bbd27"
+    },
+    {
+      "file": "curline.red",
+      "sha256": "276abede057b78bf7c578c03582fcc5d85a0e98c3ebc9d29384938aed80484d5"
+    },
+    {
+      "file": "end-label-absolute.red",
+      "sha256": "9707718438897ec006cda7b422d4b80408e5b8654124e03aafcf20aa0467ae66"
+    },
+    {
+      "file": "end-metadata.red",
+      "sha256": "82d4a20f19f9e5c6363bca7598942e7888dd0334c402c733cce9a7005e6d2136"
+    },
+    {
+      "file": "end-stops.red",
+      "sha256": "1446d93ea1a6169439a93b9f613c4fde1f281274b8c97025c1f46688ba21f823"
+    },
+    {
+      "file": "equ-capture-label.red",
+      "sha256": "3fdac8b8768037cd14d9770db2dd13b57255450ac5e7feedb3cbf72be1690145"
+    },
+    {
+      "file": "equ-counter-use.red",
+      "sha256": "f3d6668104a1c5615e65c6fa26328b9726e7a973ba2dfa0ed7dd4013e38bf3f1"
+    },
+    {
+      "file": "equ-duplicate.red",
+      "sha256": "3a1908b5a7262a1a3c7099d5300d3a206a9c50ab24dcf072abb34017bcaa8bfb"
+    },
+    {
+      "file": "equ-instruction.red",
+      "sha256": "6cf3e438372e2291d5671d211b5b2d787a5b1619b1217bc3a1aa38c333438cdc"
+    },
+    {
+      "file": "equ-late-reference.red",
+      "sha256": "76888d35939477560f2d93e5adbd93c10b62e61aa28b458e2dc321637af9ee2f"
+    },
+    {
+      "file": "equ-mode-chain.red",
+      "sha256": "d09fd657c2c1624f27060f9b577ef244ee3d7ce73f33243bda9891a01391fe51"
+    },
+    {
+      "file": "equ-multiline-comment.red",
+      "sha256": "9bd92c532e82e90861c5e145fc9a615013b8d942138117d7fa5ce6c3d200dc49"
+    },
+    {
+      "file": "equ-multiline.red",
+      "sha256": "ab5a06c364f729d195e1cfd5853c3a65754cc5cdf3950412b1e999a7045c02e9"
+    },
+    {
+      "file": "equ-no-label.red",
+      "sha256": "8c60a900206d014a09fa65d4f0d07676f01c7a4ae6141a828b9cb07fa9fc746c"
+    },
+    {
+      "file": "equ-paste-late.red",
+      "sha256": "d4af4584b6a331eb41c3a2f810a24eff9860406a0d3a88eb7a99eefb2ea009eb"
+    },
+    {
+      "file": "equ-recursive.red",
+      "sha256": "ef0f6fa514f76b975bd8e44aeb9fb61497a30139044c437dc72ac0e027b19cfa"
+    },
+    {
+      "file": "equ-text.red",
+      "sha256": "e6f581340e7296d739aa842b8cc1ffd731c6ea95d39a5202eeb0370494a6b034"
+    },
+    {
+      "file": "equ-unused-recursive.red",
+      "sha256": "adbbf936efbb393d7e2fc9b35d4b09295e7cf8cc4775064d0fba5d36f190e74e"
+    },
+    {
+      "file": "expression-assignment.red",
+      "sha256": "9394499d07253e4422b2432ebdb73d7a66ebabe4fb6e57de8e1c2b7a8045c01d"
+    },
+    {
+      "file": "expression-divzero.red",
+      "sha256": "acd8bdb44fb51b1cee1d5e827aaf3d439b9d41abfe636971e4a7a1d41e6ec5c5"
+    },
+    {
+      "file": "expression-logical-side-effects.red",
+      "sha256": "6bc97e3b5df0c2e64a704032e9e90a9843698df20d96951f1b8194e87527bcb3"
+    },
+    {
+      "file": "expression-no-shortcircuit.red",
+      "sha256": "2ec57ccb164662d25f5389b96830110579cf5a494e760d79245b9ec3c1097098"
+    },
+    {
+      "file": "expression-precedence.red",
+      "sha256": "7afc75f7152f0e2a4ed9c76c621d542d14d6cad2c5d8ea62acf3eaa72e7383fb"
+    },
+    {
+      "file": "expression-wrap.red",
+      "sha256": "1525995d445677bd2a62af750cef300b38573cd8c280e9ab693240f4f089f096"
+    },
+    {
+      "file": "for-assert-label.red",
+      "sha256": "ea71ed15978d3b78d56fc87aba53e8ae9eaaed4498b23f9c9c75aae73b9462a9"
+    },
+    {
+      "file": "for-count-labels.red",
+      "sha256": "1b389dea3e874d5ae6fdb8b0595add54e70a075eb52d65fbe05be69dfe8adb94"
+    },
+    {
+      "file": "for-counter-after.red",
+      "sha256": "2f737b95bb10e550d12ac6475ac3129cf4beeafe1cd097a5ec9e4d169e3ca20f"
+    },
+    {
+      "file": "for-counter-shadow.red",
+      "sha256": "62841e65786a6542f32d7bb48665bc84f2bd8101f9893efda5556256df30c853"
+    },
+    {
+      "file": "for-counter.red",
+      "sha256": "cc2d03c05ebf248f805faff1d38a1381694f4b6f3b89833740c6153a96245e51"
+    },
+    {
+      "file": "for-duplicate-label.red",
+      "sha256": "081f44a9e4d0cd050e1a79a123c274e278d9e367de71ab3d3ab4afdc3f373d27"
+    },
+    {
+      "file": "for-empty.red",
+      "sha256": "d4ed41e565c9435c457fcbd6d42b3a397de04922f53377b51f21174a1af5f058"
+    },
+    {
+      "file": "for-end.red",
+      "sha256": "39d84caf9894d885c87895dbd9964c7366d11e3446fc9c413654a0ed576bddb4"
+    },
+    {
+      "file": "for-forward-count.red",
+      "sha256": "6729dbee12038376340fbdce72e23d9a2de0e01bcfa41c6deeb85c6716a6bd47"
+    },
+    {
+      "file": "for-fraction.red",
+      "sha256": "2ab7e71c7233e6db6b0d6a9b6623f8dffb806f49c451a84760d42dc6652697f2"
+    },
+    {
+      "file": "for-negative.red",
+      "sha256": "46421787a6d8f882bf1aa5f87199ca59f908a0b24dd22df4f00ff8f863d49d05"
+    },
+    {
+      "file": "for-nested.red",
+      "sha256": "76efb09dffbb656ab326c53973b0300f0638d85c84ba85f240675264c330bb49"
+    },
+    {
+      "file": "for-paste.red",
+      "sha256": "26f3007ce8875b20264990143b9155cdf1cea023063da1a32f2739143de40619"
+    },
+    {
+      "file": "for-register-mutation.red",
+      "sha256": "53ccea0be20d86c2bc259c2123b33eb99cd0a8bb560dd929ac418e5e6f2550b0"
+    },
+    {
+      "file": "for-unclosed-positive.red",
+      "sha256": "72680ea3c84f28cd5751d75db71954e8d0c66ee4f6a934246e325b8f0586d922"
+    },
+    {
+      "file": "for-unclosed-zero.red",
+      "sha256": "6eeade13ecfe7331f5c85b470dfb3ef7b4573d3c39fc4d550ce41be5714b951a"
+    },
+    {
+      "file": "for-zero-skips.red",
+      "sha256": "3b3af12740cd55f308e128df7ebf60c108859f76cadb8eca7bed8a16dfd6b2d8"
+    },
+    {
+      "file": "fuzz-after-end-metadata.red",
+      "sha256": "c95d7031a5d302d577b18a01ff399ae635d14bb6c0d2a490a2f22d6dfba5cbea"
+    },
+    {
+      "file": "fuzz-after-end.red",
+      "sha256": "b94dd85ba56ab8633c336e8af51699adf30e817b59c3af9ef091b4cd6212b2e4"
+    },
+    {
+      "file": "fuzz-counter-redefine-nested.red",
+      "sha256": "44528e36d8d5b35ece2135e01647772803ab0af08a8249c764e1cf271d1c6db4"
+    },
+    {
+      "file": "fuzz-counter-redefine-rof.red",
+      "sha256": "be524e28d19fdc2e2aa46cec57b062e00f869bedccdf1dc284ab8c722f92e476"
+    },
+    {
+      "file": "fuzz-counter-redefine-zero.red",
+      "sha256": "601f66798bfd3709212c0dd7e1bb079c2940eab2c577569525aef6489e6c79f6"
+    },
+    {
+      "file": "fuzz-curline-after-andand.red",
+      "sha256": "963f040bcd7d722a6fa8717739f9461b805b80d44163e52f0aae43ddd9f99826"
+    },
+    {
+      "file": "fuzz-curline-earlier-equ.red",
+      "sha256": "471fc7400c2b5ea3112abe71ebd657ce892d4a8b02a7a32e1900caebfb0ccfa4"
+    },
+    {
+      "file": "fuzz-curline-forward-equ.red",
+      "sha256": "5b7dc9b95c6cd2b5c7c53ce3dbdf70d52690f5299a7ede97b5ac5cea08979ece"
+    },
+    {
+      "file": "fuzz-equ-curline-reserved.red",
+      "sha256": "fab9e3f386125976d4d4cfd35cfcbaa5c76fb15408cf7af5775b1bacbfef3763"
+    },
+    {
+      "file": "fuzz-equ-for-text.red",
+      "sha256": "97092956fc25feadfe1354e2ff1ff80ad59e9c9e2508a80ade58c75e7172a5e4"
+    },
+    {
+      "file": "fuzz-equ-in-loop-forward.red",
+      "sha256": "ecc098efb0b023a794fd6c3ba53b7c114e036f1f6b328da6130570f8590e9138"
+    },
+    {
+      "file": "fuzz-equ-in-loop-then-use.red",
+      "sha256": "412dc1c7e3d0750bbde4ffb84407064015fa84c3c4ebc7211fce02f58afe31db"
+    },
+    {
+      "file": "fuzz-equ-instruction-redefine.red",
+      "sha256": "f5e0d859e658f5469cb175216ea3393ccbc8b5ebae1a766f4893abb651db1bad"
+    },
+    {
+      "file": "fuzz-equ-label-define.red",
+      "sha256": "6e756663d7f7d21db5833c9279339363a8da08ab7d8b95e6a4cdab473698cdb2"
+    },
+    {
+      "file": "fuzz-equ-label-number.red",
+      "sha256": "6ac031c5b4e116818771b4003c3b4931cefd6c8c3bc7ad7eccb474be4d923329"
+    },
+    {
+      "file": "fuzz-equ-label-rename.red",
+      "sha256": "1b62d7253951257f98c9c5fff419598de71772ef92053a7217ddbd75db8932fb"
+    },
+    {
+      "file": "fuzz-equ-over-label.red",
+      "sha256": "7479be1ca63a79e70aa51289b4667ed8d676d05f06093c15dd92c0059c0bb9ef"
+    },
+    {
+      "file": "fuzz-equ-recursive-redefine.red",
+      "sha256": "3f6971fbc0b4e02f5ce2fe6a6bfb602cdc15733ee3539e4b87a591bd6fbc9d01"
+    },
+    {
+      "file": "fuzz-equ-self-reference.red",
+      "sha256": "74b0b85781e034f197218893ffa87dda21c7b8690f045762392dab1f2a2b6f7c"
+    },
+    {
+      "file": "fuzz-for-label-fixed.red",
+      "sha256": "f9a1c6f2e4e481543da24160c20499fe8127aac7b144baed89dc3ff8c326e1b4"
+    },
+    {
+      "file": "fuzz-for-label-in-loop.red",
+      "sha256": "68036bd20d52b6c8c9622dc0c5949f59686c5b818d6ebc2b2aa9839f4ad07faf"
+    },
+    {
+      "file": "fuzz-label-end-same-place.red",
+      "sha256": "fd897c5c37af5fbc619c0ae29a7c4b2035b08b180a5bc0432b3baf69818d728c"
+    },
+    {
+      "file": "fuzz-label-from-equ-duplicate.red",
+      "sha256": "a6936c4d7cc4606f4e97c942feab9e8cf1862cd7b3ff511dd23be1998f4eb976"
+    },
+    {
+      "file": "fuzz-label-glued.red",
+      "sha256": "1b71f1c7d3c331958743c431b7ec98892008352d47e21248bb83069091bddbf6"
+    },
+    {
+      "file": "fuzz-label-limit-7.red",
+      "sha256": "b4020af505cacd8f119e1c191a82af594ff84de7d83e1ca13921e95d6742f8f7"
+    },
+    {
+      "file": "fuzz-label-limit-8.red",
+      "sha256": "5c6f6288ee3d13a80754183b750b7e526abf29233aa802c5d61ce738b36b1bfb"
+    },
+    {
+      "file": "fuzz-label-same-place.red",
+      "sha256": "89418318fadbeb75d2043fab914de7f300005d4ca41bc3262b86a1ef3a92def1"
+    },
+    {
+      "file": "fuzz-loop-equ-existing-label.red",
+      "sha256": "843c1282bbce82b21457e04a935b82db2f3c4302fa850e46ab3cf89b6a2cad31"
+    },
+    {
+      "file": "fuzz-loop-equ-trailing-label.red",
+      "sha256": "e3e9ebc2c6de07ff68c417269254a2e48f7415f22ea7a24da49796349a9f2840"
+    },
+    {
+      "file": "fuzz-macro-for-negative.red",
+      "sha256": "3a38b022313fb5b929d7308b6d68b7123aa65f4210e9d48cd9ce705ae6c1e06b"
+    },
+    {
+      "file": "fuzz-macro-for-redefine-positive.red",
+      "sha256": "84496e171b50b58a03b43486d41161e93ec628e2e27880cffe823a8d5d7e7212"
+    },
+    {
+      "file": "fuzz-macro-for-redefine-zero.red",
+      "sha256": "ea67a310e553dad97f2fb5faf61b2e3e4f726a9628ae2583f9c240ffbb2a4885"
+    },
+    {
+      "file": "fuzz-macro-for-unknown.red",
+      "sha256": "435c6a4accba507a412c7f4a3788c208605aefe60bb50ccdd116bf2d12cbc9fa"
+    },
+    {
+      "file": "fuzz-macro-for-zero-extra-rof.red",
+      "sha256": "5756e627a64848b1976bd5bd22857f52c3fd8e9c23526f96eb01ee7d1d367bc2"
+    },
+    {
+      "file": "fuzz-macro-for-zero-resume.red",
+      "sha256": "45c9459504f2c90c62ef3190c72b970c4c025b3d1a90861a2f59f52165751f3d"
+    },
+    {
+      "file": "fuzz-macro-for-zero.red",
+      "sha256": "afc101e91ad0c890d9b87f090043e9e1bce96736450ba0b4b525698082d66115"
+    },
+    {
+      "file": "fuzz-macro-redefine.red",
+      "sha256": "5217f10b92568b11f4e20754334ee5b574b987e2ac6a5e8917b0a20fa852a583"
+    },
+    {
+      "file": "fuzz-multiline-blank-continuation.red",
+      "sha256": "f3676183c3220287f44fda153b8b454f3f0725f9f2d9cc0949429b25eaec6de5"
+    },
+    {
+      "file": "fuzz-multiline-equ-loop-redefine.red",
+      "sha256": "29cc5b1c143ca84a3cc8cdd451e83042582f90fc46949c9b4e55a9fc379078ba"
+    },
+    {
+      "file": "fuzz-multiline-pending-alias.red",
+      "sha256": "6c11f928f160929bc5a632a914c0a52f18292b6222cc12dabdb178f230894a1f"
+    },
+    {
+      "file": "fuzz-multiline-pending-recursion.red",
+      "sha256": "10e65c33186ccbdeede56ed0e4595330ebf8ddc018f31a5dd76ca129a4b81ffd"
+    },
+    {
+      "file": "fuzz-multiline-recursion-after-end.red",
+      "sha256": "9de76622bdf5860bb631ab624f532dfcd092509dbca98067d7ee59888b6d4a60"
+    },
+    {
+      "file": "fuzz-multiline-recursion-skipped.red",
+      "sha256": "839d2d95cf06b0a792d6232fc7a58c32f39cfae516b708a75e524aa951bdbac4"
+    },
+    {
+      "file": "fuzz-multiline-recursion-unused.red",
+      "sha256": "92d1b142343bfea781b31da23f9c18ba18975ed0c72a62c41649f4265ccee0c1"
+    },
+    {
+      "file": "fuzz-org-replaced-error.red",
+      "sha256": "6b4a48ddd17e2ded2424a5426e465ab96278e0c6869d5c6357c7f94972ee39f7"
+    },
+    {
+      "file": "fuzz-pending-label-bare-equ.red",
+      "sha256": "ea7f49d5fb1579a65990819c2a29c1a198fdb2f2b26b65fe0df41f18a727ee40"
+    },
+    {
+      "file": "fuzz-pending-label-broken.red",
+      "sha256": "da6c01d9df7febc2bd95c4d35dd10852dc082e103c36db34d98a730bc65aa6e8"
+    },
+    {
+      "file": "fuzz-pending-label-comment.red",
+      "sha256": "4b131a5cf2af2323b44b904533f25695e825b92a2cbd2613c1bf196f45183aea"
+    },
+    {
+      "file": "fuzz-pending-label-equ.red",
+      "sha256": "d7516a1eae393ff54bd5cc8882c7417822749daebaff48513fea235fad2e2dc8"
+    },
+    {
+      "file": "fuzz-reference-access-violation.red",
+      "sha256": "6dce1e57c45ef4a989e115fe4fe595d477d7a25585d1264ffdfb4fc550e8d87b"
+    },
+    {
+      "file": "fuzz-repeated-pending-equ.red",
+      "sha256": "f1cba7085cef076eeeb0feb96485b6294152e25e279fb83aa9bb6b4a0faea8e1"
+    },
+    {
+      "file": "identifier-underscore.red",
+      "sha256": "64579b436baf2964e6edc99175c48c4f4b6d2d72dd28a3b9671a570f917342a9"
+    },
+    {
+      "file": "inline-comment-equ.red",
+      "sha256": "a5bae9eb28a5484502e70ec7b835a9c0f3cddcef1c4ce059b67cbb5c48122f2a"
+    },
+    {
+      "file": "label-before-end.red",
+      "sha256": "65d359343dadc4f2a1672d58efb38b238bb1a997762cb2e1ddb7438b63567c68"
+    },
+    {
+      "file": "label-case.red",
+      "sha256": "dfb3436bff98f1410925f6dbe1534afb4050cab4e0eea179a0a27b2ae2ff5fe1"
+    },
+    {
+      "file": "label-duplicate.red",
+      "sha256": "44a157e3750431800fa2e0f31bc028e4103853d60db03fe09f0826b383715518"
+    },
+    {
+      "file": "label-end.red",
+      "sha256": "4ee05c794987fc56f9614d58212968c78aa9399bbf917fdea80873ad0bf78eda"
+    },
+    {
+      "file": "label-forward.red",
+      "sha256": "8c21d6ff2acd69e04fc179b717b645f59fd9cbb1b680703bc9709071dfaa24fa"
+    },
+    {
+      "file": "label-trailing.red",
+      "sha256": "eb70fa6e356f97d87f29f61227ae1aa882f3c2d0cb1edc05b1bca032ded4cf06"
+    },
+    {
+      "file": "line-continuation.red",
+      "sha256": "71d53e3deb0b4f41f87ce2fc3407190b6fbcb7928e1f81d6c9a2d00cbd32189c"
+    },
+    {
+      "file": "macro-for.red",
+      "sha256": "7fc3d0b7b4cb4d4460d340f16ffa034dd20b17ca653d0d66a04f311f09208148"
+    },
+    {
+      "file": "macro-forward-count.red",
+      "sha256": "78387a177b581d931762dc1ae450b93ef22d8b38d6fb8b4b18633b12451ca21c"
+    },
+    {
+      "file": "missing-assert.red",
+      "sha256": "93dc8eec8f354bb892d6a85ee552c46ddc9f33f59bf10037e9e00ff378f8c899"
+    },
+    {
+      "file": "multiple-labels.red",
+      "sha256": "7efc36e50629a5e005d2f7d712abbc2957c501886398b8b41f7de6f835710181"
+    },
+    {
+      "file": "opcode-case.red",
+      "sha256": "70e384096f2c8124b65148beb49347f36ee79d9dc112ce8fb8f1e21a403c8cc6"
+    },
+    {
+      "file": "org-end-conflict.red",
+      "sha256": "38eff32e5fa18a17a551198ce6d5e1155b62cf9032e6bc9723e9928affc050dc"
+    },
+    {
+      "file": "org-end.red",
+      "sha256": "68756ba120b3a03acbe51a62650973f9d9ba901b002f235cf69ce623cb06d7ef"
+    },
+    {
+      "file": "org-forward.red",
+      "sha256": "11c89cadc47f2011e999ae048aace05eaee8ae333abfb74928e3ff9e19ba07f8"
+    },
+    {
+      "file": "org-multiple.red",
+      "sha256": "daee9c06c1da7a4986bcd64616476f022f0833e26812afa5a736770eb7b837fd"
+    },
+    {
+      "file": "paste-noncounter.red",
+      "sha256": "03a8d0354333968c48af42953704a347b769b25c9f576ab594c6f9e7d49bb404"
+    },
+    {
+      "file": "paste-width.red",
+      "sha256": "39d0239a06837495f3b7bf7e49b0c283e7274dad19cbdbfa2be42b4ecfb7b452"
+    },
+    {
+      "file": "predefined.red",
+      "sha256": "dd157d1ce55c6ad4c7e213ff636d622bc639db68649d8c0238db75955ba631c1"
+    },
+    {
+      "file": "redcode-selection.red",
+      "sha256": "2d1880643154870979249a5f605e8cffbeb483e304ac99668bde8805cfb5f021"
+    },
+    {
+      "file": "register-label.red",
+      "sha256": "210d408a042331ca3c206f0ada329c34418c1f2e361bb40c70c581044ee84429"
+    },
+    {
+      "file": "register-order.red",
+      "sha256": "4a4d0c0bf4dc6416866b7268d9dbded1764d5fff7149636e36284ce2a743a245"
+    },
+    {
+      "file": "register-phase.red",
+      "sha256": "e66ea988eeaa70ffa21703ac7e28229b853dc4594b850582fd4a65056fd35620"
+    },
+    {
+      "file": "register-reset-probe.red",
+      "sha256": "e6b849767c268451383f2b137db8d90dcdb2466758bb3d553c091f4e716aeebe"
+    },
+    {
+      "file": "rof-unopened.red",
+      "sha256": "83c1a5582f4ac64ab65fc4595d04d934051feaf09ec450a74263e0c53dddaf26"
+    }
+  ],
+  "corpusReplay": {
+    "cases": 156,
+    "byteDifferences": 0
+  },
+  "tests": {
+    "passed": 80,
+    "skipped": 1,
+    "failed": 0
+  },
+  "limitations": [
+    "Empty programs are excluded as a deliberate runtime difference.",
+    "Reference crashes and timeouts supply no language verdict and are excluded from mismatch counts.",
+    "This campaign uses default ICWS94 ring settings, not an exhaustive syntax or configuration matrix."
+  ]
+}

@@ -1,0 +1,8 @@
+       ORG          4
+       DAT    #    -1, #     1     
+       DAT    # 10000, #  1040     
+       DAT    #   200, #   200     
+       DAT    #  3465, #    95     
+       DAT    #    -1, #     1     
+       END      START
+       END

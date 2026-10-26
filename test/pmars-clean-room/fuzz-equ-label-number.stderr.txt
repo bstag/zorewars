@@ -1,0 +1,4 @@
+Error in line 3: 'k equ 5'
+        Unrecognized or improper placement of token: '5'
+Number of errors: 1
+

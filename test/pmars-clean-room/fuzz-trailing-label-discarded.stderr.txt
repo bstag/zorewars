@@ -1,0 +1,9 @@
+Warning:
+        Discarding these labels: 'mid'
+Warning:
+        Missing ';assert'. Warrior may not work with the current setting
+Error in line 2: 'nop mid, 0'
+        Undefined label or symbol: 'mid'
+Number of errors: 1
+Number of warnings: 2
+

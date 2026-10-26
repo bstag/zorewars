@@ -1,0 +1,4 @@
+       ORG          0
+       SPL    @     1, $     0     
+       END      START
+       END

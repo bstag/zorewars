@@ -131,14 +131,34 @@ function evaluate(text, lookup, registers = null) {
   }
   function compare() {
     let v = sum();
+    let arithmeticMiddle = false;
     for (;;) {
-      if (eat('==')) v = truth(v === sum());
-      else if (eat('!=')) v = truth(v !== sum());
-      else if (eat('<=')) v = truth(v <= sum());
-      else if (eat('>=')) v = truth(v >= sum());
-      else if (eat('<')) v = truth(v < sum());
-      else if (eat('>')) v = truth(v > sum());
-      else return v;
+      const op = peek()?.v;
+      if (!['==', '!=', '<', '>', '<=', '>='].includes(op)) return v;
+      // Measured pMARS syntax: a chained == rejects an unparenthesized
+      // binary arithmetic expression in the preceding comparison's RHS.
+      if (op === '==' && arithmeticMiddle) throw new Error('bad expression: parenthesize arithmetic before a chained ==');
+      i++;
+      const start = i;
+      const rhs = sum();
+      let depth = 0, operand = true;
+      arithmeticMiddle = false;
+      for (const t of tokens.slice(start, i)) {
+        if (t.v === '(' || t.v === '[') depth++;
+        else if (t.v === ')' || t.v === ']') depth--;
+        else if (!depth && ['+', '-', '*', '/', '%'].includes(t.v)) {
+          if (!operand) arithmeticMiddle = true;
+          operand = true;
+          continue;
+        } else if (!depth && t.v === '!') continue;
+        if (!depth) operand = false;
+      }
+      if (op === '==') v = truth(v === rhs);
+      else if (op === '!=') v = truth(v !== rhs);
+      else if (op === '<') v = truth(v < rhs);
+      else if (op === '>') v = truth(v > rhs);
+      else if (op === '<=') v = truth(v <= rhs);
+      else v = truth(v >= rhs);
     }
   }
   function logicalAnd() {
@@ -161,10 +181,15 @@ function evaluate(text, lookup, registers = null) {
 // 2*(a)/(b), not 2*((a)/(b)), and '-gate' with 'gate equ src-step' is
 // -src-step. So expressions are evaluated with every EQU written in as text.
 // `textOf(name)` gives an EQU's text, or undefined for other names.
+// A name, not part of another word or a pasted loop label ('cell&i'); a
+// name after '&&' (logical AND) counts.
+const NAME_AT = '(?<![\\w.])(?<!(?<!&)&)';
 export function inlineEquText(text, textOf, depth = 0) {
-  if (depth > 32) throw new Error('an EQU refers to itself');
+  // A self-referring EQU can double the text at every step, so the size is
+  // capped as well as the depth.
+  if (depth > 32 || text.length > 20000) throw new Error('an EQU refers to itself');
   let changed = false;
-  const out = text.replace(/(?<![\w.&])[A-Za-z_]\w*(?!\w)/g, (n) => {
+  const out = text.replace(new RegExp(`${NAME_AT}[A-Za-z_]\\w*(?!\\w)`, 'g'), (n) => {
     const t = textOf(n);
     if (t === undefined) return n;
     changed = true;
@@ -207,45 +232,6 @@ const codePart = (t) => {
   return (k >= 0 ? t.slice(0, k) : t).trim();
 };
 
-// Multi-line EQU (pMARS): 'name EQU line1' followed by lines that are just
-// 'EQU lineN' defines a macro, and the name standing alone where an
-// instruction would go expands to those lines (labels before it stay, on a
-// line of their own). Definitions become blank lines, so line numbers hold.
-function expandMacros(raw) {
-  const macros = new Map();
-  const out = [];
-  for (let i = 0; i < raw.length; i++) {
-    const c = codePart(raw[i].text);
-    const head = /^([A-Za-z_]\w*):?\s+equ\s+(.*)$/i.exec(c);
-    if (head) {
-      const body = [head[2]];
-      let j = i + 1;
-      for (; j < raw.length; j++) {
-        const cj = codePart(raw[j].text);
-        if (!cj && raw[j].text.includes(';')) continue;     // a comment between the lines
-        const m = /^equ\s+(.*)$/i.exec(cj);
-        if (!m) break;
-        body.push(m[1]);
-      }
-      if (body.length > 1) {
-        macros.set(head[1], body);
-        for (let k = i; k < j; k++) out.push({ ...raw[k], text: '' });
-        i = j - 1;
-        continue;
-      }
-    }
-    const toks = c.replace(/:(?=\S)/g, ': ').split(/\s+/).filter(Boolean);
-    const name = toks.at(-1);
-    if (macros.has(name) && toks.slice(0, -1).every((t) => /^[A-Za-z_]\w*:?$/.test(t) && !opcodeOf(t.replace(/:$/, '')))) {
-      if (toks.length > 1) out.push({ ...raw[i], text: toks.slice(0, -1).join(' ') });
-      for (const text of macros.get(name)) out.push({ ...raw[i], text });
-      continue;
-    }
-    out.push(raw[i]);
-  }
-  return out;
-}
-
 // Expand FOR / ROF blocks into plain lines. Each output line keeps the
 // source line number it came from; `expanded` marks lines produced by a loop.
 //   [labels] [counter] FOR count ... ROF
@@ -253,7 +239,7 @@ function expandMacros(raw) {
 // counter's name is replaced by its value, and &counter by the value padded
 // to two digits, so bomb&i becomes bomb01, bomb02, ... "FOR 0" is the
 // customary way to comment out a block.
-function preprocess(source, constants, errors, warnings, registers, cfg) {
+function preprocess(source, constants, errors, warnings, registers, cfg, meta) {
   let raw = source.split(/\r?\n/).map((text, i) => ({ text, lineNo: i + 1, expanded: false }));
   // The first ';redcode' line starts the program (text before it is ignored)
   // and the next one ends it.
@@ -271,16 +257,32 @@ function preprocess(source, constants, errors, warnings, registers, cfg) {
       k--;
     }
   }
-  raw = expandMacros(raw);
+  // Metadata belongs to the selected physical input, including text after
+  // END. Read it before expansion stops or duplicates loop bodies.
+  for (const l of raw) {
+    const semi = l.text.indexOf(';');
+    if (semi < 0) continue;
+    const m = /^(name|author|strategy)\b\s*(.*)$/i.exec(l.text.slice(semi + 1).trim());
+    if (!m) continue;
+    const key = m[1].toLowerCase();
+    if (key === 'strategy') meta.strategy.push(m[2]);
+    else meta[key] = m[2];
+  }
+
 
   const equs = new Map();
+  const macros = new Map();
   const out = [];
   let total = 0;
   // 3. Labels already placed, and how many instructions so far (CURLINE): a
   // FOR count may use them ('for bomb-bomber+1'), relative to the FOR's place.
   const labelPos = new Map();
   let instrCount = 0;
-  const emit = (l) => {
+  let ended = false;                  // END stops expansion, even inside a loop
+  // Labels waiting on lines of their own (attached to the next instruction,
+  // or to the next EQU, which they then also name).
+  let pending = [];
+  const emit = (l, fixed = false) => {
     const c = codePart(l.text);
     if (/^[A-Za-z_]\w*:?\s+equ\b/i.test(c)) { out.push(l); return; }
     const names = [];
@@ -288,27 +290,59 @@ function preprocess(source, constants, errors, warnings, registers, cfg) {
     for (const t of c.replace(/:(?=\S)/g, ': ').split(/\s+/).filter(Boolean)) {
       const n = t.replace(/:$/, '');
       op = /^[A-Za-z_][\w.]*$/.test(n) ? opcodeOf(n) : null;
-      if (op || !/^[A-Za-z_]\w*$/.test(n)) break;
+      if (op) break;
+      if (!/^[A-Za-z_]\w*$/.test(n)) {
+        const glued = /^([A-Za-z_]\w*)[^\w:.]/.exec(n);      // 'mid||x': the label 'mid', then the rest
+        if (glued && !names.length && !opcodeOf(glued[1])) names.push(glued[1]);
+        break;
+      }
       names.push(n);
+    }
+    // '&j' left in a label outside any loop with that counter is an error,
+    // even on a line a redefinition would leave out.
+    const pasted = /^[A-Za-z_]\w*&([A-Za-z_]\w*)/.exec(c);
+    if (pasted) {
+      errors.push({ line: l.lineNo, message: `'&${pasted[1]}': '${pasted[1]}' is not the counter of a loop around this line` });
+      return;
+    }
+    if (names.includes('CURLINE')) {
+      errors.push({ line: l.lineNo, message: 'CURLINE is reserved and can\'t be a label' });
+      return;
     }
     // A line that defines a label again is left out entirely, with a
     // warning, as in pMARS (so a loop body with a fixed label emits it once).
-    const dup = names.find((n) => labelPos.has(n));
+    const isDup = (n) => labelPos.has(n) && (labelPos.get(n).fixed || labelPos.get(n).pos !== instrCount);
+    for (const n of names.filter((x) => isDup(x) && l.renamed?.has(x))) {
+      warnings.push({ line: l.lineNo, message: `duplicate label '${n}' (from an EQU): the label is ignored, as in pMARS` });
+      l = { ...l, text: l.text.replace(new RegExp(`(^|\\s)${n}:?(?=\\s|$)`), '$1') };
+      names.splice(names.indexOf(n), 1);
+    }
+    const dup = names.find(isDup);
     if (dup) {
       warnings.push({ line: l.lineNo, message: `duplicate label '${dup}': this line is ignored, as in pMARS` });
       return;
     }
-    for (const n of names) labelPos.set(n, instrCount);
-    // CURLINE in ORG and END is the position where they stand.
-    if (op && (op.op === 'ORG' || op.op === 'END')) l = { ...l, text: l.text.replace(/(?<![\w&.])CURLINE(?!\w)/g, String(instrCount)) };
-    out.push(l);
+    // Labels on an ORG line are fixed there, like a FOR line's.
+    for (const n of names) labelPos.set(n, { pos: instrCount, fixed: fixed || op?.op === 'ORG' });
+    // CURLINE exists only while expanding: it is written into each line as
+    // the position there, with the EQUs known so far that use it. (An EQU
+    // defined later can't supply it: pMARS reports CURLINE as undefined.)
+    if (op && usesCounter(codePart(l.text), 'CURLINE')) {
+      l = { ...l, text: inlineEqus(l.text, 'CURLINE').replace(new RegExp(`${NAME_AT}CURLINE(?!\\w)`, 'g'), String(instrCount)) };
+    }
+    out.push(fixed ? { ...l, fixedLabelLine: true } : l);
+    if (op?.op === 'END') ended = true;
+    // Pending labels can name the next EQU only if nothing but blank and
+    // comment lines comes between: an instruction, ORG or END breaks that.
+    if (isInstruction(c) || op) pending = [];
     if (isInstruction(c)) instrCount++;
+    else if (!op && names.length && !fixed) pending.push(out.length - 1);
   };
   const lookup = (name, seen = new Set()) => {
     if (equs.has(name) && !seen.has(name)) {
       return evaluate(equs.get(name), (n) => lookup(n, new Set([...seen, name])), registers);
     }
-    if (labelPos.has(name)) return labelPos.get(name) - instrCount;
+    if (labelPos.has(name)) return labelPos.get(name).pos - instrCount;
     if (name === 'CURLINE') return instrCount;           // uppercase only, as in pMARS
     const up = name.toUpperCase();
     if (up in constants) return constants[up];
@@ -322,11 +356,20 @@ function preprocess(source, constants, errors, warnings, registers, cfg) {
   const runAssert = (l) => {
     const m = /^\s*;\s*assert\b(.*)$/i.exec(l.text);
     if (!m) return;
-    let ok;
+    let ok, expression;
     try {
-      ok = evaluate(inlineEquText(m[1], (n) => equs.get(n)), lookup, registers);
+      expression = inlineEquText(m[1], (n) => equs.get(n));
     } catch (e) {
-      warnings.push({ line: l.lineNo, message: `;assert could not be checked: ${e.message}` });
+      errors.push({ line: l.lineNo, message: `;assert expansion: ${e.message}` });
+      return;
+    }
+    try {
+      ok = evaluate(expression, lookup, registers);
+    } catch (e) {
+      // An EQU that stands for an instruction can't be used in an expression.
+      const op = expression.match(/[A-Za-z_][\w.]*/g)?.find((t) => OPCODES.includes(opcodeOf(t)?.op));
+      if (op) errors.push({ line: l.lineNo, message: `;assert: '${op}' is an instruction, not a value` });
+      else warnings.push({ line: l.lineNo, message: `;assert could not be checked: ${e.message}` });
       return;
     }
     if (!ok) (cfg.assertErrors ? errors : warnings).push({ line: l.lineNo, message: `;assert${m[1]} is false under these rules` });
@@ -344,16 +387,48 @@ function preprocess(source, constants, errors, warnings, registers, cfg) {
     if (!op) return text;
     const at = op.index + op[0].length;
     let tail = code.slice(at);
-    for (let pass = 0; pass < 10; pass++) {
-      const next = tail.replace(/(?<![\w&.])[A-Za-z_]\w*(?![\w&])/g, (n) => (equs.has(n) && usesCounter(equs.get(n), counter) ? equs.get(n) : n));
+    for (let pass = 0; pass < 10 && tail.length < 20000; pass++) {
+      const next = tail.replace(new RegExp(`${NAME_AT}[A-Za-z_]\\w*(?![\\w]|&(?!&))`, 'g'), (n) => (equs.has(n) && usesCounter(equs.get(n), counter) ? equs.get(n) : n));
       if (next === tail) break;
       tail = next;
     }
     return code.slice(0, at) + tail + (semi >= 0 ? text.slice(semi) : '');
   };
-  const substitute = (text, counter, k) => inlineEqus(text, counter)
-    .replace(new RegExp(`&${counter}(?!\\w)`, 'g'), String(k).padStart(2, '0'))
-    .replace(new RegExp(`(?<![\\w&.])${counter}(?!\\w)`, 'g'), String(k));
+  // A line inside a loop that defines the loop's counter as a label (such
+  // as a nested 'i for 2' in 'i for 2') redefines it: pMARS ignores the line.
+  const redefinesCounter = (text, counter) => {
+    for (const t of codePart(text).replace(/:(?=\S)/g, ': ').split(/\s+/).filter(Boolean)) {
+      const n = t.replace(/:$/, '');
+      if (!/^[A-Za-z_]\w*$/.test(n) || opcodeOf(n) || /^for$/i.test(n)) return false;
+      if (n === counter) return true;
+    }
+    return false;
+  };
+  const applySubs = (l) => {
+    let text = l.text;
+    for (const { counter, k } of l.subs) {
+      if (redefinesCounter(text, counter)) {
+        warnings.push({ line: l.lineNo, message: `'${counter}' is the loop's counter: this line redefines it and is ignored, as in pMARS` });
+        return { ...l, text: '', subs: [] };
+      }
+      text = substitute(text, counter, k);
+    }
+    return { ...l, text, subs: [] };
+  };
+  const inLoop = (b, counter, k) => ({ ...b, expanded: true, subs: [...(b.subs ?? []), ...(counter ? [{ counter, k }] : [])] });
+  const fill = (text, counter, k) => text
+    .replace(new RegExp(`(?<!&)&${counter}(?!\\w)`, 'g'), String(k).padStart(2, '0'))
+    .replace(new RegExp(`${NAME_AT}${counter}(?!\\w)`, 'g'), String(k));
+  const substitute = (text, counter, k) => {
+    // An EQU defined in a loop gets the counter in its name ('point&i equ'
+    // defines point01, point02, ...) but keeps its text as written: the
+    // counter is filled in where the EQU is used.
+    const def = /^(\s*[A-Za-z_][\w&]*:?\s+equ\b)/i.exec(text);
+    if (def) return fill(def[1], counter, k) + text.slice(def[1].length);
+    // Fill in the counter, write in the EQUs that use it (now that pasted
+    // names such as point01 can be found), and fill in what they brought.
+    return fill(inlineEqus(fill(text, counter, k), counter), counter, k);
+  };
 
   // pMARS's EQU is text substitution, so an EQU can stand for a whole
   // instruction ('d01 equ spl 0,1' ... 'd01'). Expand such a name where an
@@ -370,42 +445,229 @@ function preprocess(source, constants, errors, warnings, registers, cfg) {
     return l;
   };
 
-  function run(lines) {
+  // pMARS substitutes EQUs everywhere, labels included: after 'gap equ z',
+  // 'gap equ 7' defines z, and 'lbl equ start' makes 'lbl dat 1,2' define
+  // start. A label that becomes something other than a name is an error.
+  // (An EQU standing for a whole instruction is left to expandEquInstruction.)
+  const relabel = (l, active, bindings) => {
+    const code = codePart(l.text);
+    const toks = [...code.matchAll(/\S+/g)];
+    const defines = /^[A-Za-z_]\w*:?\s+equ\b/i.test(code);   // 'name equ ...' substitutes even an instruction EQU
+    const keep = (n) => !defines && isInstruction(equs.get(n));
+    let text = l.text, shift = 0;
+    const renamed = new Set();
+    if (toks.length === 1 && equs.has(toks[0][0]) && !isInstruction(equs.get(toks[0][0]))) {
+      // A name alone stands for its EQU's text. A one-line EQU for 'for N'
+      // opens a loop whose body (the rest of that EQU) is empty and never
+      // closes: pMARS emits nothing more.
+      const text = equs.get(toks[0][0]);
+      return { ...l, text, macroFor: FOR_RE.test(text.trim()) };
+    }
+    for (const m of toks) {
+      const name = m[0].replace(/:$/, '');
+      if (!/^[A-Za-z_]\w*$/.test(name) || opcodeOf(name) || /^for$/i.test(name)) break;
+      if (!equs.has(name) || keep(name)) continue;
+      let to = name;
+      const seen = new Set();
+      for (let d = 0; d < 32 && equs.has(to) && !keep(to); d++) {
+        if (seen.has(to)) {
+          errors.push({ line: l.lineNo, message: `EQU '${name}' refers to itself` });
+          return { ...l, text: '' };
+        }
+        seen.add(to);
+        to = equs.get(to).trim();
+        // In label position a pasted counter is bound by this occurrence,
+        // even when the EQU's value retains the raw text for later uses.
+        for (const { counter, k } of bindings) {
+          to = to.replace(new RegExp(`(?<!&)&${counter}(?!\\w)`, 'g'), String(k).padStart(2, '0'));
+        }
+      }
+      if (to === 'CURLINE') {
+        errors.push({ line: l.lineNo, message: 'CURLINE is reserved and can\'t be defined' });
+        return { ...l, text: '' };
+      }
+      if (!/^[A-Za-z_]\w*$/.test(to)) {
+        if (defines && FOR_RE.test(to)) return { ...l, text: to, macroFor: true, macroForRedefinition: true };
+        // Substitution can expose an existing label before punctuation.
+        // Its redefinition discards the line before the rest is parsed.
+        const leading = /^([A-Za-z_]\w*)(?=[^\w:.])/.exec(to)?.[1];
+        const placed = labelPos.get(leading);
+        if (placed || active.includes(leading)) {
+          warnings.push({ line: l.lineNo, message: `duplicate label '${leading}': this EQU line is ignored, as in pMARS` });
+          return { ...l, text: '' };
+        }
+        errors.push({ line: l.lineNo, message: `'${name}' is an EQU for '${to}', so it can't be a label here (pMARS substitutes EQUs in labels too)` });
+        return { ...l, text: '' };
+      }
+      const at = m.index + shift;
+      text = text.slice(0, at) + to + text.slice(at + name.length);
+      shift += to.length - name.length;
+      renamed.add(to);
+    }
+    return text === l.text ? l : { ...l, text, renamed };
+  };
+
+  function run(lines, active = [], macroStack = []) {
     for (let i = 0; i < lines.length; i++) {
-      const l = lines[i];
+      if (ended) return;
+      const input = lines[i].subs?.length ? applySubs(lines[i]) : lines[i];
+      const words = codePart(input.text).replace(/:(?=\S)/g, ': ').split(/\s+/).filter(Boolean);
+      const macro = words.at(-1);
+      if (macros.has(macro) && words.slice(0, -1).every(n => /^[A-Za-z_]\w*:?$/.test(n) && !opcodeOf(n.replace(/:$/, '')) && !/^(for|rof)$/i.test(n))) {
+        if (macroStack.includes(macro) || macroStack.length > 32) {
+          errors.push({ line: input.lineNo, message: `multi-line EQU '${macro}' refers to itself` });
+          continue;
+        }
+        if (words.length > 1) emit({ ...input, text: words.slice(0, -1).join(' ') });
+        run(macros.get(macro).map(text => ({ ...input, text, subs: lines[i].subs ?? [] })), active, [...macroStack, macro]);
+        continue;
+      }
+      const l = relabel(input, active, lines[i].subs ?? []);
       const c = codePart(l.text);
       if (!c) runAssert(l);
+      if (l.macroFor) {
+        let count;
+        try {
+          count = evaluate(inlineEquText(FOR_RE.exec(c)[2], (n) => equs.get(n)), lookup, registers);
+        } catch (e) {
+          errors.push({ line: l.lineNo, message: `FOR count: ${e.message}` });
+          continue;
+        }
+        if (count <= 0) {
+          // A suppressed FOR still finds its matching ROF in physical
+          // input, and expansion resumes there (even for an EQU FOR).
+          let depth = 1;
+          let j = i + 1;
+          for (; j < lines.length; j++) {
+            const tail = codePart(lines[j].text);
+            if (FOR_RE.test(tail)) depth++;
+            else if (ROF_RE.test(tail) && --depth === 0) break;
+          }
+          i = j;
+          continue;
+        }
+        if (count > 0) warnings.push({ line: l.lineNo, message: 'a one-line EQU that opens a FOR loop never closes it: nothing after it is used, as in pMARS' });
+        if (count > 0 && l.macroForRedefinition) errors.push({ line: l.lineNo, message: 'EQU after an expanded FOR count is misplaced' });
+        ended = true;
+        return;
+      }
       const eq = /^([A-Za-z_]\w*)\s+equ\s+(.+)$/i.exec(c);
+      if (eq && active.includes(eq[1])) {
+        warnings.push({ line: l.lineNo, message: `'${eq[1]}' is the loop's counter: this EQU redefines it and is ignored, as in pMARS` });
+        continue;
+      }
+      const placed = eq && labelPos.get(eq[1]);
+      if (placed && (placed.fixed || placed.pos !== instrCount)) {
+        warnings.push({ line: l.lineNo, message: `'${eq[1]}' is already a label: this EQU is ignored, as in pMARS` });
+        continue;
+      }
+      // Labels on lines of their own just before an EQU name it too, also
+      // an EQU without a name of its own (' equ dat 5,6' after 'payload').
+      const bare = !eq && pending.length ? /^equ\s+(.+)$/i.exec(c) : null;
+      const eqText = eq ? eq[2] : bare?.[1];
+      if (eqText !== undefined) {
+        const body = [eqText];
+        let j = i + 1;
+        for (; j < lines.length; j++) {
+          const tail = codePart(lines[j].text);
+          if (!tail) continue;
+          const continuation = /^equ\s+(.*)$/i.exec(tail);
+          if (!continuation) break;
+          body.push(continuation[1]);
+        }
+        if (body.length > 1) {
+          const aliases = new Set(eq ? [eq[1]] : []);
+          for (const k of pending) {
+            for (const name of codePart(out[k].text).replace(/:/g, ' ').split(/\s+/).filter(Boolean)) aliases.add(name);
+            out[k] = { ...out[k], text: '' };
+          }
+          for (const name of aliases) {
+            macros.set(name, body);
+            equs.set(name, body.join(' '));
+            labelPos.delete(name);
+            out.push({ ...l, text: `${name} equ ${body.join(' ')}` });
+          }
+          pending = [];
+          i = j - 1;
+          continue;
+        }
+      }
       if (eq) equs.set(eq[1], eq[2]);
-      const m = FOR_RE.exec(c);
+      if (eqText !== undefined) {
+        const aliases = new Set(eq ? [eq[1]] : []);
+        for (const k of pending) {
+          const ns = codePart(out[k].text).replace(/:/g, ' ').split(/\s+/).filter((n) => n && !aliases.has(n) && aliases.add(n));
+          for (const n of ns) { equs.set(n, eqText); labelPos.delete(n); }
+          out[k] = { ...out[k], text: ns.length ? `${ns.join(' ')} equ ${eqText}` : '' };
+        }
+        if (eq) labelPos.delete(eq[1]);
+        pending = [];
+        if (bare) continue;
+      }
+      const m = eq ? null : FOR_RE.exec(c);
       if (!m) {
         if (ROF_RE.test(c)) errors.push({ line: l.lineNo, message: 'ROF without a matching FOR' });
         else emit(eq ? l : expandEquInstruction(l, c));
         continue;
       }
-      let depth = 1;
-      let j = i + 1;
-      for (; j < lines.length; j++) {
-        const cj = codePart(lines[j].text);
-        if (FOR_RE.test(cj)) depth++;
-        else if (ROF_RE.test(cj) && --depth === 0) break;
+      // A FOR fixes preceding pending labels at this position, even when
+      // the loop emits nothing and is the final declaration in the file.
+      // (Fixed, a later label of the same name, even at the same place, is a
+      // redefinition, and pMARS ignores that line.)
+      // (The FOR line's own labels may repeat those waiting labels: same place.)
+      const waiting = new Set();
+      for (const k of pending) {
+        out[k] = { ...out[k], fixedLabelLine: true };
+        for (const n of codePart(out[k].text).replace(/:/g, ' ').split(/\s+/).filter(Boolean)) {
+          waiting.add(n);
+          if (labelPos.has(n)) labelPos.get(n).fixed = true;
+        }
       }
+      pending = [];
       const names = m[1].trim().split(/\s+/).filter(Boolean).map((n) => n.replace(/:$/, ''));
       const counter = names.pop();
-      if (names.length) emit({ text: names.join(' '), lineNo: l.lineNo, expanded: l.expanded });
+      const redefined = names.find((n) => !waiting.has(n) && labelPos.has(n) && (labelPos.get(n).fixed || labelPos.get(n).pos !== instrCount));
+      if (redefined) {
+        warnings.push({ line: l.lineNo, message: `duplicate label '${redefined}': this FOR line is ignored, as in pMARS` });
+        continue;
+      }
+      if (names.length) emit({ text: names.join(' '), lineNo: l.lineNo, expanded: l.expanded }, true);
       let count = 0;
       try {
         count = evaluate(inlineEquText(m[2], (n) => equs.get(n)), lookup, registers);
       } catch (e) {
         errors.push({ line: l.lineNo, message: `FOR count: ${e.message}` });
       }
+      // The matching ROF. In a loop that runs, a FOR line that would
+      // redefine a counter in use is ignored (see expandLine), so it opens
+      // no block; a loop that doesn't run never looks inside.
+      const counters = counter ? [...active, counter] : active;
+      const opened = [];
+      let depth = 1;
+      let j = i + 1;
+      for (; j < lines.length; j++) {
+        const cj = codePart(lines[j].text);
+        const head = FOR_RE.exec(cj);
+        if (head) {
+          if (count > 0 && [...counters, ...opened].some((k) => redefinesCounter(cj, k))) continue;
+          opened.push(head[1].trim().split(/\s+/).filter(Boolean).at(-1)?.replace(/:$/, ''));
+          depth++;
+        } else if (ROF_RE.test(cj)) {
+          opened.pop();
+          if (--depth === 0) break;
+        }
+      }
       // A FOR with no ROF: pMARS emits the rest of the program once (if the
       // count is positive) and warns.
       if (j >= lines.length) {
         if (count > 0) {
           warnings.push({ line: l.lineNo, message: 'FOR without a matching ROF: the rest is used once, as in pMARS' });
-          run(lines.slice(i + 1).map((b) => ({ lineNo: b.lineNo, expanded: true, text: counter ? substitute(b.text, counter, 1) : b.text })));
+          run(lines.slice(i + 1).map((b) => inLoop(b, counter, 1)), counters, macroStack);
         }
+        // Opened inside a multi-line EQU, the loop's body is the rest of that
+        // EQU, and nothing after the EQU's use is read (as with a one-line
+        // EQU that opens a FOR).
+        if (macroStack.length && count > 0) ended = true;
         return;
       }
       total += Math.max(0, count) * (j - i - 1);
@@ -415,7 +677,7 @@ function preprocess(source, constants, errors, warnings, registers, cfg) {
       }
       const body = lines.slice(i + 1, j);
       for (let k = 1; k <= count; k++) {
-        run(body.map((b) => ({ lineNo: b.lineNo, expanded: true, text: counter ? substitute(b.text, counter, k) : b.text })));
+        run(body.map((b) => inLoop(b, counter, k)), counters, macroStack);
       }
       i = j;
     }
@@ -455,26 +717,21 @@ export function assemble(source, settings = {}) {
   // ---- Pass 1: parse lines, collect labels and EQUs ----
   const labels = new Map(); // name -> instruction index
   const equs = new Map();   // name -> { text, line }
+  const twice = new Set();  // EQU names defined more than once
   const lines = [];         // instruction lines
   let orgExpr = null, endExpr = null;
+  const orgExprs = [];
   let endLabels = [];
   let endSeen = false;
   let orgLine = 0, endLine = 0;
 
   const registers = new Map(); // pMARS-style a=... assignments, from expansion on
-  const srcLines = preprocess(source, constants, errors, warnings, registers, cfg);
+  const srcLines = preprocess(source, constants, errors, warnings, registers, cfg, meta);
   for (const src of srcLines) {
     const lineNo = src.lineNo;
     let text = src.text;
     const semi = text.indexOf(';');
     if (semi >= 0) {
-      const comment = text.slice(semi + 1).trim();
-      const m = /^(name|author|strategy|assert)\b\s*(.*)$/i.exec(comment);
-      if (m && !src.expanded) {
-        const key = m[1].toLowerCase();
-        if (key === 'strategy') meta.strategy.push(m[2]);
-        else if (key !== 'assert') meta[key] = m[2];      // asserts run in preprocess
-      }
       text = text.slice(0, semi);
     }
     text = text.trim();
@@ -494,7 +751,7 @@ export function assemble(source, settings = {}) {
     if (!opInfo) {
       if (pending.length && !rest) {
         // label-only line: labels attach to the next instruction
-        lines.push({ labelsOnly: pending, lineNo });
+        lines.push({ labelsOnly: pending, fixedLabelLine: src.fixedLabelLine, lineNo });
         continue;
       }
       errors.push({ line: lineNo, message: `unknown instruction '${(pending.at(-1) || rest).split(/\s/)[0]}'` });
@@ -504,13 +761,19 @@ export function assemble(source, settings = {}) {
     if (opInfo.op === 'EQU') {
       if (!pending.length) warnings.push({ line: lineNo, message: 'EQU without a name is ignored' });
       for (const name of pending) {
-        if (equs.has(name)) errors.push({ line: lineNo, message: `EQU '${name}' is defined twice` });
-        equs.set(name, { text: rest, line: lineNo });
+        if (equs.has(name)) {
+          twice.add(name);
+          warnings.push({ line: lineNo, message: `EQU '${name}' is defined twice: using it is an error, as in pMARS` });
+        } else equs.set(name, { text: rest, line: lineNo });
       }
       continue;
     }
     if (opInfo.op === 'ORG') {
       if (cfg.dialect === '88') errors.push({ line: lineNo, message: "ICWS'88: ORG is not ICWS'88; give the start on the END line (END start)" });
+      // Labels waiting at an ORG (or on it) are kept, even after the last
+      // instruction: they name the position there.
+      lines.push({ labelsOnly: pending, orgMark: true, lineNo });
+      orgExprs.push({ expr: rest, line: lineNo });
       orgExpr = rest; orgLine = lineNo;              // a later ORG replaces an earlier one
       continue;
     }
@@ -535,8 +798,20 @@ export function assemble(source, settings = {}) {
   const instrLines = [];
   let carry = [];
   for (const l of lines) {
-    if (l.labelsOnly) { carry.push(...l.labelsOnly); continue; }
-    l.labels = [...carry, ...l.labels];
+    if (l.labelsOnly) {
+      if (l.orgMark) {
+        for (const name of [...carry, ...l.labelsOnly]) labels.set(name, instrLines.length);
+        carry = [];
+      } else if (l.fixedLabelLine) {
+        for (const name of l.labelsOnly) labels.set(name, instrLines.length);
+      } else {
+        carry.push(...l.labelsOnly);
+        if (carry.length > 7) errors.push({ line: l.lineNo, message: 'more than 7 labels on one declaration (pMARS allows 7)' });
+      }
+      continue;
+    }
+    if (carry.length + l.labels.length > 7) errors.push({ line: l.lineNo, message: 'more than 7 labels on one instruction (pMARS allows 7)' });
+    l.labels = [...new Set([...carry, ...l.labels])];   // 'top' then 'top: dat' name one instruction
     carry = [];
     instrLines.push(l);
   }
@@ -550,15 +825,15 @@ export function assemble(source, settings = {}) {
   // A label on the END line itself (as in 'last end start') is the address
   // just past the last instruction, as in pMARS; many hill warriors use it.
   for (const { name, lineNo } of endLabels) {
-    if (labels.has(name) || equs.has(name)) errors.push({ line: lineNo, message: `duplicate label '${name}'` });
+    if ((labels.has(name) && labels.get(name) !== instrLines.length) || equs.has(name)) errors.push({ line: lineNo, message: `duplicate label '${name}'` });
     labels.set(name, instrLines.length);
   }
   // Labels after the last instruction: before an END line they are the
   // address just past the last instruction, like a label on the END line;
   // with no END, pMARS discards them, and so do we.
   if (endSeen) {
-    for (const name of trailingLabels) {
-      if (labels.has(name) || equs.has(name)) errors.push({ line: 0, message: `duplicate label '${name}'` });
+    for (const name of new Set(trailingLabels)) {
+      if ((labels.has(name) && labels.get(name) !== instrLines.length) || equs.has(name)) errors.push({ line: 0, message: `duplicate label '${name}'` });
       labels.set(name, instrLines.length);
     }
   }
@@ -568,7 +843,10 @@ export function assemble(source, settings = {}) {
   }
 
   // ---- Pass 2: evaluate operands ----
-  const equText = (n) => equs.get(n)?.text.trim();
+  const equText = (n) => {
+    if (twice.has(n)) throw new Error(`EQU '${n}' is defined twice`);
+    return equs.get(n)?.text.trim();
+  };
   const registerWarned = new Set();
   const makeLookup = (idx, stack = new Set()) => function lookup(name) {
     if (labels.has(name)) return labels.get(name) - idx;
@@ -577,7 +855,6 @@ export function assemble(source, settings = {}) {
       const next = new Set(stack); next.add(name);
       return evaluate(equs.get(name).text, makeLookup(idx, next), registers);
     }
-    if (name === 'CURLINE') return idx;                  // uppercase only, as in pMARS
     const up = name.toUpperCase();
     if (up in constants) return constants[up];
     if (registers.has(name)) return registers.get(name);
@@ -645,9 +922,11 @@ export function assemble(source, settings = {}) {
     if (!expr) return 0;
     try { return evaluate(inlineEquText(expr, equText), makeLookup(0), registers); } catch (e) { errors.push({ line, message: `start: ${e.message}` }); return 0; }
   };
+  for (const o of orgExprs.slice(0, -1)) entry(o.expr, o.line);     // replaced ORGs must still be valid
   const org = entry(orgExpr, orgLine), end = entry(endExpr, endLine);
   if (org && end && org !== end) warnings.push({ line: endLine, message: 'END gives a different start from ORG; ORG wins, as in pMARS' });
-  let start = org || end;
+  // (ORG's place counts in the core: 'org CORESIZE' is 0, so END's start wins.)
+  let start = ((org % cfg.coreSize) + cfg.coreSize) % cfg.coreSize || end;
 
   // A lone word is a legal label, but an unused one is usually a typo'd opcode.
   const referenced = [...instrLines.flatMap((l) => l.operands), ...[...equs.values()].map((e) => e.text), orgExpr || '', endExpr || ''].join(' ');

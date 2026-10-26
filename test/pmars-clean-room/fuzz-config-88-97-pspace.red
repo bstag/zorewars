@@ -1,0 +1,4 @@
+;assert 1
+;assert PSPACESIZE==7
+;assert CORESIZE==97
+dat #PSPACESIZE,#CORESIZE+1

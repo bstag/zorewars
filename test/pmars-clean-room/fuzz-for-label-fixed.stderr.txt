@@ -1,0 +1,4 @@
+Warning in line 6: 'ptr dat 1, 1'
+        Ignored, redefinition of label 'ptr'
+Number of warnings: 1
+

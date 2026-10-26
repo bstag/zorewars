@@ -1,0 +1,5 @@
+Warning in line 5: 'j for 2'
+        Ignored, redefinition of label 'j'
+Number of warnings: 4
+Duplicate errors/warnings found in line 5 (4)
+

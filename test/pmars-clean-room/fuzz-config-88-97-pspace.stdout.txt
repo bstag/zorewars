@@ -1,0 +1,4 @@
+       ORG          0
+       DAT    #     7, #     1     
+       END      START
+       END

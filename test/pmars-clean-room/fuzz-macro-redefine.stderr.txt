@@ -1,0 +1,4 @@
+Error in line 6: 'm2 equ dat 3, 3'
+        Improper placement of 'equ'
+Number of errors: 1
+

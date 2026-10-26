@@ -1,0 +1,4 @@
+Error in line 2: 'mov.i #1,0'
+        Bad '88 format at token '.'
+Number of errors: 1
+

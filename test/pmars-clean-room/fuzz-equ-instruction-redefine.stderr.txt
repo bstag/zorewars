@@ -1,0 +1,4 @@
+Error in line 4: 'payload equ dat #3, #4'
+        Improper placement of 'equ'
+Number of errors: 1
+

@@ -1,0 +1,13 @@
+Warning:
+        Missing ';assert'. Warrior may not work with the current setting
+Error in line 5: 'm2 equ mul.i  #WARRIORS *imm>=a, >189!= 7'
+        Undefined label or symbol: 'imm'
+Error in line 5: 'm2 equ mul.i  #WARRIORS *imm>=a, >189!= 7'
+        Incomplete operand at instruction 'MUL'
+Error in line 7: 'm2'
+        Undefined label or symbol: 'bot'
+Error in line 7: 'm2'
+        Incomplete operand at instruction 'JMN'
+Number of errors: 4
+Number of warnings: 1
+

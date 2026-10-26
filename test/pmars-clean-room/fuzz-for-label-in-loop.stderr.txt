@@ -1,0 +1,8 @@
+Warning in line 4: 'Top cnt for 2'
+        Ignored, redefinition of label 'Top'
+Error in line 7: 'rof'
+        Unopened FOR
+Number of errors: 1
+Number of warnings: 2
+Duplicate errors/warnings found in line 4 (2)
+

@@ -1,0 +1,7 @@
+Warning:
+        Unclosed ROF
+Error in line 4: 'block equ for 2'
+        Improper placement of 'equ'
+Number of errors: 1
+Number of warnings: 1
+

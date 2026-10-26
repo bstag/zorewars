@@ -1,0 +1,6 @@
+Warning in line 4: 'mid org 9'
+        Ignored, redefinition of label 'mid'
+Warning:
+        Missing ';assert'. Warrior may not work with the current setting
+Number of warnings: 2
+

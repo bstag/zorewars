@@ -1,0 +1,10 @@
+Error in line 4: 'x1'
+        Too many labels for a declaration (last: 'x1')
+Warning:
+        Discarding these labels: 'x1 x1 x1 x1 x1 x1 x1'
+Warning:
+        Missing ';assert'. Warrior may not work with the current setting
+Number of errors: 3
+Number of warnings: 2
+Duplicate errors/warnings found in line 4 (3)
+

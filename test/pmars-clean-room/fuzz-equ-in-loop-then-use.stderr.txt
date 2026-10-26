@@ -1,0 +1,8 @@
+Warning in line 4: 'step equ cnt'
+        Ignored, redefinition of label 'cnt'
+Warning in line 4: 'step equ cnt'
+        Attempting to append a string to an undefined label
+Number of warnings: 4
+Duplicate errors/warnings found in line 4 (2)
+Duplicate errors/warnings found in line 4 (2)
+

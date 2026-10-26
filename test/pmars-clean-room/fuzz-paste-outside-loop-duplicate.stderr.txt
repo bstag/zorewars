@@ -1,0 +1,9 @@
+Error in line 4: 'top&j mov 1, 2'
+        Unable to derefer and concatenate symbol 'j'
+Warning in line 4: 'top&j mov 1, 2'
+        Ignored, redefinition of label 'top'
+Warning:
+        Missing ';assert'. Warrior may not work with the current setting
+Number of errors: 1
+Number of warnings: 2
+

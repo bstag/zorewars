@@ -1,0 +1,6 @@
+Warning in line 4: 'bot'
+        Ignored, redefinition of label 'bot'
+Warning:
+        Missing ';assert'. Warrior may not work with the current setting
+Number of warnings: 2
+

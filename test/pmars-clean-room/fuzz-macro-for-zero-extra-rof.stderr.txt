@@ -1,0 +1,4 @@
+Error in line 6: 'rof'
+        Unopened FOR
+Number of errors: 1
+
