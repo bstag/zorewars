@@ -1,6 +1,6 @@
 // ZoreWars arena: editors, live battle view, inspector and tournaments.
 
-import { compile, VM, runRound, mulberry32, DEFAULT_SETTINGS, listing, roundPoints, postMortem, generateFromJS, fitsBattlefield } from '../src/engine/index.js';
+import { compile, VM, runRound, mulberry32, DEFAULT_SETTINGS, RULESETS, listing, roundPoints, postMortem, generateFromJS, fitsBattlefield } from '../src/engine/index.js';
 import { convertWarrior } from '../src/engine/convert.js';
 import { CoreRenderer, ProcessChart, WARRIOR_COLORS } from './arena.js';
 import { CoreView3D } from './arena3d.js';
@@ -1055,8 +1055,10 @@ function fieldSettings(key) {
 function renderSettings() {
   for (const [k, id] of Object.entries(SETTING_INPUTS)) $(id).value = state.settings[k];
   $('setField').value = fieldKey(state.settings);
+  $('setRules').value = state.settings.rulesName || '';
   $('setCoreSize').disabled = state.settings.topology === 'torus';   // fixed by the plane's size
 }
+const NO_HILL_RULES = { rulesName: '', dialect: undefined, pSpace: undefined };
 function applySettings(values) {
   state.settings = { ...state.settings, ...values };
   state.view3d = undefined;          // each battlefield opens in its natural view
@@ -1363,7 +1365,13 @@ function wireEvents() {
     $('setCoreSize').disabled = f.topology === 'torus';
     if (f.coreSize) $('setCoreSize').value = f.coreSize;
   });
-  $('resetSettings').addEventListener('click', () => applySettings({ ...DEFAULT_SETTINGS, ...fieldSettings('ring') }));
+  $('resetSettings').addEventListener('click', () => applySettings({ ...DEFAULT_SETTINGS, ...fieldSettings('ring'), ...NO_HILL_RULES }));
+  // Hill rules: a standard hill's settings on the classic ring (94nop, '88
+  // with its syntax checks, limited process, 94x); none of them has P-space.
+  $('setRules').addEventListener('change', () => {
+    const name = $('setRules').value;
+    applySettings(name ? { ...fieldSettings('ring'), ...NO_HILL_RULES, ...RULESETS[name], rulesName: name } : { ...NO_HILL_RULES });
+  });
 
   document.addEventListener('keydown', (e) => {
     if (e.target.closest('textarea, input, select, [contenteditable], .cm-editor, dialog') || e.ctrlKey || e.metaKey || e.altKey) return;

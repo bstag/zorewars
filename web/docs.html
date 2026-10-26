@@ -510,6 +510,8 @@ node cli/zorewars.js evolve --generations 6       <span class="cmt"># breed new 
           <tr><td>Min distance</td><td>100 cells between warriors at load</td></tr>
         </tbody>
       </table>
+      <p><strong>Hill rules</strong> (in Rules, or <code>--rules</code> in the CLI) switch to a standard hill's settings, the ones tournaments use: <strong>94nop</strong> (the classic settings, no P-space), <strong>ICWS'88</strong> (the same, and the editor flags anything that isn't '88 Redcode: only <code>DAT MOV ADD SUB JMP JMZ JMN DJN CMP SPL SLT</code>, the modes <code># $ @ &lt;</code>, no modifiers and no <code>ORG</code>, exactly as <code>pmars -8</code> checks), <strong>limited process</strong> (8 processes, 200 cells apart) and <strong>94x</strong> (55,440 cells, 500,000 cycles). For a tournament's length limit, set Max length (CLI: <code>--length 50</code>).</p>
+      <p><code>zorewars pushoff</code> predicts a tournament place: your warriors join the top of a Koenigstuhl hill, everyone plays everyone, and an iterative push-off ranks them by average score times <em>diversity</em> (how differently a warrior scores from its nearest look-alike). A warrior that wins its own way ranks above a strong clone.</p>
       <ul>
         <li>Warrior 1 is loaded at address 0; the others at random addresses at least the minimum distance apart. Two-warrior placement uses the same generator and rule as pMARS, so <code>--fixed N</code> (pMARS's <code>-F N</code>) replays a pMARS match exactly. Games with more warriors use ZoreWars' own placement.</li>
         <li>The warrior that moves first rotates every round.</li>

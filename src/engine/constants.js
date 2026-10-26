@@ -36,6 +36,16 @@ export const DEFAULT_SETTINGS = Object.freeze({
   rounds: 1,
 });
 
+// Standard hill rule sets (pMARS command lines in the comments). Tournaments
+// such as the Core War Tournament Weekend use these with a shorter maximum
+// length (--length 50).
+export const RULESETS = Object.freeze({
+  '94nop': { coreSize: 8000, maxProcesses: 8000, maxCycles: 80000, maxLength: 100, minDistance: 100, pSpace: false },   // pmars -s 8000 -p 8000 -c 80000 -d 100
+  '88':    { coreSize: 8000, maxProcesses: 8000, maxCycles: 80000, maxLength: 100, minDistance: 100, pSpace: false, dialect: '88' },   // pmars -8 ...
+  lp:      { coreSize: 8000, maxProcesses: 8, maxCycles: 80000, maxLength: 100, minDistance: 200, pSpace: false },      // pmars -s 8000 -p 8 -c 80000 -d 200
+  '94x':   { coreSize: 55440, maxProcesses: 10000, maxCycles: 500000, maxLength: 200, minDistance: 200, pSpace: false },  // pmars -s 55440 -p 10000 -c 500000 -l 200 -d 200
+});
+
 export const MODE_NAMES = {
   '#': 'immediate',
   '$': 'direct',

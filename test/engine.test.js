@@ -346,3 +346,20 @@ test('assembler: pMARS forms used by hill warriors (label on END, EQU as an inst
   assert.ok(b.ok, JSON.stringify(b.errors));
   assert.deepEqual(b.instructions.map((i) => i.op), ['SPL', 'DAT', 'SPL']);
 });
+
+test("rule sets: '88 checks (as pMARS -8 accepts them) and no P-space", async () => {
+  const { RULESETS } = await import('../src/engine/index.js');
+  const r88 = { ...DEFAULT_SETTINGS, ...RULESETS['88'] };
+  assert.ok(compile('start mov 0, 1\n end start', 'redcode', r88).ok);
+  for (const [src, why] of [
+    ['mov.i 0, 1', /modifiers/], ['seq 0, 1', /not an ICWS'88 opcode/], ['mov }0, 1', /mode/],
+    ['mov 0, #1', /B-operand/], ['jmp #0', /A-operand/], ['dat $0, $1', /DAT operands/], ['org go\ngo mov 0, 1', /ORG/],
+  ]) {
+    const w = compile(src, 'redcode', r88);
+    assert.ok(!w.ok && why.test(w.errors[0].message), `${src}: ${JSON.stringify(w.errors)}`);
+  }
+  const nop = { ...DEFAULT_SETTINGS, ...RULESETS['94nop'] };
+  assert.ok(!compile('ldp.ab #0, 1\n jmp 0', 'redcode', nop).ok);
+  assert.equal(RULESETS['94x'].coreSize, 55440);
+  assert.equal(RULESETS.lp.maxProcesses, 8);
+});

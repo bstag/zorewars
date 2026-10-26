@@ -16,6 +16,20 @@ let encodeVector = null;
 
 export const PSEUDO = new Set(['ORG', 'END', 'EQU', 'PIN']);
 
+// ICWS'88 Redcode, as pMARS -8 accepts it (checked against pMARS for every
+// opcode and pair of modes): eleven opcodes, four modes, no modifiers, and
+// per-opcode limits on immediate operands.
+const OPS88 = new Set(['DAT', 'MOV', 'ADD', 'SUB', 'JMP', 'JMZ', 'JMN', 'DJN', 'CMP', 'SPL', 'SLT']);
+export function check88(raw, mod, aMode, bMode) {
+  if (!OPS88.has(raw)) return `${raw} is not an ICWS'88 opcode`;
+  if (mod) return `modifiers (.${mod}) are not ICWS'88`;
+  for (const m of [aMode, bMode]) if (!'#$@<'.includes(m)) return `the '${m}' mode is not ICWS'88 (only # $ @ <)`;
+  if (raw === 'DAT' && !(/[#<]/.test(aMode) && /[#<]/.test(bMode))) return 'DAT operands must be # or <';
+  if (['MOV', 'ADD', 'SUB', 'CMP'].includes(raw) && bMode === '#') return `${raw}'s B-operand can't be immediate`;
+  if (['JMP', 'JMZ', 'JMN', 'DJN', 'SPL'].includes(raw) && aMode === '#') return `${raw}'s A-operand can't be immediate`;
+  return null;
+}
+
 export function opcodeOf(token) {
   const [raw, mod] = token.toUpperCase().split('.');
   const op = OPCODE_ALIASES[raw] || raw;
@@ -345,6 +359,7 @@ export function assemble(source, settings = {}) {
       continue;
     }
     if (opInfo.op === 'ORG') {
+      if (cfg.dialect === '88') errors.push({ line: lineNo, message: "ICWS'88: ORG is not ICWS'88; give the start on the END line (END start)" });
       startExpr = rest; startLine = lineNo;
       continue;
     }
@@ -361,7 +376,7 @@ export function assemble(source, settings = {}) {
       errors.push({ line: lineNo, message: `unknown modifier '.${opInfo.mod}'` });
       continue;
     }
-    lines.push({ labels: pending, op: opInfo.op, mod: opInfo.mod, operands: splitOperands(rest), lineNo });
+    lines.push({ labels: pending, op: opInfo.op, raw: opInfo.raw, mod: opInfo.mod, operands: splitOperands(rest), lineNo });
   }
 
   // Attach label-only lines to the following instruction and number instructions.
@@ -440,6 +455,14 @@ export function assemble(source, settings = {}) {
     let a, b;
     try { a = evaluate(aOp.expr, lookup, registers); } catch (e) { errors.push({ line: l.lineNo, message: `A-operand: ${e.message}` }); return; }
     try { b = evaluate(bOp.expr, lookup, registers); } catch (e) { errors.push({ line: l.lineNo, message: `B-operand: ${e.message}` }); return; }
+    if (cfg.dialect === '88') {
+      const bad = check88(l.raw, l.mod, aOp.mode, bOp.mode);
+      if (bad) { errors.push({ line: l.lineNo, message: `ICWS'88: ${bad}` }); return; }
+    }
+    if (cfg.pSpace === false && (l.op === 'LDP' || l.op === 'STP')) {
+      errors.push({ line: l.lineNo, message: `${l.op}: these rules have no P-space` });
+      return;
+    }
     const mod = l.mod || defaultModifier(l.op, aOp.mode, bOp.mode);
     instructions.push({ op: l.op, mod, aMode: aOp.mode, a, bMode: bOp.mode, b, line: l.lineNo });
   });

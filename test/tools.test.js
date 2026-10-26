@@ -134,3 +134,25 @@ test('evolving from scratch: random programs compile on the ring and on a plane'
   const ops = makeOperators({}, null, { scratch: true });
   assert.ok(ops.retune && !ops.graft_paper);
 });
+
+test('push-off: a clone is worth less than a different warrior of the same strength', async () => {
+  const { pushOff } = await import('../tools/pushoff.js');
+  // A and B score identically against everyone (clones); C is as strong on
+  // average but wins in its own way; D is weak.
+  const S = [
+    [0, 1, 2, 3, 1],
+    [1, 0, 2, 3, 1],
+    [1, 1, 0, 3, 3],
+    [0, 0, 0, 0, 0],
+    [2, 2, 0, 3, 0],
+  ];
+  const r = pushOff(S, ['A', 'B', 'C', 'D', 'E']);
+  assert.equal(r.length, 5);
+  assert.deepEqual(r.map((x) => x.rank), [1, 2, 3, 4, 5]);
+  const at = (n) => r.find((x) => x.name === n).rank;
+  assert.ok(at('C') < at('A') && at('C') < at('B'), 'the different one outranks the clones');
+  assert.equal(at('C'), 1);
+  // An exact clone has no diversity, so it scores 0 like a warrior that wins
+  // nothing, and is pushed off first.
+  assert.ok(['A', 'B'].includes(r[4].name) && r[4].div === 0);
+});

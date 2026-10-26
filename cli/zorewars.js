@@ -9,7 +9,7 @@ import path from 'node:path';
 import http from 'node:http';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { compile, detectLanguage, runMatch, runTournament, DEFAULT_SETTINGS, listing, formatPostMortem, generateFromJS, inLibraryFor, fitsBattlefield } from '../src/engine/index.js';
+import { compile, detectLanguage, runMatch, runTournament, DEFAULT_SETTINGS, RULESETS, listing, formatPostMortem, generateFromJS, inLibraryFor, fitsBattlefield } from '../src/engine/index.js';
 import { convertWarrior, conversionCandidates } from '../src/engine/convert.js';
 import { runPythonFile, pythonRunner } from './python.js';
 import { fetchWarriorText, nameFromUrl } from './remote.js';
@@ -41,6 +41,9 @@ Developer tools (use every CPU core):
                                                      search the warrior's // SPACE for better constants
   zorewars evolve [warrior...] [--generations 6] [--king w.js] [--genome 40] [--scratch] [--ties 0.5] [--out evolved]
                                                      breed warriors: Red Queen rounds of MAP-Elites
+  zorewars pushoff <entry...> --hill koenigstuhl:94nop|88|lp|94x [--rules NAME] [--length 50] [--top 50]
+                                                     predict a tournament place: round robin with a hill's
+                                                     top warriors, then the iterative diversity push-off
 
 Warriors:
   path/to/file.red   Redcode assembly
@@ -56,6 +59,8 @@ Warriors:
 Options:
   --rounds N         rounds per match            (default 1 for battle, 10 for tournament)
   --seed N           seed for load positions     (default 1)
+  --rules NAME       a standard hill's settings: 94nop, 88 (with ICWS'88 checks), lp, 94x
+                     (no P-space); combine with e.g. --length 50 for a tournament
   --coresize N       core size                   (default ${DEFAULT_SETTINGS.coreSize})
   --cycles N         max cycles before a tie     (default ${DEFAULT_SETTINGS.maxCycles})
   --processes N      max processes per warrior   (default ${DEFAULT_SETTINGS.maxProcesses})
@@ -102,6 +107,12 @@ function parseArgs(argv) {
 function settingsFrom(flags, defaults = {}) {
   const num = (k) => (flags[k] !== undefined ? parseInt(flags[k], 10) : undefined);
   const s = { ...DEFAULT_SETTINGS, ...defaults };
+  // --rules 94nop|88|lp|94x: a standard hill's settings (other flags override them).
+  if (flags.rules !== undefined) {
+    const r = RULESETS[String(flags.rules).toLowerCase()];
+    if (!r) usage(`--rules takes ${Object.keys(RULESETS).join(', ')}`);
+    Object.assign(s, r);
+  }
   const map = { rounds: 'rounds', coresize: 'coreSize', cycles: 'maxCycles', processes: 'maxProcesses', length: 'maxLength', distance: 'minDistance', pspace: 'pSpaceSize' };
   for (const [flag, key] of Object.entries(map)) {
     const v = num(flag);
@@ -509,5 +520,6 @@ switch (cmd) {
   case 'species': { const [m, h] = await devtools(); await m.cmdSpecies(args, h); break; }
   case 'tune': { const [m, h] = await devtools(); await m.cmdTune(args, h); break; }
   case 'evolve': { const [m, h] = await devtools(); await m.cmdEvolve(args, h); break; }
+  case 'pushoff': { const [m, h] = await devtools(); await m.cmdPushoff(args, h); break; }
   default: usage(`unknown command '${cmd}'`);
 }

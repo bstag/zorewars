@@ -190,3 +190,64 @@ export async function cmdEvolve(args, h) {
     console.log(`Try one: zorewars hill ${out}/redqueen-${generations}.red --classics`);
   } finally { pool.close(); }
 }
+
+// ---- pushoff: where would these entries place in a tournament? ----
+// The Core War Tournament Weekend adds entries to the top of a Koenigstuhl
+// hill and ranks everyone by an iterative diversity push-off (tools/pushoff.js).
+// Hill warriors are fetched on demand into a temporary cache (not this repo),
+// as the Hall of Fame classics are.
+const KOENIGSTUHL = { '94nop': '94', '88': '88', lp: 'LP', '94x': 'X' };
+async function fetchHill(name, top, json) {
+  const dir = KOENIGSTUHL[name];
+  if (!dir) throw new Error(`unknown hill '${name}': use ${Object.keys(KOENIGSTUHL).map((k) => `koenigstuhl:${k}`).join(', ')}`);
+  const base = `https://asdflkj.net/COREWAR/${dir}/`;
+  const cache = path.join((await import('node:os')).tmpdir(), 'zorewars-hills', dir);
+  fs.mkdirSync(cache, { recursive: true });
+  const listing = await (await fetch(`${base}hill32_rec.html`)).text();
+  const files = [...new Set([...listing.matchAll(/href="(HILL32\/[^"]+\.red)"/gi)].map((m) => m[1]))].slice(0, top);
+  const out = [];
+  for (const [k, f] of files.entries()) {
+    const local = path.join(cache, path.basename(f));
+    if (!fs.existsSync(local)) fs.writeFileSync(local, await (await fetch(base + f)).text());
+    out.push(local);
+    progress(json, `hill: ${k + 1}/${files.length}`);
+  }
+  done(json);
+  return out;
+}
+
+export async function cmdPushoff(args, h) {
+  const { roundRobin, pushOff } = await import('../tools/pushoff.js');
+  const { compile } = await import('../src/engine/index.js');
+  const json = !!args.flags.json;
+  const settings = h.settingsFrom(args.flags);
+  if (!args._.length || !args.flags.hill) h.usage('pushoff <entry...> --hill koenigstuhl:94nop|88|lp|94x (or a folder) [--rules NAME] [--length 50] [--top 50] [--rounds 50]');
+  const entries = await h.loadAll(h.expandRefs(args._), settings, json);
+  // Hill warriors aren't bound by the entry rules (the 94x hill's leaders use
+  // P-space, and many are longer than a tournament's limit).
+  const hillSettings = { ...settings, pSpace: undefined, maxLength: Math.max(settings.maxLength, 200) };
+  const top = Math.max(2, parseInt(args.flags.top ?? '50', 10));
+  const spec = String(args.flags.hill);
+  const files = spec.startsWith('koenigstuhl:') ? await fetchHill(spec.slice(12).toLowerCase(), top, json)
+    : fs.readdirSync(spec).filter((f) => /\.(red|rc)$/i.test(f)).map((f) => path.join(spec, f)).slice(0, top);
+  const hill = [];
+  for (const f of files) {
+    const w = compile(fs.readFileSync(f, 'utf8'), 'redcode', hillSettings);
+    if (w.ok) hill.push(w); else if (!json) console.error(`(skipped ${path.basename(f)}: ${w.errors[0].message})`);
+  }
+  const all = [...entries.map((w) => ({ w, entry: true })), ...hill.map((w) => ({ w, entry: false }))];
+  const rounds = Math.max(2, parseInt(args.flags.rounds ?? '50', 10));
+  if (!json) console.log(`Push-off: ${entries.length} entr${entries.length === 1 ? 'y' : 'ies'} + ${hill.length} hill warriors, ${rounds} rounds a pair (core ${settings.coreSize}, ${settings.maxProcesses} processes, ${settings.maxCycles} cycles)\n`);
+  const pool = createPool();
+  try {
+    const scores = await roundRobin(pool, all.map((x) => strip(x.w)), { rounds, settings: hillSettings, onProgress: (i, n) => progress(json, `round robin: ${i}/${n}`) });
+    done(json);
+    const names = all.map((x) => x.w.name);
+    const ranked = pushOff(scores, names).map((r) => ({ ...r, entry: all[r.index].entry }));
+    if (json) { console.log(JSON.stringify({ ok: true, ranking: ranked.map(({ index, ...r }) => r) }, null, 2)); return; }
+    h.printTable(ranked.slice(0, 25).concat(ranked.filter((r) => r.entry && r.rank > 25)).map((r) => ({
+      Rank: r.rank, Warrior: `${r.entry ? '★ ' : ''}${r.name}`, 'Avg pts': r.avg.toFixed(2), Diversity: r.div.toFixed(2), Score: r.score.toFixed(2),
+    })));
+    for (const r of ranked.filter((x) => x.entry)) console.log(`\n★ ${r.name}: rank ${r.rank} of ${ranked.length}`);
+  } finally { pool.close(); }
+}

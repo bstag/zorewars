@@ -19,6 +19,8 @@ The warriors are the ZoreWars library, two P-space test warriors, and 34 Hall of
 
 **Hill archive.** The 567 warriors of the public hill collection [n1LS/redcode-warriors](https://github.com/n1LS/redcode-warriors) (fetched for the test, not stored here) were assembled by both on 25 October 2026: **564 identical**, 2 rejected by both (one empty file, one missing a comma between operands), and 1 different (below). This found two gaps, now fixed: a label on the `END` line (`last end start`) is the address just past the last instruction, and an `EQU` can stand for a whole instruction (`d01 equ spl 0,1`, then `d01` on its own line), as pMARS's EQU is text substitution. A re-run of `npm run compare` after the fix: 64/64 assembled, 1,891/1,891 rounds, 30/30 matches and 42/42 P-space matches identical.
 
+**ICWS'88 checks.** `--rules 88` checks syntax the way `pmars -8` does. Every opcode and pair of modes was tried against pMARS to build the table (11 opcodes, `# $ @ <` only, no modifiers, no `ORG`, `DAT` operands `#` or `<`, no immediate B-operand for MOV/ADD/SUB/CMP or A-operand for the jumps and SPL). Accept/reject agrees with `pmars -8` on all **1,275** files tried: the 683 warriors of the Koenigstuhl '88 hill, the 567 of the hill archive, and our 25 Redcode warriors.
+
 As a sanity check that the P-space test can catch bugs, it was run against a deliberately broken engine that forgets round results. 21 of 39 matches then differed.
 
 ## Run it yourself
