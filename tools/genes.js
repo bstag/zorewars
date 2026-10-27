@@ -2,16 +2,15 @@
 // mutation operators, and repairs chosen by how a warrior loses.
 //
 // A genome is { start, code: [{ op, mod, aMode, a, bMode, b }] } — a warrior
-// without names. Operators only append or prepend code (or edit in place), so
-// the relative addresses inside the old code keep working.
+// without names. Grafts append or prepend code to preserve relative addresses;
+// trimming and splice crossover can break them, so offspring are checked solo.
 
 import { defaultModifier } from '../src/engine/constants.js';
 
 export const MAXLEN = 40;
 export const ROLES = ['paper', 'stone', 'scan', 'clear', 'imp'];
 
-const rnd = (n) => Math.floor(Math.random() * n);
-export const pick = (a) => a[rnd(a.length)];
+export const pick = (a, random = Math.random) => a[Math.floor(random() * a.length)];
 export const clone = (g) => ({ start: g.start, code: g.code.map((i) => ({ ...i })) });
 export const fits = (g, maxLen = MAXLEN) => g.code.length >= 1 && g.code.length <= maxLen;
 export const genomeOf = (w) => ({ start: w.start, code: w.instructions.map(({ op, mod, aMode, a, bMode, b }) => ({ op, mod, aMode, a, bMode, b })) });
@@ -28,7 +27,8 @@ export function roleOf(text = '') {
 }
 
 // Units to graft: whole small warriors plus random slices, grouped by role.
-export function makeGenePool(sources, { slices = 6 } = {}) {
+export function makeGenePool(sources, { slices = 6, random = Math.random } = {}) {
+  const rnd = (n) => Math.floor(random() * n);
   const units = Object.fromEntries(ROLES.map((r) => [r, []]));
   for (const { w, role } of sources) {
     if (!role || !units[role]) continue;
@@ -91,24 +91,29 @@ export function legal88(i) {
 // A random program for evolving from scratch: random opcodes, modifiers and
 // modes; each number is a small step (within the program, mostly) or any
 // number at all (on a torus: any point). Nothing from the library.
-export function randomGenome(len, { coreSize = 8000, geo = null } = {}) {
-  const ops = geo ? [...OPS_ALL, 'TRN'] : OPS_ALL;
-  const num = () => (Math.random() < 0.6 ? rnd(2 * len + 9) - len - 4 : rnd(coreSize));
+export function randomGenome(len, { coreSize = 8000, geo = null, random = Math.random, pSpace = false } = {}) {
+  const rnd = (n) => Math.floor(random() * n);
+  const pick = (a) => a[rnd(a.length)];
+  const ops = [...OPS_ALL, ...(geo ? ['TRN'] : [])];
+  if (pSpace) ops.push('LDP', 'STP');
+  const num = () => (random() < 0.6 ? rnd(2 * len + 9) - len - 4 : rnd(coreSize));
   const code = Array.from({ length: len }, () => ({ op: pick(ops), mod: pick(MODS_ALL), aMode: pick(MODES_ALL), a: num(), bMode: pick(MODES_ALL), b: num() }));
   return { start: rnd(len), code };
 }
 // geo (a plane or volume's geometry, see src/engine/geometry.js) adds
 // operators that treat a number as the point it is: plain retunes mostly
 // move along x, so on their own they rarely reach other rows or layers.
-export function makeOperators(units, geo = null, { scratch = false, coreSize = 8000 } = {}) {
+export function makeOperators(units, geo = null, { scratch = false, coreSize = 8000, random = Math.random, pSpace = false } = {}) {
+  const rnd = (n) => Math.floor(random() * n);
+  const pick = (a) => a[rnd(a.length)];
   // Every ICWS'94 opcode the evolver can switch to, plus TRN (our turn
   // instruction, an assembler error on the ring) on a plane or volume.
-  const OPCODES = ['MOV', 'ADD', 'SUB', 'MUL', 'DIV', 'MOD', 'JMP', 'JMZ', 'JMN', 'DJN', 'SPL', 'SEQ', 'SNE', 'SLT', 'NOP', 'DAT', ...(geo ? ['TRN'] : [])];
+  const OPCODES = [...OPS_ALL, ...(geo ? ['TRN'] : []), ...(pSpace ? ['LDP', 'STP'] : [])];
   const ops = {
     retune(g) {   // change one number: nudge it, or try a known-good step
-      const c = clone(g); const i = pick(c.code); const f = Math.random() < 0.5 ? 'a' : 'b';
+      const c = clone(g); const i = pick(c.code); const f = random() < 0.5 ? 'a' : 'b';
       // From scratch there are no known-good steps: a nudge or any number.
-      i[f] = Math.random() < 0.5 ? i[f] + rnd(9) - 4 : (!scratch && Math.random() < 0.5 ? pick(NUMS) * (1 + rnd(4)) : rnd(coreSize));
+      i[f] = random() < 0.5 ? i[f] + rnd(9) - 4 : (!scratch && random() < 0.5 ? pick(NUMS) * (1 + rnd(4)) : rnd(coreSize));
       return c;
     },
     trim(g) {     // delete an instruction: smaller is harder to find
@@ -133,11 +138,11 @@ export function makeOperators(units, geo = null, { scratch = false, coreSize = 8
   };
   if (geo) {
     const dims = geo.Z > 1 ? 3 : 2, size = [geo.X, geo.Y, geo.Z];
-    const field = (g) => { const c = clone(g); const i = pick(c.code); return [c, i, Math.random() < 0.5 ? 'a' : 'b']; };
+    const field = (g) => { const c = clone(g); const i = pick(c.code); return [c, i, random() < 0.5 ? 'a' : 'b']; };
     Object.assign(ops, {
       axis(g) {     // nudge one axis of a vector, or set it anywhere along that axis
         const [c, i, f] = field(g); const v = geo.decode(i[f]); const k = rnd(dims);
-        v[k] = Math.random() < 0.6 ? v[k] + (1 + rnd(3)) * (Math.random() < 0.5 ? -1 : 1) : rnd(size[k]);
+        v[k] = random() < 0.6 ? v[k] + (1 + rnd(3)) * (random() < 0.5 ? -1 : 1) : rnd(size[k]);
         i[f] = geo.encode(...v);
         return c;
       },
@@ -149,13 +154,13 @@ export function makeOperators(units, geo = null, { scratch = false, coreSize = 8
       },
       turn(g) {     // make an instruction a TRN that faces along one axis: code flows down a column or through the layers
         const c = clone(g); const i = pick(c.code);
-        const v = [0, 0, 0]; v[rnd(dims)] = Math.random() < 0.5 ? -1 : 1;
+        const v = [0, 0, 0]; v[rnd(dims)] = random() < 0.5 ? -1 : 1;
         Object.assign(i, { op: 'TRN', mod: 'B', aMode: '$', a: geo.encode(...v), bMode: '$', b: 0 });
         return c;
       },
       lift(g) {     // give a plain step a part along another axis: off the row, through the layers
         const [c, i, f] = field(g); const v = geo.decode(i[f]); const k = 1 + rnd(dims - 1);
-        v[k] = (1 + rnd(size[k] - 1)) * (Math.random() < 0.5 ? -1 : 1);
+        v[k] = (1 + rnd(size[k] - 1)) * (random() < 0.5 ? -1 : 1);
         i[f] = geo.encode(...v);
         return c;
       },
@@ -176,7 +181,7 @@ export const CURE = {
 
 // Picks an operator from a warrior's symptoms, weighted by how often each
 // operator has produced a child better than its parent so far.
-export function makeChooser(opNames) {
+export function makeChooser(opNames, random = Math.random) {
   const credit = Object.fromEntries(opNames.map((o) => [o, { tries: 2, wins: 1 }]));
   return {
     credit,
@@ -188,7 +193,7 @@ export function makeChooser(opNames) {
         for (const o of cures) w[o] += ((n / total) / cures.length) * 3;
       }
       for (const o of opNames) w[o] *= 0.25 + credit[o].wins / credit[o].tries;
-      let r = Math.random() * Object.values(w).reduce((a, b) => a + b, 0);
+      let r = random() * Object.values(w).reduce((a, b) => a + b, 0);
       for (const o of opNames) if ((r -= w[o]) <= 0) return o;
       return opNames[0];
     },
@@ -196,7 +201,17 @@ export function makeChooser(opNames) {
   };
 }
 
-export function crossover(x, y, maxLen = MAXLEN) {
+export function crossover(x, y, maxLen = MAXLEN, random = Math.random, { aligned = false } = {}) {
+  const rnd = (n) => Math.floor(random() * n);
+  if (aligned) {
+    // Keep instruction positions aligned so inherited relative jumps and
+    // pointers still refer to the same indices. Splicing unrelated offsets
+    // is useful exploration in MAP-Elites but destroys most GA offspring.
+    const cut = rnd(Math.min(x.code.length, y.code.length) + 1);
+    const code = [...x.code.slice(0, cut), ...y.code.slice(cut)].slice(0, maxLen).map((i) => ({ ...i }));
+    const start = x.start < cut ? x.start : y.start;
+    return { start: Math.min(start, code.length - 1), code };
+  }
   const cx = rnd(x.code.length + 1), cy = rnd(y.code.length + 1);
   const code = [...x.code.slice(0, cx), ...y.code.slice(cy)].slice(0, maxLen).map((i) => ({ ...i }));
   return code.length ? { start: Math.min(x.start, code.length - 1), code } : clone(x);

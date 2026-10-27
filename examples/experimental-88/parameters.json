@@ -1,0 +1,7 @@
+{
+  "afterimage": { "wire": 384, "hop": 1536, "direction": 1 },
+  "levy": { "step": 96, "width": 4, "guard": 2048 },
+  "riptide": { "offset": 1024, "stun": false, "ending": "idle", "carpet": 8 },
+  "telltale": { "offset": 512, "ending": "sweep", "carpet": 12 },
+  "undercurrent": { "offset": 1024, "tag": 3141 }
+}

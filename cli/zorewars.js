@@ -42,7 +42,9 @@ Developer tools (use every CPU core):
   zorewars tune <warrior.js> [--candidates 40] [--seeds 3] [--write]
                                                      search the warrior's // SPACE for better constants
   zorewars evolve [warrior...] [--generations 6] [--king w.js] [--genome 40] [--scratch] [--ties 0.5] [--out evolved]
-                                                     breed warriors: Red Queen rounds of MAP-Elites
+                                                     breed warriors with MAP-Elites or a population GA
+  zorewars train [warrior...] [--profiles 94nop,88,lp,94x|all] [--algorithm ga|map-elites] [--out evolved/training]
+                                                     train and validate a separate warrior per profile
   zorewars pushoff <entry...> --hill koenigstuhl:94nop|88|lp|94x [--rules NAME] [--length 50] [--top 50] [--save f]
                                                      predict a tournament place: round robin with a hill's
                                                      top warriors, then the iterative diversity push-off
@@ -60,7 +62,7 @@ Warriors:
 
 Options:
   --rounds N         rounds per match            (default 1 for battle, 10 for tournament)
-  --seed N           seed for load positions     (default 1)
+  --seed N           seed for load positions and evolution choices (default 1)
   --rules NAME       a standard hill's settings: 94nop, 88 (with ICWS'88 checks), lp, 94x
                      (no P-space); combine with e.g. --length 50 for a tournament
   --coresize N       core size                   (default ${DEFAULT_SETTINGS.coreSize})
@@ -76,9 +78,21 @@ Options:
                      later rounds follow pMARS's RNG, so results match pMARS
   --json             machine-readable output
   --classics         hill/tune/evolve: also play the Hall of Fame originals
+                     (fetched from the public archives each run; needs network)
   --scratch          evolve: start from random programs, no library genes or opponents (the library is only held out)
   --ties 0.5         evolve: what a tie with a champion counts (0..1); lower makes champions kill
-                     (fetched from the public archives each run; needs network)
+  --algorithm NAME   evolve/train: map-elites (diverse niches) or ga (population genetic algorithm)
+  --objective NAME   evolve/train: smooth or points (train defaults to points); evolve also
+                     takes pushoff: fitness is the place in a diversity push-off
+  --partner a,b      evolve --objective pushoff: our other entries, ranked beside each candidate
+  --population N     ga: maximum surviving population (default: --batch)
+  --eval-rounds N    evolution screening rounds per opponent (default 6)
+  --validate         evolve: compare finalists to the starting baseline on fresh placements (always on for train)
+  --check-rounds N   validation rounds per opponent and seed (default 30)
+  --seeds N          validation placement seeds (default 3, at least 2)
+  --finalists N      validation shortlist size (default 6)
+  --threads N        evolve/train: battle worker threads (default: CPU count)
+  --profiles LIST    train: default,94nop,88,lp,94x,94x-hill,plane,volume,volume-wide,volume-coprime,volume-cube or all
 
 pMARS's short options also work: -r -s -c -p -l -d -F -S (and -b -k are ignored),
 so 'pmars -r 100 -l 25 -d 100 a.red b.red' becomes 'zorewars battle -r 100 -l 25 -d 100 a.red b.red'.
@@ -96,7 +110,7 @@ function parseArgs(argv) {
     const a = argv[i];
     if (a.startsWith('--')) {
       const key = a.slice(2);
-      if (['json', 'help', 'report', 'classics', 'write', 'scratch', 'self'].includes(key)) args.flags[key] = true;
+      if (['json', 'help', 'report', 'classics', 'write', 'scratch', 'self', 'validate'].includes(key)) args.flags[key] = true;
       else args.flags[key] = argv[++i];
     } else if (a === '-h') args.flags.help = true;
     else if (/^-[A-Za-z]$/.test(a) && PMARS_FLAGS[a[1]]) args.flags[PMARS_FLAGS[a[1]]] = argv[++i];
@@ -522,6 +536,7 @@ switch (cmd) {
   case 'species': { const [m, h] = await devtools(); await m.cmdSpecies(args, h); break; }
   case 'tune': { const [m, h] = await devtools(); await m.cmdTune(args, h); break; }
   case 'evolve': { const [m, h] = await devtools(); await m.cmdEvolve(args, h); break; }
+  case 'train': { const [m, h] = await devtools(); await m.cmdTrain(args, h); break; }
   case 'pushoff': { const [m, h] = await devtools(); await m.cmdPushoff(args, h); break; }
   default: usage(`unknown command '${cmd}'`);
 }
