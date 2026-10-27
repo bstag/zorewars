@@ -359,7 +359,7 @@ export async function cmdPushoff(args, h) {
   if (!json) console.log(`Push-off: ${entries.length} entr${entries.length === 1 ? 'y' : 'ies'} + ${hill.length} hill warriors, ${rounds} rounds a pair (core ${settings.coreSize}, ${settings.maxProcesses} processes, ${settings.maxCycles} cycles)\n`);
   const pool = createPool();
   try {
-    const { scores, results } = await roundRobin(pool, all.map((x) => strip(x.w)), { rounds, settings: hillSettings, self: variant.self || !!args.flags.save, onProgress: (i, n) => progress(json, `round robin: ${i}/${n}`) });
+    const { scores, results } = await roundRobin(pool, all.map((x) => strip(x.w)), { rounds, seed: parseInt(args.flags.seed ?? '1', 10), settings: hillSettings, self: variant.self || !!args.flags.save, onProgress: (i, n) => progress(json, `round robin: ${i}/${n}`) });
     done(json);
     const warriors = all.map((x) => ({ name: x.w.name, entry: x.entry }));
     // --save: keep every result (self-fights too) to rank again with --load.
