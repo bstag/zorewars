@@ -39,11 +39,12 @@ export async function evolve({
   tieValue = 0.5,      // what a tie with a champion is worth, as a share of a tie's points (0..1)
   seed = 1, algorithm = 'map-elites', objective = 'smooth', populationSize = batchSize,
   partners = [],       // objective 'pushoff': our other entries, ranked beside each candidate
+  fieldRounds = 50,    // objective 'pushoff': rounds a pair for the field's own round robin
   onLog = () => {}, onRound = () => {},
 }) {
   settings = { ...DEFAULT_SETTINGS, ...settings };
   entrySettings = { ...DEFAULT_SETTINGS, ...entrySettings };
-  for (const [key, n] of Object.entries({ rounds, batches, batchSize, evalRounds, maxLength, populationSize })) {
+  for (const [key, n] of Object.entries({ rounds, batches, batchSize, evalRounds, maxLength, populationSize, fieldRounds })) {
     if (!Number.isInteger(n) || n < 1) throw new Error(`${key} must be a positive integer`);
   }
   if (!Number.isInteger(seed) || seed < 0 || seed > 2147483646) throw new Error('seed must be an integer from 0 to 2147483646');
@@ -74,7 +75,10 @@ export async function evolve({
   let base = null;
   if (objective === 'pushoff') {
     const ws = [...partners.map((w) => ({ name: w.name, group: 'partner', w: strip(w) })), ...opponents];
-    const rr = await roundRobin(pool, ws.map((x) => x.w), { rounds: Math.max(evalRounds, 10), seed: seed + 11, settings, self: true });
+    // Few rounds make every warrior's results noisy, and noise reads as
+    // diversity: at 10 rounds a pair the field looked so diverse that a real
+    // specialist (a vampire placed 7th) came last. Play the field properly.
+    const rr = await roundRobin(pool, ws.map((x) => x.w), { rounds: Math.max(evalRounds, fieldRounds), seed: seed + 11, settings, self: true });
     base = { ws, ...rr };
   }
   const placeOf = (a) => {

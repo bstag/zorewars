@@ -85,6 +85,7 @@ Options:
   --objective NAME   evolve/train: smooth or points (train defaults to points); evolve also
                      takes pushoff: fitness is the place in a diversity push-off
   --partner a,b      evolve --objective pushoff: our other entries, ranked beside each candidate
+  --field-rounds N   evolve --objective pushoff: rounds a pair for the field's round robin (50)
   --population N     ga: maximum surviving population (default: --batch)
   --eval-rounds N    evolution screening rounds per opponent (default 6)
   --validate         evolve: compare finalists to the starting baseline on fresh placements (always on for train)

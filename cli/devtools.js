@@ -188,6 +188,7 @@ export async function cmdEvolve(args, h, { quiet = false } = {}) {
   // --partner a.red,b.red: our other entries, ranked beside each candidate (--objective pushoff).
   const partners = args.flags.partner ? await h.loadAll(h.expandRefs(String(args.flags.partner).split(',')), settings, json) : [];
   if (partners.length && objective !== 'pushoff') h.usage('--partner needs --objective pushoff');
+  const fieldRounds = integer('field-rounds', 50);
   const maxLength = Math.min(settings.maxLength, integer('genome', 40));
   const entrySettings = { ...settings };
   if (hill) Object.assign(settings, hillSettingsFor(settings));   // genomes keep the entry limit above
@@ -199,7 +200,7 @@ export async function cmdEvolve(args, h, { quiet = false } = {}) {
     const geo = settings.topology === 'torus' ? makeGeometry(settings) : null;
     const r = await evolve({
       pool, sources, opponents: field, heldOut, settings, entrySettings, rounds: generations, batches, batchSize,
-      maxLength, kings, scratch, seed, algorithm, objective, evalRounds, populationSize, tieValue, partners,
+      maxLength, kings, scratch, seed, algorithm, objective, evalRounds, populationSize, tieValue, partners, fieldRounds,
       onLog: (t) => progress(json, t),
       onRound: (rec) => {
         done(json);

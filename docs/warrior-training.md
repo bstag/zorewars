@@ -121,11 +121,14 @@ SD-score diversity, the median of the eight points readings), so a warrior
 that wins in its own way beats a stronger copy of what the field already
 plays. `--partner a.red,b.red` enters our other entries beside each
 candidate; their places count half against it, so it isn't bred to push
-them out. The opponents' own round robin is played once at the start. Use it
-with `--hill` to train for a tournament:
+them out. The opponents' own round robin is played once at the start, at
+`--field-rounds` (default 50) a pair. Keep it and `--eval-rounds` high (20 or
+more): few rounds make results noisy, and noise reads as diversity. At 10
+rounds a pair the hill looked so diverse that a vampire placing 7th came
+last. Use it with `--hill` to train for a tournament:
 
 ```sh
-node cli/zorewars.js evolve my-entry.red --rules 88 --length 50 --genome 50 --hill koenigstuhl:88 --top 50 --objective pushoff --partner other-entry.red --out evolved/88-pushoff
+node cli/zorewars.js evolve my-entry.red --rules 88 --length 50 --genome 50 --hill koenigstuhl:88 --top 50 --objective pushoff --partner other-entry.red --eval-rounds 20 --out evolved/88-pushoff
 ```
 
 `--scratch` uses random initial programs and champion-only fitness. Library
