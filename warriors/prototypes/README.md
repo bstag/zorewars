@@ -75,13 +75,23 @@ Friend or foe in 3D: a tag in a body's first cell doesn't work, because a body a
 | `evolved-stream.red` | 40×20×10 | From the second from-scratch run (`--ties 0.1`): a DJN stream again, found independently of Gremlin, in 10 instructions and one process. 1.91; Volume Queen 30-0; ties Gremlin 30 rounds in 30 |
 | `evolved-depth-imp.red` | 40×20×10 | From the first evolver run with TRN: it invented a depth imp (copies `MOV.I $0,$[0,0,1]` under a `TRN $[0,0,1]`, as Lift does) |
 
+## Ring hill formulas
+
+The two openings that dominate the Koenigstuhl ring hills (top 50 of 94nop, LP, 94x and '88): a quickscan in front of the main program, and a paper and a stone launched as separate parts. Scores are against the library and classics on 80×10×10 (`hill --torus 80x10x10 --classics --rounds 30 --seed 4242`); places are a diversity push-off against every 3D library and prototype warrior that compiles there (51), each candidate alone, median of 8 readings.
+
+| File | Field | Idea | Result | Why |
+| --- | --- | --- | --- | --- |
+| `quickdraft.js` | 80×10×10 | Backdraft with a quickscan of 12 cell pairs; a find gets an SPL 0 then DAT block, then Backdraft runs as usual (constants from `tune`) | 2.46, the same as Backdraft; push-off 4.5th (Backdraft 4th) | In 3D a body is at most 40 cells, so 24 checks find it a few percent of the time; ring hill warriors are far bigger targets. It beats Gremlin 17-4 (Backdraft 10-18) but its body is twice Backdraft's, so papers and scanners hit it more |
+| `mortar.js` | 80×10×10 | Volume Silk plus a separate Cubist lattice stone (1 to 16 stone processes) | 1.94 (Volume Silk 2.00) at every process count; push-off 4th but 2nd-28th (Volume Silk 3rd, 2nd-8th) | A stone can't kill a paper in 3D: it ties every paper 30-0-30, as Volume Silk does. Its odd profile places well under some readings and badly under others |
+| `mortarclear.js` | 80×10×10 | Volume Silk plus a separate backward DAT clear; with `K`, a paper that stops copying after K loops | 1.25-1.67 | The paper's processes take the clear's turns, so it never finishes a sweep: 1,000 ties. Limiting the paper starves it instead |
+
 ## What they tell us about what's possible
 
 1. **On an 8,000-cell volume the clear is king, and you beat it by seeing it coming, not by hiding.** A clear counts through every cell in number order, so no position is safe. But its front is predictable and its code never moves: Leapfrog (in the library) watches one marker in the one direction the front comes from and beats every clear. More markers (Sentry) or random directions only make it worse.
 2. **`SPL 0` wins because it floods, not because it traps.** Every enemy process caught on `SPL 0` spawns another and fills the enemy's queue, so its working processes hardly run. Traps that only hold (the fang clears) lose to papers, however fast they kill.
 3. **One process reacts; many processes survive; a warrior can't be both.** Turns belong to the warrior, not the process: four copies scan no faster than one. Leapfrog's dodge needs every turn in one process; a paper needs many processes, which leaves each one slow (Frogspawn, Shield Swarm's copies). A one-process body loses to papers however well it shoots (Bullfrog, Battleship); four bodies at least tie them (Scanner Swarm).
 4. **Your own weapons are a hazard in 3D.** A clear stuns its own imp (Queen Imp); sibling copies clear each other (Frogspawn); two processes sharing one counter drift apart after a move (Dodging Queen).
-5. **Mixing two jobs in one warrior costs more than it gains; switching between rounds doesn't.** Every two-job hybrid here scored below its best parent. Volume Chameleon, which plays one strategy per round and switches with P-space, is the best on 80×10×10.
+5. **Mixing two jobs in one warrior costs more than it gains; switching between rounds doesn't.** Every two-job hybrid here scored below its best parent. That holds even when the two jobs are separate parts with their own processes, the ring hills' paper/stone (Mortar): turns belong to the warrior, so the part with more processes takes the other's turns. Volume Chameleon, which plays one strategy per round and switches with P-space, is the best on 80×10×10.
 6. **Geometry traps to remember:**
    - Addresses and ADD work per axis; DJN, `>`/`<` pointers and comparisons count as plain numbers. A sweep that counts goes through rows in order; a step that adds stays in its row.
    - A body that straddles the end of its row still runs, but in number order it's two pieces, so a number-order guard (a sweep that stops at a marker) can miss the stray piece (the random-hop Leapfrogs clear themselves at cycle 71,554).

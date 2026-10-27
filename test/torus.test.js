@@ -227,7 +227,7 @@ test('3D warriors: each survives alone on its battlefield and beats Dwarf there'
 });
 
 test('prototypes: every 3D prototype still compiles on its battlefield', () => {
-  const field = (f) => /^(sentry|fleet-scatter|bullfrog|dodgingqueen|scannerswarm|shieldswarm|leapfrog2)/.test(f) ? torus(80, 10, 10) : /coprime/.test(f) ? torus(41, 20, 9) : /^oneshot2/.test(f) ? { ...DEFAULT_SETTINGS } : torus(40, 20, 10);
+  const field = (f) => /^(sentry|fleet-scatter|bullfrog|dodgingqueen|scannerswarm|shieldswarm|leapfrog2|quickdraft|mortar)/.test(f) ? torus(80, 10, 10) : /coprime/.test(f) ? torus(41, 20, 9) : /^oneshot2/.test(f) ? { ...DEFAULT_SETTINGS } : torus(40, 20, 10);
   const files = fs.readdirSync(path.join(root, 'warriors/prototypes')).filter((f) => /\.(js|red)$/.test(f));
   assert.ok(files.length >= 26);
   for (const f of files) {
