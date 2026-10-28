@@ -82,7 +82,12 @@ Options:
   --scratch          evolve: start from random programs, no library genes or opponents (the library is only held out)
   --ties 0.5         evolve: what a tie with a champion counts (0..1); lower makes champions kill
   --algorithm NAME   evolve/train: map-elites (diverse niches) or ga (population genetic algorithm)
-  --objective NAME   evolve/train: smooth or points (train defaults to points); evolve also
+  --selection NAME   default parent selection or lexicase (preserve opponent specialists)
+  --epsilon N        lexicase tolerance; auto uses median absolute deviation (default auto)
+  --descriptor NAME  map-elites: species (solo behaviour) or outcomes (win/tie rates per opponent)
+  --archive-size N   outcome archive capacity (default 64)
+  --local-steps N    numeric refinement attempts for improving offspring (default 0)
+  --objective NAME   evolve/train: smooth or points (train defaults to points); also
                      takes pushoff: fitness is the place in a diversity push-off
   --partner a,b      evolve --objective pushoff: our other entries, ranked beside each candidate
   --field-rounds N   evolve --objective pushoff: rounds a pair for the field's round robin (50)

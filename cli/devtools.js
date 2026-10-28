@@ -151,13 +151,22 @@ export async function cmdEvolve(args, h, { quiet = false } = {}) {
   if (seed > 2147483646) h.usage('--seed must be <= 2147483646');
   const algorithm = args.flags.algorithm ?? 'map-elites';
   const objective = args.flags.objective ?? 'smooth';
+  const selection = args.flags.selection ?? 'default';
+  const descriptor = args.flags.descriptor ?? 'species';
+  const epsilon = args.flags.epsilon === undefined || args.flags.epsilon === 'auto' ? 'auto' : Number(args.flags.epsilon);
   if (!['map-elites', 'ga'].includes(algorithm)) h.usage('--algorithm takes map-elites or ga');
   if (!['smooth', 'points', 'pushoff'].includes(objective)) h.usage('--objective takes smooth, points or pushoff');
+  if (!['default', 'lexicase'].includes(selection)) h.usage('--selection takes default or lexicase');
+  if (!['species', 'outcomes'].includes(descriptor)) h.usage('--descriptor takes species or outcomes');
+  if (descriptor === 'outcomes' && (algorithm !== 'map-elites' || args.flags.scratch)) h.usage('--descriptor outcomes needs --algorithm map-elites without --scratch');
+  if (epsilon !== 'auto' && (!Number.isFinite(epsilon) || epsilon < 0)) h.usage('--epsilon takes auto or a nonnegative number');
   if (objective === 'pushoff' && args.flags.scratch) h.usage('--objective pushoff ranks against a field: not with --scratch');
   const tieValue = Number(args.flags.ties ?? 0.5);
   if (!Number.isFinite(tieValue) || tieValue < 0 || tieValue > 1) h.usage('--ties must be from 0 to 1');
   const evalRounds = integer('eval-rounds', args.flags.rounds ?? 6);
   const populationSize = integer('population', batchSize);
+  const archiveSize = integer('archive-size', 64);
+  const localSteps = integer('local-steps', 0, 0);
   const checkRounds = integer('check-rounds', 30);
   const seeds = integer('seeds', 3, 2);
   const finalists = integer('finalists', 6);
@@ -201,6 +210,7 @@ export async function cmdEvolve(args, h, { quiet = false } = {}) {
     const r = await evolve({
       pool, sources, opponents: field, heldOut, settings, entrySettings, rounds: generations, batches, batchSize,
       maxLength, kings, scratch, seed, algorithm, objective, evalRounds, populationSize, tieValue, partners, fieldRounds,
+      selection, epsilon, descriptor, archiveSize, localSteps,
       onLog: (t) => progress(json, t),
       onRound: (rec) => {
         done(json);
@@ -211,17 +221,17 @@ export async function cmdEvolve(args, h, { quiet = false } = {}) {
         const vs = c.vsAncestors ? ` | vs ancestors ${(c.vsAncestors.reduce((s, x) => s + x.pts, 0) / c.vsAncestors.length).toFixed(2)} pts/round` : '';
         const held = c.heldOut ? ` | held-out ${scratch ? 'library' : 'classics'} ${c.heldOut.score.toFixed(2)}` : '';
         const fitText = c.places ? `push-off place ${c.places[0]}${c.places.length > 1 ? ` (partners ${c.places.slice(1).join(', ')})` : ''}` : `fitness ${c.fit.toFixed(2)}`;
-        console.log(`generation ${rec.round}: ${rec.cells} ${algorithm === 'ga' ? 'population members' : 'species cells'} (${rec.placed} archive updates) | champion ${fitText}, ${c.species.hint}, ${c.g.code.length} instructions${vs}${held}  -> ${file}`);
+        console.log(`generation ${rec.round}: ${rec.cells} ${algorithm === 'ga' ? 'population members' : `${descriptor} cells`} (${rec.placed} archive updates) | champion ${fitText}, ${c.species.hint}, ${c.g.code.length} instructions${vs}${held}  -> ${file}`);
       },
     });
     for (const x of r.archive) {
       const [p, c, shape] = x.cell.split(',');
-      const tag = `p${p}-c${c}${shape ? `-s${shape}` : ''}`;
+      const tag = descriptor === 'outcomes' ? x.cell : `p${p}-c${c}${shape ? `-s${shape}` : ''}`;
       fs.writeFileSync(path.join(out, `elite-${tag}.red`), toRedcode(x.g, { name: `Elite ${tag.replaceAll('-', ' ')}`, coreSize: settings.coreSize, geo, dialect: settings.dialect, strategy: `Best evolved ${x.species.hint} (${x.species.processes} processes, ${x.species.coverage} cells), zorewars evolve.` }));
     }
     r.inputs = {
       sources: sources.map((s) => ({ name: s.w.name, role: s.role, w: s.w })),
-      opponents: field, heldOut, kings: kings.map(strip),
+      opponents: field, heldOut, kings: kings.map(strip), partners: partners.map(strip),
     };
     if (args.flags.validate) {
       // Scratch remains independent of the library: validate against its
@@ -229,20 +239,20 @@ export async function cmdEvolve(args, h, { quiet = false } = {}) {
       const validationField = scratch ? r.champions.map((c) => ({ name: c.name, group: 'champion', w: c.w })) : field;
       r.validation = await validateCandidates({ pool, baseline: r.baseline,
         candidates: [...(r.population ?? r.archive), ...r.champions.slice().reverse()], field: validationField,
-        settings, seed, seeds, rounds: checkRounds, finalists,
+        settings, seed, seeds, rounds: checkRounds, finalists, objective, partners, fieldRounds,
         onProgress: (i, n) => progress(json, `Validating finalist ${i}/${n} on fresh placements…`),
       });
       const best = r.validation.results.find((c) => c.id === r.validation.recommended);
       fs.writeFileSync(path.join(out, 'best.red'), toRedcode(best.g, { name: `Recommended ${algorithm}`, coreSize: settings.coreSize, geo,
-        dialect: settings.dialect, strategy: r.validation.improved ? `Validated improvement over starting baseline (${best.gain.toFixed(3)} points per round).` : 'Starting baseline retained: no finalist cleared the validation noise margin.' }));
+        dialect: settings.dialect, strategy: r.validation.improved ? `Validated ${objective} improvement over starting baseline (gain ${best.gain.toFixed(3)}).` : 'Starting baseline retained: no finalist cleared the validation noise margin.' }));
       if (!json) console.log(`\nValidation: ${r.validation.improved ? 'improved version' : 'starting baseline retained'} -> ${path.join(out, 'best.red')}`);
     }
     fs.writeFileSync(path.join(out, 'evolve.json'), JSON.stringify(r, null, 1));
     if (quiet) return r;
     if (json) { console.log(JSON.stringify({ ok: true, out, config: r.config, stats: r.stats, validation: r.validation, champions: r.champions.map(({ w, ...c }) => c), archive: r.archive, operators: r.operators }, null, 2)); return r; }
-    console.log(`\nFinal archive: ${r.archive.length} species, best first`);
+    console.log(`\nFinal archive: ${r.archive.length} ${descriptor} niches, best first`);
     h.printTable(r.archive.slice(0, 12).map((x) => ({ Cell: x.cell, Usually: x.species.hint, Processes: x.species.processes, 'Cells run': x.species.coverage, Length: x.g.code.length, Fitness: x.fit.toFixed(2) })));
-    console.log(`\nWritten to ${out}/: redqueen-N.red (each generation's champion), elite-pP-cC.red (best of each species), evolve.json.`);
+    console.log(`\nWritten to ${out}/: redqueen-N.red (each generation's champion), elite-*.red (niche elites), evolve.json.`);
     console.log(`Try one: zorewars hill ${out}/redqueen-${generations}.red --classics`);
     return r;
   } finally { pool.close(); }
@@ -264,11 +274,12 @@ export async function cmdTrain(args, h) {
     const best = r.validation.results.find((c) => c.id === r.validation.recommended);
     const base = r.validation.results.find((c) => c.id === r.validation.baseline);
     const result = { profile: profile.name, file: path.join(directory, 'best.red'), report: path.join(directory, 'evolve.json'),
-      improved: r.validation.improved, score: best.score, baseline: base.score, gain: best.gain, margin: best.margin, config: r.config };
+      improved: r.validation.improved, objective: r.validation.objective, objectiveValue: best.objectiveValue,
+      score: best.score, baseline: base.score, gain: best.gain, margin: best.margin, config: r.config };
     campaign.profiles.push(result);
     // Persist after each profile so completed runs survive interruption.
     fs.writeFileSync(path.join(out, 'training.json'), JSON.stringify(campaign, null, 2));
-    if (!args.flags.json) console.log(`${profile.name}: ${best.score.toFixed(3)} pts/round (${r.validation.improved ? `gain +${best.gain.toFixed(3)}` : 'baseline retained'}) -> ${result.file}`);
+    if (!args.flags.json) console.log(`${profile.name}: ${best.score.toFixed(3)} pts/round (${r.validation.improved ? `${r.validation.objective} gain +${best.gain.toFixed(3)}` : 'baseline retained'}) -> ${result.file}`);
   }
   if (args.flags.json) console.log(JSON.stringify(campaign, null, 2));
 }

@@ -1,7 +1,7 @@
 // Ruleset campaigns and a final, placement-held-out comparison. Search scores
 // are never used as evidence that an exported version improved its baseline.
 import { RULESETS } from '../src/engine/index.js';
-import { evaluate } from './hill.js';
+import { createObjective } from './objective.js';
 import { genomeId } from './evolve.js';
 import { toWarrior } from './genes.js';
 
@@ -26,10 +26,11 @@ export function trainingProfiles(spec = '94nop,88,lp,94x') {
 
 export async function validateCandidates({ pool, baseline, candidates, field, settings,
   seed = 1, seeds = 3, rounds = 30, finalists = 6, onProgress = () => {},
+  objective = 'points', partners = [], fieldRounds = 50,
 }) {
   if (!baseline) throw new Error('validation needs a surviving starting warrior');
   if (!field.length) throw new Error('validation needs opponents');
-  for (const [key, value] of Object.entries({ seeds, rounds, finalists })) {
+  for (const [key, value] of Object.entries({ seeds, rounds, finalists, fieldRounds })) {
     if (!Number.isInteger(value) || value < (key === 'seeds' ? 2 : 1)) throw new Error(`${key} must be an integer >= ${key === 'seeds' ? 2 : 1}`);
   }
   const unique = new Map();
@@ -41,12 +42,17 @@ export async function validateCandidates({ pool, baseline, candidates, field, se
   // Disjoint from the small offsets used for training generations. Every
   // finalist and the baseline receive the same placements and opponent order.
   const seedList = Array.from({ length: seeds }, (_, i) => (seed + 100000000 + i * 10000) % 2147483646 + 1);
+  // Each fresh seed gets its own common field matrix for push-off. It is
+  // reused by every finalist; search's noisy matrix is never validation data.
+  const targets = [];
+  for (const matchSeed of seedList) targets.push(await createObjective({ pool, opponents: field, settings,
+    objective, partners, rounds, fieldRounds, seed: matchSeed }));
   const results = [];
   for (const [i, candidate] of checked.entries()) {
     const runs = [];
-    for (const matchSeed of seedList) runs.push(await evaluate(pool, toWarrior(candidate.g, 'Validation', settings.coreSize), field, { rounds, seed: matchSeed, settings }));
+    for (let j = 0; j < seedList.length; j++) runs.push(await targets[j].assess(toWarrior(candidate.g, 'Validation', settings.coreSize)));
     const mean = (key) => runs.reduce((sum, r) => sum + r[key], 0) / runs.length;
-    const rows = field.map((opponent, j) => ({
+    const rows = targets[0].field.map((opponent, j) => ({
       name: opponent.name, category: opponent.category, group: opponent.group,
       wins: runs.reduce((sum, r) => sum + r.rows[j].w, 0),
       losses: runs.reduce((sum, r) => sum + r.rows[j].l, 0),
@@ -54,7 +60,8 @@ export async function validateCandidates({ pool, baseline, candidates, field, se
       score: runs.reduce((sum, r) => sum + r.rows[j].pts, 0) / seeds,
     }));
     results.push({ id: genomeId(candidate.g), g: candidate.g, baseline: !!candidate.baseline,
-      score: mean('score'), smooth: mean('smooth'), rows, samples: runs.map((r) => r.score) });
+      score: mean('score'), smooth: mean('smooth'), objectiveValue: mean('fit'), rows,
+      ...(objective === 'pushoff' ? { places: runs.map((r) => r.places) } : {}), samples: runs.map((r) => r.fit) });
     onProgress(i + 1, checked.length);
   }
   const base = results[0];
@@ -71,7 +78,8 @@ export async function validateCandidates({ pool, baseline, candidates, field, se
     delete result.samples;
   }
   const better = results.filter((r) => r.improved).sort((a, b) => b.gain - a.gain)[0];
-  return { seeds: seedList, rounds, opponents: field.map(({ w, ...o }) => o),
+  return { objective, fieldRounds, partners: partners.map((w) => w.name), seeds: seedList, rounds,
+    opponents: targets[0].field.map(({ w, ...o }) => o),
     improved: !!better, recommended: (better ?? base).id, baseline: base.id,
-    results: results.sort((a, b) => b.score - a.score) };
+    results: results.sort((a, b) => b.objectiveValue - a.objectiveValue) };
 }

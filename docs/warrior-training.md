@@ -100,6 +100,42 @@ opponents:
   positions used by relative branches. MAP-Elites retains the original,
   more disruptive splice crossover at 20%.
 
+The following options extend those searches without changing their defaults:
+
+- `--selection lexicase` selects parents using shuffled per-opponent cases.
+  Each case keeps candidates within epsilon of its best score. The default
+  `--epsilon auto` uses that case's median absolute deviation; a nonnegative
+  number gives a fixed tolerance in points/smooth-score units. In GA mode,
+  survival also uses lexicase without replacement after keeping the overall
+  elite, so scalar truncation does not immediately discard specialists.
+- `--descriptor outcomes` replaces MAP-Elites' solo-species cells with a
+  CVT archive of win and tie rates against the fixed starting field, including
+  partners for push-off. Loss rate is implicit. `--archive-size` caps its
+  cells (default 64). Seeded centroids and probe identities stay fixed; every
+  generation remeasures outcomes on its common placements and reassigns the
+  surviving elites. New Red Queen champions affect fitness and lexicase cases,
+  but never change descriptor dimensions. This option needs MAP-Elites and a
+  starting field; it is unavailable with `--scratch`.
+- `--local-steps N` adds bounded memetic refinement to offspring that improve
+  on their parent. It uses the existing numeric `retune` operator (axis
+  mutation on tori), retaining scalar improvements along the local trajectory.
+  Other trials may still enter a different archive niche. Every trial uses
+  the same current-generation opponents, seeds and strict survival checks.
+  The default is zero; local search consumes additional evaluations.
+
+Existing step/parameter tuning remains available through `tune` and the
+architecture grids in `scripts/explore-88.js`. `tune` searches a generator's
+declared `P`/`SPACE` parameters and recompiles its related expressions. Numeric
+refinement inside evolution operates on compiled operands; it does not know
+which operands originally shared a parameter. It is an integration of the
+existing mutation machinery, not a replacement for generator tuning or a
+symbol-aware program representation. Structural crossover still has the
+relative-reference limitations described above.
+
+```sh
+node cli/zorewars.js evolve --rules 88 --length 50 --genome 50 --algorithm map-elites --selection lexicase --descriptor outcomes --archive-size 32 --local-steps 2 --objective points --validate --seed 4242 --out evolved/outcomes-88
+```
+
 Mutations retune fields, change opcodes/modifiers/modes, remove instructions,
 add process launches, or graft library slices. On tori they can also change
 one axis, swap axes, lift a vector off its row, or insert a turn. P-space
@@ -145,8 +181,14 @@ population members (or niche elites) and champions provide the shortlist;
 duplicate genomes are checked once. The baseline is always checked too.
 
 Validation uses new placement seeds, identical for every candidate and the
-baseline, and measures actual tournament points. For each seed it averages
-across opponents, then compares the paired candidate-minus-baseline scores.
+baseline, and follows the selected objective: tournament points, smooth
+survival reward, or push-off placement with the same partner weighting and
+points tie-breaker as search. Push-off rebuilds a common opponent/partner
+round robin for each fresh seed, reused by every finalist; candidates are
+entered separately, never against the other finalists. For each seed it
+compares the paired candidate-minus-baseline objective values. Reports retain
+ordinary points and smooth scores alongside `objectiveValue`; push-off also
+records the candidate and partner median places for each seed.
 The noise margin is 2.5 standard errors of those seed-level gains. An evolved
 candidate replaces the baseline only when its mean gain exceeds that margin.
 The same opponent field is used, so this tests new placements, **not**
@@ -162,9 +204,14 @@ Each profile directory contains:
 - `elite-pP-cC[-sS].red`: the best final program in each occupied niche. In GA
   mode these summarise its final population, rather than an independent
   historical diversity archive.
+- `elite-oN.red`: outcome-descriptor elites, when that descriptor is selected.
 - `evolve.json`: exact settings, seed, algorithm, baseline, champions, final
   population/archive, operator credits, genotype IDs and parent IDs, compiled
   input snapshots, validation seeds, per-opponent wins/losses/ties and gains.
+  Outcome runs also retain the probe panel, centroids and elite descriptors.
+  `stats.matches` and `stats.battleRounds` count actual search matches/rounds,
+  including champion checks and the push-off field matrix, excluding final
+  validation. `localTried` and `localImproved` report numeric refinement work.
 
 `training.json` summarises completed profiles and points to each version and
 report. It is saved after each profile; interrupted searches keep already
@@ -172,6 +219,20 @@ completed profiles and generation champion files. Reusing an output directory
 overwrites files from that run and may leave older extra files; the manifest
 and report describe the current run. Use a new `--out` for each experiment.
 Generated outputs under `evolved/` are ignored by Git.
+
+The initial comparison and its limitations are recorded in
+[`evolution-experiments.md`](evolution-experiments.md).
+
+`node scripts/compare-evolution.js --threads 4` runs six ablations on the
+actual '88/50-instruction battlefield, across three evolution seeds. It
+compares GA, lexicase GA, species MAP-Elites, outcome MAP-Elites, outcome plus
+lexicase, and the latter with local refinement. All use identical sources,
+offspring schedules and fresh-seed validation. Five experimental '88 warriors
+are checked separately and never used for selection. `comparison.json`
+records actual search battle counts and elapsed times: this is an initial
+capability comparison, not an equal-compute benchmark or a prediction of
+public-hill strength. `--variants ga,memetic`, `--seeds 4242`, `--generations`,
+`--batch`, `--eval-rounds`, `--check-rounds` and `--out` allow smaller runs.
 
 The seed controls all evolutionary choices and match placements; changing the
 number of workers does not change the result for the same inputs and engine.

@@ -1,10 +1,11 @@
 // The evolver: Red Queen rounds of MAP-Elites, after Digital Red Queen
-// (Sakana AI and MIT, https://github.com/SakanaAI/drq), with two changes:
+// (Sakana AI and MIT, https://github.com/SakanaAI/drq). In this version,
 // children are made by repairs chosen from how their parent loses (genes.js),
 // and fitness can use tournament points or the smooth score. The alternative
-// GA keeps an elitist population with tournament parent selection.
+// GA keeps an elitist population with tournament or epsilon-lexicase
+// selection. MAP-Elites can use outcome niches; either can refine numbers.
 //
-// - Archive (MAP-Elites): one elite per species cell (src/engine/species.js).
+// - Archive (MAP-Elites): one elite per solo species or outcome CVT cell.
 //   A child only has to beat the elite of its own kind to be kept, so papers,
 //   stones and scanners all keep improving instead of one family taking over.
 // - Red Queen: each round's champion joins the opponents. Fitness is half
@@ -26,7 +27,8 @@ import { createHash } from 'node:crypto';
 import { compile, DEFAULT_SETTINGS, measureSpecies, mulberry32 } from '../src/engine/index.js';
 import { makeGeometry } from '../src/engine/geometry.js';
 import { evaluate, strip } from './hill.js';
-import { roundRobin, medianPlaces } from './pushoff.js';
+import { createObjective } from './objective.js';
+import { lexicase, lexicaseSurvivors, outcomeNiches } from './selection.js';
 import { makeGenePool, makeOperators, makeChooser, crossover, fits, clone, graft, genomeOf, pick as choose, toWarrior, toRedcode, randomGenome, legal88, MAXLEN } from './genes.js';
 
 export const genomeId = (g) => createHash('sha256').update(JSON.stringify(g)).digest('hex').slice(0, 16);
@@ -38,17 +40,23 @@ export async function evolve({
   scratch = false,     // from scratch: random programs, no gene pool, fitness only against champions
   tieValue = 0.5,      // what a tie with a champion is worth, as a share of a tie's points (0..1)
   seed = 1, algorithm = 'map-elites', objective = 'smooth', populationSize = batchSize,
+  selection = 'default', epsilon = 'auto', descriptor = 'species', archiveSize = 64, localSteps = 0,
   partners = [],       // objective 'pushoff': our other entries, ranked beside each candidate
   fieldRounds = 50,    // objective 'pushoff': rounds a pair for the field's own round robin
   onLog = () => {}, onRound = () => {},
 }) {
   settings = { ...DEFAULT_SETTINGS, ...settings };
   entrySettings = { ...DEFAULT_SETTINGS, ...entrySettings };
-  for (const [key, n] of Object.entries({ rounds, batches, batchSize, evalRounds, maxLength, populationSize, fieldRounds })) {
+  for (const [key, n] of Object.entries({ rounds, batches, batchSize, evalRounds, maxLength, populationSize, fieldRounds, archiveSize })) {
     if (!Number.isInteger(n) || n < 1) throw new Error(`${key} must be a positive integer`);
   }
   if (!Number.isInteger(seed) || seed < 0 || seed > 2147483646) throw new Error('seed must be an integer from 0 to 2147483646');
   if (!['map-elites', 'ga'].includes(algorithm)) throw new Error('algorithm must be map-elites or ga');
+  if (!['default', 'lexicase'].includes(selection)) throw new Error('selection must be default or lexicase');
+  if (epsilon !== 'auto' && (!Number.isFinite(epsilon) || epsilon < 0)) throw new Error('epsilon must be auto or a nonnegative number');
+  if (!['species', 'outcomes'].includes(descriptor)) throw new Error('descriptor must be species or outcomes');
+  if (descriptor === 'outcomes' && (algorithm !== 'map-elites' || !opponents.length || scratch)) throw new Error('outcome niches need map-elites with a fixed opponent field, not scratch');
+  if (!Number.isInteger(localSteps) || localSteps < 0) throw new Error('localSteps must be a nonnegative integer');
   if (!['smooth', 'points', 'pushoff'].includes(objective)) throw new Error('objective must be smooth, points or pushoff');
   if (objective === 'pushoff' && !opponents.length) throw new Error('objective pushoff needs opponents (a field to rank in)');
   if (!Number.isFinite(tieValue) || tieValue < 0 || tieValue > 1) throw new Error('tieValue must be from 0 to 1');
@@ -67,36 +75,15 @@ export async function evolve({
   const champions = kings.map((w) => ({ round: 0, name: w.name, g: genomeOf(w), w: strip(w) }));
   const coreSize = settings.coreSize;
   const measured = new Map(), assessed = new Map(), lineage = new Map();
-  const stats = { evaluated: 0, cacheHits: 0, rejected: 0 };
+  const stats = { evaluated: 0, cacheHits: 0, rejected: 0, matches: 0, battleRounds: 0, localTried: 0, localImproved: 0 };
+  const runner = pool;
+  pool = { match(task) { stats.matches++; stats.battleRounds += task.settings.rounds; return runner.match(task); } };
   const metric = objective === 'smooth' ? 'smooth' : 'score';
   const rowMetric = objective === 'smooth' ? 'smooth' : 'pts';
-  // Push-off: the partners and opponents play each other once (self-fights
-  // too); each candidate then plays them all and itself.
-  let base = null;
-  if (objective === 'pushoff') {
-    const ws = [...partners.map((w) => ({ name: w.name, group: 'partner', w: strip(w) })), ...opponents];
-    // Few rounds make every warrior's results noisy, and noise reads as
-    // diversity: at 10 rounds a pair the field looked so diverse that a real
-    // specialist (a vampire placed 7th) came last. Play the field properly.
-    const rr = await roundRobin(pool, ws.map((x) => x.w), { rounds: Math.max(evalRounds, fieldRounds), seed: seed + 11, settings, self: true });
-    base = { ws, ...rr };
-  }
-  const placeOf = (a) => {
-    const n = base.ws.length + 1;
-    const res = (r) => ({ w: r.w, l: r.l, t: r.t, rounds: r.w + r.l + r.t });
-    const pts = (r) => (3 * r.w + r.t) / r.rounds;
-    const scores = Array.from({ length: n }, (_, i) => (i ? [0, ...base.scores[i - 1]] : new Array(n).fill(0)));
-    const results = Array.from({ length: n }, (_, i) => (i ? [null, ...base.results[i - 1]] : new Array(n).fill(null)));
-    a.rows.forEach((row, k) => {
-      const r = res(row);
-      if (k === base.ws.length) { results[0][0] = r; return; }   // the self-fight
-      const flip = { w: r.l, l: r.w, t: r.t, rounds: r.rounds };
-      results[0][k + 1] = r; results[k + 1][0] = flip; scores[0][k + 1] = pts(r); scores[k + 1][0] = pts(flip);
-    });
-    const places = medianPlaces(scores, results, ['candidate', ...base.ws.map((x) => x.name)], [0, ...partners.map((_, k) => k + 1)]);
-    // Lower places are better; points break ties between equal places.
-    return { fit: -(places[0] + places.slice(1).reduce((s, p) => s + p, 0) / 2) + a.score / 100, places };
-  };
+  const target = await createObjective({ pool, opponents, partners, settings, objective, rounds: evalRounds, fieldRounds, seed });
+  const outcomes = descriptor === 'outcomes'
+    ? outcomeNiches(target.field.length, archiveSize, mulberry32(seed ^ 0x6a09e667)) : null;
+  const cellOf = (x) => outcomes ? outcomes.cell(x.descriptor) : niche(x.species);
 
   async function assess(input, round, origin = { operator: 'seed', parents: [] }) {
     let g = clone(input);
@@ -117,25 +104,27 @@ export async function evolve({
     if (!m) { stats.rejected++; assessed.set(id, null); return null; }
     const { w, species } = m;
     const matchSeed = (seed + round * 1000) % 2147483646 + 1;
-    const field = base ? [...base.ws, { name: 'self', group: 'self', w: strip(w) }] : opponents;
-    const a = field.length ? await evaluate(pool, w, field, { rounds: evalRounds, seed: matchSeed, settings, diagnose: true }) : null;
-    let fit = a ? a[metric] : 0, places;
-    if (base) ({ fit, places } = placeOf(a));
+    const a = target.field.length ? await target.assess(w, { seed: matchSeed, diagnose: true }) : null;
+    let fit = a?.fit ?? 0;
+    const rows = a ? a.rows.slice(0, target.field.length).map((r) => ({ ...r, value: r[rowMetric] })) : [];
     const sym = a ? { ...a.symptoms } : {};
-    if (champions.length && !base) {
+    if (champions.length && objective !== 'pushoff') {
       const c = await evaluate(pool, w, champions.map((x) => ({ name: x.name, group: 'champion', w: x.w })), { rounds: evalRounds, seed: matchSeed, settings, diagnose: true });
       const vsChamps = c.rows.reduce((s, r) => s + r[rowMetric] - ((1 - tieValue) * r.t) / evalRounds, 0) / c.rows.length;
       fit = a ? (a[metric] + vsChamps) / 2 : vsChamps;
+      rows.push(...c.rows.map((r) => ({ ...r, value: r[rowMetric] - ((1 - tieValue) * r.t) / evalRounds })));
       for (const k in c.symptoms) sym[k] = (sym[k] ?? 0) + c.symptoms[k];
     }
-    const result = { id, g, fit, sym, species, ...(places ? { places } : {}) };
+    const result = { id, g, fit, sym, species, cases: rows.map((r) => r.value), rows,
+      ...(outcomes ? { descriptor: outcomes.describe(a.rows.slice(0, target.field.length)) } : {}),
+      ...(a?.places ? { places: a.places } : {}) };
     stats.evaluated++;
     assessed.set(id, result);
     return result;
   }
   const place = (archive, x) => {
     if (!x) return false;
-    const key = algorithm === 'ga' ? x.id : niche(x.species);
+    const key = algorithm === 'ga' ? x.id : cellOf(x);
     const cur = archive.get(key);
     if (cur && cur.fit >= x.fit) return false;
     archive.set(key, x);
@@ -185,7 +174,12 @@ export async function evolve({
       if (round === 1 && i < originalCount && x && (!baseline || x.fit > baseline.fit)) baseline = x;
     }
     const prune = () => {
-      if (algorithm === 'ga') archive = new Map([...archive.entries()].sort((a, b) => b[1].fit - a[1].fit).slice(0, populationSize));
+      if (algorithm === 'ga') {
+        const all = [...archive.values()];
+        const kept = selection === 'lexicase' ? lexicaseSurvivors(all, populationSize, random, epsilon)
+          : all.sort((a, b) => b.fit - a.fit).slice(0, populationSize);
+        archive = new Map(kept.map((x) => [x.id, x]));
+      }
     };
     prune();
     let placed = 0;
@@ -194,7 +188,7 @@ export async function evolve({
       if (!elites.length) break;
       const kids = [];
       for (let tries = 0; kids.length < batchSize && tries < batchSize * 20; tries++) {
-        const parent = () => algorithm === 'ga'
+        const parent = () => selection === 'lexicase' ? lexicase(elites, random, epsilon) : algorithm === 'ga'
           ? Array.from({ length: 3 }, () => pick(elites)).sort((a, b) => b.fit - a.fit)[0]
           : pick(elites);
         const p = parent();
@@ -205,9 +199,17 @@ export async function evolve({
         if (child && fits(child, maxLength)) kids.push({ child, op, parent: p, mate });
       }
       for (const k of kids) {
-        const x = await assess(k.child, round, { operator: k.op, parents: [k.parent.id, ...(k.mate ? [k.mate.id] : [])] });
+        let x = await assess(k.child, round, { operator: k.op, parents: [k.parent.id, ...(k.mate ? [k.mate.id] : [])] });
         chooser.record(k.op, !!x && x.fit > k.parent.fit);
         if (place(archive, x)) placed++;
+        // Bounded memetic refinement: only fitter children get extra numeric
+        // searches. All trials use this generation's common opponents/seeds.
+        if (x && x.fit > k.parent.fit) for (let step = 0; step < localSteps; step++) {
+          stats.localTried++;
+          const tuned = await assess((geo ? ops.axis : ops.retune)(x.g), round, { operator: 'local-retune', parents: [x.id] });
+          if (place(archive, tuned)) placed++;
+          if (tuned && tuned.fit > x.fit) { x = tuned; stats.localImproved++; }
+        }
       }
       prune();
       onLog(`round ${round}: batch ${b + 1}/${batches}, ${algorithm === 'ga' ? 'population' : 'archive'} ${archive.size}`);
@@ -224,18 +226,20 @@ export async function evolve({
       heldOut: held && { score: held.score, smooth: held.smooth },
       vsAncestors: vsAncestors && vsAncestors.rows.map((r) => ({ name: r.name, pts: r.pts })) };
     champions.push(champ);
-    const rec = { round, cells: archive.size, placed, champion: champ };
+    const rec = { round, cells: archive.size, placed, caseNames: best.rows.map((r) => r.name), champion: champ };
     history.push(rec);
     onRound(rec);
   }
   const final = [...archive.values()].sort((a, b) => b.fit - a.fit);
   const niches = new Map();
-  for (const x of final) if (!niches.has(niche(x.species))) niches.set(niche(x.species), x);
+  for (const x of final) if (!niches.has(cellOf(x))) niches.set(cellOf(x), x);
   return {
-    config: { seed, algorithm, objective, rounds, batches, batchSize, evalRounds, maxLength, populationSize, tieValue, scratch, settings, entrySettings },
+    config: { seed, algorithm, objective, selection, epsilon, descriptor, archiveSize, localSteps, fieldRounds,
+      rounds, batches, batchSize, evalRounds, maxLength, populationSize, tieValue, scratch, settings, entrySettings },
+    ...(outcomes ? { probes: target.field.map(({ w, ...o }) => o), centroids: outcomes.centers } : {}),
     baseline, stats, lineage: [...lineage.values()], champions, history,
     population: algorithm === 'ga' ? final : undefined,
-    archive: [...niches.values()].map((x) => ({ id: x.id, cell: niche(x.species), species: x.species, fit: x.fit, g: x.g })),
+    archive: [...niches.values()].map((x) => ({ ...x, cell: cellOf(x) })),
     operators: Object.fromEntries(Object.entries(chooser.credit).map(([o, c]) => [o, { tried: c.tries - 2, improved: c.wins - 1 }])),
   };
 }

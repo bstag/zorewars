@@ -16,12 +16,15 @@ const stone = compile('ADD.AB #4, 3\nMOV.I 2, @2\nJMP -2\nDAT #0, #0', 'redcode'
 const sources = [{ w: imp, role: 'imp' }, { w: stone, role: 'stone' }];
 const field = sources.map(({ w }, i) => ({ name: `Opponent ${i}`, group: 'test', w: strip(w) }));
 
-test('both search algorithms are seeded, isolated and repeatable across worker counts', async () => {
+test('search, specialist selection, outcome niches and local refinement reproduce across workers', async () => {
   const one = createPool(1), two = createPool(2);
   try {
-    for (const algorithm of ['map-elites', 'ga']) {
+    for (const variant of [{ algorithm: 'map-elites' }, { algorithm: 'ga' },
+      { algorithm: 'ga', selection: 'lexicase', localSteps: 2 },
+      { algorithm: 'map-elites', selection: 'lexicase', descriptor: 'outcomes', archiveSize: 8, localSteps: 2 }]) {
+      const { algorithm } = variant;
       const options = { sources, opponents: field, settings, rounds: 2, batches: 2, batchSize: 5, populationSize: 4,
-        evalRounds: 2, maxLength: 10, algorithm, seed: 12345, objective: 'points' };
+        evalRounds: 2, maxLength: 10, ...variant, seed: 12345, objective: 'points' };
       const a = await evolve({ ...options, pool: one });
       const b = await evolve({ ...options, pool: two });
       assert.deepEqual(a, b, `${algorithm}: complete search must reproduce`);
@@ -29,6 +32,14 @@ test('both search algorithms are seeded, isolated and repeatable across worker c
       assert.ok(a.baseline && a.champions.length === 2);
       assert.equal(new Set(a.archive.map((x) => x.cell)).size, a.archive.length);
       if (algorithm === 'ga') assert.ok(a.population.length <= 4);
+      if (variant.descriptor === 'outcomes') {
+        assert.ok(a.archive.length <= 8);
+        assert.equal(a.probes.length, field.length);
+        assert.ok(a.archive.every((x) => /^o\d+$/.test(x.cell) && x.descriptor.length === field.length * 2));
+      }
+      assert.ok(a.stats.battleRounds > 0);
+      assert.ok(a.archive.every((x) => x.cases.length === field.length + 1));
+      if (variant.localSteps) assert.ok(a.stats.localTried > 0);
       const ids = new Set(a.lineage.map((x) => x.id));
       for (const node of a.lineage) for (const parent of node.parents) assert.ok(ids.has(parent));
       for (const c of a.archive) assert.ok(compile(toRedcode(c.g), 'redcode', settings).ok);
@@ -36,6 +47,22 @@ test('both search algorithms are seeded, isolated and repeatable across worker c
       assert.notDeepEqual(a.lineage, different.lineage);
     }
   } finally { one.close(); two.close(); }
+});
+
+test('smooth validation follows survival reward even when points prefer a different finalist', async () => {
+  const baseline = { g: genomeOf(compile('JMP 0, #0')) };
+  const longLived = { g: genomeOf(compile('JMP 0, #1')) };
+  const pointsWinner = { g: genomeOf(compile('JMP 0, #2')) };
+  const pool = { async match(task) {
+    const kind = task.a.instructions[0].b, n = task.settings.rounds;
+    return { w: kind === 2 ? n / 5 : 0, l: kind === 2 ? 4 * n / 5 : n, t: 0, smooth: n * [0.1, 0.9, 0.6][kind] };
+  } };
+  const opts = { pool, baseline, candidates: [longLived, pointsWinner], field: field.slice(0, 1), settings, seeds: 3 };
+  const points = await validateCandidates(opts);
+  const smooth = await validateCandidates({ ...opts, objective: 'smooth' });
+  assert.equal(points.results.find((r) => r.id === points.recommended).g.code[0].b, 2);
+  assert.equal(smooth.results.find((r) => r.id === smooth.recommended).g.code[0].b, 1);
+  assert.equal(smooth.objective, 'smooth');
 });
 
 test('entry rules remain strict when opponents need relaxed settings', async () => {
@@ -47,6 +74,25 @@ test('entry rules remain strict when opponents need relaxed settings', async () 
       rounds: 1, batches: 1, batchSize: 4, maxLength: 10, seed: 7 });
     assert.ok(result.stats.rejected > 0);
     for (const x of result.archive) assert.ok(compile(toRedcode(x.g), 'redcode', settings).ok);
+  } finally { pool.close(); }
+});
+
+test('outcome/lexicase extensions preserve entry rules on rings, LP and a torus', async () => {
+  const pool = createPool(1);
+  try {
+    for (const cfg of [RULESETS['88'], RULESETS.lp, RULESETS['94x'],
+      { ...DEFAULT_SETTINGS, coreSize: 80, topology: 'torus', sizeX: 20, sizeY: 4, sizeZ: 1, maxLength: 10, minDistance: 10 }]) {
+      const limits = { ...cfg, maxCycles: 300 };
+      const w = compile(cfg.dialect === '88' ? 'MOV 0, 1' : 'MOV.I 0, 1', 'redcode', limits);
+      const r = await evolve({ pool, sources: [{ w, role: 'imp' }], opponents: [{ name: 'Imp', group: 'probe', w: strip(w) }],
+        settings: limits, rounds: 2, batches: 1, batchSize: 3, evalRounds: 1, seed: 91, maxLength: 8,
+        selection: 'lexicase', descriptor: 'outcomes', archiveSize: 4, localSteps: 1 });
+      assert.ok(r.archive.length > 0 && r.archive.length <= 4);
+      const geo = limits.topology === 'torus' ? (await import('../src/engine/geometry.js')).makeGeometry(limits) : null;
+      for (const x of r.archive) assert.ok(compile(toRedcode(x.g, { dialect: limits.dialect, coreSize: limits.coreSize, geo }), 'redcode', limits).ok);
+    }
+    await assert.rejects(evolve({ pool, sources, opponents: field, settings, algorithm: 'ga', descriptor: 'outcomes' }), /outcome niches/);
+    await assert.rejects(evolve({ pool, sources, opponents: field, settings, descriptor: 'outcomes', scratch: true }), /outcome niches/);
   } finally { pool.close(); }
 });
 
@@ -165,4 +211,51 @@ test('the pushoff objective ranks each candidate in a push-off beside its partne
     }
     await assert.rejects(evolve({ pool, sources, opponents: [], settings, objective: 'pushoff' }), /needs opponents/);
   } finally { pool.close(); }
+});
+
+test('push-off validation promotes a lower-point specialist and replays a shared fresh field per seed', async () => {
+  const warrior = (kind) => compile(`JMP 0, #${kind}`, 'redcode', settings);
+  const tasks = [];
+  const pool = { async match(task) {
+    tasks.push(task);
+    let a = task.a.instructions[0].b, b = task.b.instructions[0].b;
+    if (a === 0) a = 2; // baseline is a clone of our partner
+    if (b === 0) b = 2;
+    const win = a === 1 && b === 2 || a === 2 && b >= 3 || a >= 3 && b === 1;
+    const lose = b === 1 && a === 2 || b === 2 && a >= 3 || b >= 3 && a === 1;
+    const n = task.settings.rounds;
+    return { w: win ? n : 0, l: lose ? n : 0, t: !win && !lose ? n : 0, smooth: n };
+  } };
+  const r = await validateCandidates({ pool, settings, objective: 'pushoff', seed: 41, seeds: 3, rounds: 10,
+    baseline: { g: genomeOf(warrior(0)) }, candidates: [{ g: genomeOf(warrior(1)) }], partners: [warrior(2)],
+    field: [3, 4].map((kind) => ({ name: `Probe ${kind}`, group: 'test', w: strip(warrior(kind)) })) });
+  assert.equal(r.objective, 'pushoff');
+  assert.ok(r.improved);
+  const baseline = r.results.find((x) => x.baseline), chosen = r.results.find((x) => x.id === r.recommended);
+  assert.ok(chosen.score < baseline.score, 'rank gain must count even when raw points fall');
+  assert.ok(chosen.objectiveValue > baseline.objectiveValue);
+  assert.equal(chosen.places.length, 3);
+  assert.ok(chosen.places.every((p) => p.length === 2));
+  const fieldTasks = tasks.filter((t) => t.a.instructions[0].b >= 2);
+  assert.equal(fieldTasks.length, 3 * 6, 'one three-warrior round robin, including self, per fresh seed');
+  assert.deepEqual(tasks.filter((t) => t.a.instructions[0].b === 0).map((t) => t.seed),
+    tasks.filter((t) => t.a.instructions[0].b === 1).map((t) => t.seed));
+});
+
+test('CLI exports loadable outcome elites with specialist selection and refinement recorded', () => {
+  const out = fs.mkdtempSync(path.join(os.tmpdir(), 'zorewars-outcomes-'));
+  const result = spawnSync(process.execPath, ['cli/zorewars.js', 'evolve', '--rules', '88', '--length', '50',
+    '--algorithm', 'map-elites', '--selection', 'lexicase', '--descriptor', 'outcomes', '--archive-size', '8',
+    '--local-steps', '1', '--generations', '1', '--batches', '1', '--batch', '3', '--eval-rounds', '1',
+    '--validate', '--check-rounds', '2', '--seeds', '2', '--finalists', '1', '--cycles', '500',
+    '--threads', '1', '--seed', '77', '--out', out, '--json'], { encoding: 'utf8', timeout: 120000 });
+  assert.equal(result.status, 0, result.stderr);
+  const report = JSON.parse(fs.readFileSync(path.join(out, 'evolve.json'), 'utf8'));
+  assert.equal(report.config.selection, 'lexicase');
+  assert.equal(report.config.localSteps, 1);
+  assert.equal(report.validation.objective, 'smooth');
+  assert.ok(report.centroids.length === 8 && report.probes.length > 0);
+  const elites = fs.readdirSync(out).filter((f) => /^elite-o\d+\.red$/.test(f));
+  assert.equal(elites.length, report.archive.length);
+  for (const file of [...elites, 'best.red']) assert.ok(compile(fs.readFileSync(path.join(out, file), 'utf8'), 'redcode', report.config.entrySettings).ok);
 });
