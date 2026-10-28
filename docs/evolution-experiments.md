@@ -88,3 +88,23 @@ not an unseen public hill.
   completed with a 2000-cycle limit and exported a legal recommendation. Its
   abbreviated settings check integration only; it is separate from the
   full-cycle strength comparison above.
+
+## Integration with GPU-enabled main
+
+The capabilities were integrated with main at `5b641c8`, retaining the CPU
+default, explicit GPU mode, automatic CPU fallback, accelerated solo checks,
+and batching of independent births. The execution counters preserve live
+backend getters so a fallback during evolution remains visible to scheduling.
+
+Existing search defaults are unchanged: ordinary GA/MAP-Elites selection,
+species niches, and zero local refinement steps. Step/parameter tuning remains
+available. The intentional validation correction is that finalist promotion
+uses the selected objective, including push-off and partner placement.
+
+The combined version passed 154 standard tests (seven optional checks skipped)
+and all 23 explicitly enabled native GPU checks. Native parity tests include
+lexicase, outcome archives and numeric refinement under smooth and push-off
+objectives. Hardware-independent regressions also cover concurrent birth
+scheduling and a GPU-to-CPU fallback during solo measurement. Six comparisons
+against pre-merge main reproduced default champions, archives, lineage and
+operator credits for GA/MAP-Elites with points, smooth and push-off scoring.

@@ -98,6 +98,8 @@ Options:
   --seeds N          validation placement seeds (default 3, at least 2)
   --finalists N      validation shortlist size (default 6)
   --threads N        evolve/train: battle worker threads (default: CPU count)
+  --backend auto|cpu|gpu  local battle engine (default cpu; auto falls back to CPU)
+  --gpu-batch N      maximum matches per local GPU batch (default 1024)
   --profiles LIST    train: default,94nop,88,lp,94x,94x-hill,plane,volume,volume-wide,volume-coprime,volume-cube or all
 
 pMARS's short options also work: -r -s -c -p -l -d -F -S (and -b -k are ignored),
