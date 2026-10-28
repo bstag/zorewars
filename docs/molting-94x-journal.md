@@ -934,3 +934,43 @@ byte-identical; source-manifest hashes, raw/tracked report agreement, all 256
 battle outcomes and calculated scores were checked. Six new candidates remain
 non-selectable and the executable block count remains seven. `git diff --check`
 passes. The full engine suite was not rerun because battle behavior was unchanged.
+
+## E11 — Monowire development and compact reference (October 28, 2026)
+
+Reviewed the user-supplied [Monowire article](https://corewar.co.uk/mizcu/monowire.htm),
+preserving the page and nine displayed code blocks under ignored
+`imported/history/monowire/`. Final source credits Miz; no publication date was
+inferred. Earlier snippets include incomplete examples and END-label conflicts.
+Their assembly failures are documented, not silently corrected.
+
+The final source is 80 instructions: nine payload, 60 decoy, 11 boot/pointers.
+Tested it unchanged beside a labeled 50-instruction derivative (30 decoy cells,
+symbolic destination adjustment preserving the original landing) and a bare
+nine-instruction final body. Exact nine-instruction startup copies were verified
+before execution at base zero and wrapping placement; booted versions land at
+the same address. All variants survive full-cycle solo checks under 94nop and
+94x. These checks do not yet certify target detection or the SPL/DAT transition.
+
+Four fixed library opponents, four rounds each, two seeds (20261030, 20262030):
+**288 CPU battle rounds**. 94nop: original80 and compact50 **2.28125**, body9
+**2.03125**, plain DAT **1.0625**. 94x: original80 and compact50 **2.15625**,
+body9 **2.25**, plain DAT **1.46875**, Lifeboat **0.90625**. Original and compact
+had identical outcomes in this small sample. No held-out field, significance
+test, tuning, evolution, promotion or public-hill-strength claim.
+
+The next useful contract is a coupled comparison scanner and self-modifying
+clear. The unchanged +24 stride has a different ideal coverage fraction on
+55440 than on 8000, and shortening decoys shifts the boot destination unless
+compensated. These are parameters to derive jointly, not mutate independently.
+The existing one-shot candidate now links this evidence; executable choices
+and Red Queen settings remain unchanged.
+
+Evidence: [experiment](monowire-review.md), [mechanisms](monowire-mechanisms.md),
+[full receipt](monowire-review.json). Completed raw run:
+`evolved/monowire-review-20261028-v2/report.json`.
+
+Validation checked page/snippet/variant hashes, unchanged payload assembly,
+exact startup-copy receipts, full-cycle survival, all 288 battle score totals,
+and the seven unchanged executable catalog choices. The catalog-reference test
+and `git diff --check` pass. The full engine suite was not rerun; only reference
+metadata and optional review tooling changed.

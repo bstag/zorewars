@@ -24,7 +24,7 @@ The '88 implementation uses explicit forward pointer increments, legal DAT opera
 | marker-trigger | Change phase when a remote marker is damaged, with timer fallback. | Documented candidate | Existing Molting verifier covers the whole template; extract sensor placement and marker ownership contracts. |
 | compare-scan | Compare two cells to detect an opponent. | Documented candidate | Preserve scan offsets, skip/jump coupling, self-scan exclusion and attack handoff. |
 | quickscan | Unrolled early probes followed by a targeting decoder. | Documented candidate | Tables, decoder constants and probe order form one linked section; measure instruction cost. |
-| one-shot | Switch from scanning to a clear on the first hit. | Documented candidate | Scanner and clear must agree on pointer interpretation and direction. |
+| one-shot | Switch from scanning to a clear on the first hit. | Documented candidate | Scanner and clear must agree on pointer interpretation and direction. Preserve probe spacing, bomb-selector offsets and self-modifying phase transition; test targets at either probe, first-write location, queue growth and decoy/boot coupling. |
 | vampire-fang | Place a jump that transfers opponent processes to a pit. | Documented candidate | Fang and pit are linked by destination-relative arithmetic; copying a fang alone changes its target. |
 | paper-copy | Copy a body and launch it elsewhere. | Documented candidate | Per-copy counters, initialization and parent/child scheduling; safe overlap must be tested. |
 | silk-launch | SPL/MOV replication using cooperating processes. | Documented candidate | Process count and scheduling are part of the interface; incompatible with single-process clear counters. |

@@ -369,9 +369,11 @@
       "family": "scan",
       "purpose": "Switch from scanning to a clear on the first hit.",
       "sources": [
-        "warriors/oneshot.red"
+        "warriors/oneshot.red",
+        "docs/monowire-mechanisms.md",
+        "docs/monowire-review.md"
       ],
-      "requirements": "Scanner and clear must agree on pointer interpretation and direction.",
+      "requirements": "Scanner and clear must agree on pointer interpretation and direction. Preserve probe spacing, bomb-selector offsets and self-modifying phase transition; test targets at either probe, first-write location, queue growth and decoy/boot coupling.",
       "selectable": false,
       "validation": {
         "documented": true,

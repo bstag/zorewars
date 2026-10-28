@@ -18,6 +18,11 @@ analysis of repair pairs, remote-worker refresh, process-scheduled detection,
 movement and arithmetic disruption, plus a limited 94x screen. These mechanisms
 add reference candidates to our block catalog; they are not executable recipes.
 
+The [Monowire development review](monowire-review.md) adds a documented scanner/
+clear progression and a matched compact-reference experiment. Its nine-instruction
+payload is coupled to scan geometry and self-modifying bomb selection; the
+original final warrior has 80 instructions including boot and decoy.
+
 The [n1LS collection](n1ls-warrior-history.md), added October 28, 2026, expands
 this history with 567 pinned Redcode files, source version notes, compatibility
 checks and duplicate detection. Agony, Charon, Imprimis and Sphinx provide

@@ -4,6 +4,17 @@
   "scope": "Eight individually reviewed historical source specimens plus linked collection manifests; originals remain in ignored imported/history/. This is not a complete historical corpus.",
   "collections": [
     {
+      "article": "https://corewar.co.uk/mizcu/monowire.htm",
+      "name": "Monowire development article",
+      "authorCredit": "Miz (final source header)",
+      "codeExamples": 9,
+      "pageHash": "de5b57d8bd9921c51583f3c920703a9f78cca32294e84d8b542cf06c2397c2a6",
+      "manifest": "monowire-review.json",
+      "analysis": "monowire-mechanisms.md",
+      "experiment": "monowire-review.md",
+      "dateEvidence": "No publication date supplied by article; 2026-10-28 is our review date"
+    },
+    {
       "archive": "https://gallium.inria.fr/~doligez/corewar/",
       "requestedUrl": "http://moscova.inria.fr/~doligez/corewar/",
       "entries": 1686,
