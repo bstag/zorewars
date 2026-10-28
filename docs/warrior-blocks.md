@@ -77,3 +77,7 @@ The [leader breakdowns](hill-leaders.md) map current recursive rankings to revie
 ## Process-aware recipe and historical lessons
 
 [Lifeboat 94x](../examples/experimental-94x/lifeboat/README.md) is an original stone/watchdog/clear recipe with its own gated evolution runner. Its two-process contract is separate from the single-process composer. The [family history](warrior-family-history.md) traces dated source changes and explains which coupled parameters, scheduling rules and behavioral tests we should preserve.
+
+## Historical component taxonomy
+
+The [Planar component crosswalk](planar-components.md) connects 14 historical categories to our existing blocks and design candidates. The [dated source index](planar-warrior-index.md) preserves component combinations, author attribution and original-post provenance; [archive notes](planar-warrior-history.md) explain source ambiguities and overlap with the n1LS collection. Archive tags do not certify reusable blocks.

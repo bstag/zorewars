@@ -844,3 +844,49 @@ Validation checked all 567 cached SHA-256 hashes, commit-pinned links and length
 flags, byte-identical regeneration of the index/manifest, and rejection of a
 tampered tree without overwriting reports. `git diff --check` passed. The battle
 engine was unchanged; the full battle regression suite was not rerun.
+
+## E9 — Planar archive and component taxonomy (October 28, 2026)
+
+Expanded the user-supplied Damien Doligez archive from our selected specimens
+to both complete indexes, all 14 component pages, and their linked text
+references. The old moscova address timed out; the gallium copy was reachable.
+Cached **1,683 unique warrior sources** for **1,686 index entries** and **852
+of 853 reference texts**. The SwitchBlade post returns 404; its separate
+assembly source is present. All fetched bytes have SHA-256 receipts.
+
+Component memberships agree across all 14 type pages and the dated index.
+The crosswalk maps stone/paper/vamp/stun/imp/clear/scan/pspace/boot/gate/quick
+to relevant local blocks and candidates. Factor and sort identify 24
+special-purpose entries; other remains subject to individual review. These
+classifications are metadata, not new generator capabilities or opponent
+admissions.
+
+The source index preserves 22 uncertain and 103 partial release dates. Its
+count differs from the homepage's 1,689 claim, and four names share the Phoenix
+1.1 source URL; those identities are flagged for review. Maintainer assembly
+copies remain separate from original author posts. Across unique source URLs,
+30 exactly match n1LS bytes and 399 match at least one n1LS assembly under 94nop.
+
+Unique-source assembly passes / fits 50: 88 **496/364**, 94nop **1288/801**,
+lp **1289/801**, 94x **1011/664**, 94x-hill **1115/696**. These include
+special-purpose sources and do not establish behavior or competitive strength.
+
+Historical follow-ups: Moore's 2001 Airbag Demo explicitly uses DAT injection
+to demonstrate a fallback, and airbag frenzy reports a modest improvement
+without solving all stone/imp matchups. Fire and Ice II's original post gives
+dated context for our existing 94x reference. Older evolutionary posts include
+tiny-core settings even when a header says 94x; preserve actual settings rather
+than assigning today's profile from the name alone.
+
+Evidence: [archive findings](planar-warrior-history.md),
+[component crosswalk](planar-components.md), [source index](planar-warrior-index.md),
+[full manifest](planar-warrior-history.json). No battles or evolution runs were
+part of this ingestion; ordinary evolution and Red Queen defaults are unchanged.
+
+Validation checked every cached index/source/reference hash, all 14 component
+memberships, bracketed source/post links, four shared-source identity warnings,
+and byte-identical offline report regeneration. A deliberately invalid cache
+receipt was rejected without overwriting reports. The known SwitchBlade 404
+is the only fetch failure and remains an explicit nonzero importer status.
+Catalog documentation was regenerated and `git diff --check` passed. The
+unchanged battle engine's regression suite was not rerun.

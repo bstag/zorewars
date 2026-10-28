@@ -245,3 +245,7 @@ source-reviewed; not behavior-tested. Maps to catalog candidate `relocate-copy`.
 - Lines 47–55: Padding and decoy data.
 
 Booted regions are noncontiguous and share two processes. This boot cannot replace the catalog single-process copy; bomb arithmetic and self-triggered handoff also need their own contracts.
+
+## Historical component taxonomy
+
+The [Planar component crosswalk](planar-components.md) connects 14 historical categories to our existing blocks and design candidates. The [dated source index](planar-warrior-index.md) preserves component combinations, author attribution and original-post provenance; [archive notes](planar-warrior-history.md) explain source ambiguities and overlap with the n1LS collection. Archive tags do not certify reusable blocks.

@@ -4,6 +4,18 @@
   "scope": "Eight individually reviewed historical source specimens plus linked collection manifests; originals remain in ignored imported/history/. This is not a complete historical corpus.",
   "collections": [
     {
+      "archive": "https://gallium.inria.fr/~doligez/corewar/",
+      "requestedUrl": "http://moscova.inria.fr/~doligez/corewar/",
+      "entries": 1686,
+      "uniqueSourceUrls": 1683,
+      "manifest": "planar-warrior-history.json",
+      "index": "planar-warrior-index.md",
+      "components": "planar-components.md",
+      "analysis": "planar-warrior-history.md",
+      "dateEvidence": "Maintainer release dates preserve uncertainty and precision; original posts are separate evidence",
+      "missingReferences": ["https://gallium.inria.fr/~doligez/corewar/post/SwitchBlade.txt"]
+    },
+    {
       "repository": "https://github.com/n1LS/redcode-warriors",
       "commit": "615f2f3d75acfcb5420821eb5c1acc659377a7e2",
       "sources": 567,

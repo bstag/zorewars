@@ -6,6 +6,13 @@ contemporary newsletters. It is a design history, not an exhaustive genealogy
 or a claim that later warriors always beat earlier ones. Source originals stay
 in ignored `imported/`; this document contains analysis and links.
 
+The [full Planar source index](planar-warrior-history.md), added October 28,
+2026, preserves 1,686 index entries, 1,683 distinct source files and 852 linked
+texts. Its [14-component breakdown](planar-components.md) is cross-referenced
+to our block catalog. Original posts are separate from maintainer assembly
+copies; archive-date precision, shared-source ambiguities and overlap with
+n1LS are recorded explicitly.
+
 The [n1LS collection](n1ls-warrior-history.md), added October 28, 2026, expands
 this history with 567 pinned Redcode files, source version notes, compatibility
 checks and duplicate detection. Agony, Charon, Imprimis and Sphinx provide
