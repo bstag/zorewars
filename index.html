@@ -14,7 +14,11 @@
   <meta property="og:title" content="ZoreWars: Core War, plus Z">
   <meta property="og:description" content="A new programming game built on Core War: the classic ring, a 2D plane and a 3D volume. Write tiny programs that fight in memory, in your browser.">
   <meta property="og:url" content="https://zorewar.app/">
-  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://zorewar.app/web/img/og-zorewars.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="ZoreWars: Core War, plus Z. A 3D memory volume drawn as stacked layers.">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="ZoreWars: Core War, plus Z">
   <meta name="twitter:description" content="A new programming game built on Core War that adds a third dimension. Free and open source.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='3' fill='%230b1020'/><rect x='3' y='3' width='4' height='4' fill='%2322d3ee'/><rect x='9' y='9' width='4' height='4' fill='%23f472b6'/><rect x='9' y='3' width='4' height='4' fill='%23334155'/><rect x='3' y='9' width='4' height='4' fill='%23334155'/></svg>">
@@ -118,9 +122,17 @@
     .faq details p { margin: 8px 0 0; }
 
     .note { font-size: 13px; color: var(--muted) !important; }
+    .shots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 20px; }
+    .shots figure { margin: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); overflow: hidden; }
+    .shots img { display: block; width: 100%; height: auto; }
+    .shots figcaption { font-size: 13px; color: var(--text-2); padding: 10px 14px 12px; line-height: 1.5; }
+    .parts { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+    .parts li { font: 12px var(--mono); color: var(--text-2); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; background: var(--panel); }
+    .parts b { color: var(--accent); font-weight: 600; }
     @media (max-width: 900px) {
       .hero, .split { grid-template-columns: minmax(0, 1fr); }
       .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .shots { grid-template-columns: minmax(0, 1fr); }
       .hero h1 { font-size: 36px; }
     }
     @media (max-width: 620px) {
@@ -157,6 +169,7 @@
           <a class="btn primary" href="web/?load=volume/backdraft.js,volume/volumesilk.js">Play in 3D</a>
           <a class="btn" href="web/">Classic arena</a>
           <a class="btn ghost" href="#z">What the Z adds</a>
+          <a class="btn ghost" href="#avatars">Watch them fight</a>
         </div>
         <div class="facts">
           <span><b>3</b>battlefields: ring, plane, volume</span>
@@ -201,6 +214,26 @@
       </div>
     </section>
 
+    <section id="avatars" aria-labelledby="avatars-h">
+      <p class="eyebrow">Avatars</p>
+      <h2 id="avatars-h">Watch them fight</h2>
+      <p class="sub">Switch the arena to Avatars and every warrior becomes a creature built from its own code, one body part per instruction. When a warrior writes into its enemy, a shot flies from the instruction that fired it to the part it hits, and the part shows what the write did.</p>
+      <div class="shots">
+        <figure>
+          <img src="web/img/avatars-fight.webp" width="792" height="492" loading="lazy" alt="Two avatars mid-fight on the classic ring: Hydra, a tall coiled cyan creature glowing pink where Vampire has hit it, and Vampire, a short pink creature with a gear head, with a stream of shots arcing between them.">
+          <figcaption>Hydra against Vampire on the classic ring. Shots fly both ways; parts an enemy has written over glow in its colour, and the bar over each creature shows how much of its body is still its own.</figcaption>
+        </figure>
+        <figure>
+          <img src="web/img/avatars-converted.webp" width="792" height="492" loading="lazy" alt="Two serpent-like avatars in a 3D volume battle: cyan Backdraft and pink Volume Silk, with cyan shots landing on Volume Silk and a label reading 18% captive.">
+          <figcaption>Backdraft against Volume Silk in the 3D volume. 18% of Volume Silk's processes are running code Backdraft wrote: they're captive. Past about 40%, Volume Silk turns into Backdraft.</figcaption>
+        </figure>
+      </div>
+      <ul class="parts" aria-label="Which instruction becomes which body part">
+        <li><b>SPL</b> arm</li><li><b>MOV</b> claw</li><li><b>ADD…MOD</b> gear</li><li><b>JMP / DJN</b> joint</li><li><b>tests</b> eye</li><li><b>DAT</b> ammo pod</li>
+      </ul>
+      <p>A <code>DAT</code> smashes the part it hits, a <code>SPL</code> or <code>JMP</code> webs it, and a changed number chips it. Any other instruction turns the part into the attacker's kind, in the attacker's colour, and a warrior whose processes mostly run its enemy's code becomes that enemy. A paper's copies orbit its body, and a warrior with no processes left falls apart in slow motion. <strong>Map</strong> stands the creatures on the live core, or inside the 3D volume, over the cells their processes are running. <a href="web/docs.html#avatars">How the Avatars work</a>.</p>
+    </section>
+
     <section id="what" aria-labelledby="what-h">
       <p class="eyebrow">Built on Core War</p>
       <h2 id="what-h">Where it starts: programs that fight inside memory</h2>
@@ -226,7 +259,7 @@
       <h2 id="features-h">Everything from your first Imp to a hill entry</h2>
       <p class="sub">The arena runs entirely in your browser. Nothing to install, nothing to sign up for.</p>
       <div class="grid">
-        <div class="card"><span class="tag">Arena</span><h3>Watch it live, in 3D</h3><p>Every write and every process, on the ring, the plane or a volume you can turn and zoom, with step-through, replay and a post-mortem that names the killing blow.</p><a class="more" href="web/">Open the arena →</a></div>
+        <div class="card"><span class="tag">Arena</span><h3>Watch it live, in 3D</h3><p>Every write and every process, on the ring, the plane or a volume you can turn and zoom, or as creatures built from their own code, with replay and a post-mortem that names the killing blow.</p><a class="more" href="web/">Open the arena →</a></div>
         <div class="card"><span class="tag">Languages</span><h3>Redcode or a generator</h3><p>Write Redcode directly, or a JavaScript, Python or C++ program that emits it. Convert any warrior into a readable generator.</p><a class="more" href="web/docs.html#generators">How generators work →</a></div>
         <div class="card"><span class="tag">Library</span><h3>98 warriors, explained</h3><p>Classic stones, papers, scanners, imp rings, vampires and P-space switchers, plus plane and 3D warriors, each explained line by line.</p><a class="more" href="web/warriors.html">Warrior encyclopedia →</a></div>
         <div class="card"><span class="tag">Classics</span><h3>Fight the originals</h3><p>Load famous warriors straight from the public archives and fight them with our version of the same idea. Nothing is copied into the project.</p><a class="more" href="web/warriors.html#history">Hall of Fame →</a></div>
