@@ -75,6 +75,10 @@ function matchups(file, bench, names) {
   </div>`;
 }
 
+// Avatar cutouts (web/img/avatars), rendered by the Avatars view at cycle 0 on a
+// transparent background: plane/plaid.js -> plane-plaid.webp.
+const portraitOf = (file) => `img/avatars/${file.replace(/\.(red|js|py)$/, '').replaceAll('/', '-')}.webp`;
+
 function card(entry, source, compiled, bench, names, conversions = []) {
   const lang = entry.language;
   const opponent = entry.opponent || 'dwarf.red';
@@ -88,8 +92,16 @@ function card(entry, source, compiled, bench, names, conversions = []) {
       </div>
       <a class="btn" href="index.html?load=${encodeURIComponent(entry.file)},${encodeURIComponent(opponent)}">Watch it fight</a>
     </header>
-    ${entry.inspiredBy ? `<p class="lineage">${entry.inspiredBy}</p>` : ''}
-    <p class="summary">${entry.summary}</p>
+    <div class="intro">
+      <div>
+        ${entry.inspiredBy ? `<p class="lineage">${entry.inspiredBy}</p>` : ''}
+        <p class="summary">${entry.summary}</p>
+      </div>
+      <figure class="portrait">
+        <img src="${esc(portraitOf(entry.file))}" loading="lazy" alt="${esc(compiled.name)} as an avatar, its body built from its own code">
+        <figcaption>Its avatar, built from its code</figcaption>
+      </figure>
+    </div>
     <div class="cols">
       <div class="how">
         <h4>How it works</h4>

@@ -126,6 +126,15 @@
     .shots figure { margin: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); overflow: hidden; }
     .shots img { display: block; width: 100%; height: auto; }
     .shots figcaption { font-size: 13px; color: var(--text-2); padding: 10px 14px 12px; line-height: 1.5; }
+    .roster { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 22px; }
+    .roster a { display: block; text-decoration: none; color: var(--text-2); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--panel); font-size: 13px; }
+    .roster a:hover { border-color: var(--line-2); color: var(--text); }
+    .roster img { display: block; height: 200px; width: auto; max-width: 90%; object-fit: contain; margin: 0 auto; padding-top: 16px; filter: drop-shadow(0 10px 14px rgba(0, 0, 0, 0.45)); transition: transform 0.2s; }
+    .roster a { background: radial-gradient(closest-side at 50% 42%, rgba(34, 211, 238, 0.10), transparent), var(--panel) !important; }
+    .roster a:hover img { transform: translateY(-4px); }
+    @media (prefers-reduced-motion: reduce) { .roster a:hover img { transform: none; } }
+    .roster span { display: block; padding: 8px 12px 10px; }
+    .roster b { color: var(--text); font-weight: 600; }
     .parts { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
     .parts li { font: 12px var(--mono); color: var(--text-2); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; background: var(--panel); }
     .parts b { color: var(--accent); font-weight: 600; }
@@ -133,6 +142,7 @@
       .hero, .split { grid-template-columns: minmax(0, 1fr); }
       .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .shots { grid-template-columns: minmax(0, 1fr); }
+      .roster { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .hero h1 { font-size: 36px; }
     }
     @media (max-width: 620px) {
@@ -227,6 +237,18 @@
           <img src="web/img/avatars-converted.webp" width="792" height="492" loading="lazy" alt="Two serpent-like avatars in a 3D volume battle: cyan Backdraft and pink Volume Silk, with cyan shots landing on Volume Silk and a label reading 18% captive.">
           <figcaption>Backdraft against Volume Silk in the 3D volume. 18% of Volume Silk's processes are running code Backdraft wrote: they're captive. Past about 40%, Volume Silk turns into Backdraft.</figcaption>
         </figure>
+      </div>
+      <h3 style="margin-top:28px">Meet the warriors</h3>
+      <p class="note" style="margin:0">Every warrior in the library has its own body. These are the real renders, as each one looks before the first cycle. <a href="web/warriors.html">See all 54 in the encyclopedia</a>.</p>
+      <div class="roster">
+        <a href="web/warriors.html#dwarf"><img src="web/img/avatars/dwarf.webp" loading="lazy" alt="Dwarf as an avatar, its body built from its own code"><span><b>Dwarf</b> · Stone · 4 instructions</span></a>
+        <a href="web/warriors.html#mice"><img src="web/img/avatars/mice.webp" loading="lazy" alt="Mice as an avatar, its body built from its own code"><span><b>Mice</b> · Paper</span></a>
+        <a href="web/warriors.html#vampire"><img src="web/img/avatars/vampire.webp" loading="lazy" alt="Vampire as an avatar, its body built from its own code"><span><b>Vampire</b> · Vampire</span></a>
+        <a href="web/warriors.html#hydra"><img src="web/img/avatars/hydra.webp" loading="lazy" alt="Hydra as an avatar, its body built from its own code"><span><b>Hydra</b> · Hybrid · 89 instructions</span></a>
+        <a href="web/warriors.html#silk"><img src="web/img/avatars/silk.webp" loading="lazy" alt="Silk as an avatar, its body built from its own code"><span><b>Silk</b> · Paper</span></a>
+        <a href="web/warriors.html#planequeen"><img src="web/img/avatars/plane-planequeen.webp" loading="lazy" alt="Plane Queen as an avatar, its body built from its own code"><span><b>Plane Queen</b> · Core clear · plane</span></a>
+        <a href="web/warriors.html#backdraft"><img src="web/img/avatars/volume-backdraft.webp" loading="lazy" alt="Backdraft as an avatar, its body built from its own code"><span><b>Backdraft</b> · Core clear · 3D</span></a>
+        <a href="web/warriors.html#fleet"><img src="web/img/avatars/volume-fleet.webp" loading="lazy" alt="Fleet as an avatar, its body built from its own code"><span><b>Fleet</b> · Hybrid · 3D</span></a>
       </div>
       <ul class="parts" aria-label="Which instruction becomes which body part">
         <li><b>SPL</b> arm</li><li><b>MOV</b> claw</li><li><b>ADD…MOD</b> gear</li><li><b>JMP / DJN</b> joint</li><li><b>tests</b> eye</li><li><b>DAT</b> ammo pod</li>
