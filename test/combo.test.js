@@ -1,9 +1,10 @@
 import test from 'node:test';
+import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import { compile, RULESETS } from '../src/engine/index.js';
 import { emitRecipe, recipeDefaults, recipeSettings } from '../tools/blocks/recipes.js';
 import { emitCompass, compassDefaults } from '../tools/blocks/compass.js';
-import { emitCombo, buildCombo, verifyCombo, comboDefaults, comboCanonical, comboRepair, comboMismatches, comboSlots } from '../tools/blocks/combo.js';
+import { emitCombo, buildCombo, verifyCombo, comboDefaults, comboCanonical, comboRepair, comboMismatches, comboSlots, verifyBodies } from '../tools/blocks/combo.js';
 import { buildBlockRecipe } from '../tools/blocks/registry.js';
 import { evolveBlocks } from '../tools/block-evolve.js';
 
@@ -94,4 +95,62 @@ test('code-neutral parameters do not create new ids, and the evolver mixes block
   assert.ok(r.candidates.every(x => x.verification.ok));
   assert.ok(r.rejected.every(x => x.reason));
   assert.ok(buildBlockRecipe(r.champions.at(-1).recipe, { rules: '94x' }).verification.ok);
+});
+
+test('bodies alone reproduce the library Dwarf, Silk and Vampire exactly', () => {
+  const settings = recipeSettings('94nop'), library = f => compiled(fs.readFileSync(f, 'utf8'), settings);
+  assert.deepEqual(compiled(emitCombo({ ...comboDefaults, BODY: 1 }, settings).source, settings), library('warriors/dwarf.red'));
+  assert.deepEqual(compiled(emitCombo({ ...comboDefaults, BODY: 3 }, settings).source, settings), library('warriors/silk.red'));
+  assert.deepEqual(compiled(emitCombo({ ...comboDefaults, BODY: 4 }, settings).source, settings), library('warriors/vampire.red'));
+});
+
+test('bodies pass their gates alone and side by side', () => {
+  const cases = [
+    ['94nop', { BODY: 2 }], ['88', { BODY: 2, SN: 7, SK: 3 }], ['94x', { BODY: 4, VSTEP: 2365 }],
+    ['94nop', { BODY: 1, PARTNER: 2 }],                       // stone + imp spiral
+    ['94nop', { BODY: 4, PARTNER: 2 }],                       // vampire + imp spiral (needs the launcher's jump)
+    ['88', { BODY: 4, PARTNER: 1, TSTEP: 4 }],                // vampire + stone in '88
+    ['lp', { BODY: 1, PARTNER: 2, SN: 3, SK: 2 }],            // fits LP's eight processes
+    ['94nop', { BODY: 3, PARTNER: 2 }],                       // paper + imp spiral
+  ];
+  for (const [rules, choice] of cases) {
+    const b = buildCombo({ ...comboDefaults, ...choice }, { rules });
+    assert.ok(b.verification.ok, JSON.stringify(choice));
+    if (choice.PARTNER) assert.equal(b.verification.observations.filter(x => x.alone).length, 2, 'each body checked alone');
+  }
+});
+
+test('bodies that do not fit are refused with the reason', () => {
+  const refuse = (rules, choice, reason) => assert.throws(() => buildCombo({ ...comboDefaults, ...choice }, { rules }), reason);
+  refuse('94x', { BODY: 0, PARTNER: 2 }, /chain runs alone/);
+  refuse('94x', { BODY: 2, PARTNER: 2 }, /same body twice/);
+  refuse('88', { BODY: 3 }, /paper needs/);
+  refuse('94nop', { BODY: 2, SN: 8, SK: 4 }, /no 8-point spiral/);
+  refuse('94nop', { BODY: 2, SN: 13, SK: 3 }, /fewer spiral processes/);
+  refuse('lp', { BODY: 3, PARTNER: 1 }, /more processes/);
+});
+
+test('repair fits every body pair, keeping the body just chosen', () => {
+  for (const rules of ['88', 'lp', '94nop', '94x']) {
+    const settings = recipeSettings(rules);
+    for (const BODY of [0, 1, 2, 3, 4]) for (const PARTNER of [0, 1, 2, 3, 4]) for (const changed of ['BODY', 'PARTNER']) {
+      const P = { ...comboDefaults, BODY, PARTNER, SN: 8, SK: 2, TBOMB: 1 }, Q = comboRepair(P, rules, changed);
+      assert.deepEqual(comboMismatches(Q, settings), [], JSON.stringify({ rules, changed, BODY, PARTNER, Q }));
+      if (rules === '94nop' && P[changed] && !(changed === 'PARTNER' && !BODY && PARTNER === 3)) assert.equal(Q[changed], P[changed], JSON.stringify({ changed, BODY, PARTNER }));
+    }
+  }
+});
+
+test('the body gate rejects misaimed fangs, broken spirals and a bombed partner', () => {
+  const settings = recipeSettings('94nop');
+  for (const [choice, from, to] of [
+    [{ BODY: 4 }, 'vFang JMP.B vPit, 0', 'vFang JMP.B vPit+1, 0'],                       // fangs lead past the pit
+    [{ BODY: 2 }, 'iTab DAT.F #0, #16', 'iTab DAT.F #0, #15'],                          // spiral table off by one
+    [{ BODY: 1, PARTNER: 2 }, 'tBomb DAT.F #0, #22', 'tBomb DAT.F #0, #0'],              // stone bombs its partner first
+  ]) {
+    const b = { ...emitCombo({ ...comboDefaults, ...choice }, settings), settings };
+    assert.ok(b.source.includes(from), from); b.source = b.source.replace(from, to);
+    b.w = compile(b.source, 'redcode', settings); assert.ok(b.w.ok);
+    assert.throws(() => verifyBodies(b), undefined, JSON.stringify(choice));
+  }
 });

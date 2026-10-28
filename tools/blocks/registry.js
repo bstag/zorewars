@@ -19,7 +19,7 @@ export const recipeFamilies = {
   combo: { defaults: comboDefaults, space: comboSpace, build: buildCombo, generator: comboGenerator, canonical: comboCanonical,
     slots: comboSlots, repair: comboRepair,
     rules: ['88', '94nop', 'lp', '94x', '94x-hill'], numeric: ['WAIT', 'STEP', 'HOP', 'STUN', 'SSTEP', 'GAP', 'START', 'SCANS', 'DECOYS'],
-    blocks: ['opening-none', 'opening-bomber', 'opening-bscan', 'opening-cmpscan', 'in-place', 'relocate', 'counted-clear', 'guarded-clear', 'boot-first', 'decoys'] },
+    blocks: ['opening-none', 'opening-bomber', 'opening-bscan', 'opening-cmpscan', 'in-place', 'relocate', 'counted-clear', 'guarded-clear', 'boot-first', 'decoys', 'stone', 'spiral', 'paper', 'vampire', 'partner'] },
 };
 
 export function buildBlockRecipe(recipe, options = {}) {
@@ -46,11 +46,11 @@ export function defaultBlockRecipes(families = Object.keys(recipeFamilies)) {
 // All Planar category memberships are represented. They overlap, and neither
 // a historical tag nor a compiling fragment is an admission certificate.
 export const familyReadiness = [
-  ['stone', ['clear', 'lifeboat'], 'Bounded bombing; probe ownership and timeout.'],
-  ['paper', [], 'Copy extent, source restoration, child entry and parent/child queue schedule.'],
-  ['vamp', [], 'Fang destination arithmetic, enemy entry, pit ownership and pit safety.'],
+  ['stone', ['clear', 'lifeboat', 'combo'], 'Bounded bombing; probe ownership and timeout. Endless stones as combo bodies.'],
+  ['paper', ['combo'], 'Silk body admitted; other papers need copy extent, source restoration, child entry and queue schedule.'],
+  ['vamp', ['combo'], 'Fang-to-pit body admitted; pit traps and clears inside the pit remain candidates.'],
   ['stun', ['clear', 'lifeboat', 'compass'], 'Bomb count, process contract and guaranteed pristine transition to DAT.'],
-  ['imp', [], 'Core-specific modular step, launch order and process count.'],
+  ['imp', ['combo'], 'Imp spiral body admitted (step = inverse of the point count); rings and gates remain candidates.'],
   ['clear', ['clear', 'lifeboat', 'compass'], 'Pointer frame, own-image exclusion, phase boundaries and wrap.'],
   ['scan', ['clear', 'compass'], 'Probe width, both target cases, equal-cell blind spots and self-exclusion.'],
   ['pspace', [], 'Separate P-space-enabled profile, cell ownership and between-round state.'],

@@ -1037,7 +1037,16 @@
         "START": 512,
         "SCANS": 64,
         "DECOYS": 0,
-        "DECOY": 0
+        "DECOY": 0,
+        "BODY": 0,
+        "PARTNER": 0,
+        "TSTEP": 4,
+        "TBOMB": 0,
+        "SN": 13,
+        "SK": 4,
+        "PSTEP": 1777,
+        "PDELTA": 1013,
+        "VSTEP": 7
       },
       "space": {
         "OPENING": [
@@ -1103,6 +1112,42 @@
         "DECOY": [
           0,
           2
+        ],
+        "BODY": [
+          0,
+          4
+        ],
+        "PARTNER": [
+          0,
+          4
+        ],
+        "TSTEP": [
+          1,
+          4000
+        ],
+        "TBOMB": [
+          0,
+          1
+        ],
+        "SN": [
+          3,
+          31
+        ],
+        "SK": [
+          1,
+          6
+        ],
+        "PSTEP": [
+          100,
+          54000
+        ],
+        "PDELTA": [
+          1,
+          54000
+        ],
+        "VSTEP": [
+          1,
+          4000
         ]
       },
       "rules": [
@@ -1133,7 +1178,12 @@
         "counted-clear",
         "guarded-clear",
         "boot-first",
-        "decoys"
+        "decoys",
+        "stone",
+        "spiral",
+        "paper",
+        "vampire",
+        "partner"
       ]
     }
   ],
@@ -1142,22 +1192,27 @@
       "category": "stone",
       "recipes": [
         "clear",
-        "lifeboat"
+        "lifeboat",
+        "combo"
       ],
       "status": "partial",
-      "nextContract": "Bounded bombing; probe ownership and timeout."
+      "nextContract": "Bounded bombing; probe ownership and timeout. Endless stones as combo bodies."
     },
     {
       "category": "paper",
-      "recipes": [],
-      "status": "reference",
-      "nextContract": "Copy extent, source restoration, child entry and parent/child queue schedule."
+      "recipes": [
+        "combo"
+      ],
+      "status": "partial",
+      "nextContract": "Silk body admitted; other papers need copy extent, source restoration, child entry and queue schedule."
     },
     {
       "category": "vamp",
-      "recipes": [],
-      "status": "reference",
-      "nextContract": "Fang destination arithmetic, enemy entry, pit ownership and pit safety."
+      "recipes": [
+        "combo"
+      ],
+      "status": "partial",
+      "nextContract": "Fang-to-pit body admitted; pit traps and clears inside the pit remain candidates."
     },
     {
       "category": "stun",
@@ -1171,9 +1226,11 @@
     },
     {
       "category": "imp",
-      "recipes": [],
-      "status": "reference",
-      "nextContract": "Core-specific modular step, launch order and process count."
+      "recipes": [
+        "combo"
+      ],
+      "status": "partial",
+      "nextContract": "Imp spiral body admitted (step = inverse of the point count); rings and gates remain candidates."
     },
     {
       "category": "clear",

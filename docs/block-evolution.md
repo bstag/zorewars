@@ -21,7 +21,7 @@ positional starting seeds. They supplement each selected family's default.
 | `clear` | No opening, bounded bomber or B-field scanner → optional relocation → forward/backward DAT or SPL/DAT clear | 88, 94nop, lp, 94x, 94x-hill |
 | `lifeboat` | Optional boot → bomber plus independent watchdog → guarded fallback clear; bomb type, direction and phase choices | 94x |
 | `compass` | Optional boot → comparison scanner → guarded clear, with independently sized and patterned decoys outside the payload | 94x |
-| `combo` | Any fitting chain of the single-process blocks below | 88, 94nop, lp, 94x, 94x-hill |
+| `combo` | Any fitting chain of the single-process blocks below, or one or two multi-process bodies (stone, spiral, paper, vampire) | 88, 94nop, lp, 94x, 94x-hill |
 
 These cover several attack and support blocks from the broader catalog.
 
@@ -72,9 +72,41 @@ wrapping the copy past the end of core):
   hands on a planted cell but passes over an equal pair.
 
 Parameters a combination does not use are reset to defaults before its id is
-computed, so one program has one id. Lifeboat's two-process watchdog is not a
-block yet: combining it needs blocks that run side by side, which is also what
-paper, imp spirals and vampires need.
+computed, so one program has one id.
+
+### Bodies, alone or side by side
+
+`BODY` replaces the chain with a whole multi-process strategy, and `PARTNER`
+adds a second one, started with `SPL` as Stone and Imp does.
+
+| Body | Processes | What it writes | Rules |
+|---|---|---|---|
+| stone (`TSTEP`, `TBOMB`) | 1 | a DAT or SPL bomb every TSTEP cells, forever | all; SPL bombs '94 |
+| spiral (`SN`, `SK`) | 2^SK − 1 | an SN-point imp spiral; the step is SN's inverse modulo the core | all |
+| paper (`PSTEP`, `PDELTA`) | 8, then the hill's limit | Silk copies PSTEP away, the distance changing by PDELTA | '94 |
+| vampire (`VSTEP`) | 1 | JMP fangs every VSTEP cells, each aimed at its pit | all |
+
+Alone, the defaults are exactly the library's Dwarf, Silk and Vampire. The
+contracts: a chain runs alone (its clear would erase a partner); not the same
+body twice; a spiral needs an inverse for SN and at least SN processes; both
+bodies together must fit the hill's process limit (on LP a spiral beside a
+stone has at most three points). Spirals write ahead of themselves, so they are
+laid out last; stones and vampires start bombing past the end of the whole
+warrior, so their first bombs miss the partner; a launcher falling into a
+vampire jumps over its step. Repair keeps the body just chosen and otherwise
+shrinks a spiral or drops the partner until the pair fits.
+
+The body gate checks each body alone, then the pair, at two load positions:
+
+- both bodies are running 1,000 cycles in (a process in a static body's code,
+  on a spiral imp, or in a copy of the paper);
+- the warrior survives the round alone (20,000 cycles when paper is present:
+  it fills the process table, and by then it has hundreds of copies);
+- alone, a stone or vampire never splits and bombs at least 100 cells, every
+  fang leads to the pit while the step is intact, a spiral keeps all its
+  processes, and paper leaves at least three copies.
+
+Lifeboat's two-process watchdog is still a whole recipe, not a body.
 Lifeboat is the process-aware recipe developed from the watchdog investigations;
 the clear grammar predates that work. Compass extends scanning, boot layout and
 decoys. They are complete compositions with different process contracts, not
@@ -141,11 +173,11 @@ The categories overlap; one warrior can contain several components.
 
 | Historical category | Executable coverage now | Further blocks and required contract |
 |---|---|---|
-| Stone | Bounded bomber; watchdog bomber | Bombing engines with arithmetic coupled to core coverage and own-code exclusion |
-| Paper | Reference candidates | Serial copy and silk launcher: copy extent, pointer restoration, launch timing, parent/child queue order |
-| Vampire | Reference candidate | Fang generator plus pit: target arithmetic, captured-process entry and private pit ownership |
+| Stone | Bounded bomber; watchdog bomber; endless stone body | Bombing engines with arithmetic coupled to core coverage and own-code exclusion |
+| Paper | Silk body | Other papers: serial copy: copy extent, pointer restoration, launch timing, parent/child queue order |
+| Vampire | Fang-to-pit body | Pit traps (SPL/clear inside the pit), captured-process entry |
 | Stun | Short/full SPL phases | Self-modifying selectors and streams: phase transition under their actual process schedules |
-| Imp | Reference candidate | Launcher plus ring: modular step must be valid for the selected core; launch order and spacing |
+| Imp | Imp spiral body | Imp rings and gates against imps: launch order and spacing |
 | Clear | Forward/backward DAT; SPL→DAT; scan-directed clear | Shared-counter and multi-process clears with explicit ownership and wrap behavior |
 | Scan | B-field scan; comparison scanner | Specialized one-shots and scan decoders; false positives and blind spots |
 | P-space | Reference candidate | Persistent selector plus selectable bodies; use an enabled profile such as 94x-hill |

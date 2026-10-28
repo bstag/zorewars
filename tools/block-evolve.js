@@ -62,7 +62,7 @@ export async function evolveBlocks({ pool, opponents, settings, rules = '94x', l
     // then repair the other slots so the contracts still fit.
     if (!local && spec.slots && random() < 0.5) {
       const slot = pick(spec.slots), [lo, hi] = spec.space[slot], options = [];
-      for (let v = lo; v <= Math.min(hi, lo + 3); v++) if (v !== P[slot]) options.push(v);
+      for (let v = lo; v <= hi; v++) if (v !== P[slot]) options.push(v);
       P[slot] = slot === 'DECOYS' ? (P.DECOYS ? 0 : sample([1, hi])) : pick(options);
       return { family: parent.recipe.family, P: spec.repair(P, rules, slot) };
     }
