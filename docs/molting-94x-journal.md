@@ -191,3 +191,125 @@ and checks, two validation seeds, and one generation/batch/child. It completed
 both evolution modes and all exports. The fresh worktree has no optional
 `webgpu` package, so auto correctly fell back to CPU and recorded the reason.
 The smoke scores are not competitive evidence and are excluded from E1.
+
+## E3 — generator-level evolution (protocol fixed before results)
+
+Requested follow-up: evolve choices and parameters while preserving relocation,
+and compare against plain clears. Keep the original generator and its parameter
+ranges unchanged so this experiment isolates the search representation.
+
+The optional `tools/parameter-evolve.js` GA works on parameter objects. It uses
+epsilon-lexicase parents and survivors, one scalar elite, whole-parameter
+crossover, single-parameter mutation (local nudges or resampling), and 10%
+random immigrants. Each child is regenerated from labeled source. No emitted
+instruction is trimmed, grafted or otherwise edited. The standard CLI evolver
+and tuner are unchanged.
+
+Admission requires observed exact payload copying to HOP, execution of the
+relocated DAT phase, abandonment of the opening, undamaged static payload, and
+full 500000-cycle solo survival. Both a zero and wrapping base are checked.
+Marker-enabled candidates must also relocate early after injected marker
+damage. Tests deliberately break destination, relocation, payload and sensor
+to verify rejection. This is a solo behavior contract, not a guarantee of
+successful relocation under enemy interference.
+
+Frozen schedule: seeds 4242 and 4243, population 12, three generations of 12
+offspring, four screening rounds. Start with all eight structures plus random
+parameters. Parents and children use the same placements within a generation;
+parents are re-evaluated when placements rotate. Fitness is points minus the
+stronger of the two plain-clear controls on that generation's training panel.
+Subtracting this common baseline does not itself change the points ordering.
+
+Training now contains the original eight plus the former six held-out entries.
+The new untouched battle panel is Imp, Gemini, Sweeper, Stone and Imp, Evolved
+Silk, Red Queen, Carpet Bomber and Blitz. All pass full solo checks. These are
+still related local-library designs, not an independent public-hill sample.
+
+Three finalists per search are checked against the original on three fresh
+placement seeds, 12 rounds per opponent. Only that validation may choose the
+export. After both exports are frozen, compare original, both exports, both
+13-instruction standalone clear directions and each export's full-body
+in-place control. Final placement seeds: 1200001, 1210001, 1220001. No selection
+or edits based on this final panel. Report paired per-seed gains and the existing
+2.5-standard-error screening margin; three seeds do not establish broad strength.
+
+Reproduce with a fresh output directory:
+
+```sh
+node scripts/evolve-molting-parameters.js --out evolved/molting-parameters
+```
+
+### Results
+
+Completed 19880 battle rounds in 3374 match jobs using four CPU workers, about
+262 seconds including concurrent regression-test activity. Search admitted 46
+parameter sets in seed 4242 and 48 in seed 4243; all passed the behavior gate.
+There were zero gate rejections in the actual search because the fixed template
+and declared ranges were safe in these trials. Deliberately broken candidates
+are rejected in tests. Each run made 84 fitness evaluations, including rescored
+parents. Full search lineage and observations remain in `search-SEED.json`.
+
+Both runs passed the existing training-validation promotion margin:
+
+| Seed | Original on validation placements | Selected | Gain | Noise margin |
+| --- | ---: | ---: | ---: | ---: |
+| 4242 | 0.827 | 0.994 | +0.167 | 0.104 |
+| 4243 | 0.867 | 0.921 | +0.054 | 0.048 |
+
+Preserved specimens:
+
+- [Molting Timer 4242](../examples/experimental-94x/molting-4242.js): 27
+  instructions, bomber, timer, forward clear. WAIT=211, STEP=1338, HOP=6965.
+  SENSOR=545 is unused because TRIGGER=0. Its solo copy finishes at cycle 871
+  at both tested load bases, and the relocated DAT phase survives the full round.
+- [Molting Sensor 4243](../examples/experimental-94x/molting-4243.js): 31
+  instructions, scanner, marker/timer, forward clear. WAIT=128, STEP=997,
+  HOP=5540, SENSOR=911. Its undisturbed transition is cycle 668; injected marker
+  damage brings that forward to cycle 33. Both paths survive full solo rounds.
+
+The saved specimens differ from frozen recommendations only in their display
+names. Their compiled genome IDs were verified against the validation record.
+The original generator's constants remain unchanged.
+Timer was produced by a parameter mutation in generation 3; Sensor by a
+parameter mutation in generation 2. They are actual evolved descendants,
+not merely reselected starting structures.
+
+Final comparison (same three fresh placement seeds, 12 rounds per opponent):
+
+| Entry | Instructions | Expanded training panel | New held-out panel |
+| --- | ---: | ---: | ---: |
+| Original Molting | 30 | 0.829 | 1.128 |
+| Plain forward clear | 13 | 0.986 | 1.115 |
+| Plain backward clear | 13 | 0.933 | 1.038 |
+| Molting Timer 4242 | 27 | 1.024 | 1.177 |
+| Timer's full-body in-place control | 27 | 0.950 | 1.188 |
+| Molting Sensor 4243 | 31 | 0.992 | 1.090 |
+| Sensor's full-body in-place control | 31 | 0.956 | 1.087 |
+
+**The representation problem is addressed in this experiment:** evolved
+recommendations retain and demonstrate relocation instead of becoming unrelated
+clear fragments. The competitive result remains modest. On the new held-out
+panel, Timer gains +0.049 versus original with a 0.009 screening margin, but
+only +0.063 versus the forward plain clear with a 0.105 margin. Against its own
+in-place control it loses 0.010 with a 0.066 margin. Sensor loses 0.038 versus
+original; its +0.003 versus its in-place control is far below the 0.140 margin.
+Both selected forward clears, so improvements cannot be attributed to relocation
+alone. These multiple descriptive comparisons and three placement seeds are not
+proof of tournament strength. Do not replace defaults on this evidence.
+
+Tracked evidence: [parameter-search results](molting-parameters-results.json).
+Raw input snapshots, all admitted parameter sets, provenance, generated source,
+behavior observations and per-opponent scores are in `evolved/molting-parameters/`.
+The original E1/E2 artifacts remain intact. This new held-out panel has now
+been examined and must not be described as untouched in later design work.
+
+Next useful experiment: keep the admission contract and vary the payload's stun
+duration or switch directly to DAT, with matching plain-clear controls. This is
+not implemented here: E3 intentionally held the template fixed to test whether
+searching generator parameters could improve it without losing its behavior.
+
+Final regression verification: **170 tests, 164 passed, six optional GPU checks
+skipped, zero failures**. The saved recommendations are rebuilt and checked
+against their validated genome IDs and behavior observations in the tests.
+Log: `evolved/molting-parameters/tests-final.tap`. Main and the original Molting
+defaults remain unchanged; all E3 work stays on `codex/molting-94x`.

@@ -72,3 +72,40 @@ that, and lost much of their score against held-out opponents.
 
 See [the build and experiment journal](../../docs/molting-94x-journal.md)
 for results, validation limits, and the next experiments to consider.
+
+## Evolving the generator while preserving relocation
+
+```sh
+node scripts/evolve-molting-parameters.js --out evolved/molting-parameters
+node --test test/molting-parameters.test.js
+```
+
+This separate experiment uses a genetic algorithm on the seven declared
+parameters. It regenerates code after crossover and mutation, then requires
+exact payload copying, execution at HOP, full solo survival, and an early
+marker response when TRIGGER=1. Failed candidates never enter battle evaluation.
+It does not change the standard instruction-level evolver or `molting.js`.
+
+Defaults: two search seeds (4242,4243), population 12, three generations of
+12 offspring, four screening rounds, three validation placement seeds with
+12 rounds per opponent. Parents are rescored when screening placements change.
+Options: `--seeds`, `--population`, `--generations`, `--offspring`,
+`--screen-rounds`, `--check-rounds`, `--threads`, and `--out`.
+This runner uses CPU workers; behavior checks inspect CPU VM state directly.
+
+It exports `generator-SEED.js` and `.red`, `search-SEED.json` with parameters,
+lineage and behavior evidence, forward/backward plain clears, full-body
+in-place controls, and `report.json`. A recommendation is chosen only by
+fresh-placement training validation against the original. The later plain-clear
+and new held-out comparisons are descriptive and cannot change that export.
+All runs require a fresh output directory to preserve previous experiments.
+
+Saved recommendations are `molting-4242.js` (27-instruction timer bomber) and
+`molting-4243.js` (31-instruction marker scanner). Both still relocate and use a
+forward clear. The timer variant improved modestly over the original on the
+new held-out panel, but neither established an advantage over its corresponding
+in-place control. Keep them as experiments; the original defaults are retained.
+
+```sh
+node cli/zorewars.js battle examples/experimental-94x/molting-4242.js @fastsilk.js --rules 94x --length 50 --rounds 20 --seed 4242 --report --json
+```
