@@ -1,7 +1,18 @@
 {
   "schemaVersion": 1,
   "archiveIndex": "https://gallium.inria.fr/~doligez/corewar/by-date/complete.htm",
-  "scope": "Eight additional historical source specimens read for the family history; originals remain in ignored imported/history/warriors/. This is not a complete historical corpus.",
+  "scope": "Eight individually reviewed historical source specimens plus linked collection manifests; originals remain in ignored imported/history/. This is not a complete historical corpus.",
+  "collections": [
+    {
+      "repository": "https://github.com/n1LS/redcode-warriors",
+      "commit": "615f2f3d75acfcb5420821eb5c1acc659377a7e2",
+      "sources": 567,
+      "manifest": "n1ls-warrior-history.json",
+      "index": "n1ls-warrior-index.md",
+      "analysis": "n1ls-warrior-history.md",
+      "dateEvidence": "2018-04-27 is the repository upload date, not warrior creation dates; source comments require separate interpretation"
+    }
+  ],
   "sources": [
     {
       "name": "Torch t3",

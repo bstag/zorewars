@@ -813,3 +813,34 @@ changes. We incorporated the boot/no-boot control, derived timeout and fault
 injection now. Next contracts should cover safe stride relationships and first/
 second-generation paper copying under explicit queue limits. No historical
 code or dates were silently rewritten.
+
+## E8 — Add the n1LS historical warrior collection (October 28, 2026)
+
+Imported the user-supplied [n1LS/redcode-warriors repository](https://github.com/n1LS/redcode-warriors)
+at commit `615f2f3d75acfcb5420821eb5c1acc659377a7e2`: 567 Redcode files plus
+`listing.txt`. Original bytes remain in ignored `imported/history/n1ls/`.
+The indexer verifies the Git tree and every blob, records authors, source
+strategy/version/date notes, and generates local label/constant anatomy.
+
+Assembly passes / passes within 50 instructions: 88 **563/425**, 94nop
+**565/427**, lp **563/426**, 94x **454/372**, 94x-hill **454/372**. These are
+compatibility checks, not behavioral or battle results. Five pairs assemble
+identically under 94nop and are marked to prevent duplicate opponent weighting.
+
+The initial review identifies Agony and Charon scanner revisions, Imprimis
+stone/imp scheduling changes, and Sphinx constant/decoy variants. Source
+comments support those relationships; the repository's 2018 upload date does
+not date warrior creation. Charon's conflicting creation-date headers and
+Agony's placeholder submission dates are retained explicitly. Agony Killer
+is not treated as a descendant merely because of its name.
+
+Evidence: [collection notes](n1ls-warrior-history.md),
+[browseable index](n1ls-warrior-index.md), [full manifest](n1ls-warrior-history.json).
+No battles, Red Queen promotions, library additions, or default-setting changes
+were part of this ingestion. Behavioral gates and family-aware training splits
+remain prerequisites for using these as generator components or opponents.
+
+Validation checked all 567 cached SHA-256 hashes, commit-pinned links and length
+flags, byte-identical regeneration of the index/manifest, and rejection of a
+tampered tree without overwriting reports. `git diff --check` passed. The battle
+engine was unchanged; the full battle regression suite was not rerun.

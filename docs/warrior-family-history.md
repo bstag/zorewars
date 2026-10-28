@@ -6,6 +6,12 @@ contemporary newsletters. It is a design history, not an exhaustive genealogy
 or a claim that later warriors always beat earlier ones. Source originals stay
 in ignored `imported/`; this document contains analysis and links.
 
+The [n1LS collection](n1ls-warrior-history.md), added October 28, 2026, expands
+this history with 567 pinned Redcode files, source version notes, compatibility
+checks and duplicate detection. Agony, Charon, Imprimis and Sphinx provide
+additional version series; repository upload dates are kept separate from
+warrior dates. [Browse the collection](n1ls-warrior-index.md).
+
 The eight additionally downloaded warrior versions are indexed with source
 URLs, hashes and date-evidence notes in [the source manifest](warrior-history-sources.json).
 The first implemented follow-up is [Lifeboat 94x](../examples/experimental-94x/lifeboat/README.md);
