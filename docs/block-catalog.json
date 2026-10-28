@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "blocks": [
     {
       "id": "opening-none",
@@ -770,6 +770,360 @@
       },
       "composition": "A separate process-aware grammar; do not splice into single-process clear recipes.",
       "limitations": "Tests cover exact copy, attack coverage and selected injected faults, not arbitrary enemy damage. Initial search did not establish general superiority."
+    },
+    {
+      "id": "compass-94x",
+      "family": "comparison scanner with decoy layout and guarded clear",
+      "purpose": "Original single-process scanner; Monowire-inspired layout contracts with explicit bounded phases.",
+      "implementation": "tools/blocks/compass.js",
+      "runner": "cli/block-devtools.js",
+      "rules": [
+        "94x"
+      ],
+      "topology": "ring",
+      "instructions": "20/26 payload + 0..18 decoys + optional 6-instruction boot; 44 by default",
+      "parameters": [
+        "BOOT",
+        "HOP",
+        "STEP",
+        "GAP",
+        "START",
+        "SCANS",
+        "PHASE",
+        "STUN",
+        "DECOYS",
+        "DECOY"
+      ],
+      "entry": "One process enters scan after an exact copy, or scans in place.",
+      "processes": "Exactly one process in pristine operation; SPL bombs are data until opponents execute them.",
+      "writes": "Scanner probe A/B and private counters; clear excludes the complete active protected span.",
+      "transitions": [
+        "unequal probe pair",
+        "scan timer exhausted",
+        "bounded SPL phase exhausted"
+      ],
+      "validation": {
+        "behaviorTest": "test/block-evolve.test.js",
+        "benchmark": "docs/block-evolution-results.json"
+      },
+      "composition": "Boot destination is payload-origin relative; decoys lie outside the copied payload. Handoff and clear share one pointer.",
+      "limitations": "Equal probes can hide targets. No general enemy-damage guarantee. Initial screen did not establish a decoy advantage."
+    }
+  ],
+  "runnableRecipes": [
+    {
+      "id": "clear",
+      "defaults": {
+        "OPENING": 1,
+        "RELOCATE": 1,
+        "BACKWARD": 0,
+        "PHASE": 1,
+        "WAIT": 128,
+        "STEP": 997,
+        "HOP": 4096,
+        "STUN": 64
+      },
+      "space": {
+        "OPENING": [
+          0,
+          2
+        ],
+        "RELOCATE": [
+          0,
+          1
+        ],
+        "BACKWARD": [
+          0,
+          1
+        ],
+        "PHASE": [
+          0,
+          2
+        ],
+        "WAIT": [
+          1,
+          768
+        ],
+        "STEP": [
+          1,
+          2048
+        ],
+        "HOP": [
+          256,
+          7000
+        ],
+        "STUN": [
+          1,
+          4096
+        ]
+      },
+      "rules": [
+        "88",
+        "94nop",
+        "lp",
+        "94x",
+        "94x-hill"
+      ],
+      "numeric": [
+        "WAIT",
+        "STEP",
+        "HOP",
+        "STUN"
+      ],
+      "blocks": [
+        "opening-none",
+        "opening-bomber",
+        "opening-bscan",
+        "relocate-copy",
+        "enter-in-place",
+        "clear-dat",
+        "clear-stun-dat"
+      ]
+    },
+    {
+      "id": "lifeboat",
+      "defaults": {
+        "BOOT": 1,
+        "STEP": 2019,
+        "HOP": 18000,
+        "SHOTS": 512,
+        "BOMB": 0,
+        "BACKWARD": 0,
+        "PHASE": 1,
+        "STUN": 64
+      },
+      "space": {
+        "BOOT": [
+          0,
+          1
+        ],
+        "STEP": [
+          1,
+          55439
+        ],
+        "HOP": [
+          256,
+          54000
+        ],
+        "SHOTS": [
+          16,
+          2048
+        ],
+        "BOMB": [
+          0,
+          1
+        ],
+        "BACKWARD": [
+          0,
+          1
+        ],
+        "PHASE": [
+          0,
+          2
+        ],
+        "STUN": [
+          1,
+          4096
+        ]
+      },
+      "rules": [
+        "94x"
+      ],
+      "numeric": [
+        "STEP",
+        "HOP",
+        "SHOTS",
+        "STUN"
+      ],
+      "blocks": [
+        "relocate-copy",
+        "bounded-stone",
+        "schedule-watchdog",
+        "clear-dat",
+        "clear-stun-dat"
+      ]
+    },
+    {
+      "id": "compass",
+      "defaults": {
+        "BOOT": 1,
+        "HOP": 18000,
+        "STEP": 997,
+        "GAP": 7,
+        "START": 512,
+        "SCANS": 64,
+        "PHASE": 1,
+        "STUN": 32,
+        "DECOYS": 12,
+        "DECOY": 1
+      },
+      "space": {
+        "BOOT": [
+          0,
+          1
+        ],
+        "HOP": [
+          256,
+          54000
+        ],
+        "STEP": [
+          1,
+          55439
+        ],
+        "GAP": [
+          1,
+          31
+        ],
+        "START": [
+          128,
+          54000
+        ],
+        "SCANS": [
+          8,
+          256
+        ],
+        "PHASE": [
+          0,
+          2
+        ],
+        "STUN": [
+          1,
+          512
+        ],
+        "DECOYS": [
+          0,
+          18
+        ],
+        "DECOY": [
+          0,
+          2
+        ]
+      },
+      "rules": [
+        "94x"
+      ],
+      "numeric": [
+        "HOP",
+        "STEP",
+        "GAP",
+        "START",
+        "SCANS",
+        "STUN",
+        "DECOYS"
+      ],
+      "blocks": [
+        "relocate-copy",
+        "comparison-scan",
+        "scan-to-clear",
+        "decoy-layout",
+        "guarded-clear"
+      ]
+    }
+  ],
+  "familyReadiness": [
+    {
+      "category": "stone",
+      "recipes": [
+        "clear",
+        "lifeboat"
+      ],
+      "status": "partial",
+      "nextContract": "Bounded bombing; probe ownership and timeout."
+    },
+    {
+      "category": "paper",
+      "recipes": [],
+      "status": "reference",
+      "nextContract": "Copy extent, source restoration, child entry and parent/child queue schedule."
+    },
+    {
+      "category": "vamp",
+      "recipes": [],
+      "status": "reference",
+      "nextContract": "Fang destination arithmetic, enemy entry, pit ownership and pit safety."
+    },
+    {
+      "category": "stun",
+      "recipes": [
+        "clear",
+        "lifeboat",
+        "compass"
+      ],
+      "status": "partial",
+      "nextContract": "Bomb count, process contract and guaranteed pristine transition to DAT."
+    },
+    {
+      "category": "imp",
+      "recipes": [],
+      "status": "reference",
+      "nextContract": "Core-specific modular step, launch order and process count."
+    },
+    {
+      "category": "clear",
+      "recipes": [
+        "clear",
+        "lifeboat",
+        "compass"
+      ],
+      "status": "partial",
+      "nextContract": "Pointer frame, own-image exclusion, phase boundaries and wrap."
+    },
+    {
+      "category": "scan",
+      "recipes": [
+        "clear",
+        "compass"
+      ],
+      "status": "partial",
+      "nextContract": "Probe width, both target cases, equal-cell blind spots and self-exclusion."
+    },
+    {
+      "category": "pspace",
+      "recipes": [],
+      "status": "reference",
+      "nextContract": "Separate P-space-enabled profile, cell ownership and between-round state."
+    },
+    {
+      "category": "boot",
+      "recipes": [
+        "clear",
+        "lifeboat",
+        "compass"
+      ],
+      "status": "partial",
+      "nextContract": "Exact copied payload, entry process and destination independent of other section lengths."
+    },
+    {
+      "category": "gate",
+      "recipes": [],
+      "status": "reference",
+      "nextContract": "Gate position, decrement timing and interaction with imp launch/clear processes."
+    },
+    {
+      "category": "quick",
+      "recipes": [],
+      "status": "reference",
+      "nextContract": "Probe table, decoding arithmetic and correct pointer at handoff."
+    },
+    {
+      "category": "factor",
+      "recipes": [],
+      "status": "reference",
+      "nextContract": "Special-purpose factoring benchmark and correctness objective; not a combat block."
+    },
+    {
+      "category": "sort",
+      "recipes": [],
+      "status": "reference",
+      "nextContract": "Special-purpose sorting benchmark and correctness objective; not a combat block."
+    },
+    {
+      "category": "other",
+      "recipes": [
+        "lifeboat"
+      ],
+      "status": "partial",
+      "nextContract": "Watchdog admitted only inside Lifeboat; repair, numeric disruption and reporting remain candidates."
     }
   ]
 }

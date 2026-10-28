@@ -974,3 +974,103 @@ exact startup-copy receipts, full-cycle survival, all 288 battle score totals,
 and the seven unchanged executable catalog choices. The catalog-reference test
 and `git diff --check` pass. The full engine suite was not rerun; only reference
 metadata and optional review tooling changed.
+
+## E12 — Typed recipes join the main evolver (2026-10-28)
+
+**Question.** Can we evolve executable block layouts from the broader catalog,
+preserve relocation and process contracts, and use Monowire's layout lessons
+to study decoys without confusing them with changed boot positions?
+
+Implemented the opt-in `evolve --representation blocks` path. Three recipe
+families are admitted: the existing single-process clear/bomber/B-scan grammar,
+the two-process Lifeboat watchdog grammar, and new original Compass comparison
+scanner/clear with decoy layout. Whole-family contracts keep pointer frames and
+process ownership intact. This does not expose arbitrary historical instruction
+slices to crossover or change instruction-evolution defaults.
+
+The GA uses within-family crossover, structural and numeric parameter mutation,
+family immigrants, lexicase and family preservation. All new candidates pass
+behavior gates. Parents are rescored every generation against common placements
+and the current Red Queen ancestors. Local ±1 parameter steps use the same gates.
+Exports preserve source, tuner-compatible generator, recipe, behavior receipt,
+genealogy and per-generation population/ancestor counts. Fresh validation can
+retain the original baseline. A CLI regression test covers export, verification,
+resuming a receipt and refusing to overwrite a prior experiment.
+
+**Monowire lesson applied.** Compass keeps its 20/26-instruction payload separate
+from 0–18 decoy cells and an optional six-instruction boot. The default is 44
+instructions. Boot destination is anchored to payload origin, independently of
+decoy count. Scan stride, gap, start, timer, phase and decoys are tunable. Unlike
+Monowire's coupled self-modifying multi-process clear, Compass uses explicit
+single-process phases; it is a new recipe, not a claim to improve Monowire.
+
+Checks cover exact copy and entry at three origins including destination wrap,
+full-cycle solo survival, private mutable fields, and isolated empty/A-only/
+B-only/equal/self probe cases with exact first clear write and phase count.
+Negative tests deliberately break copying, comparison, handoff and phase length.
+The full catalog readiness map includes all 14 historical categories, not only
+“other.” Paper, imp launchers, vampires, quickscan decoders, gates, P-space and
+additional repair mechanisms still need their own executable contracts. Factor
+and sort require separate correctness objectives. Those references have not
+silently become admitted genes.
+
+**Experiment.** `scripts/experiment-block-evolution.js` runs the actual CLI on
+six known local opponents: Dwarf, Scout, Silk, Vampire, Mice and Two-Pass Clear.
+Seed 20261028, population six, six offspring per generation, three generations,
+three local steps per generation and four battle rounds per opponent. All
+opponents were checked for full-round 94x solo survival. The comparison panel
+is Seeker, One-Shot, Fast Silk and Gatekeeper; it is not used by this search.
+These are previously examined library panels, not unseen public-hill opponents.
+
+Thirty distinct recipes passed admission from 35 proposals, with five duplicates
+and zero rejections in this particular search. The nine local steps were tried;
+43 evaluations used 0, 1 and 2 prior champions across the generations. Champions
+were clear, clear, then Lifeboat. The final Lifeboat used STUN=1. The selected
+clear used WAIT=127 and STUN=1; Compass changed START to 2195. Family representatives
+survived selection even when their aggregate fitness was lower.
+
+CLI validation used three fresh seeds and retained the baseline: no finalist
+cleared the existing 2.5-standard-error noise guard. The existing standalone
+tuner then tried six nearby STEP values on the final champion and likewise
+retained its current settings. Its finalists were re-gated before further use.
+
+All entries below used common fresh seeds 22261028, 22361028 and 22461028,
+eight rounds per opponent per seed. Scores are points per round:
+
+| Entry | Instructions | Training panel | Comparison panel |
+|---|---:|---:|---:|
+| Default clear recipe | 26 | 1.3194 | 0.6875 |
+| Evolved clear | 26 | 1.3472 | 0.6875 |
+| Default Lifeboat | 37 | 1.1528 | 0.9271 |
+| Evolved Lifeboat / tuner choice | 37 | 1.2014 | 0.9271 |
+| Default Compass | 44 | 1.0764 | 0.6563 |
+| Evolved Compass | 44 | 1.0000 | 0.6875 |
+| Plain DAT | 9 | 1.2847 | 0.6042 |
+| Plain short stun | 13 | 1.3056 | 0.5208 |
+| Plain full stun | 13 | 1.4028 | 0.6458 |
+| Compass without decoys | 32 | 1.0694 | 0.6563 |
+| Compass with DAT decoys | 44 | 1.0694 | 0.6563 |
+| Compass with varied SPL decoys | 44 | 1.0764 | 0.6563 |
+| Compass in place | 38 | 1.0208 | 0.2813 |
+| Compass direct DAT | 38 | 1.1042 | 0.7292 |
+
+**Interpretation.** This validates the integration, not competitive superiority.
+Decoys did not show a useful advantage on these panels. Direct DAT and booting
+look worth studying further, but their Compass comparison gains did not clear
+the paired noise guard. A simpler plain clear remains competitive. No library
+promotion or main-branch change was made.
+
+Final run: **6,268 CPU battle rounds**: 1,204 search, 720 CLI validation and
+4,344 tuner/control comparisons. A same-seed run was repeated after tightening
+budget validation and correcting parentless-immigrant genealogy metadata; the
+final receipt identifies its implementation by source hashes. Raw final outputs:
+`evolved/block-evolution-20261028-final/`. The first raw run remains in
+`evolved/block-evolution-20261028/`.
+
+Evidence: [guide and full-family contracts](block-evolution.md),
+[tracked experiment receipt](block-evolution-results.json),
+[playable Compass](../examples/experimental-94x/compass/README.md).
+Full suite during implementation: 192 passed, seven skipped, zero failures.
+The final targeted block tests additionally cover budget validation, genealogy
+and the actual CLI round trip. GPU battles were not tested in this experiment;
+the CLI shares the existing backend selector, while behavior gates remain CPU.

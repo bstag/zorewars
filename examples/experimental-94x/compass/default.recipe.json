@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 2,
+  "rules": "94x",
+  "length": 50,
+  "recipe": {
+    "family": "compass",
+    "P": {
+      "BOOT": 1,
+      "HOP": 18000,
+      "STEP": 997,
+      "GAP": 7,
+      "START": 512,
+      "SCANS": 64,
+      "PHASE": 1,
+      "STUN": 32,
+      "DECOYS": 12,
+      "DECOY": 1
+    }
+  },
+  "P": {
+    "BOOT": 1,
+    "HOP": 18000,
+    "STEP": 997,
+    "GAP": 7,
+    "START": 512,
+    "SCANS": 64,
+    "PHASE": 1,
+    "STUN": 32,
+    "DECOYS": 12,
+    "DECOY": 1
+  },
+  "sourceHash": "efe6bd1f94023bb711e2363c83a99f810046c4471e4b0dcc5fd819102eb84d8d",
+  "sections": [
+    {
+      "id": "scan-state",
+      "start": 0,
+      "length": 4
+    },
+    {
+      "id": "comparison-scan",
+      "start": 4,
+      "length": 11
+    },
+    {
+      "id": "guarded-clear",
+      "start": 15,
+      "length": 11
+    },
+    {
+      "id": "decoy",
+      "start": 26,
+      "length": 12
+    },
+    {
+      "id": "boot",
+      "start": 38,
+      "length": 6
+    }
+  ],
+  "verification": {
+    "ok": true,
+    "observations": [
+      {
+        "base": 0,
+        "target": 18000,
+        "arrivedAt": 53,
+        "survives": true
+      },
+      {
+        "base": 55433,
+        "target": 17993,
+        "arrivedAt": 53,
+        "survives": true
+      },
+      {
+        "base": 37436,
+        "target": 55436,
+        "arrivedAt": 53,
+        "survives": true
+      },
+      {
+        "scenario": "empty",
+        "hit": false,
+        "firstWrite": 26,
+        "stunWrites": 32,
+        "firstDat": 58
+      },
+      {
+        "scenario": "a-only",
+        "hit": true,
+        "firstWrite": 128,
+        "stunWrites": 32,
+        "firstDat": 160
+      },
+      {
+        "scenario": "b-only",
+        "hit": true,
+        "firstWrite": 128,
+        "stunWrites": 32,
+        "firstDat": 160
+      },
+      {
+        "scenario": "equal-pair",
+        "hit": false,
+        "firstWrite": 26,
+        "stunWrites": 32,
+        "firstDat": 58
+      },
+      {
+        "scenario": "self",
+        "hit": false,
+        "firstWrite": 26,
+        "stunWrites": 32,
+        "firstDat": 58
+      }
+    ],
+    "scope": "Exact boot at wrapped origins; full solo; isolated A/B/equal/empty/self probes; bounded SPL to DAT and protected writes. No arbitrary damage guarantee."
+  }
+}

@@ -14,6 +14,19 @@ export const standaloneRecipes = [{
   validation: { behaviorTest: 'test/airbag.test.js', benchmark: 'docs/lifeboat-results.json' },
   composition: 'A separate process-aware grammar; do not splice into single-process clear recipes.',
   limitations: 'Tests cover exact copy, attack coverage and selected injected faults, not arbitrary enemy damage. Initial search did not establish general superiority.',
+}, {
+  id: 'compass-94x', family: 'comparison scanner with decoy layout and guarded clear',
+  purpose: 'Original single-process scanner; Monowire-inspired layout contracts with explicit bounded phases.',
+  implementation: 'tools/blocks/compass.js', runner: 'cli/block-devtools.js',
+  rules: ['94x'], topology: 'ring', instructions: '20/26 payload + 0..18 decoys + optional 6-instruction boot; 44 by default',
+  parameters: ['BOOT','HOP','STEP','GAP','START','SCANS','PHASE','STUN','DECOYS','DECOY'],
+  entry: 'One process enters scan after an exact copy, or scans in place.',
+  processes: 'Exactly one process in pristine operation; SPL bombs are data until opponents execute them.',
+  writes: 'Scanner probe A/B and private counters; clear excludes the complete active protected span.',
+  transitions: ['unequal probe pair','scan timer exhausted','bounded SPL phase exhausted'],
+  validation: { behaviorTest: 'test/block-evolve.test.js', benchmark: 'docs/block-evolution-results.json' },
+  composition: 'Boot destination is payload-origin relative; decoys lie outside the copied payload. Handoff and clear share one pointer.',
+  limitations: 'Equal probes can hide targets. No general enemy-damage guarantee. Initial screen did not establish a decoy advantage.',
 }];
 
 const contract = {

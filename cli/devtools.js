@@ -154,6 +154,11 @@ export async function cmdTune(args, h) {
 }
 
 export async function cmdEvolve(args, h, { quiet = false } = {}) {
+  if (args.flags.representation === 'blocks') {
+    const { cmdEvolveBlocks } = await import('./block-devtools.js');
+    return cmdEvolveBlocks(args, h, { quiet, battlePool, hillOpponents, hillSettingsFor });
+  }
+  if (args.flags.representation && args.flags.representation !== 'instructions') h.usage('--representation takes instructions or blocks');
   const settings = h.settingsFrom(args.flags);
   const json = !!args.flags.json;
   const integer = (key, fallback, min = 1) => {

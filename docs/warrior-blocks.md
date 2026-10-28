@@ -87,3 +87,7 @@ The [leader breakdowns](hill-leaders.md) map current recursive rankings to revie
 ## Historical component taxonomy
 
 The [Planar component crosswalk](planar-components.md) connects 14 historical categories to our existing blocks and design candidates. The [dated source index](planar-warrior-index.md) preserves component combinations, author attribution and original-post provenance; [archive notes](planar-warrior-history.md) explain source ambiguities and overlap with the n1LS collection. The [other-category review](planar-other-review.md) adds six documented mechanism candidates, source analysis and a small matched screen. Archive tags do not certify reusable blocks.
+
+## Recipe evolution
+
+The [block evolution guide](block-evolution.md) describes the main CLI integration, Compass scanner/decoy layout, parameter tuning and the readiness of all historical families. Runnable recipes and their legal parameter spaces are exported in [the catalog](block-catalog.json). The original seven composable choices remain one grammar; additional recipes own separate process and pointer contracts.

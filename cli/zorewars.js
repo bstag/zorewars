@@ -82,6 +82,8 @@ Options:
   --scratch          evolve: start from random programs, no library genes or opponents (the library is only held out)
   --ties 0.5         evolve: what a tie with a champion counts (0..1); lower makes champions kill
   --algorithm NAME   evolve/train: map-elites (diverse niches) or ga (population genetic algorithm)
+  --representation blocks   evolve: verified recipe GA with Red Queen; defaults to 94x, length 50
+  --families LIST    blocks: clear,lifeboat,compass (availability depends on --rules)
   --selection NAME   default parent selection or lexicase (preserve opponent specialists)
   --epsilon N        lexicase tolerance; auto uses median absolute deviation (default auto)
   --descriptor NAME  map-elites: species (solo behaviour) or outcomes (win/tie rates per opponent)
