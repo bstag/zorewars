@@ -37,12 +37,35 @@ export function verifyMolting(w, P, settings) {
     if (!disturb && vm.b[normalize(base + clock)] !== 0) throw new Error('timer bypassed without marker damage');
     if (disturb && vm.b[normalize(base + clock)] === 0) throw new Error('damaged marker did not trigger early transition');
     const movedAt = vm.cycle;
+    let phase;
+    if (P.PHASE !== undefined) {
+      const stun = P.PHASE === 0 ? null : normalize(target + entry(w, 'stunLoop', settings).start - payload);
+      const expected = P.PHASE === 0 ? 0 : P.PHASE === 2 ? settings.coreSize - template.length : P.STUN;
+      let stunWrites = 0, firstKillAt = null;
+      const firstTarget = normalize(target + (P.BACKWARD ? -1 : template.length));
+      while (!vm.done) {
+        const event = vm.step();
+        if (event?.pc === stun) {
+          const destination = normalize(firstTarget + (P.BACKWARD ? -stunWrites : stunWrites));
+          if (vm.peek(destination).op !== 'SPL' || vm.writerPc[destination] !== stun) throw new Error('stun phase wrote the wrong cell or bomb');
+          stunWrites++;
+        }
+        if (event?.pc === normalize(target + kill)) {
+          firstKillAt = vm.cycle;
+          if (vm.peek(firstTarget).op !== 'DAT' || vm.writerPc[firstTarget] !== normalize(target + kill)) throw new Error('DAT did not restart at the beginning of the clear');
+          break;
+        }
+      }
+      if (firstKillAt === null || stunWrites !== expected) throw new Error(`incorrect stun duration: ${stunWrites}, expected ${expected}`);
+      phase = { stunWrites, firstKillAt, turnsToKill: firstKillAt - movedAt };
+    }
     vm.run();
     if (!vm.warriors[0].alive || vm.cycle !== settings.maxCycles) throw new Error('failed full solo round');
     if (!(vm.lastExec[normalize(target + kill)] > movedAt)) throw new Error('relocated kill phase never executed');
     if (vm.lastExec[normalize(base + w.start)] >= movedAt) throw new Error('returned to old opening');
     if (!template.every((ins, i) => [pointer, counter].includes(i) || same(ins, vm.peek(target + i)))) throw new Error('payload damaged itself');
-    observations.push({ base, disturbed: disturb, movedAt, killLastExecuted: vm.lastExec[normalize(target + kill)], survives: true });
+    observations.push({ base, disturbed: disturb, movedAt, killLastExecuted: vm.lastExec[normalize(target + kill)], survives: true,
+      ...(phase ? { phase } : {}) });
   }
   if (P.TRIGGER && observations.at(-1).movedAt >= observations[0].movedAt) throw new Error('marker transition was not earlier');
   return { ok: true, payloadLength: template.length, observations };

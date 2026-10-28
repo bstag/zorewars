@@ -109,3 +109,42 @@ in-place control. Keep them as experiments; the original defaults are retained.
 ```sh
 node cli/zorewars.js battle examples/experimental-94x/molting-4242.js @fastsilk.js --rules 94x --length 50 --rounds 20 --seed 4242 --report --json
 ```
+
+## Short stun and direct-DAT payloads
+
+`molting-phases.js` adds two tunable choices to the generator:
+
+- `PHASE=0`: relocate, then start the DAT clear immediately (9-instruction payload).
+- `PHASE=1`: write `STUN` SPL bombs, reset the pointer, then clear with DAT.
+- `PHASE=2`: the original full stun sweep before DAT (13-instruction payload).
+
+`STUN` ranges from 32 to 4096 and is unused in modes 0 and 2. The default in
+this new file is 512 writes using the saved timer-bomber parameters. The old
+generator and its recommendations remain frozen. `molting-direct-dat.js` is
+a playable 23-instruction direct-DAT version of the same timer parent.
+
+The scanner opening still drops SPL bombs regardless of PHASE: the mode
+controls only the relocated payload. Direct DAT actually removes the stun
+loop, so copy boundaries and references are recalculated. Every DAT pass
+still excludes the full relocated body.
+
+```sh
+node scripts/compare-molting-phases.js --out evolved/molting-phases
+node --test test/molting-phases.test.js
+node cli/zorewars.js battle examples/experimental-94x/molting-direct-dat.js @fastsilk.js --rules 94x --length 50 --rounds 20 --seed 4242 --report --json
+```
+
+The comparison runner freezes both E3 parents and tests full stun, 64, 512,
+4096 writes and direct DAT, with corresponding compact plain clears and
+full-body in-place controls. It exports all ten JavaScript variants, all
+25 Redcode entries, behavior evidence and per-opponent scores in `report.json`.
+Options are `--out`, `--threads` and `--rounds` (default 12). Output directories
+must be fresh. All four placement seeds are fixed in the script. Opponents are
+previously used panels, not new held-out data. No automatic selection or
+default changes occur. See the journal's E4 section for results.
+
+E4 found a tradeoff: the 64-write timer variant scored higher than its matching
+plain and in-place controls on the eight comparison opponents, but lost ground
+on the development panel, especially against Mice and other papers. Direct DAT
+starts killing fastest and is smaller, but did not show a clear advantage over
+its matching controls. All remain experimental; the full-stun designs are kept.

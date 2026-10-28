@@ -1,0 +1,324 @@
+[
+  {
+    "phase": "full",
+    "seed": 1400071,
+    "rounds": 12,
+    "warriors": [
+      {
+        "name": "Molting Phases 94x",
+        "author": "ZoreWars",
+        "wins": 11,
+        "losses": 1,
+        "ties": 0,
+        "score": 33,
+        "smooth": 33.0481
+      },
+      {
+        "name": "Mice",
+        "author": "Chip Wendell (1986), adapted to ICWS'94 syntax",
+        "wins": 1,
+        "losses": 11,
+        "ties": 0,
+        "score": 3,
+        "smooth": 7.6822
+      }
+    ],
+    "symptoms": {
+      "suicide": 1,
+      "converted": 0,
+      "early": 0,
+      "late": 0,
+      "tie": 0
+    },
+    "outcomes": [
+      {
+        "round": 1,
+        "cycle": 221457,
+        "summary": "Molting Phases 94x won at cycle 221,457. Mice's last process ran DAT.F #0, #0 at 2061: a bomb Molting Phases 94x wrote at cycle 212775 using MOV.I $6, >3 at 6971.",
+        "killingBlow": {
+          "victim": "Mice",
+          "pc": 2061,
+          "cause": "enemyCode",
+          "writerPc": 6971
+        }
+      },
+      {
+        "round": 2,
+        "cycle": 218515,
+        "summary": "Molting Phases 94x won at cycle 218,515. Mice's last process ran DAT.F #0, #0 at 4470: a bomb Molting Phases 94x wrote at cycle 217594 using MOV.I $6, >3 at 6971.",
+        "killingBlow": {
+          "victim": "Mice",
+          "pc": 4470,
+          "cause": "enemyCode",
+          "writerPc": 6971
+        }
+      },
+      {
+        "round": 3,
+        "cycle": 221495,
+        "summary": "Molting Phases 94x won at cycle 221,495. Mice's last process ran DAT.F #0, #0 at 3448: a bomb Molting Phases 94x wrote at cycle 215549 using MOV.I $6, >3 at 6971.",
+        "killingBlow": {
+          "victim": "Mice",
+          "pc": 3448,
+          "cause": "enemyCode",
+          "writerPc": 6971
+        }
+      },
+      {
+        "round": 4,
+        "cycle": 214849,
+        "summary": "Molting Phases 94x won at cycle 214,849. Mice's last process ran DAT.F #0, #0 at 1986: a bomb Molting Phases 94x wrote at cycle 212626 using MOV.I $6, >3 at 6971.",
+        "killingBlow": {
+          "victim": "Mice",
+          "pc": 1986,
+          "cause": "enemyCode",
+          "writerPc": 6971
+        }
+      },
+      {
+        "round": 5,
+        "cycle": 170733,
+        "summary": "Molting Phases 94x won at cycle 170,733. Mice's last process ran DAT.F #0, #0 at 35435: a bomb Molting Phases 94x wrote at cycle 168643 using MOV.I $6, >3 at 6971.",
+        "killingBlow": {
+          "victim": "Mice",
+          "pc": 35435,
+          "cause": "enemyCode",
+          "writerPc": 6971
+        }
+      },
+      {
+        "round": 6,
+        "cycle": 24056,
+        "summary": "Mice won at cycle 24,056. Molting Phases 94x's last process ran DAT.F $0, $0 at 6963: empty core (it ran past its own code).",
+        "killingBlow": {
+          "victim": "Molting Phases 94x",
+          "pc": 6963,
+          "cause": "emptyCore",
+          "writerPc": -1
+        }
+      },
+      {
+        "round": 7,
+        "cycle": 231511,
+        "summary": "Molting Phases 94x won at cycle 231,511. Mice's last process ran DAT.F #0, #0 at 6715: a bomb Molting Phases 94x wrote at cycle 222083 using MOV.I $6, >3 at 6971.",
+        "killingBlow": {
+          "victim": "Mice",
+          "pc": 6715,
+          "cause": "enemyCode",
+          "writerPc": 6971
+        }
+      },
+      {
+        "round": 8,
+        "cycle": 227927,
+        "summary": "Molting Phases 94x won at cycle 227,927. Mice's last process ran DAT.F #0, #0 at 6731: a bomb Molting Phases 94x wrote at cycle 222116 using MOV.I $6, >3 at 6971.",
+        "killingBlow": {
+          "victim": "Mice",
+          "pc": 6731,
+          "cause": "enemyCode",
+          "writerPc": 6971
+        }
+      },
+      {
+        "round": 9,
+        "cycle": 193571,
+        "summary": "Molting Phases 94x won at cycle 193,571. Mice's last process ran DAT.F #0, #0 at 45170: a bomb Molting Phases 94x wrote at cycle 188113 using MOV.I $6, >3 at 6971.",
+        "killingBlow": {
+          "victim": "Mice",
+          "pc": 45170,
+          "cause": "enemyCode",
+          "writerPc": 6971
+        }
+      },
+      {
+        "round": 10,
+        "cycle": 217922,
+        "summary": "Molting Phases 94x won at cycle 217,922. Mice's last process ran DAT.F #0, #0 at 2612: a bomb Molting Phases 94x wrote at cycle 213878 using MOV.I $6, >3 at 6971.",
+        "killingBlow": {
+          "victim": "Mice",
+          "pc": 2612,
+          "cause": "enemyCode",
+          "writerPc": 6971
+        }
+      },
+      {
+        "round": 11,
+        "cycle": 222520,
+        "summary": "Molting Phases 94x won at cycle 222,520. Mice's last process ran DAT.F #0, #0 at 4685: a bomb Molting Phases 94x wrote at cycle 218023 using MOV.I $6, >3 at 6971.",
+        "killingBlow": {
+          "victim": "Mice",
+          "pc": 4685,
+          "cause": "enemyCode",
+          "writerPc": 6971
+        }
+      },
+      {
+        "round": 12,
+        "cycle": 200650,
+        "summary": "Molting Phases 94x won at cycle 200,650. Mice's last process ran DAT.F #0, #0 at 50358: a bomb Molting Phases 94x wrote at cycle 198490 using MOV.I $6, >3 at 6971.",
+        "killingBlow": {
+          "victim": "Mice",
+          "pc": 50358,
+          "cause": "enemyCode",
+          "writerPc": 6971
+        }
+      }
+    ]
+  },
+  {
+    "phase": "short64",
+    "seed": 1400071,
+    "rounds": 12,
+    "warriors": [
+      {
+        "name": "Molting Phases 94x",
+        "author": "ZoreWars",
+        "wins": 0,
+        "losses": 10,
+        "ties": 2,
+        "score": 2,
+        "smooth": 6.2607
+      },
+      {
+        "name": "Mice",
+        "author": "Chip Wendell (1986), adapted to ICWS'94 syntax",
+        "wins": 10,
+        "losses": 0,
+        "ties": 2,
+        "score": 32,
+        "smooth": 32
+      }
+    ],
+    "symptoms": {
+      "suicide": 2,
+      "converted": 0,
+      "early": 0,
+      "late": 8,
+      "tie": 2
+    },
+    "outcomes": [
+      {
+        "round": 1,
+        "cycle": 219913,
+        "summary": "Mice won at cycle 219,913. Molting Phases 94x's last process ran DAT.F #0, #21933 at 6972: a bomb Mice wrote at cycle 219911 using MOV.I @-2, <5 at 40475.",
+        "killingBlow": {
+          "victim": "Molting Phases 94x",
+          "pc": 6972,
+          "cause": "enemyCode",
+          "writerPc": 40475
+        }
+      },
+      {
+        "round": 2,
+        "cycle": 413586,
+        "summary": "Mice won at cycle 413,586. Molting Phases 94x's last process ran DAT.F #0, #0 at 6972: a bomb Mice wrote at cycle 413584 using MOV.I @-2, <5 at 50620.",
+        "killingBlow": {
+          "victim": "Molting Phases 94x",
+          "pc": 6972,
+          "cause": "enemyCode",
+          "writerPc": 50620
+        }
+      },
+      {
+        "round": 3,
+        "cycle": 44318,
+        "summary": "Mice won at cycle 44,318. Molting Phases 94x's last process ran DAT.F $0, $0 at 6972: a bomb Mice wrote at cycle 44316 using MOV.I @-2, <5 at 49406.",
+        "killingBlow": {
+          "victim": "Molting Phases 94x",
+          "pc": 6972,
+          "cause": "enemyCode",
+          "writerPc": 49406
+        }
+      },
+      {
+        "round": 4,
+        "cycle": 86557,
+        "summary": "Mice won at cycle 86,557. Molting Phases 94x's last process ran DAT.F $0, $0 at 6972: a bomb Mice wrote at cycle 86555 using MOV.I @-2, <5 at 50842.",
+        "killingBlow": {
+          "victim": "Molting Phases 94x",
+          "pc": 6972,
+          "cause": "enemyCode",
+          "writerPc": 50842
+        }
+      },
+      {
+        "round": 5,
+        "cycle": 361050,
+        "summary": "Mice won at cycle 361,050. Molting Phases 94x's last process ran DAT.F #0, #-13 at 6971: its own code or data.",
+        "killingBlow": {
+          "victim": "Molting Phases 94x",
+          "pc": 6971,
+          "cause": "ownCode",
+          "writerPc": 6971
+        }
+      },
+      {
+        "round": 6,
+        "cycle": 24337,
+        "summary": "Mice won at cycle 24,337. Molting Phases 94x's last process ran DAT.F $0, $0 at 6972: a bomb Mice wrote at cycle 24335 using MOV.I @-2, <5 at 55199.",
+        "killingBlow": {
+          "victim": "Molting Phases 94x",
+          "pc": 6972,
+          "cause": "enemyCode",
+          "writerPc": 55199
+        }
+      },
+      {
+        "round": 7,
+        "cycle": 240177,
+        "summary": "Mice won at cycle 240,177. Molting Phases 94x's last process ran DAT.F #0, #18405 at 6974: its own code or data.",
+        "killingBlow": {
+          "victim": "Molting Phases 94x",
+          "pc": 6974,
+          "cause": "ownCode",
+          "writerPc": 6972
+        }
+      },
+      {
+        "round": 8,
+        "cycle": 490942,
+        "summary": "Mice won at cycle 490,942. Molting Phases 94x's last process ran DAT.F #0, #0 at 6971: a bomb Mice wrote at cycle 490941 using MOV.I @-2, <5 at 32176.",
+        "killingBlow": {
+          "victim": "Molting Phases 94x",
+          "pc": 6971,
+          "cause": "enemyCode",
+          "writerPc": 32176
+        }
+      },
+      {
+        "round": 9,
+        "cycle": 51802,
+        "summary": "Mice won at cycle 51,802. Molting Phases 94x's last process ran DAT.F $0, $0 at 6972: a bomb Mice wrote at cycle 51800 using MOV.I @-2, <5 at 52010.",
+        "killingBlow": {
+          "victim": "Molting Phases 94x",
+          "pc": 6972,
+          "cause": "enemyCode",
+          "writerPc": 52010
+        }
+      },
+      {
+        "round": 10,
+        "cycle": 197674,
+        "summary": "Mice won at cycle 197,674. Molting Phases 94x's last process ran DAT.F $0, $0 at 6972: a bomb Mice wrote at cycle 197672 using MOV.I @-2, <5 at 40484.",
+        "killingBlow": {
+          "victim": "Molting Phases 94x",
+          "pc": 6972,
+          "cause": "enemyCode",
+          "writerPc": 40484
+        }
+      },
+      {
+        "round": 11,
+        "cycle": 500000,
+        "summary": "Tie: Molting Phases 94x and Mice were still running when the cycle limit (500,000) was reached. Molting Phases 94x has been converted: 8,264 of its 10,000 processes are running Mice's program.",
+        "killingBlow": null
+      },
+      {
+        "round": 12,
+        "cycle": 500000,
+        "summary": "Tie: Molting Phases 94x and Mice were still running when the cycle limit (500,000) was reached.",
+        "killingBlow": null
+      }
+    ]
+  }
+]

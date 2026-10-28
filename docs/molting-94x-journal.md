@@ -313,3 +313,152 @@ skipped, zero failures**. The saved recommendations are rebuilt and checked
 against their validated genome IDs and behavior observations in the tests.
 Log: `evolved/molting-parameters/tests-final.tap`. Main and the original Molting
 defaults remain unchanged; all E3 work stays on `codex/molting-94x`.
+
+## E4 — shorter stun and direct DAT (protocol fixed before scores)
+
+User-requested follow-up: vary the payload's stun duration while preserving
+relocation, and compare with plain clears. Use a controlled ablation before
+another evolutionary search: hold all seven parameters of both saved E3
+recommendations fixed. Test full stun, 64, 512 and 4096 stun writes, and direct
+DAT, for each parent. No variant selection or default changes in this experiment.
+
+New template: `molting-phases.js`, with PHASE=0 (direct DAT), 1 (short stun),
+2 (full stun), and STUN=32..4096. STUN is unused in modes 0 and 2. The original
+files stay frozen. Full mode must compile to the same genome as each old parent.
+Direct DAT removes four payload instructions; it does not just jump past them.
+The scanner opening's SPL bomb remains unchanged; "direct DAT" describes the
+relocated payload, not the opening. Short stuns reset the pointer before DAT so
+the kill pass starts at the beginning of the stunned strip.
+
+Extend the relocation gate to count actual SPL writes and verify their addresses,
+then record the first DAT write and require it at the start of the clear. Keep
+exact copying, timer/marker checks, wrapping load checks and full solo survival.
+Check both directions and all eight opening/trigger structures, even though the
+two frozen E3 recommendations both clear forward.
+
+For every phase compare the relocated warrior, its full-body in-place control,
+and the corresponding compact plain payload. Five shared forward plain clears,
+ten Molting entries, ten in-place controls: 25 entries. Match all on four fresh
+placement seeds (1400001, 1410001, 1420001, 1430001), 12 rounds per opponent,
+with full 94x cycles and a 50-instruction entry cap. Opponents retain 200.
+
+Use the same 14 development and eight comparison opponents as E3. Both panels
+have already been examined: **the comparison panel is no longer held out**.
+Fresh placements do not restore untouched-opponent status. Report paired seed
+gains and the 2.5-standard-error noise margin as exploratory diagnostics; many
+comparisons are being made. No public-hill claims.
+
+```sh
+node scripts/compare-molting-phases.js --out evolved/molting-phases
+```
+
+### Mechanism results
+
+All ten variants and their matching controls compiled and survived full solo
+rounds. Full-stun variants matched their frozen parent genomes exactly. Tests
+also cover all eight structures in both clear directions, short-phase boundary
+values, altered stun counters, and a deliberately incorrect DAT restart.
+
+| Payload | Stun writes | Payload instructions | Turns from arrival to first DAT write |
+| --- | ---: | ---: | ---: |
+| Full stun | 55427 | 13 | 110859 |
+| Short 64 | 64 | 13 | 133 |
+| Short 512 | 512 | 13 | 1029 |
+| Short 4096 | 4096 | 13 | 8197 |
+| Direct DAT | 0 | 9 | 3 |
+
+Direct DAT also copies four fewer instructions, arriving eight solo turns
+earlier. The timer variant shrinks from 27 to 23 instructions; the sensor
+variant from 31 to 27. The behavior gate observed the exact write counts and
+the first DAT destination, not just eventual survival. No relocation or marker
+behavior was removed.
+
+### Battle results
+
+Completed **26400 rounds in 2200 match jobs**, four CPU workers, about 315
+seconds including concurrent test activity. The additional diagnostic replay
+below adds 24 rounds and is not included in that count. Scores are points per
+round, averaged equally over opponents within each panel. These panels have
+different opponents, so their scores should not be compared as if interchangeable.
+
+| Parent / phase | Length | Development | Comparison | Matching plain clear, comparison | Matching in-place, comparison |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Timer / full | 27 | 0.988 | 1.156 | 1.104 | 1.172 |
+| Timer / 64 | 27 | 0.923 | 1.354 | 1.211 | 1.268 |
+| Timer / 512 | 27 | 0.899 | 1.323 | 1.227 | 1.263 |
+| Timer / 4096 | 27 | 0.746 | 1.154 | 1.034 | 1.138 |
+| Timer / DAT | 23 | 0.945 | 1.286 | 1.221 | 1.266 |
+| Sensor / full | 31 | 0.973 | 1.141 | 1.104 | 1.148 |
+| Sensor / 64 | 31 | 0.859 | 1.240 | 1.211 | 1.266 |
+| Sensor / 512 | 31 | 0.871 | 1.240 | 1.227 | 1.266 |
+| Sensor / 4096 | 31 | 0.713 | 1.146 | 1.034 | 1.156 |
+| Sensor / DAT | 27 | 0.917 | 1.268 | 1.221 | 1.263 |
+
+Timer/64 has a promising **panel-specific advantage over both controls**: on comparison
+opponents it gains +0.143 against its matching plain clear (noise margin 0.033)
+and +0.086 against its full-body in-place control (margin 0.042). Those clear
+the exploratory margin. Its +0.198 versus the old full-stun Timer is slightly
+below that comparison's 0.200 margin. These are four-seed, multiple-comparison
+diagnostics on previously examined opponents, not formal significance claims.
+The controls bypass both the opening and relocation, so they do not isolate
+relocation's contribution from the opening attack. Short-stun/full-stun pairs
+have the same code length; direct DAT also changes footprint and copy cost.
+
+Timer/512 gains +0.096 over its matching plain clear, below its 0.172 margin;
+the in-place gain is +0.060 with a 0.085 margin. Direct DAT is compact and attacks
+very quickly, but neither parent's comparison-panel gain over its matching
+plain or in-place control clears the margin. For Timer/DAT those gains are
++0.065 (margin 0.241) and +0.021 (margin 0.165). The 4096-write intermediate
+phase loses substantial development-panel performance without a useful
+comparison-panel gain over the full-stun parent.
+
+All shortened/direct variants score lower than their own full-stun parent on
+the development panel. Do not promote a new general-purpose default from this
+experiment. The short timer is a specialist worth further testing, while the
+full-stun design remains important against papers.
+
+### Opponent tradeoffs and loss diagnosis
+
+Timer/64 versus Timer/full, mean per-opponent changes over all 48 rounds:
+Scout +1.167, Vampire +0.604, Dwarf +0.500, Quickscan +0.500; Mice -2.458,
+Hydra -0.521, Papercut -0.479, Silk -0.313, Fast Silk -0.229. On the comparison
+panel the largest gains are Carpet Bomber +0.729, Stone and Imp +0.729 and
+Gemini +0.583, while Evolved Silk loses 0.271. This supports treating short
+stun as a changed matchup profile rather than an across-the-board improvement.
+
+Replayed the first development-panel Mice match with reports, seed 1400071,
+12 rounds each (base seed 1400001 plus Mice's opponent offset of 70):
+
+- Timer/full: 11 wins, 1 loss, 0 ties.
+- Timer/64: 0 wins, 10 losses, 2 ties.
+
+In the first three short-stun losses, Mice overwrote the relocated clear's
+instruction at 6972, ending the last process at cycles 219913, 413586 and
+44318. The corresponding full-stun rounds killed Mice at cycles 221457,
+218515 and 221495. The post-mortems establish the killing writes; they do not
+alone prove the entire causal history. The pattern is consistent with losing
+the full stun sweep's ability to suppress replication before the DAT pass.
+Two short-stun losses end on own code, despite all solo checks passing; enemy
+interference can still create self-hits.
+
+Evidence: [results and per-opponent means](molting-phases-results.json),
+[matched Mice diagnoses](molting-phases-diagnosis.json). Raw reports and all
+25 Redcode entries plus ten JavaScript variants are in `evolved/molting-phases/`.
+E1–E3 and their specimens are retained. No candidate was automatically promoted.
+
+### Playable variants and verification
+
+- `examples/experimental-94x/molting-phases.js`: predeclared Timer/512 default;
+  set PHASE/STUN to explore other modes through the existing parameter tuner.
+- `examples/experimental-94x/molting-direct-dat.js`: predeclared Timer/DAT sample.
+- `evolved/molting-phases/4242-short64.js`: tested Timer/64, locally generated;
+  rerun the comparison script to reproduce it and the other saved variants.
+
+The full regression suite passed: **173 tests, 167 passed, six optional GPU
+checks skipped, zero failures**. CLI checks for both new playable generators
+passed without warnings. Log: `evolved/molting-phases/tests.tap`.
+Main and the old generator defaults remain unchanged.
+
+Possible next experiment: add a bounded local stun/kill cycle or choose payload
+mode from an in-round signal, while retaining the full-stun control. That would
+be a new design hypothesis, not a demonstrated improvement from E4.
