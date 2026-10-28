@@ -532,6 +532,102 @@
         "benchmark": null
       },
       "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "airbag-stone",
+      "family": "leader-derived",
+      "purpose": "Booted bomber with a separate clear fallback. Preserve boot layout, remote bomb installation and process schedule.",
+      "sources": [
+        "docs/hill-leaders.md"
+      ],
+      "requirements": "Exact copies at both destinations; Bomb stream and self-transition occur; Fallback clear runs after trigger damage",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "concurrent-boot",
+      "family": "leader-derived",
+      "purpose": "Child execution overlaps parent copying. Copy order and scheduling are parameters only within proven bounds.",
+      "sources": [
+        "docs/hill-leaders.md"
+      ],
+      "requirements": "Child never reaches an uncopied cell; Parent erases pointers only after last copy; Wrapping and process-limit cases",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "parallel-paper-stone",
+      "family": "leader-derived",
+      "purpose": "Launcher and two payloads form one process-aware recipe before any further splitting.",
+      "sources": [
+        "docs/hill-leaders.md"
+      ],
+      "requirements": "Launch wave count; Both relocated payloads match; Paper replicates while stone bombs without shared-counter interference",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "lp-bombing-paper",
+      "family": "leader-derived",
+      "purpose": "Replication and bombing with a bounded process queue and copy spans larger than visible code.",
+      "sources": [
+        "docs/hill-leaders.md"
+      ],
+      "requirements": "First and second generation copy bounds; Eight-process scheduling; Attack side effects; No unintentional total process loss",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "stone-imp-boot",
+      "family": "leader-derived",
+      "purpose": "Joint placement of stone, bomb, imp seeds and continuous launcher; stride must satisfy core congruence.",
+      "sources": [
+        "docs/hill-leaders.md"
+      ],
+      "requirements": "Imp launch order; Remote bomb present before stone starts; Full-cycle survival and actual kills against controls",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "distributed-stones",
+      "family": "leader-derived",
+      "purpose": "Multiple compact stones with explicit separation and process allocation.",
+      "sources": [
+        "docs/hill-leaders.md"
+      ],
+      "requirements": "Each stone initialized; Mutual bombing exclusion; Spawn tree reaches every intended copy",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
     }
   ]
 }

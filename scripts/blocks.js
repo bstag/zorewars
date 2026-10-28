@@ -27,7 +27,7 @@ if (command === 'inventory') {
 } else if (command === 'catalog') {
   saveJson(path.join(root, 'docs/block-catalog.json'), { schemaVersion: 1, blocks });
   saveJson(path.join(root, 'docs/block-instructions.json'), instructionCatalog());
-  fs.writeFileSync(path.join(root, 'docs/warrior-blocks.md'), catalogMarkdown(readInventory()));
+  fs.writeFileSync(path.join(root, 'docs/warrior-blocks.md'), catalogMarkdown(readInventory()) + '\n## Current hill leaders\n\nThe [leader breakdowns](hill-leaders.md) map current recursive rankings to reviewed source sections, local reference extractions, and additional candidate contracts. Refresh them with `node scripts/hill-leaders.js`. Public-reference extractions are not admitted to evolution until their behavioral contracts are tested.\n');
   if (readInventory()) fs.writeFileSync(path.join(root, 'docs/block-source-index.md'), sourceIndexMarkdown(readInventory()));
   console.log('Catalog, instructions and documentation generated.');
 } else if (command === 'build' || command === 'verify') {

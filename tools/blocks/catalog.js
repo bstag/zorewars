@@ -1,4 +1,5 @@
 import { OPCODES, MODES, MODIFIERS, MODE_NAMES, RULESETS } from '../../src/engine/constants.js';
+import { leaderPatterns } from './leader-reviews.js';
 
 const contract = {
   topology: 'ring', dialects: ['88', '94'], rules: Object.keys(RULESETS),
@@ -39,6 +40,7 @@ export const blocks = [
   candidate('torus-turn', 'geometry', 'Turn and sweep across axes.', ['warriors/plane/raster.js', 'warriors/volume/battleship.js'], 'TRN extension, heading on entry/exit, dimension-specific bounds; not ring code.'),
   candidate('torus-replicate', 'replication', 'Distribute copies through a volume.', ['warriors/volume/scatter.js', 'warriors/volume/slant.js'], 'Vector offsets, heading inheritance, copy overlap and geometry-specific cycle coverage.'),
   candidate('anti-clear-relocation', 'movement', 'Watch a clear front and jump behind it.', ['warriors/volume/leapfrog.js', 'warriors/volume/adapter.js', 'warriors/prototypes/README.md'], 'Sensor direction, latency and safe landing; preserve negative hybrid evidence in prototypes README.'),
+  ...leaderPatterns.map(p => candidate(p.id, 'leader-derived', p.contract, ['docs/hill-leaders.md'], p.tests.join('; '))),
 ];
 
 const effects = {

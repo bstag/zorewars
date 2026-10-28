@@ -594,3 +594,97 @@ are unchanged. All work remains on `codex/molting-94x`; main is unchanged.
 Next extraction priorities: a certified compare-scan/one-shot handoff, a
 process-aware paper recipe, and a marker trigger contract. Add each only with
 its own scheduling/memory tests, then benchmark against same-cost plain controls.
+
+## E6 — current hill leader breakouts (2026-10-27 local)
+
+Fetched the published Koenigstuhl recursive rankings at
+`2026-10-28T02:41:46.087Z` (October 27 in Chicago), then inspected the top three
+sources from each of 94x, 88, 94nop and LP. This is a dated retrieval of the
+published tables, not a claim about their recomputation date or the different
+Battle Royale/top-50 rankings. Sources, authors, ranks and hashes are recorded
+in [the leader snapshot](hill-leaders.json); readable source maps are in
+[the leader breakdowns](hill-leaders.md).
+
+The current recursive leaders are Fatamorgana X (X), Lithobolia C yvfp (88),
+Arvon (94nop), and R.O.U.S. (LP). Their full source lengths in our engine are
+200, 99, 81 and 7 instructions respectively. All twelve originals assemble under
+their source-hill settings. Only R.O.U.S. fits our corresponding 50-instruction
+tournament profile unchanged. The source LP hill allows 200 instructions and
+P-space; our existing lp default is 100 and forbids P-space. X's leaders use
+P-space, so they are not direct legal entries in the no-P-space 94x experiment.
+No existing profile was changed.
+
+The sources make several important dependencies concrete:
+
+- Fire and Ice II and Fire and Brimstone share the stone/controller lineage;
+  the latter substitutes a Kenshin scanner. The former scanner still contains
+  an STP bomb even when its controller is removed.
+- Arvon, Azathoth and pst_v4 are closely related paper/stone recipes. Counting
+  them as independent discoveries would overstate diversity. Their launchers
+  use process timing and self-modified pointers to copy both payloads.
+- Freight Train exposes an author-provided switch to omit its quickscan.
+  That is a much stronger extraction boundary than deleting guessed lines.
+- LP papers can be very small but copy more cells than their visible bodies.
+  Copy spans, initial entry and eight-process scheduling belong in the contract.
+
+Two originals failed a fresh solo run: Fatamorgana X and Bronze minotaur. The
+snapshot preserves these observations. Fatamorgana includes result-dependent
+entry logic; one enemy-free run is not a multi-round P-space test. Neither
+failure is presented as proof that the published ranking or source is invalid.
+They need separate diagnosis before training admission.
+
+### Reference extractions and checks
+
+Five reviewed reference specimens are cached in ignored
+`imported/hill-leaders/extracted/`, retaining original attribution. Source hashes
+must match the manual review before extraction; changed sources are marked
+stale and cannot use the old extraction. These are public-code study specimens,
+not newly authored implementations and not automatically admitted to evolution.
+
+| Reference specimen | Profile | Instructions | Solo placements passed |
+|---|---|---:|---:|
+| Fire and Ice II airbag stone branch | 94x | 26 | 2/2 |
+| Fire and Brimstone Kenshin branch | 94x | 23 | 2/2 |
+| Freight Train, documented quickscan switch off | 88 | 29 | 2/2 |
+| Arvon launcher + paper/stone body | 94nop | 20 | 2/2 |
+| R.O.U.S., unchanged | lp | 7 | 2/2 |
+
+All five compile within 50 instructions and survive the full cycle limit at
+base zero and a wrapping placement. This establishes basic viability, not
+exact-copy, process-scheduling, controller or mutation-safety contracts.
+Six corresponding candidate families were added to the main catalog, with
+explicit admission tests. The existing seven behavior-checked composer choices remain
+the only choices the recipe GA may use.
+
+### Matched exploratory screen
+
+`node scripts/benchmark-leader-breakouts.js` ran 1,088 battle rounds on CPU.
+Each profile uses four local opponents, seeds 2424601 and 2434601, and eight
+rounds per opponent/seed. References and three plain clears share placements.
+The panels are reused library material, not fresh held-out hills. Comparison
+across different profiles is not meaningful.
+
+| Profile | Reference | Points/round | Best plain-clear score on same panel |
+|---|---|---:|---:|
+| 94x | Airbag stone | 2.1250 | 1.6406 |
+| 94x | Kenshin branch | 2.0313 | 1.6406 |
+| 88 | Freight Train without quickscan | 2.1875 | 1.1563 |
+| 94nop | Parallel paper/stone | 2.2500 | 1.0938 |
+| lp | R.O.U.S. | 2.4219 | 0.7344 |
+
+The screen supports spending effort on these families, but two seeds and four
+opponents do not establish a general winner. It does not reproduce the original
+hill rankings or attribute their strength to an isolated section. Detailed
+per-opponent results and code hashes are in [screen evidence](hill-leader-screen.json).
+No public source was copied into tracked implementation files or promoted into
+the mutation grammar.
+
+Validation: 17 focused tests passed, including stale-source rejection,
+ranking-format rejection, symbolic dependency errors, documented conditional
+extraction, source/profile separation and existing composer contracts. The live
+fetch/compile/solo pipeline and the matched screen also completed successfully.
+
+Best next 94x build: an original compact stone with a clear fallback and a
+verified multi-process boot. Next breadth expansion: a process-aware paper
+recipe, using the compact LP family and the parallel paper/stone family as
+separate contracts. A P-space selector belongs in a distinct 94x-hill experiment.

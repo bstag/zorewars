@@ -34,6 +34,12 @@ The '88 implementation uses explicit forward pointer increments, legal DAT opera
 | torus-turn | Turn and sweep across axes. | Documented candidate | TRN extension, heading on entry/exit, dimension-specific bounds; not ring code. |
 | torus-replicate | Distribute copies through a volume. | Documented candidate | Vector offsets, heading inheritance, copy overlap and geometry-specific cycle coverage. |
 | anti-clear-relocation | Watch a clear front and jump behind it. | Documented candidate | Sensor direction, latency and safe landing; preserve negative hybrid evidence in prototypes README. |
+| airbag-stone | Booted bomber with a separate clear fallback. Preserve boot layout, remote bomb installation and process schedule. | Documented candidate | Exact copies at both destinations; Bomb stream and self-transition occur; Fallback clear runs after trigger damage |
+| concurrent-boot | Child execution overlaps parent copying. Copy order and scheduling are parameters only within proven bounds. | Documented candidate | Child never reaches an uncopied cell; Parent erases pointers only after last copy; Wrapping and process-limit cases |
+| parallel-paper-stone | Launcher and two payloads form one process-aware recipe before any further splitting. | Documented candidate | Launch wave count; Both relocated payloads match; Paper replicates while stone bombs without shared-counter interference |
+| lp-bombing-paper | Replication and bombing with a bounded process queue and copy spans larger than visible code. | Documented candidate | First and second generation copy bounds; Eight-process scheduling; Attack side effects; No unintentional total process loss |
+| stone-imp-boot | Joint placement of stone, bomb, imp seeds and continuous launcher; stride must satisfy core congruence. | Documented candidate | Imp launch order; Remote bomb present before stone starts; Full-cycle survival and actual kills against controls |
+| distributed-stones | Multiple compact stones with explicit separation and process allocation. | Documented candidate | Each stone initialized; Mutual bombing exclusion; Spawn tree reaches every intended copy |
 
 Full contracts and source references: [machine catalog](block-catalog.json). Behavioral evidence belongs to a recipe, settings and source hash, not to a strategy name. Benchmark evidence is separate from correctness.
 
@@ -63,3 +69,7 @@ Full instruction legality and effects: [instruction catalog](block-instructions.
 Record provenance and source hash, find symbolic dependencies, define process/memory/entry/exit contracts, then implement an emitter and adversarial behavior tests. Demonstrate actual copy, attack and phase behavior at wrapping placements before admission. Keep old recipes reproducible by preserving their parameters, emitted source and version. Public code is reference material; an unknown license is not permission to redistribute it. Neither an inferred label boundary nor a successful assembly promotes a source into the grammar.
 
 Research foundation: [annotated ICWS '94 draft](https://corewars.org/docs/94spec.html), local engine semantics, and archive URLs in the source map. The draft is historical; extensions are explicitly identified.
+
+## Current hill leaders
+
+The [leader breakdowns](hill-leaders.md) map current recursive rankings to reviewed source sections, local reference extractions, and additional candidate contracts. Refresh them with `node scripts/hill-leaders.js`. Public-reference extractions are not admitted to evolution until their behavioral contracts are tested.

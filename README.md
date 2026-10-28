@@ -3,6 +3,8 @@
 Experimental structural evolution: the [warrior block catalog](docs/warrior-blocks.md)
 maps local and public source sections, composes checked '88/'94 recipes, and connects
 them to evolution and parameter tuning. See the [experiment journal](docs/molting-94x-journal.md).
+The [current hill leader breakdowns](docs/hill-leaders.md) include source sections,
+compatibility checks and small playable reference extractions.
 
 A browser-based programming game inspired by **Core War** (1984). Players write small programs, called *warriors*, that compete inside a simulated circular memory array run by a virtual machine. Warriors can read and overwrite any cell, so they bomb, copy, scan and trap each other. The last warrior with a running process wins.
 
