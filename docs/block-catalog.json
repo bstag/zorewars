@@ -629,5 +629,43 @@
       },
       "limitation": "Source reference only. Section boundaries are not a proven independent block."
     }
+  ],
+  "standaloneRecipes": [
+    {
+      "id": "lifeboat-94x",
+      "family": "stone with watchdog clear",
+      "purpose": "Original contiguous boot, bounded guarded bomber and independent fallback process.",
+      "implementation": "tools/blocks/airbag.js",
+      "runner": "scripts/evolve-airbag.js",
+      "rules": [
+        "94x"
+      ],
+      "topology": "ring",
+      "instructions": "27/31 in place; 33/37 booted",
+      "parameters": [
+        "BOOT",
+        "STEP",
+        "HOP",
+        "SHOTS",
+        "BOMB",
+        "BACKWARD",
+        "PHASE",
+        "STUN"
+      ],
+      "entry": "One process at boot or launch; private pristine payload.",
+      "processes": "Two processes during bombing; stone retires intentionally, watchdog exclusively owns clear counters; one final survivor in tested scenarios.",
+      "writes": "Bombs and clear exclude the complete active payload. Probe, timers, flag and clear pointers are private mutable B-fields.",
+      "transitions": [
+        "bombing count exhausted",
+        "watched stone instruction changed",
+        "watchdog timeout"
+      ],
+      "validation": {
+        "behaviorTest": "test/airbag.test.js",
+        "benchmark": "docs/lifeboat-results.json"
+      },
+      "composition": "A separate process-aware grammar; do not splice into single-process clear recipes.",
+      "limitations": "Tests cover exact copy, attack coverage and selected injected faults, not arbitrary enemy damage. Initial search did not establish general superiority."
+    }
   ]
 }

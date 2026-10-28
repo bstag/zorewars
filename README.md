@@ -5,6 +5,9 @@ maps local and public source sections, composes checked '88/'94 recipes, and con
 them to evolution and parameter tuning. See the [experiment journal](docs/molting-94x-journal.md).
 The [current hill leader breakdowns](docs/hill-leaders.md) include source sections,
 compatibility checks and small playable reference extractions.
+An original [Lifeboat 94x recipe](examples/experimental-94x/lifeboat/README.md)
+adds a tested stone/watchdog/clear family. The [family history](docs/warrior-family-history.md)
+traces dated source changes and the constraints useful for future generators.
 
 A browser-based programming game inspired by **Core War** (1984). Players write small programs, called *warriors*, that compete inside a simulated circular memory array run by a virtual machine. Warriors can read and overwrite any cell, so they bomb, copy, scan and trap each other. The last warrior with a running process wins.
 

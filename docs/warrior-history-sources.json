@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "archiveIndex": "https://gallium.inria.fr/~doligez/corewar/by-date/complete.htm",
+  "scope": "Eight additional historical source specimens read for the family history; originals remain in ignored imported/history/warriors/. This is not a complete historical corpus.",
+  "sources": [
+    {
+      "name": "Torch t3",
+      "url": "https://gallium.inria.fr/~doligez/corewar/rc/Torcht3.txt",
+      "hash": "35307b677dc16df36269157a7ffefd1b1f3af1edec7e6df406dd49e833799cf3",
+      "archiveMetadata": "Torch t3 (Paul Kline) 1994-06-16 [post] stone, stun, clear, boot, gate",
+      "dateEvidence": "Archive release metadata, not a verified invention date"
+    },
+    {
+      "name": "Torch t5",
+      "url": "https://gallium.inria.fr/~doligez/corewar/rc/Torcht5.txt",
+      "hash": "1d6b5491630b49da6241ccf9a9e209ba7456eba713f0853aaf5a633d2554af95",
+      "archiveMetadata": "Torch t5 (Paul Kline) 1994-06-21 [post] stone, stun, clear, gate, boot",
+      "dateEvidence": "Archive release metadata, not a verified invention date"
+    },
+    {
+      "name": "Torch t15",
+      "url": "https://gallium.inria.fr/~doligez/corewar/rc/Torcht15.txt",
+      "hash": "14e5951940082ae7ad5c63857002a2d05bc546e76f4915ad65019e09e01eff6f",
+      "archiveMetadata": "Torch t15 (Paul Kline) 1995-04-07 [post] stone, stun, clear, gate",
+      "dateEvidence": "Archive release metadata, not a verified invention date"
+    },
+    {
+      "name": "TimeScape (0.9)",
+      "url": "https://gallium.inria.fr/~doligez/corewar/rc/TimeScape(0.9).txt",
+      "hash": "1370d0c33924b21f5cd8616a26ee05a4fd14fea60515a9dd81525d3b0f1c5ba4",
+      "archiveMetadata": "TimeScape (0.9) (Juha Pohjalainen) 1995-04-20 [post] paper",
+      "dateEvidence": "Archive release metadata, not a verified invention date"
+    },
+    {
+      "name": "Q^2",
+      "url": "https://gallium.inria.fr/~doligez/corewar/rc/Q^2.txt",
+      "hash": "42da2d724a456fad0f2dd67b4dc32a8777a601f4d368b6ab667cfa70cc0acccd",
+      "archiveMetadata": "Q^2 (Anders Ivner) 1996-07-07 [Core Warrior 37] quick, scan",
+      "dateEvidence": "Archive release metadata, not a verified invention date"
+    },
+    {
+      "name": "Puddleglum",
+      "url": "https://gallium.inria.fr/~doligez/corewar/rc/Puddleglum.txt",
+      "hash": "91c05abfb297db0c28d5bac8244d3aa93ff0c51c7bc4d0e4efc14ca57e9796d9",
+      "archiveMetadata": "Puddleglum (John Metcalf) 1999-05-28 [Core Warrior 73] quick, scan, paper, stone",
+      "dateEvidence": "Archive release metadata, not a verified invention date"
+    },
+    {
+      "name": "myVamp5.4",
+      "url": "https://gallium.inria.fr/~doligez/corewar/rc/myVamp5.4.txt",
+      "hash": "5c9e9b98d539ddb872b657342439baf5292c5bb0667fc151606fa1bb3f8f34e1",
+      "archiveMetadata": "myVamp5.4 (Magnus Paulsson) 1996-07-06 [mail, Core Warrior 38] vamp, scan, clear, stun, boot",
+      "dateEvidence": "Archive release metadata, not a verified invention date"
+    },
+    {
+      "name": "P-space demo",
+      "url": "https://gallium.inria.fr/~doligez/corewar/rc/P-spacedemo.txt",
+      "hash": "3bab43da3deb9d0528d8e68794e8b361e41b3136000f44b8808962dcbbdb72c9",
+      "archiveMetadata": "P-space demo (Stefan Strack) 1995-08-06 [pMARS 0.8.0] other",
+      "dateEvidence": "Archive release metadata, not a verified invention date"
+    }
+  ]
+}

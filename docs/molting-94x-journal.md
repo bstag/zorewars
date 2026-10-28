@@ -688,3 +688,128 @@ Best next 94x build: an original compact stone with a clear fallback and a
 verified multi-process boot. Next breadth expansion: a process-aware paper
 recipe, using the compact LP family and the parallel paper/stone family as
 separate contracts. A P-space selector belongs in a distinct 94x-hill experiment.
+
+## E7 — original Lifeboat stone/fallback and historical research (2026-10-27 local)
+
+### Build hypothesis and implementation
+
+Implement our own small 94x stone with a recoverable transition into a clear,
+using the public leader breakout as a benchmark and architectural reference.
+`tools/blocks/airbag.js` emits **Lifeboat 94x**, an original contiguous-copy
+design. It does not copy the reference's noncontiguous boot, instruction body,
+P-brain or multi-process stone. The default is 37 instructions; direct DAT
+fallback uses 33, and omitting the boot removes another six.
+
+The boot copies the complete payload backwards, then enters a launcher that
+creates exactly two processes. One bombs with a guarded stride and a bounded
+counter. The other watches the stone's first instruction, a completion flag,
+and a private timeout. The watchdog alone owns the clear pointer/counter.
+Normal completion signals the watchdog and intentionally retires the stone
+process with DAT. This is not total-warrior suicide. Fatal damage to the watched
+stone instruction triggers early clearing; fatal damage elsewhere is covered
+by the timeout. Arbitrary enemy corruption of the watchdog or clear is not
+covered by this contract.
+
+BOOT, bomb type, clear direction and phase are structural choices. STEP, HOP,
+SHOTS and STUN are numerical choices; the watchdog deadline is derived as
+`2*SHOTS+32`. The probe's origin and protected interval are derived from the
+assembled payload, so changing phase/length cannot silently invalidate offsets.
+The active payload is excluded from both the stone and clear writes. HOP is
+unused when BOOT=0, and STUN is unused for direct/full-stun modes.
+
+### Behavioral gates
+
+The final admission gate checks normal and wrapping source loads, a wrapping
+destination when booting, injected fatal damage to the watched instruction,
+and injected fatal damage to an unwatched loop instruction. It verifies exact copied instructions, entry,
+actual attack counts/locations, intended bomb type, protected memory, transition
+conditions, exact stun writes, DAT pointer reset, full-round survival, a peak
+of two processes and one final survivor. The tests also deliberately break the
+copy, launcher, attack guard, stun count/bomb, and handoff to ensure rejection.
+
+The default boots in 63 cycles, makes 512 stone writes, enters its clear at
+cycle 4166 and reaches DAT at 4298. Watched damage starts the clear at cycle 68;
+unwatched loop damage starts it through the timeout at cycle 3238. Both damaged
+scenarios finish the full 500,000-cycle round alive. These observations apply to
+the specified injected faults, not an adversarial immunity claim.
+
+All 24 structural combinations, numerical endpoints and twelve seeded random
+vectors pass the gate. After strengthening the exact stun-write assertion and
+adding an explicitly wrapping destination,
+41 distinct vectors from search, refinement, tuner finalists and controls were
+reverified. The evidence records the final verifier hash separately from the
+initial run hash. The recipe has a separate process-aware GA runner; it is not
+inserted into the single-process block composer.
+
+### Search and matched controls
+
+```sh
+node scripts/evolve-airbag.js --out evolved/lifeboat-4247 --seed 4247
+node scripts/airbag.js verify --generator examples/experimental-94x/lifeboat/lifeboat.js
+```
+
+The CPU search used population eight, three generations and eight children per
+generation; 30 distinct recipes were admitted, with five duplicate proposals
+and no gate rejection among these proposals. Screening used six opponents and
+four rounds each, rotating placements while rescoring parents. Eight coordinate
+neighbors refined STEP/HOP/SHOTS/STUN. The existing random tuner evaluated eight
+numerical proposals plus its input, then rechecked three finalists on three
+placement seeds. It found no improvement over its input.
+
+Final validation uses three fresh placement seeds and twelve rounds per
+opponent. Training is Dwarf, Scanner, Silk, Vampire, Mice and Two-Pass;
+comparison is Seeker, One-Shot, Fast Silk and Gatekeeper. These are previously
+examined opponents, not a fresh held-out hill. Controls include three pure
+clears, the same tuned parameters booted/in-place, and the cached public stone
+reference. The run totaled **5,808 battle rounds**. No defaults or library
+entries were promoted.
+
+| Specimen | Instructions | Training points/round | Comparison points/round |
+|---|---:|---:|---:|
+| Declared Lifeboat default | 37 | 1.1250 | 0.8542 |
+| GA champion | 31 | 1.4028 | 0.7083 |
+| Parameter steps / tuner choice | 31 | 1.3796 | 0.6458 |
+| Same tuned parameters, booted | 37 | 1.4028 | 0.8264 |
+| Plain DAT | 9 | 1.3426 | 0.4583 |
+| Plain short stun | 13 | 1.3750 | 0.5069 |
+| Plain full stun | 13 | 1.4491 | 0.5972 |
+| Public stone reference | 26 | 1.8056 | 1.7014 |
+
+The GA selected an in-place full-stun recipe with STEP=17224. Its apparent
+training gain over the default, 0.2778, did not exceed the paired seed-level
+2.5-SE margin of 0.2953, and comparison performance fell. Coordinate refinement
+changed STEP to 18090 and performed worse on fresh placements. Matched booting
+improved the comparison mean by 0.1806, but the margin was 0.4981. This run
+establishes neither a general improvement nor a convincing boot advantage.
+
+The public reference remains substantially better. Our extra watchdog and
+per-shot protection consume execution slots; that is a plausible cost to
+investigate, not an isolated causal result from these scores. Do not relax the
+copy or process-ownership tests merely to recover score. A useful next ablation
+would derive a safe bombing orbit and remove redundant per-shot work, while
+retaining the same fallback tests and controls.
+
+Evidence: [full run, lineage and per-opponent results](lifeboat-results.json),
+[playable default and screening specimen](../examples/experimental-94x/lifeboat/README.md).
+The complete regression suite passed: **194 tests, 188 passed, six optional GPU
+skips, zero failures**. Final log: `evolved/lifeboat-4247/tests-final.tap`. All runs used CPU;
+GPU performance was not tested.
+
+### What the historical study changes
+
+The parallel [family history](warrior-family-history.md) follows dated author
+posts, actual source versions and contemporary newsletters across stones,
+scanners, quickscans, clears/gates, paper/silk, imps, vampires, P-space, LP and X.
+It separates confirmed credits from resemblance, and version evidence from
+invention dates. Eight additional Redcode versions and five newsletter texts
+were cached under ignored `imported/history/`. The additional source hashes and
+archive metadata are preserved in [the source manifest](warrior-history-sources.json).
+
+The most useful findings are operational: Torch changes booting, decrement
+resistance and transitions across versions; TimeScape changes copying side
+effects with scheduling; historical quickscan work tests actual target coverage
+before aggregate battle scores. Changes sometimes reverse as the opponent mix
+changes. We incorporated the boot/no-boot control, derived timeout and fault
+injection now. Next contracts should cover safe stride relationships and first/
+second-generation paper copying under explicit queue limits. No historical
+code or dates were silently rewritten.

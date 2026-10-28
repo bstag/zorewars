@@ -15846,6 +15846,679 @@
       }
     },
     {
+      "file": "examples/experimental-94x/lifeboat/lifeboat-ga-4247.js",
+      "language": "javascript",
+      "name": "lifeboat-ga-4247.js",
+      "family": null,
+      "dialect": null,
+      "battlefield": "unspecified",
+      "experimental": false,
+      "derivedFrom": null,
+      "provenance": "repository source; preserve file attribution",
+      "hash": "6308e1a41726e12e2b778e258f2e7384254f73df5f1b674aff404846e5a56603",
+      "lines": 61,
+      "opcodes": [],
+      "constants": [],
+      "sections": [],
+      "familyHints": [],
+      "confidence": "lexical hints only; macros, generated labels and dataflow require review",
+      "assembly": "not run: inventory does not execute generators"
+    },
+    {
+      "file": "examples/experimental-94x/lifeboat/lifeboat-ga-4247.red",
+      "language": "redcode",
+      "name": "lifeboat-ga-4247.red",
+      "family": null,
+      "dialect": null,
+      "battlefield": "unspecified",
+      "experimental": false,
+      "derivedFrom": null,
+      "provenance": "repository source; preserve file attribution",
+      "hash": "efda93386d45051537ebdf2dd5118ae08b883ad6d285580204c8d395048a7544",
+      "lines": 42,
+      "opcodes": [
+        "ADD",
+        "DAT",
+        "DJN",
+        "JMN",
+        "JMP",
+        "MOV",
+        "SEQ",
+        "SLT",
+        "SPL"
+      ],
+      "constants": [
+        {
+          "name": "payloadSize",
+          "line": 6,
+          "expression": "(payloadEnd-payload)"
+        },
+        {
+          "name": "payloadEnd",
+          "line": 7,
+          "expression": "(killBomb+1)"
+        }
+      ],
+      "sections": [
+        {
+          "label": "payload",
+          "line": 9,
+          "endLine": 9,
+          "references": [],
+          "constantReferences": [
+            "payloadSize"
+          ],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "shots",
+          "line": 10,
+          "endLine": 10,
+          "references": [],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "watchCount",
+          "line": 11,
+          "endLine": 11,
+          "references": [],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "flag",
+          "line": 12,
+          "endLine": 12,
+          "references": [],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "stoneRef",
+          "line": 13,
+          "endLine": 13,
+          "references": [
+            "payload",
+            "stone"
+          ],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "launch",
+          "line": 14,
+          "endLine": 14,
+          "references": [
+            "stone"
+          ],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "watch",
+          "line": 15,
+          "endLine": 19,
+          "references": [
+            "watchCount",
+            "flag",
+            "stoneRef",
+            "stone",
+            "clearStart"
+          ],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "stone",
+          "line": 20,
+          "endLine": 22,
+          "references": [
+            "payload",
+            "tick"
+          ],
+          "constantReferences": [
+            "payloadSize"
+          ],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "attack",
+          "line": 23,
+          "endLine": 23,
+          "references": [
+            "payload",
+            "killBomb"
+          ],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "tick",
+          "line": 24,
+          "endLine": 25,
+          "references": [
+            "shots",
+            "flag",
+            "stone"
+          ],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "retire",
+          "line": 26,
+          "endLine": 26,
+          "references": [],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "clearStart",
+          "line": 27,
+          "endLine": 29,
+          "references": [
+            "clearPtr",
+            "remaining"
+          ],
+          "constantReferences": [
+            "payloadSize",
+            "payloadEnd"
+          ],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "stunLoop",
+          "line": 30,
+          "endLine": 31,
+          "references": [
+            "clearPtr",
+            "remaining",
+            "stunBomb"
+          ],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "reset",
+          "line": 32,
+          "endLine": 33,
+          "references": [
+            "clearPtr",
+            "remaining"
+          ],
+          "constantReferences": [
+            "payloadSize",
+            "payloadEnd"
+          ],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "killLoop",
+          "line": 34,
+          "endLine": 36,
+          "references": [
+            "reset",
+            "clearPtr",
+            "remaining",
+            "killBomb"
+          ],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "clearPtr",
+          "line": 37,
+          "endLine": 37,
+          "references": [],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "remaining",
+          "line": 38,
+          "endLine": 38,
+          "references": [],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "stunBomb",
+          "line": 39,
+          "endLine": 39,
+          "references": [],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "killBomb",
+          "line": 40,
+          "endLine": 42,
+          "references": [
+            "launch"
+          ],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        }
+      ],
+      "familyHints": [
+        "scan-or-condition",
+        "replication-or-stun",
+        "copy-or-bomb-or-clear",
+        "counter-or-decrement-stream"
+      ],
+      "confidence": "lexical hints only; macros, generated labels and dataflow require review",
+      "assembly": {
+        "88": {
+          "ok": false,
+          "length": 0,
+          "errors": [
+            {
+              "line": 5,
+              "message": ";assert CORESIZE == 55440 is false under these rules"
+            },
+            {
+              "line": 8,
+              "message": "ICWS'88: ORG is not ICWS'88; give the start on the END line (END start)"
+            },
+            {
+              "line": 9,
+              "message": "ICWS'88: modifiers (.F) are not ICWS'88"
+            }
+          ]
+        },
+        "94nop": {
+          "ok": false,
+          "length": 31,
+          "errors": [
+            {
+              "line": 5,
+              "message": ";assert CORESIZE == 55440 is false under these rules"
+            }
+          ]
+        },
+        "lp": {
+          "ok": false,
+          "length": 31,
+          "errors": [
+            {
+              "line": 5,
+              "message": ";assert CORESIZE == 55440 is false under these rules"
+            }
+          ]
+        },
+        "94x": {
+          "ok": true,
+          "length": 31,
+          "errors": []
+        },
+        "94x-hill": {
+          "ok": true,
+          "length": 31,
+          "errors": []
+        }
+      }
+    },
+    {
+      "file": "examples/experimental-94x/lifeboat/lifeboat.js",
+      "language": "javascript",
+      "name": "lifeboat.js",
+      "family": null,
+      "dialect": null,
+      "battlefield": "unspecified",
+      "experimental": false,
+      "derivedFrom": null,
+      "provenance": "repository source; preserve file attribution",
+      "hash": "3566d9d6b73cbf6d084a5a8523d1758b3e135a8ccf13ad1d314926043def7b6a",
+      "lines": 61,
+      "opcodes": [],
+      "constants": [],
+      "sections": [],
+      "familyHints": [],
+      "confidence": "lexical hints only; macros, generated labels and dataflow require review",
+      "assembly": "not run: inventory does not execute generators"
+    },
+    {
+      "file": "examples/experimental-94x/lifeboat/lifeboat.red",
+      "language": "redcode",
+      "name": "lifeboat.red",
+      "family": null,
+      "dialect": null,
+      "battlefield": "unspecified",
+      "experimental": false,
+      "derivedFrom": null,
+      "provenance": "repository source; preserve file attribution",
+      "hash": "40a47daa9d993617cedff7a7c6f3305ef28d9bf755423dfdfb28c89039094e33",
+      "lines": 48,
+      "opcodes": [
+        "ADD",
+        "DAT",
+        "DJN",
+        "JMN",
+        "JMP",
+        "MOV",
+        "SEQ",
+        "SLT",
+        "SPL"
+      ],
+      "constants": [
+        {
+          "name": "payloadSize",
+          "line": 6,
+          "expression": "(payloadEnd-payload)"
+        },
+        {
+          "name": "payloadEnd",
+          "line": 7,
+          "expression": "(killBomb+1)"
+        }
+      ],
+      "sections": [
+        {
+          "label": "boot",
+          "line": 9,
+          "endLine": 11,
+          "references": [
+            "copyFrom",
+            "copyTo",
+            "copyCount",
+            "payload",
+            "launch"
+          ],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "copyFrom",
+          "line": 12,
+          "endLine": 12,
+          "references": [],
+          "constantReferences": [
+            "payloadEnd"
+          ],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "copyTo",
+          "line": 13,
+          "endLine": 13,
+          "references": [
+            "boot"
+          ],
+          "constantReferences": [
+            "payloadSize"
+          ],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "copyCount",
+          "line": 14,
+          "endLine": 14,
+          "references": [],
+          "constantReferences": [
+            "payloadSize"
+          ],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "payload",
+          "line": 15,
+          "endLine": 15,
+          "references": [],
+          "constantReferences": [
+            "payloadSize"
+          ],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "shots",
+          "line": 16,
+          "endLine": 16,
+          "references": [],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "watchCount",
+          "line": 17,
+          "endLine": 17,
+          "references": [],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "flag",
+          "line": 18,
+          "endLine": 18,
+          "references": [],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "stoneRef",
+          "line": 19,
+          "endLine": 19,
+          "references": [
+            "payload",
+            "stone"
+          ],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "launch",
+          "line": 20,
+          "endLine": 20,
+          "references": [
+            "stone"
+          ],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "watch",
+          "line": 21,
+          "endLine": 25,
+          "references": [
+            "watchCount",
+            "flag",
+            "stoneRef",
+            "stone",
+            "clearStart"
+          ],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "stone",
+          "line": 26,
+          "endLine": 28,
+          "references": [
+            "payload",
+            "tick"
+          ],
+          "constantReferences": [
+            "payloadSize"
+          ],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "attack",
+          "line": 29,
+          "endLine": 29,
+          "references": [
+            "payload",
+            "killBomb"
+          ],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "tick",
+          "line": 30,
+          "endLine": 31,
+          "references": [
+            "shots",
+            "flag",
+            "stone"
+          ],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "retire",
+          "line": 32,
+          "endLine": 32,
+          "references": [],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "clearStart",
+          "line": 33,
+          "endLine": 35,
+          "references": [
+            "clearPtr",
+            "remaining"
+          ],
+          "constantReferences": [
+            "payloadEnd"
+          ],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "stunLoop",
+          "line": 36,
+          "endLine": 37,
+          "references": [
+            "clearPtr",
+            "remaining",
+            "stunBomb"
+          ],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "reset",
+          "line": 38,
+          "endLine": 39,
+          "references": [
+            "clearPtr",
+            "remaining"
+          ],
+          "constantReferences": [
+            "payloadSize",
+            "payloadEnd"
+          ],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "killLoop",
+          "line": 40,
+          "endLine": 42,
+          "references": [
+            "reset",
+            "clearPtr",
+            "remaining",
+            "killBomb"
+          ],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "clearPtr",
+          "line": 43,
+          "endLine": 43,
+          "references": [],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "remaining",
+          "line": 44,
+          "endLine": 44,
+          "references": [],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "stunBomb",
+          "line": 45,
+          "endLine": 45,
+          "references": [],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        },
+        {
+          "label": "killBomb",
+          "line": 46,
+          "endLine": 48,
+          "references": [
+            "boot"
+          ],
+          "constantReferences": [],
+          "status": "candidate-boundary"
+        }
+      ],
+      "familyHints": [
+        "scan-or-condition",
+        "replication-or-stun",
+        "copy-or-bomb-or-clear",
+        "counter-or-decrement-stream"
+      ],
+      "confidence": "lexical hints only; macros, generated labels and dataflow require review",
+      "assembly": {
+        "88": {
+          "ok": false,
+          "length": 0,
+          "errors": [
+            {
+              "line": 5,
+              "message": ";assert CORESIZE == 55440 is false under these rules"
+            },
+            {
+              "line": 8,
+              "message": "ICWS'88: ORG is not ICWS'88; give the start on the END line (END start)"
+            },
+            {
+              "line": 9,
+              "message": "ICWS'88: modifiers (.I) are not ICWS'88"
+            }
+          ]
+        },
+        "94nop": {
+          "ok": false,
+          "length": 37,
+          "errors": [
+            {
+              "line": 5,
+              "message": ";assert CORESIZE == 55440 is false under these rules"
+            }
+          ]
+        },
+        "lp": {
+          "ok": false,
+          "length": 37,
+          "errors": [
+            {
+              "line": 5,
+              "message": ";assert CORESIZE == 55440 is false under these rules"
+            }
+          ]
+        },
+        "94x": {
+          "ok": true,
+          "length": 37,
+          "errors": []
+        },
+        "94x-hill": {
+          "ok": true,
+          "length": 37,
+          "errors": []
+        }
+      }
+    },
+    {
       "file": "examples/experimental-94x/molting-4242.js",
       "language": "javascript",
       "name": "molting-4242.js",

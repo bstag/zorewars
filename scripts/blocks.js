@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { blocks, instructionCatalog, catalogMarkdown } from '../tools/blocks/catalog.js';
+import { blocks, standaloneRecipes, instructionCatalog, catalogMarkdown } from '../tools/blocks/catalog.js';
 import { inventorySources, hash, sourceIndexMarkdown } from '../tools/blocks/inventory.js';
 import { buildRecipe, recipeDefaults, recipeGenerator } from '../tools/blocks/recipes.js';
 import { parseTunable } from '../tools/tune.js';
@@ -25,10 +25,11 @@ if (command === 'inventory') {
   saveJson(inventoryPath, inventory);
   console.log(JSON.stringify({ local: inventory.local.length, public: inventory.public.length, inspected: inventory.public.filter(x => x.status === 'inspected').length, failures: inventory.public.filter(x => x.status === 'fetch-failed').map(x => ({ name: x.name, error: x.error })) }));
 } else if (command === 'catalog') {
-  saveJson(path.join(root, 'docs/block-catalog.json'), { schemaVersion: 1, blocks });
+  saveJson(path.join(root, 'docs/block-catalog.json'), { schemaVersion: 1, blocks, standaloneRecipes });
   saveJson(path.join(root, 'docs/block-instructions.json'), instructionCatalog());
   fs.writeFileSync(path.join(root, 'docs/warrior-blocks.md'), catalogMarkdown(readInventory()) + '\n## Current hill leaders\n\nThe [leader breakdowns](hill-leaders.md) map current recursive rankings to reviewed source sections, local reference extractions, and additional candidate contracts. Refresh them with `node scripts/hill-leaders.js`. Public-reference extractions are not admitted to evolution until their behavioral contracts are tested.\n');
   if (readInventory()) fs.writeFileSync(path.join(root, 'docs/block-source-index.md'), sourceIndexMarkdown(readInventory()));
+  fs.appendFileSync(path.join(root, 'docs/warrior-blocks.md'), '\n## Process-aware recipe and historical lessons\n\n[Lifeboat 94x](../examples/experimental-94x/lifeboat/README.md) is an original stone/watchdog/clear recipe with its own gated evolution runner. Its two-process contract is separate from the single-process composer. The [family history](warrior-family-history.md) traces dated source changes and explains which coupled parameters, scheduling rules and behavioral tests we should preserve.\n');
   console.log('Catalog, instructions and documentation generated.');
 } else if (command === 'build' || command === 'verify') {
   if (command === 'verify' && !options.recipe && !options.generator) throw new Error('verify needs --recipe or --generator');
