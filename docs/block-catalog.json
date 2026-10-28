@@ -534,6 +534,108 @@
       "limitation": "Source reference only. Section boundaries are not a proven independent block."
     },
     {
+      "id": "worker-refresher",
+      "family": "deployment",
+      "purpose": "Repeatedly deploy and refresh compact attacks at derived destinations.",
+      "sources": [
+        "docs/planar-other-mechanisms.md",
+        "docs/planar-warrior-history.json"
+      ],
+      "requirements": "Derive destination sequence including pointer side effects; protect controller; verify worker revisit, useful restored execution, process growth and starvation.",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "numeric-disruptor",
+      "family": "attack",
+      "purpose": "Damage numeric fields with a stream before a controlled phase handoff.",
+      "sources": [
+        "docs/planar-other-review.md",
+        "docs/planar-warrior-history.json"
+      ],
+      "requirements": "Measure actual write addresses and opponent effects; protect pointer and payload; verify repeated wraps and handoff; do not infer whole-instruction bombing from operand damage.",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "mutual-repair",
+      "family": "repair",
+      "purpose": "Partners detect supported damage, terminate stray processes, restore and restart each other.",
+      "sources": [
+        "docs/planar-other-mechanisms.md",
+        "docs/planar-warrior-history.json"
+      ],
+      "requirements": "Derive reciprocal offsets and checksums from emitted code; test opcode/A/B faults, simultaneous damage and kill-wait-restore queue cleanup; historical 4000 spacing is not portable to 94x.",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "schedule-watchdog",
+      "family": "trigger",
+      "purpose": "Use process scheduling and balanced pointer side effects to detect missing work.",
+      "sources": [
+        "docs/planar-other-mechanisms.md",
+        "docs/planar-warrior-history.json"
+      ],
+      "requirements": "Specify queue order, entry locations and process count; inject lost/extra processes; measure trigger latency and real fallback behavior. Demo JMP 0 is not an attack.",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "execution-report-bomb",
+      "family": "sensor",
+      "purpose": "A bomb executed by an opponent reports its location to an in-round receiver.",
+      "sources": [
+        "docs/planar-other-mechanisms.md",
+        "docs/planar-warrior-history.json"
+      ],
+      "requirements": "New no-P-space adaptation required; derive bomb/receiver relocation; distinguish execution reports from passive writes; reject stale reports; validate usefulness against multiple enemy components.",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "fang-backtrack",
+      "family": "counterattack",
+      "purpose": "Use a vampire fang to infer and attack its remote target.",
+      "sources": [
+        "docs/planar-other-mechanisms.md",
+        "docs/planar-warrior-history.json"
+      ],
+      "requirements": "Validate relative-address reconstruction, false targets and no-fang behavior; original failed solo and needs a bounded lifetime or revised protection before composition.",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
       "id": "airbag-stone",
       "family": "leader-derived",
       "purpose": "Booted bomber with a separate clear fallback. Preserve boot layout, remote bomb installation and process schedule.",

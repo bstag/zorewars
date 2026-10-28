@@ -13,6 +13,11 @@ to our block catalog. Original posts are separate from maintainer assembly
 copies; archive-date precision, shared-source ambiguities and overlap with
 n1LS are recorded explicitly.
 
+The [other-category review](planar-other-review.md) follows this with source
+analysis of repair pairs, remote-worker refresh, process-scheduled detection,
+movement and arithmetic disruption, plus a limited 94x screen. These mechanisms
+add reference candidates to our block catalog; they are not executable recipes.
+
 The [n1LS collection](n1ls-warrior-history.md), added October 28, 2026, expands
 this history with 567 pinned Redcode files, source version notes, compatibility
 checks and duplicate detection. Agony, Charon, Imprimis and Sphinx provide

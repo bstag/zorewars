@@ -890,3 +890,47 @@ receipt was rejected without overwriting reports. The known SwitchBlade 404
 is the only fetch failure and remains an explicit nonzero importer status.
 Catalog documentation was regenerated and `git diff --check` passed. The
 unchanged battle engine's regression suite was not rerun.
+
+## E10 — Review the “other” mechanisms (October 28, 2026)
+
+Surveyed all 305 Planar other-category source headers/comments and compiled
+each unchanged source with an actual 94x 50-instruction cap: 137 pass. Keyword
+signals are retained as reading aids, not family assignments. A focused
+19-source shortlist and additional tournament examples received source/post
+analysis. Added six non-selectable block candidates: worker refresher, numeric
+disruptor, mutual repair, schedule watchdog, execution-report bomb and fang
+backtrack. The seven executable grammar choices remain unchanged.
+
+Eleven compact originals were solo-tested at base 0 and coreSize-7 under
+standard 94nop and 94x. An additional 8000-cell 500,000-cycle diagnostic checked
+whether the normal 80,000-cycle horizon hid later failures. Five originals
+failed 94x solo and were excluded from battles: kill -9, both bunker variants,
+Dwarfer II and Antivamp. Bunker [2] survived the extended 8000-cell run but died
+at cycle 441244 in 94x; its core-half spacing/checksum assumptions need derived
+parameters. Bunker [1] also died after the normal 94nop horizon, at 111498.
+These are observations in our VM, not a pMARS equivalence result.
+
+Six surviving originals and two local controls played four library opponents
+(Dwarf, Seeker, Silk, Vampire), four rounds each at seeds 20261028 and 20262028:
+**256 battle rounds**, CPU. Scores per round: tamper **1.625**, Dwarfer
+**1.59375**, Lifeboat **1.46875**, plain DAT **1.375**, Signal **1.28125**,
+Airbag Demo **0.875**, 4-line Bomb Dodger **0.875**, Body-Snatcher3 **0.78125**.
+Only 32 rounds per entry and previously used opponents: no significance or
+general-superiority claim. tamper loses to Silk; Dwarfer struggles with Seeker
+and ties Silk. Airbag's demo fallback and Body-Snatcher mostly produce ties.
+
+The next design candidates are a protected worker refresher and a bounded
+numeric-disruption opening; a derived repair pair is more demanding but
+distinctive. Gates must check actual restoration/attack behavior and queue
+cleanup, not survival alone. No historical sources were edited, no tuning or
+evolution was run, and no Red Queen history or default setting changed.
+
+Evidence: [review](planar-other-review.md), [primary-source mechanism notes](planar-other-mechanisms.md),
+[all-source survey](planar-other-survey.json), [solo and battle results](planar-other-screen.json).
+Raw output: `evolved/planar-other-review-20261028/report.json`.
+
+Validation: all 12 block-contract/catalog tests pass. Survey regeneration is
+byte-identical; source-manifest hashes, raw/tracked report agreement, all 256
+battle outcomes and calculated scores were checked. Six new candidates remain
+non-selectable and the executable block count remains seven. `git diff --check`
+passes. The full engine suite was not rerun because battle behavior was unchanged.

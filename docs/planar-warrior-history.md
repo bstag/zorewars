@@ -10,6 +10,10 @@ family history to the full name/date indexes and their component breakdowns.
 - [Browse by release date](planar-warrior-index.md): all index entries, authors, component tags, and local assembly compatibility.
 - [Full manifest](planar-warrior-history.json): preserved dates, original-post references, hashes, category membership, overlap, and diagnostics.
 
+Follow-up: [the other-category review](planar-other-review.md) examines unusual
+mechanisms, surveys all 305 sources in that category, and records a compact
+behavioral screen separately from the ingestion described below.
+
 ## What was preserved
 
 The name and date indexes each contain **1,686 entries**, pointing to **1,683

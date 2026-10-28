@@ -248,4 +248,4 @@ Booted regions are noncontiguous and share two processes. This boot cannot repla
 
 ## Historical component taxonomy
 
-The [Planar component crosswalk](planar-components.md) connects 14 historical categories to our existing blocks and design candidates. The [dated source index](planar-warrior-index.md) preserves component combinations, author attribution and original-post provenance; [archive notes](planar-warrior-history.md) explain source ambiguities and overlap with the n1LS collection. Archive tags do not certify reusable blocks.
+The [Planar component crosswalk](planar-components.md) connects 14 historical categories to our existing blocks and design candidates. The [dated source index](planar-warrior-index.md) preserves component combinations, author attribution and original-post provenance; [archive notes](planar-warrior-history.md) explain source ambiguities and overlap with the n1LS collection. The [other-category review](planar-other-review.md) adds six documented mechanism candidates, source analysis and a small matched screen. Archive tags do not certify reusable blocks.

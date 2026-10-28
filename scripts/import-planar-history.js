@@ -190,6 +190,7 @@ fs.writeFileSync(path.join(root,'docs/planar-components.md'),'# Historical compo
   +categories.map(c=>`| [${c.id}](${c.url}) | ${c.members?.length??0} | ${c.catalogStatus.map(x=>`\`${x.id}\` (${x.selectableInExistingGrammar?'selectable in existing grammar':'candidate only'})`).join(', ')||'No battle-block mapping'} |`).join('\n')
   +'\n\nBoot relocation here does not imply our implementation also supplies the archive’s decoy behavior. Quick covers both quick scanning and quick bombing; our mapping is only to quickscan. '
   +'P-space requires a profile that enables it, such as 94x-hill, rather than 94x. Factor and sort are tournament computation tasks, with no automatic battle-pool admission. '
-  +'Other requires individual inspection. Every proposed extraction still needs entry/exit, pointer, process, length and ruleset contracts.\n');
+  +'Other requires individual inspection. Every proposed extraction still needs entry/exit, pointer, process, length and ruleset contracts.\n\n'
+  +'The [focused other-category review](planar-other-review.md) surveys all 305 sources, examines selected mechanisms and records compact-source experiments.\n');
 console.log(JSON.stringify(report.summary,null,2));
 if(report.failures.length) {console.log(JSON.stringify(report.failures));process.exitCode=1;}

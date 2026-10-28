@@ -1,0 +1,2358 @@
+{
+  "schemaVersion": 1,
+  "source": "Planar other-category review",
+  "settings": {
+    "coreSize": 55440,
+    "maxProcesses": 10000,
+    "maxCycles": 500000,
+    "maxLength": 200,
+    "minDistance": 200,
+    "pSpace": false,
+    "assertErrors": true
+  },
+  "entryLength": 50,
+  "seeds": [
+    20261028,
+    20262028
+  ],
+  "rounds": 4,
+  "backend": "CPU",
+  "limitations": "Small exploratory panel with previously used local opponents. Unmodified historical code; 94x failures can reflect old constants. Solo survival is not a repair, relocation, or composition contract. No evolution, tuning, held-out generalization or promotion.",
+  "sourceManifestHash": "fc2e573f3a54c629e7ba74a4ccaa5103ff624a74e2de360e98acdb4728bc4b28",
+  "opponents": [
+    {
+      "file": "dwarf.red",
+      "name": "Dwarf",
+      "codeHash": "6a2ef59af8e4014d957e6e4d4da94769ca35f67b6990ed41ef74c5b86c6c56b6",
+      "solo": [
+        {
+          "base": 0,
+          "alive": true,
+          "cycles": 500000,
+          "peakProcesses": 1,
+          "endingProcesses": 1
+        },
+        {
+          "base": 55433,
+          "alive": true,
+          "cycles": 500000,
+          "peakProcesses": 1,
+          "endingProcesses": 1
+        }
+      ]
+    },
+    {
+      "file": "seeker.red",
+      "name": "Seeker",
+      "codeHash": "a00952ed776225ce3a7df9ada7051965cbc816277e42f291dabb5601689cd461",
+      "solo": [
+        {
+          "base": 0,
+          "alive": true,
+          "cycles": 500000,
+          "peakProcesses": 1,
+          "endingProcesses": 1
+        },
+        {
+          "base": 55433,
+          "alive": true,
+          "cycles": 500000,
+          "peakProcesses": 1,
+          "endingProcesses": 1
+        }
+      ]
+    },
+    {
+      "file": "silk.red",
+      "name": "Silk",
+      "codeHash": "28ac82cdc8a71b04763cddb6991b940fde9398d74e19df1c6319336f0313415c",
+      "solo": [
+        {
+          "base": 0,
+          "alive": true,
+          "cycles": 500000,
+          "peakProcesses": 10000,
+          "endingProcesses": 10000
+        },
+        {
+          "base": 55433,
+          "alive": true,
+          "cycles": 500000,
+          "peakProcesses": 10000,
+          "endingProcesses": 10000
+        }
+      ]
+    },
+    {
+      "file": "vampire.red",
+      "name": "Vampire",
+      "codeHash": "9734c2d628a3cda4a72565de682ae4f1922f903085c24188d41f3112ffb61111",
+      "solo": [
+        {
+          "base": 0,
+          "alive": true,
+          "cycles": 500000,
+          "peakProcesses": 1,
+          "endingProcesses": 1
+        },
+        {
+          "base": 55433,
+          "alive": true,
+          "cycles": 500000,
+          "peakProcesses": 1,
+          "endingProcesses": 1
+        }
+      ]
+    }
+  ],
+  "screen": [
+    {
+      "id": "AirbagDemo.txt",
+      "name": "Airbag Demo",
+      "url": "https://gallium.inria.fr/~doligez/corewar/rc/AirbagDemo.txt",
+      "sourceHash": "92f06e2ed1e983d1776c53fbbc369eec2199fdd2a8c6f819ecd83a152e6a31f6",
+      "profiles": {
+        "94nop": {
+          "compile": true,
+          "instructions": 21,
+          "errors": [],
+          "solo": [
+            {
+              "base": 0,
+              "alive": true,
+              "cycles": 80000,
+              "peakProcesses": 5,
+              "endingProcesses": 5
+            },
+            {
+              "base": 7993,
+              "alive": true,
+              "cycles": 80000,
+              "peakProcesses": 5,
+              "endingProcesses": 5
+            }
+          ],
+          "extended500k": {
+            "compile": true,
+            "errors": [],
+            "solo": [
+              {
+                "base": 0,
+                "alive": true,
+                "cycles": 500000,
+                "peakProcesses": 5,
+                "endingProcesses": 5
+              },
+              {
+                "base": 7993,
+                "alive": true,
+                "cycles": 500000,
+                "peakProcesses": 5,
+                "endingProcesses": 5
+              }
+            ]
+          }
+        },
+        "94x": {
+          "compile": true,
+          "instructions": 21,
+          "errors": [],
+          "solo": [
+            {
+              "base": 0,
+              "alive": true,
+              "cycles": 500000,
+              "peakProcesses": 5,
+              "endingProcesses": 5
+            },
+            {
+              "base": 55433,
+              "alive": true,
+              "cycles": 500000,
+              "peakProcesses": 5,
+              "endingProcesses": 5
+            }
+          ]
+        }
+      },
+      "battleStatus": "eligible for exploratory screen"
+    },
+    {
+      "id": "4-lineBombDodger.txt",
+      "name": "4-line Bomb Dodger",
+      "url": "https://gallium.inria.fr/~doligez/corewar/rc/4-lineBombDodger.txt",
+      "sourceHash": "3c802b45a32623fc06a123bb950d0ed65803406b820010a25ee93a668c0ad462",
+      "profiles": {
+        "94nop": {
+          "compile": true,
+          "instructions": 4,
+          "errors": [],
+          "solo": [
+            {
+              "base": 0,
+              "alive": true,
+              "cycles": 80000,
+              "peakProcesses": 6,
+              "endingProcesses": 6
+            },
+            {
+              "base": 7993,
+              "alive": true,
+              "cycles": 80000,
+              "peakProcesses": 6,
+              "endingProcesses": 6
+            }
+          ],
+          "extended500k": {
+            "compile": true,
+            "errors": [],
+            "solo": [
+              {
+                "base": 0,
+                "alive": true,
+                "cycles": 500000,
+                "peakProcesses": 6,
+                "endingProcesses": 6
+              },
+              {
+                "base": 7993,
+                "alive": true,
+                "cycles": 500000,
+                "peakProcesses": 6,
+                "endingProcesses": 6
+              }
+            ]
+          }
+        },
+        "94x": {
+          "compile": true,
+          "instructions": 4,
+          "errors": [],
+          "solo": [
+            {
+              "base": 0,
+              "alive": true,
+              "cycles": 500000,
+              "peakProcesses": 6,
+              "endingProcesses": 5
+            },
+            {
+              "base": 55433,
+              "alive": true,
+              "cycles": 500000,
+              "peakProcesses": 6,
+              "endingProcesses": 5
+            }
+          ]
+        }
+      },
+      "battleStatus": "eligible for exploratory screen"
+    },
+    {
+      "id": "kill-9.txt",
+      "name": "kill -9",
+      "url": "https://gallium.inria.fr/~doligez/corewar/rc/kill-9.txt",
+      "sourceHash": "59b4c095c0ebef1201d1da9429e3fd28db7a68441095e3c24a76147a42c7e226",
+      "profiles": {
+        "94nop": {
+          "compile": true,
+          "instructions": 8,
+          "errors": [],
+          "solo": [
+            {
+              "base": 0,
+              "alive": false,
+              "cycles": 29861,
+              "peakProcesses": 179,
+              "endingProcesses": 0
+            },
+            {
+              "base": 7993,
+              "alive": false,
+              "cycles": 29861,
+              "peakProcesses": 179,
+              "endingProcesses": 0
+            }
+          ],
+          "extended500k": {
+            "compile": true,
+            "errors": [],
+            "solo": [
+              {
+                "base": 0,
+                "alive": false,
+                "cycles": 29861,
+                "peakProcesses": 179,
+                "endingProcesses": 0
+              },
+              {
+                "base": 7993,
+                "alive": false,
+                "cycles": 29861,
+                "peakProcesses": 179,
+                "endingProcesses": 0
+              }
+            ]
+          }
+        },
+        "94x": {
+          "compile": true,
+          "instructions": 8,
+          "errors": [],
+          "solo": [
+            {
+              "base": 0,
+              "alive": false,
+              "cycles": 204683,
+              "peakProcesses": 471,
+              "endingProcesses": 0
+            },
+            {
+              "base": 55433,
+              "alive": false,
+              "cycles": 204683,
+              "peakProcesses": 471,
+              "endingProcesses": 0
+            }
+          ]
+        }
+      },
+      "battleStatus": "skipped: compile or full-cycle solo failure"
+    },
+    {
+      "id": "bunker[1].txt",
+      "name": "bunker",
+      "url": "https://gallium.inria.fr/~doligez/corewar/rc/bunker[1].txt",
+      "sourceHash": "adaca2b5c505dc419c0efe02782f2e4f7d536b7d975e38eb5bff05073be6fdf6",
+      "profiles": {
+        "94nop": {
+          "compile": true,
+          "instructions": 28,
+          "errors": [],
+          "solo": [
+            {
+              "base": 0,
+              "alive": true,
+              "cycles": 80000,
+              "peakProcesses": 33,
+              "endingProcesses": 19
+            },
+            {
+              "base": 7993,
+              "alive": true,
+              "cycles": 80000,
+              "peakProcesses": 33,
+              "endingProcesses": 19
+            }
+          ],
+          "extended500k": {
+            "compile": true,
+            "errors": [],
+            "solo": [
+              {
+                "base": 0,
+                "alive": false,
+                "cycles": 111498,
+                "peakProcesses": 33,
+                "endingProcesses": 0
+              },
+              {
+                "base": 7993,
+                "alive": false,
+                "cycles": 111498,
+                "peakProcesses": 33,
+                "endingProcesses": 0
+              }
+            ]
+          }
+        },
+        "94x": {
+          "compile": true,
+          "instructions": 28,
+          "errors": [],
+          "solo": [
+            {
+              "base": 0,
+              "alive": false,
+              "cycles": 496418,
+              "peakProcesses": 28,
+              "endingProcesses": 0
+            },
+            {
+              "base": 55433,
+              "alive": false,
+              "cycles": 496418,
+              "peakProcesses": 28,
+              "endingProcesses": 0
+            }
+          ]
+        }
+      },
+      "battleStatus": "skipped: compile or full-cycle solo failure"
+    },
+    {
+      "id": "bunker[2].txt",
+      "name": "bunker",
+      "url": "https://gallium.inria.fr/~doligez/corewar/rc/bunker[2].txt",
+      "sourceHash": "edf487ca583d38a219e189a552acdd217aa3f974422f55b2b781de28dc60f2be",
+      "profiles": {
+        "94nop": {
+          "compile": true,
+          "instructions": 25,
+          "errors": [],
+          "solo": [
+            {
+              "base": 0,
+              "alive": true,
+              "cycles": 80000,
+              "peakProcesses": 24,
+              "endingProcesses": 24
+            },
+            {
+              "base": 7993,
+              "alive": true,
+              "cycles": 80000,
+              "peakProcesses": 24,
+              "endingProcesses": 24
+            }
+          ],
+          "extended500k": {
+            "compile": true,
+            "errors": [],
+            "solo": [
+              {
+                "base": 0,
+                "alive": true,
+                "cycles": 500000,
+                "peakProcesses": 24,
+                "endingProcesses": 24
+              },
+              {
+                "base": 7993,
+                "alive": true,
+                "cycles": 500000,
+                "peakProcesses": 24,
+                "endingProcesses": 24
+              }
+            ]
+          }
+        },
+        "94x": {
+          "compile": true,
+          "instructions": 25,
+          "errors": [],
+          "solo": [
+            {
+              "base": 0,
+              "alive": false,
+              "cycles": 441244,
+              "peakProcesses": 24,
+              "endingProcesses": 0
+            },
+            {
+              "base": 55433,
+              "alive": false,
+              "cycles": 441244,
+              "peakProcesses": 24,
+              "endingProcesses": 0
+            }
+          ]
+        }
+      },
+      "battleStatus": "skipped: compile or full-cycle solo failure"
+    },
+    {
+      "id": "Dwarfer.txt",
+      "name": "Dwarfer",
+      "url": "https://gallium.inria.fr/~doligez/corewar/rc/Dwarfer.txt",
+      "sourceHash": "2bc28b7b162dfd195337733efcee29bc8cd144d0e49c7f4be1b5f55c28336231",
+      "profiles": {
+        "94nop": {
+          "compile": true,
+          "instructions": 8,
+          "errors": [],
+          "solo": [
+            {
+              "base": 0,
+              "alive": false,
+              "cycles": 47894,
+              "peakProcesses": 81,
+              "endingProcesses": 0
+            },
+            {
+              "base": 7993,
+              "alive": false,
+              "cycles": 47894,
+              "peakProcesses": 81,
+              "endingProcesses": 0
+            }
+          ],
+          "extended500k": {
+            "compile": true,
+            "errors": [],
+            "solo": [
+              {
+                "base": 0,
+                "alive": false,
+                "cycles": 47894,
+                "peakProcesses": 81,
+                "endingProcesses": 0
+              },
+              {
+                "base": 7993,
+                "alive": false,
+                "cycles": 47894,
+                "peakProcesses": 81,
+                "endingProcesses": 0
+              }
+            ]
+          }
+        },
+        "94x": {
+          "compile": true,
+          "instructions": 8,
+          "errors": [],
+          "solo": [
+            {
+              "base": 0,
+              "alive": true,
+              "cycles": 500000,
+              "peakProcesses": 81,
+              "endingProcesses": 2
+            },
+            {
+              "base": 55433,
+              "alive": true,
+              "cycles": 500000,
+              "peakProcesses": 81,
+              "endingProcesses": 2
+            }
+          ]
+        }
+      },
+      "battleStatus": "eligible for exploratory screen"
+    },
+    {
+      "id": "DwarferII.txt",
+      "name": "Dwarfer II",
+      "url": "https://gallium.inria.fr/~doligez/corewar/rc/DwarferII.txt",
+      "sourceHash": "87ed9704142b2af88023b3d00f24566ff762a170db0d48196907265e960d8605",
+      "profiles": {
+        "94nop": {
+          "compile": true,
+          "instructions": 20,
+          "errors": [],
+          "solo": [
+            {
+              "base": 0,
+              "alive": true,
+              "cycles": 80000,
+              "peakProcesses": 158,
+              "endingProcesses": 134
+            },
+            {
+              "base": 7993,
+              "alive": true,
+              "cycles": 80000,
+              "peakProcesses": 158,
+              "endingProcesses": 134
+            }
+          ],
+          "extended500k": {
+            "compile": true,
+            "errors": [],
+            "solo": [
+              {
+                "base": 0,
+                "alive": false,
+                "cycles": 142207,
+                "peakProcesses": 158,
+                "endingProcesses": 0
+              },
+              {
+                "base": 7993,
+                "alive": false,
+                "cycles": 142207,
+                "peakProcesses": 158,
+                "endingProcesses": 0
+              }
+            ]
+          }
+        },
+        "94x": {
+          "compile": true,
+          "instructions": 20,
+          "errors": [],
+          "solo": [
+            {
+              "base": 0,
+              "alive": false,
+              "cycles": 240401,
+              "peakProcesses": 162,
+              "endingProcesses": 0
+            },
+            {
+              "base": 55433,
+              "alive": false,
+              "cycles": 240401,
+              "peakProcesses": 162,
+              "endingProcesses": 0
+            }
+          ]
+        }
+      },
+      "battleStatus": "skipped: compile or full-cycle solo failure"
+    },
+    {
+      "id": "tamper.txt",
+      "name": "tamper",
+      "url": "https://gallium.inria.fr/~doligez/corewar/rc/tamper.txt",
+      "sourceHash": "838c62992799c4963dfe5975475282b29233fe25016b84103f89e6bad5decb71",
+      "profiles": {
+        "94nop": {
+          "compile": true,
+          "instructions": 3,
+          "errors": [],
+          "solo": [
+            {
+              "base": 0,
+              "alive": true,
+              "cycles": 80000,
+              "peakProcesses": 1,
+              "endingProcesses": 1
+            },
+            {
+              "base": 7993,
+              "alive": true,
+              "cycles": 80000,
+              "peakProcesses": 1,
+              "endingProcesses": 1
+            }
+          ],
+          "extended500k": {
+            "compile": true,
+            "errors": [],
+            "solo": [
+              {
+                "base": 0,
+                "alive": true,
+                "cycles": 500000,
+                "peakProcesses": 1,
+                "endingProcesses": 1
+              },
+              {
+                "base": 7993,
+                "alive": true,
+                "cycles": 500000,
+                "peakProcesses": 1,
+                "endingProcesses": 1
+              }
+            ]
+          }
+        },
+        "94x": {
+          "compile": true,
+          "instructions": 3,
+          "errors": [],
+          "solo": [
+            {
+              "base": 0,
+              "alive": true,
+              "cycles": 500000,
+              "peakProcesses": 1,
+              "endingProcesses": 1
+            },
+            {
+              "base": 55433,
+              "alive": true,
+              "cycles": 500000,
+              "peakProcesses": 1,
+              "endingProcesses": 1
+            }
+          ]
+        }
+      },
+      "battleStatus": "eligible for exploratory screen"
+    },
+    {
+      "id": "Antivamp.txt",
+      "name": "Antivamp",
+      "url": "https://gallium.inria.fr/~doligez/corewar/rc/Antivamp.txt",
+      "sourceHash": "10ac2dbacd37648f97eed9a254b1c0dcc2b575172f2dbfb78c9c9c44d78b20c8",
+      "profiles": {
+        "94nop": {
+          "compile": true,
+          "instructions": 3,
+          "errors": [],
+          "solo": [
+            {
+              "base": 0,
+              "alive": false,
+              "cycles": 23966,
+              "peakProcesses": 1,
+              "endingProcesses": 0
+            },
+            {
+              "base": 7993,
+              "alive": false,
+              "cycles": 23966,
+              "peakProcesses": 1,
+              "endingProcesses": 0
+            }
+          ],
+          "extended500k": {
+            "compile": true,
+            "errors": [],
+            "solo": [
+              {
+                "base": 0,
+                "alive": false,
+                "cycles": 23966,
+                "peakProcesses": 1,
+                "endingProcesses": 0
+              },
+              {
+                "base": 7993,
+                "alive": false,
+                "cycles": 23966,
+                "peakProcesses": 1,
+                "endingProcesses": 0
+              }
+            ]
+          }
+        },
+        "94x": {
+          "compile": true,
+          "instructions": 3,
+          "errors": [],
+          "solo": [
+            {
+              "base": 0,
+              "alive": false,
+              "cycles": 166286,
+              "peakProcesses": 1,
+              "endingProcesses": 0
+            },
+            {
+              "base": 55433,
+              "alive": false,
+              "cycles": 166286,
+              "peakProcesses": 1,
+              "endingProcesses": 0
+            }
+          ]
+        }
+      },
+      "battleStatus": "skipped: compile or full-cycle solo failure"
+    },
+    {
+      "id": "Body-Snatcher3.txt",
+      "name": "Body-Snatcher3",
+      "url": "https://gallium.inria.fr/~doligez/corewar/rc/Body-Snatcher3.txt",
+      "sourceHash": "c3d8d65d698694b50acd65490182e7ad994c0abc244ed3bbfd9d821a0652d039",
+      "profiles": {
+        "94nop": {
+          "compile": true,
+          "instructions": 2,
+          "errors": [],
+          "solo": [
+            {
+              "base": 0,
+              "alive": true,
+              "cycles": 80000,
+              "peakProcesses": 12,
+              "endingProcesses": 11
+            },
+            {
+              "base": 7993,
+              "alive": true,
+              "cycles": 80000,
+              "peakProcesses": 12,
+              "endingProcesses": 11
+            }
+          ],
+          "extended500k": {
+            "compile": true,
+            "errors": [],
+            "solo": [
+              {
+                "base": 0,
+                "alive": true,
+                "cycles": 500000,
+                "peakProcesses": 63,
+                "endingProcesses": 62
+              },
+              {
+                "base": 7993,
+                "alive": true,
+                "cycles": 500000,
+                "peakProcesses": 63,
+                "endingProcesses": 62
+              }
+            ]
+          }
+        },
+        "94x": {
+          "compile": true,
+          "instructions": 2,
+          "errors": [],
+          "solo": [
+            {
+              "base": 0,
+              "alive": true,
+              "cycles": 500000,
+              "peakProcesses": 12,
+              "endingProcesses": 11
+            },
+            {
+              "base": 55433,
+              "alive": true,
+              "cycles": 500000,
+              "peakProcesses": 12,
+              "endingProcesses": 11
+            }
+          ]
+        }
+      },
+      "battleStatus": "eligible for exploratory screen"
+    },
+    {
+      "id": "Signal1.1.txt",
+      "name": "Signal 1.1",
+      "url": "https://gallium.inria.fr/~doligez/corewar/rc/Signal1.1.txt",
+      "sourceHash": "e03dcb83312ab270f61243194eb52a2ba25abf0f586dd1549a65e2db93877ec2",
+      "profiles": {
+        "94nop": {
+          "compile": true,
+          "instructions": 7,
+          "errors": [],
+          "solo": [
+            {
+              "base": 0,
+              "alive": true,
+              "cycles": 80000,
+              "peakProcesses": 1,
+              "endingProcesses": 1
+            },
+            {
+              "base": 7993,
+              "alive": true,
+              "cycles": 80000,
+              "peakProcesses": 1,
+              "endingProcesses": 1
+            }
+          ],
+          "extended500k": {
+            "compile": true,
+            "errors": [],
+            "solo": [
+              {
+                "base": 0,
+                "alive": true,
+                "cycles": 500000,
+                "peakProcesses": 1,
+                "endingProcesses": 1
+              },
+              {
+                "base": 7993,
+                "alive": true,
+                "cycles": 500000,
+                "peakProcesses": 1,
+                "endingProcesses": 1
+              }
+            ]
+          }
+        },
+        "94x": {
+          "compile": true,
+          "instructions": 7,
+          "errors": [],
+          "solo": [
+            {
+              "base": 0,
+              "alive": true,
+              "cycles": 500000,
+              "peakProcesses": 1,
+              "endingProcesses": 1
+            },
+            {
+              "base": 55433,
+              "alive": true,
+              "cycles": 500000,
+              "peakProcesses": 1,
+              "endingProcesses": 1
+            }
+          ]
+        }
+      },
+      "battleStatus": "eligible for exploratory screen"
+    },
+    {
+      "id": "plain-DAT",
+      "control": true,
+      "sourceHash": "34aa0cbeb45a2fdd5ab98e68119fe0dc69548a4fe9a83dbb2d4448df4902b484",
+      "profiles": {
+        "94x": {
+          "compile": true,
+          "instructions": 9,
+          "solo": [
+            {
+              "base": 0,
+              "alive": true,
+              "cycles": 500000,
+              "peakProcesses": 1,
+              "endingProcesses": 1
+            },
+            {
+              "base": 55433,
+              "alive": true,
+              "cycles": 500000,
+              "peakProcesses": 1,
+              "endingProcesses": 1
+            }
+          ]
+        }
+      },
+      "battleStatus": "eligible for exploratory screen"
+    },
+    {
+      "id": "Lifeboat-default",
+      "control": true,
+      "sourceHash": "40a47daa9d993617cedff7a7c6f3305ef28d9bf755423dfdfb28c89039094e33",
+      "profiles": {
+        "94x": {
+          "compile": true,
+          "instructions": 37,
+          "solo": [
+            {
+              "base": 0,
+              "alive": true,
+              "cycles": 500000,
+              "peakProcesses": 2,
+              "endingProcesses": 1
+            },
+            {
+              "base": 55433,
+              "alive": true,
+              "cycles": 500000,
+              "peakProcesses": 2,
+              "endingProcesses": 1
+            }
+          ]
+        }
+      },
+      "battleStatus": "eligible for exploratory screen"
+    }
+  ],
+  "battleRounds": 256,
+  "results": [
+    {
+      "id": "AirbagDemo.txt",
+      "score": 0.875,
+      "runs": [
+        {
+          "seed": 20261028,
+          "score": 0.875,
+          "smooth": 0.87994375,
+          "groups": {
+            "library": {
+              "score": 0.875,
+              "smooth": 0.87994375,
+              "opponents": 4
+            }
+          },
+          "rows": [
+            {
+              "name": "Dwarf",
+              "group": "library",
+              "w": 0,
+              "l": 1,
+              "t": 3,
+              "pts": 0.75,
+              "smooth": 0.761625,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 1,
+                "tie": 3
+              }
+            },
+            {
+              "name": "Seeker",
+              "group": "library",
+              "w": 0,
+              "l": 1,
+              "t": 3,
+              "pts": 0.75,
+              "smooth": 0.75815,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 1,
+                "tie": 3
+              }
+            },
+            {
+              "name": "Silk",
+              "group": "library",
+              "w": 0,
+              "l": 0,
+              "t": 4,
+              "pts": 1,
+              "smooth": 1,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 4
+              }
+            },
+            {
+              "name": "Vampire",
+              "group": "library",
+              "w": 0,
+              "l": 0,
+              "t": 4,
+              "pts": 1,
+              "smooth": 1,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 4
+              }
+            }
+          ],
+          "symptoms": {
+            "suicide": 0,
+            "converted": 0,
+            "early": 0,
+            "late": 2,
+            "tie": 14
+          }
+        },
+        {
+          "seed": 20262028,
+          "score": 0.875,
+          "smooth": 0.88190625,
+          "groups": {
+            "library": {
+              "score": 0.875,
+              "smooth": 0.88190625,
+              "opponents": 4
+            }
+          },
+          "rows": [
+            {
+              "name": "Dwarf",
+              "group": "library",
+              "w": 0,
+              "l": 1,
+              "t": 3,
+              "pts": 0.75,
+              "smooth": 0.761125,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 1,
+                "tie": 3
+              }
+            },
+            {
+              "name": "Seeker",
+              "group": "library",
+              "w": 0,
+              "l": 1,
+              "t": 3,
+              "pts": 0.75,
+              "smooth": 0.7665,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 1,
+                "tie": 3
+              }
+            },
+            {
+              "name": "Silk",
+              "group": "library",
+              "w": 0,
+              "l": 0,
+              "t": 4,
+              "pts": 1,
+              "smooth": 1,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 4
+              }
+            },
+            {
+              "name": "Vampire",
+              "group": "library",
+              "w": 0,
+              "l": 0,
+              "t": 4,
+              "pts": 1,
+              "smooth": 1,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 4
+              }
+            }
+          ],
+          "symptoms": {
+            "suicide": 0,
+            "converted": 0,
+            "early": 0,
+            "late": 2,
+            "tie": 14
+          }
+        }
+      ]
+    },
+    {
+      "id": "4-lineBombDodger.txt",
+      "score": 0.875,
+      "runs": [
+        {
+          "seed": 20261028,
+          "score": 0.875,
+          "smooth": 0.9463,
+          "groups": {
+            "library": {
+              "score": 0.875,
+              "smooth": 0.9463,
+              "opponents": 4
+            }
+          },
+          "rows": [
+            {
+              "name": "Dwarf",
+              "group": "library",
+              "w": 0,
+              "l": 3,
+              "t": 1,
+              "pts": 0.25,
+              "smooth": 0.437325,
+              "d": {
+                "suicide": 1,
+                "converted": 0,
+                "early": 0,
+                "late": 2,
+                "tie": 1
+              }
+            },
+            {
+              "name": "Seeker",
+              "group": "library",
+              "w": 0,
+              "l": 3,
+              "t": 1,
+              "pts": 0.25,
+              "smooth": 0.347875,
+              "d": {
+                "suicide": 2,
+                "converted": 1,
+                "early": 0,
+                "late": 0,
+                "tie": 1
+              }
+            },
+            {
+              "name": "Silk",
+              "group": "library",
+              "w": 0,
+              "l": 0,
+              "t": 4,
+              "pts": 1,
+              "smooth": 1,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 4
+              }
+            },
+            {
+              "name": "Vampire",
+              "group": "library",
+              "w": 2,
+              "l": 0,
+              "t": 2,
+              "pts": 2,
+              "smooth": 2,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 2
+              }
+            }
+          ],
+          "symptoms": {
+            "suicide": 3,
+            "converted": 1,
+            "early": 0,
+            "late": 2,
+            "tie": 8
+          }
+        },
+        {
+          "seed": 20262028,
+          "score": 0.875,
+          "smooth": 0.9282937500000001,
+          "groups": {
+            "library": {
+              "score": 0.875,
+              "smooth": 0.9282937500000001,
+              "opponents": 4
+            }
+          },
+          "rows": [
+            {
+              "name": "Dwarf",
+              "group": "library",
+              "w": 0,
+              "l": 4,
+              "t": 0,
+              "pts": 0,
+              "smooth": 0.1386,
+              "d": {
+                "suicide": 4,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 0
+              }
+            },
+            {
+              "name": "Seeker",
+              "group": "library",
+              "w": 2,
+              "l": 1,
+              "t": 1,
+              "pts": 1.75,
+              "smooth": 1.805225,
+              "d": {
+                "suicide": 1,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 1
+              }
+            },
+            {
+              "name": "Silk",
+              "group": "library",
+              "w": 0,
+              "l": 0,
+              "t": 4,
+              "pts": 1,
+              "smooth": 1,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 4
+              }
+            },
+            {
+              "name": "Vampire",
+              "group": "library",
+              "w": 0,
+              "l": 1,
+              "t": 3,
+              "pts": 0.75,
+              "smooth": 0.76935,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 1,
+                "tie": 3
+              }
+            }
+          ],
+          "symptoms": {
+            "suicide": 5,
+            "converted": 0,
+            "early": 0,
+            "late": 1,
+            "tie": 8
+          }
+        }
+      ]
+    },
+    {
+      "id": "Dwarfer.txt",
+      "score": 1.59375,
+      "runs": [
+        {
+          "seed": 20261028,
+          "score": 1.5,
+          "smooth": 1.5249937500000001,
+          "groups": {
+            "library": {
+              "score": 1.5,
+              "smooth": 1.5249937500000001,
+              "opponents": 4
+            }
+          },
+          "rows": [
+            {
+              "name": "Dwarf",
+              "group": "library",
+              "w": 2,
+              "l": 2,
+              "t": 0,
+              "pts": 1.5,
+              "smooth": 1.53705,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 2,
+                "tie": 0
+              }
+            },
+            {
+              "name": "Seeker",
+              "group": "library",
+              "w": 0,
+              "l": 2,
+              "t": 2,
+              "pts": 0.5,
+              "smooth": 0.562925,
+              "d": {
+                "suicide": 1,
+                "converted": 1,
+                "early": 0,
+                "late": 0,
+                "tie": 2
+              }
+            },
+            {
+              "name": "Silk",
+              "group": "library",
+              "w": 0,
+              "l": 0,
+              "t": 4,
+              "pts": 1,
+              "smooth": 1,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 4
+              }
+            },
+            {
+              "name": "Vampire",
+              "group": "library",
+              "w": 4,
+              "l": 0,
+              "t": 0,
+              "pts": 3,
+              "smooth": 3,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 0
+              }
+            }
+          ],
+          "symptoms": {
+            "suicide": 1,
+            "converted": 1,
+            "early": 0,
+            "late": 2,
+            "tie": 6
+          }
+        },
+        {
+          "seed": 20262028,
+          "score": 1.6875,
+          "smooth": 1.7204875,
+          "groups": {
+            "library": {
+              "score": 1.6875,
+              "smooth": 1.7204875,
+              "opponents": 4
+            }
+          },
+          "rows": [
+            {
+              "name": "Dwarf",
+              "group": "library",
+              "w": 4,
+              "l": 0,
+              "t": 0,
+              "pts": 3,
+              "smooth": 3,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 0
+              }
+            },
+            {
+              "name": "Seeker",
+              "group": "library",
+              "w": 1,
+              "l": 2,
+              "t": 1,
+              "pts": 1,
+              "smooth": 1.11725,
+              "d": {
+                "suicide": 2,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 1
+              }
+            },
+            {
+              "name": "Silk",
+              "group": "library",
+              "w": 0,
+              "l": 0,
+              "t": 4,
+              "pts": 1,
+              "smooth": 1,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 4
+              }
+            },
+            {
+              "name": "Vampire",
+              "group": "library",
+              "w": 2,
+              "l": 1,
+              "t": 1,
+              "pts": 1.75,
+              "smooth": 1.7647,
+              "d": {
+                "suicide": 1,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 1
+              }
+            }
+          ],
+          "symptoms": {
+            "suicide": 3,
+            "converted": 0,
+            "early": 0,
+            "late": 0,
+            "tie": 6
+          }
+        }
+      ]
+    },
+    {
+      "id": "tamper.txt",
+      "score": 1.625,
+      "runs": [
+        {
+          "seed": 20261028,
+          "score": 1.875,
+          "smooth": 1.94878125,
+          "groups": {
+            "library": {
+              "score": 1.875,
+              "smooth": 1.94878125,
+              "opponents": 4
+            }
+          },
+          "rows": [
+            {
+              "name": "Dwarf",
+              "group": "library",
+              "w": 4,
+              "l": 0,
+              "t": 0,
+              "pts": 3,
+              "smooth": 3,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 0
+              }
+            },
+            {
+              "name": "Seeker",
+              "group": "library",
+              "w": 0,
+              "l": 0,
+              "t": 4,
+              "pts": 1,
+              "smooth": 1,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 4
+              }
+            },
+            {
+              "name": "Silk",
+              "group": "library",
+              "w": 0,
+              "l": 2,
+              "t": 2,
+              "pts": 0.5,
+              "smooth": 0.795125,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 2,
+                "tie": 2
+              }
+            },
+            {
+              "name": "Vampire",
+              "group": "library",
+              "w": 4,
+              "l": 0,
+              "t": 0,
+              "pts": 3,
+              "smooth": 3,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 0
+              }
+            }
+          ],
+          "symptoms": {
+            "suicide": 0,
+            "converted": 0,
+            "early": 0,
+            "late": 2,
+            "tie": 6
+          }
+        },
+        {
+          "seed": 20262028,
+          "score": 1.375,
+          "smooth": 1.52424375,
+          "groups": {
+            "library": {
+              "score": 1.375,
+              "smooth": 1.52424375,
+              "opponents": 4
+            }
+          },
+          "rows": [
+            {
+              "name": "Dwarf",
+              "group": "library",
+              "w": 3,
+              "l": 1,
+              "t": 0,
+              "pts": 2.25,
+              "smooth": 2.261125,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 1,
+                "tie": 0
+              }
+            },
+            {
+              "name": "Seeker",
+              "group": "library",
+              "w": 0,
+              "l": 0,
+              "t": 4,
+              "pts": 1,
+              "smooth": 1,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 4
+              }
+            },
+            {
+              "name": "Silk",
+              "group": "library",
+              "w": 0,
+              "l": 4,
+              "t": 0,
+              "pts": 0,
+              "smooth": 0.575175,
+              "d": {
+                "suicide": 1,
+                "converted": 0,
+                "early": 0,
+                "late": 3,
+                "tie": 0
+              }
+            },
+            {
+              "name": "Vampire",
+              "group": "library",
+              "w": 3,
+              "l": 1,
+              "t": 0,
+              "pts": 2.25,
+              "smooth": 2.260675,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 1,
+                "tie": 0
+              }
+            }
+          ],
+          "symptoms": {
+            "suicide": 1,
+            "converted": 0,
+            "early": 0,
+            "late": 5,
+            "tie": 4
+          }
+        }
+      ]
+    },
+    {
+      "id": "Body-Snatcher3.txt",
+      "score": 0.78125,
+      "runs": [
+        {
+          "seed": 20261028,
+          "score": 0.75,
+          "smooth": 0.7893749999999999,
+          "groups": {
+            "library": {
+              "score": 0.75,
+              "smooth": 0.7893749999999999,
+              "opponents": 4
+            }
+          },
+          "rows": [
+            {
+              "name": "Dwarf",
+              "group": "library",
+              "w": 0,
+              "l": 1,
+              "t": 3,
+              "pts": 0.75,
+              "smooth": 0.761625,
+              "d": {
+                "suicide": 0,
+                "converted": 1,
+                "early": 0,
+                "late": 0,
+                "tie": 3
+              }
+            },
+            {
+              "name": "Seeker",
+              "group": "library",
+              "w": 0,
+              "l": 3,
+              "t": 1,
+              "pts": 0.25,
+              "smooth": 0.395875,
+              "d": {
+                "suicide": 0,
+                "converted": 3,
+                "early": 0,
+                "late": 0,
+                "tie": 1
+              }
+            },
+            {
+              "name": "Silk",
+              "group": "library",
+              "w": 0,
+              "l": 0,
+              "t": 4,
+              "pts": 1,
+              "smooth": 1,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 4
+              }
+            },
+            {
+              "name": "Vampire",
+              "group": "library",
+              "w": 0,
+              "l": 0,
+              "t": 4,
+              "pts": 1,
+              "smooth": 1,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 4
+              }
+            }
+          ],
+          "symptoms": {
+            "suicide": 0,
+            "converted": 4,
+            "early": 0,
+            "late": 0,
+            "tie": 12
+          }
+        },
+        {
+          "seed": 20262028,
+          "score": 0.8125,
+          "smooth": 0.84831875,
+          "groups": {
+            "library": {
+              "score": 0.8125,
+              "smooth": 0.84831875,
+              "opponents": 4
+            }
+          },
+          "rows": [
+            {
+              "name": "Dwarf",
+              "group": "library",
+              "w": 0,
+              "l": 0,
+              "t": 4,
+              "pts": 1,
+              "smooth": 1,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 4
+              }
+            },
+            {
+              "name": "Seeker",
+              "group": "library",
+              "w": 0,
+              "l": 3,
+              "t": 1,
+              "pts": 0.25,
+              "smooth": 0.393275,
+              "d": {
+                "suicide": 0,
+                "converted": 3,
+                "early": 0,
+                "late": 0,
+                "tie": 1
+              }
+            },
+            {
+              "name": "Silk",
+              "group": "library",
+              "w": 0,
+              "l": 0,
+              "t": 4,
+              "pts": 1,
+              "smooth": 1,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 4
+              }
+            },
+            {
+              "name": "Vampire",
+              "group": "library",
+              "w": 0,
+              "l": 0,
+              "t": 4,
+              "pts": 1,
+              "smooth": 1,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 4
+              }
+            }
+          ],
+          "symptoms": {
+            "suicide": 0,
+            "converted": 3,
+            "early": 0,
+            "late": 0,
+            "tie": 13
+          }
+        }
+      ]
+    },
+    {
+      "id": "Signal1.1.txt",
+      "score": 1.28125,
+      "runs": [
+        {
+          "seed": 20261028,
+          "score": 0.875,
+          "smooth": 0.92846875,
+          "groups": {
+            "library": {
+              "score": 0.875,
+              "smooth": 0.92846875,
+              "opponents": 4
+            }
+          },
+          "rows": [
+            {
+              "name": "Dwarf",
+              "group": "library",
+              "w": 1,
+              "l": 3,
+              "t": 0,
+              "pts": 0.75,
+              "smooth": 0.82345,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 3,
+                "tie": 0
+              }
+            },
+            {
+              "name": "Seeker",
+              "group": "library",
+              "w": 0,
+              "l": 1,
+              "t": 3,
+              "pts": 0.75,
+              "smooth": 0.8092,
+              "d": {
+                "suicide": 0,
+                "converted": 1,
+                "early": 0,
+                "late": 0,
+                "tie": 3
+              }
+            },
+            {
+              "name": "Silk",
+              "group": "library",
+              "w": 0,
+              "l": 2,
+              "t": 2,
+              "pts": 0.5,
+              "smooth": 0.573225,
+              "d": {
+                "suicide": 1,
+                "converted": 0,
+                "early": 0,
+                "late": 1,
+                "tie": 2
+              }
+            },
+            {
+              "name": "Vampire",
+              "group": "library",
+              "w": 2,
+              "l": 2,
+              "t": 0,
+              "pts": 1.5,
+              "smooth": 1.508,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 2,
+                "tie": 0
+              }
+            }
+          ],
+          "symptoms": {
+            "suicide": 1,
+            "converted": 1,
+            "early": 0,
+            "late": 6,
+            "tie": 5
+          }
+        },
+        {
+          "seed": 20262028,
+          "score": 1.6875,
+          "smooth": 1.76755,
+          "groups": {
+            "library": {
+              "score": 1.6875,
+              "smooth": 1.76755,
+              "opponents": 4
+            }
+          },
+          "rows": [
+            {
+              "name": "Dwarf",
+              "group": "library",
+              "w": 4,
+              "l": 0,
+              "t": 0,
+              "pts": 3,
+              "smooth": 3,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 0
+              }
+            },
+            {
+              "name": "Seeker",
+              "group": "library",
+              "w": 0,
+              "l": 2,
+              "t": 2,
+              "pts": 0.5,
+              "smooth": 0.562075,
+              "d": {
+                "suicide": 0,
+                "converted": 2,
+                "early": 0,
+                "late": 0,
+                "tie": 2
+              }
+            },
+            {
+              "name": "Silk",
+              "group": "library",
+              "w": 0,
+              "l": 3,
+              "t": 1,
+              "pts": 0.25,
+              "smooth": 0.508125,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 3,
+                "tie": 1
+              }
+            },
+            {
+              "name": "Vampire",
+              "group": "library",
+              "w": 4,
+              "l": 0,
+              "t": 0,
+              "pts": 3,
+              "smooth": 3,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 0
+              }
+            }
+          ],
+          "symptoms": {
+            "suicide": 0,
+            "converted": 2,
+            "early": 0,
+            "late": 3,
+            "tie": 3
+          }
+        }
+      ]
+    },
+    {
+      "id": "plain-DAT",
+      "score": 1.375,
+      "runs": [
+        {
+          "seed": 20261028,
+          "score": 1.6875,
+          "smooth": 1.7075125,
+          "groups": {
+            "library": {
+              "score": 1.6875,
+              "smooth": 1.7075125,
+              "opponents": 4
+            }
+          },
+          "rows": [
+            {
+              "name": "Dwarf",
+              "group": "library",
+              "w": 3,
+              "l": 1,
+              "t": 0,
+              "pts": 2.25,
+              "smooth": 2.26355,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 1,
+                "tie": 0
+              }
+            },
+            {
+              "name": "Seeker",
+              "group": "library",
+              "w": 2,
+              "l": 2,
+              "t": 0,
+              "pts": 1.5,
+              "smooth": 1.5511,
+              "d": {
+                "suicide": 0,
+                "converted": 2,
+                "early": 0,
+                "late": 0,
+                "tie": 0
+              }
+            },
+            {
+              "name": "Silk",
+              "group": "library",
+              "w": 0,
+              "l": 1,
+              "t": 3,
+              "pts": 0.75,
+              "smooth": 0.7639,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 1,
+                "tie": 3
+              }
+            },
+            {
+              "name": "Vampire",
+              "group": "library",
+              "w": 3,
+              "l": 1,
+              "t": 0,
+              "pts": 2.25,
+              "smooth": 2.2515,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 1,
+                "late": 0,
+                "tie": 0
+              }
+            }
+          ],
+          "symptoms": {
+            "suicide": 0,
+            "converted": 2,
+            "early": 1,
+            "late": 2,
+            "tie": 3
+          }
+        },
+        {
+          "seed": 20262028,
+          "score": 1.0625,
+          "smooth": 1.2116562499999999,
+          "groups": {
+            "library": {
+              "score": 1.0625,
+              "smooth": 1.2116562499999999,
+              "opponents": 4
+            }
+          },
+          "rows": [
+            {
+              "name": "Dwarf",
+              "group": "library",
+              "w": 1,
+              "l": 3,
+              "t": 0,
+              "pts": 0.75,
+              "smooth": 0.8169,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 3,
+                "tie": 0
+              }
+            },
+            {
+              "name": "Seeker",
+              "group": "library",
+              "w": 1,
+              "l": 3,
+              "t": 0,
+              "pts": 0.75,
+              "smooth": 0.86815,
+              "d": {
+                "suicide": 0,
+                "converted": 1,
+                "early": 0,
+                "late": 2,
+                "tie": 0
+              }
+            },
+            {
+              "name": "Silk",
+              "group": "library",
+              "w": 0,
+              "l": 3,
+              "t": 1,
+              "pts": 0.25,
+              "smooth": 0.661575,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 3,
+                "tie": 1
+              }
+            },
+            {
+              "name": "Vampire",
+              "group": "library",
+              "w": 3,
+              "l": 0,
+              "t": 1,
+              "pts": 2.5,
+              "smooth": 2.5,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 1
+              }
+            }
+          ],
+          "symptoms": {
+            "suicide": 0,
+            "converted": 1,
+            "early": 0,
+            "late": 8,
+            "tie": 2
+          }
+        }
+      ]
+    },
+    {
+      "id": "Lifeboat-default",
+      "score": 1.46875,
+      "runs": [
+        {
+          "seed": 20261028,
+          "score": 1.25,
+          "smooth": 1.36645,
+          "groups": {
+            "library": {
+              "score": 1.25,
+              "smooth": 1.36645,
+              "opponents": 4
+            }
+          },
+          "rows": [
+            {
+              "name": "Dwarf",
+              "group": "library",
+              "w": 2,
+              "l": 2,
+              "t": 0,
+              "pts": 1.5,
+              "smooth": 1.559225,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 1,
+                "late": 1,
+                "tie": 0
+              }
+            },
+            {
+              "name": "Seeker",
+              "group": "library",
+              "w": 0,
+              "l": 4,
+              "t": 0,
+              "pts": 0,
+              "smooth": 0.125175,
+              "d": {
+                "suicide": 0,
+                "converted": 2,
+                "early": 0,
+                "late": 2,
+                "tie": 0
+              }
+            },
+            {
+              "name": "Silk",
+              "group": "library",
+              "w": 0,
+              "l": 2,
+              "t": 2,
+              "pts": 0.5,
+              "smooth": 0.7814,
+              "d": {
+                "suicide": 1,
+                "converted": 0,
+                "early": 0,
+                "late": 1,
+                "tie": 2
+              }
+            },
+            {
+              "name": "Vampire",
+              "group": "library",
+              "w": 4,
+              "l": 0,
+              "t": 0,
+              "pts": 3,
+              "smooth": 3,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 0
+              }
+            }
+          ],
+          "symptoms": {
+            "suicide": 1,
+            "converted": 2,
+            "early": 1,
+            "late": 4,
+            "tie": 2
+          }
+        },
+        {
+          "seed": 20262028,
+          "score": 1.6875,
+          "smooth": 1.7706,
+          "groups": {
+            "library": {
+              "score": 1.6875,
+              "smooth": 1.7706,
+              "opponents": 4
+            }
+          },
+          "rows": [
+            {
+              "name": "Dwarf",
+              "group": "library",
+              "w": 3,
+              "l": 1,
+              "t": 0,
+              "pts": 2.25,
+              "smooth": 2.30755,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 1,
+                "tie": 0
+              }
+            },
+            {
+              "name": "Seeker",
+              "group": "library",
+              "w": 2,
+              "l": 2,
+              "t": 0,
+              "pts": 1.5,
+              "smooth": 1.527775,
+              "d": {
+                "suicide": 0,
+                "converted": 2,
+                "early": 0,
+                "late": 0,
+                "tie": 0
+              }
+            },
+            {
+              "name": "Silk",
+              "group": "library",
+              "w": 0,
+              "l": 4,
+              "t": 0,
+              "pts": 0,
+              "smooth": 0.247075,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 4,
+                "tie": 0
+              }
+            },
+            {
+              "name": "Vampire",
+              "group": "library",
+              "w": 4,
+              "l": 0,
+              "t": 0,
+              "pts": 3,
+              "smooth": 3,
+              "d": {
+                "suicide": 0,
+                "converted": 0,
+                "early": 0,
+                "late": 0,
+                "tie": 0
+              }
+            }
+          ],
+          "symptoms": {
+            "suicide": 0,
+            "converted": 2,
+            "early": 0,
+            "late": 5,
+            "tie": 0
+          }
+        }
+      ]
+    }
+  ]
+}
