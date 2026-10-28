@@ -4,6 +4,7 @@ import { createHash } from 'node:crypto';
 import { mulberry32 } from '../src/engine/random.js';
 import { lexicase, lexicaseSurvivors } from './selection.js';
 import { evaluate } from './hill.js';
+import { createObjective } from './objective.js';
 import { recipeFamilies, defaultBlockRecipes, buildBlockRecipe } from './blocks/registry.js';
 import { RULESETS } from '../src/engine/index.js';
 
@@ -11,12 +12,13 @@ export async function evolveBlocks({ pool, opponents, settings, rules = '94x', l
   families = Object.keys(recipeFamilies).filter(k => recipeFamilies[k].rules.includes(rules)),
   initial = [], kings = [], populationSize = 12, offspring = 12, generations = 3,
   localSteps = 0, rounds = 6, seed = 1, objective = 'points', tieValue = 0.5,
-  onGeneration = () => {} }) {
+  partners = [], fieldRounds = 50, onGeneration = () => {} }) {
   for (const [key, value] of Object.entries({ populationSize, offspring, generations, rounds })) {
     if (!Number.isSafeInteger(value) || value < 1) throw new Error(`${key} must be a positive integer`);
   }
   if (!Number.isSafeInteger(localSteps) || localSteps < 0 || !Number.isSafeInteger(seed) || seed < 0 || seed > 2147483646) throw new Error('Invalid search limits');
-  if (!['points', 'smooth'].includes(objective) || !Number.isFinite(tieValue) || tieValue < 0 || tieValue > 1) throw new Error('Invalid objective or ties');
+  if (!['points', 'smooth', 'pushoff'].includes(objective) || !Number.isFinite(tieValue) || tieValue < 0 || tieValue > 1) throw new Error('Invalid objective or ties');
+  if (partners.length && objective !== 'pushoff') throw new Error('partners need objective pushoff');
   const profile = RULESETS[rules];
   if (!profile || settings.topology === 'torus' || ['coreSize', 'maxProcesses', 'maxCycles', 'minDistance', 'dialect'].some(k => settings[k] !== profile[k])) throw new Error('Battle settings must match the verified rules profile');
   if (!Number.isSafeInteger(length) || length < 1 || length > profile.maxLength || settings.maxLength < length) throw new Error('Invalid block instruction budget');
@@ -44,8 +46,19 @@ export async function evolveBlocks({ pool, opponents, settings, rules = '94x', l
       const x = { ...built, id, operator, parents, generation }; catalog.set(id, x); return x;
     } catch (error) { stats.rejected++; rejected.push({ recipe: normalized, operator, parents, generation, reason: error.message }); return null; }
   }
+  // Push-off: the field (and our partners) play one round robin up front; each
+  // candidate is placed in it. Champions are kept as a record but, as in
+  // instruction evolution, do not enter push-off fitness.
+  const target = objective === 'pushoff' ? await createObjective({ pool, opponents, partners, settings, objective, rounds, fieldRounds, seed }) : null;
   async function score(x, generation) {
     const matchSeed = (seed + generation * 10000) % 2147483647;
+    if (target) {
+      const a = await target.assess(x.w, { seed: matchSeed });
+      stats.evaluations++;
+      const rows = a.rows.slice(0, target.field.length);
+      return { ...x, fit: a.fit, places: a.places, score: a.score, smooth: a.smooth, cases: rows.map(r => r.pts),
+        rows, vsAncestors: [], evaluatedGeneration: generation, ancestorCount: ancestors.length };
+    }
     const base = await evaluate(pool, x.w, opponents, { settings, rounds, seed: matchSeed });
     const prior = ancestors.length ? await evaluate(pool, x.w, ancestors, { settings, rounds, seed: matchSeed + 5000 }) : null;
     const value = row => objective === 'points' ? row.pts : row.smooth;
@@ -56,17 +69,25 @@ export async function evolveBlocks({ pool, opponents, settings, rules = '94x', l
     return { ...x, fit, score: base.score, smooth: base.smooth, cases: [...baseCases, ...priorCases],
       rows: base.rows, vsAncestors: prior?.rows ?? [], evaluatedGeneration: generation, ancestorCount: ancestors.length };
   }
+  // Parameters this program actually uses: changing one changes its canonical
+  // form. Mutating the others only re-proposes the same program.
+  function active(spec, P, keys) {
+    if (!spec.canonical) return keys;
+    const now = JSON.stringify(spec.canonical(P, rules));
+    const used = keys.filter(k => spec.space[k].some(v => v !== P[k] && JSON.stringify(spec.canonical({ ...P, [k]: v }, rules)) !== now));
+    return used.length ? used : keys;
+  }
   function mutate(parent, local = false) {
     const spec = recipeFamilies[parent.recipe.family], P = { ...parent.recipe.P };
     // Block swap: families made of slots change a whole block half the time,
     // then repair the other slots so the contracts still fit.
     if (!local && spec.slots && random() < 0.5) {
-      const slot = pick(spec.slots), [lo, hi] = spec.space[slot], options = [];
+      const slot = pick(active(spec, P, spec.slots)), [lo, hi] = spec.space[slot], options = [];
       for (let v = lo; v <= hi; v++) if (v !== P[slot]) options.push(v);
       P[slot] = slot === 'DECOYS' ? (P.DECOYS ? 0 : sample([1, hi])) : pick(options);
       return { family: parent.recipe.family, P: spec.repair(P, rules, slot) };
     }
-    const key = pick(local ? spec.numeric : Object.keys(spec.space)), [lo, hi] = spec.space[key];
+    const key = pick(active(spec, P, local ? spec.numeric : Object.keys(spec.space))), [lo, hi] = spec.space[key];
     if (!local && random() < 0.5) P[key] = sample([lo, hi]);
     else P[key] = Math.max(lo, Math.min(hi, P[key] + (random() < 0.5 ? -1 : 1) * (local ? 1 : Math.max(1, Math.floor((hi - lo) / 32)))));
     return { family: parent.recipe.family, P: spec.repair ? spec.repair(P, rules, key) : P };
@@ -85,7 +106,7 @@ export async function evolveBlocks({ pool, opponents, settings, rules = '94x', l
   // Validation keeps the baseline unless a finalist beats it, so it must be the
   // best starting recipe on the base field, not whichever family came first.
   const starting = new Set(population.map(x => x.id));
-  const measure = objective === 'points' ? 'score' : 'smooth';
+  const measure = { points: 'score', smooth: 'smooth', pushoff: 'fit' }[objective];
   let baseline = null;
   for (let attempts = 0; population.length < populationSize && attempts < populationSize * 20; attempts++) {
     const x = admit(mutate(pick(population)), 'initial-mutation', [], 0);
@@ -123,11 +144,13 @@ export async function evolveBlocks({ pool, opponents, settings, rules = '94x', l
     }
     const champion = population[0]; champions.push(champion);
     const record = { generation, champion: champion.id, family: champion.recipe.family, fit: champion.fit, score: champion.score,
+      ...(champion.places ? { places: champion.places } : {}),
       ancestorCount: ancestors.length, population: population.map(x => ({ id: x.id, family: x.recipe.family, fit: x.fit, evaluatedGeneration: x.evaluatedGeneration, ancestorCount: x.ancestorCount })) };
     history.push(record);
     await onGeneration(record, champion);
     ancestors.push({ name: `Generation ${generation}: ${champion.id}`, group: 'champion', w: champion.w });
   }
-  return { config: { representation: 'blocks', algorithm: 'ga', selection: 'lexicase', rules, length, families, seed, populationSize, offspring, generations, localSteps, rounds, objective, tieValue },
+  return { config: { representation: 'blocks', algorithm: 'ga', selection: 'lexicase', rules, length, families, seed, populationSize, offspring, generations, localSteps, rounds, objective, tieValue,
+    partners: partners.map(w => w.name), fieldRounds },
     baseline, population, champions, candidates: [...catalog.values()], rejected, history, stats };
 }

@@ -154,3 +154,18 @@ test('the body gate rejects misaimed fangs, broken spirals and a bombed partner'
     assert.throws(() => verifyBodies(b), undefined, JSON.stringify(choice));
   }
 });
+
+test('block evolution can rank by push-off place beside a partner', async () => {
+  const settings = RULESETS['94nop'], c = src => compile(src, 'redcode', settings);
+  const opponents = ['MOV.I 0, 1', 'JMP 0', 'SPL 0', 'ADD.AB #4, 3\nMOV.I 2, @2\nJMP -2\nDAT #0, #0'].map((src, i) => ({ name: `o${i}`, group: 'hill', w: c(src) }));
+  // A deterministic field: longer programs win more, so places differ.
+  const pool = { async match(task) { const n = task.settings.rounds, wins = Math.min(n, Math.floor(task.a.instructions.length / 4) % (n + 1));
+    return { w: wins, t: 0, l: n - wins, smooth: 3 * wins }; } };
+  const partner = { ...c('MOV.I 0, 1'), name: 'Partner' };
+  const r = await evolveBlocks({ pool, opponents, settings, rules: '94nop', families: ['combo'], populationSize: 4, offspring: 4,
+    generations: 2, rounds: 2, seed: 5, objective: 'pushoff', partners: [partner], fieldRounds: 2 });
+  assert.deepEqual(r.config.partners, ['Partner']);
+  assert.ok(r.history.every(g => Array.isArray(g.places) && g.places.length === 2), 'candidate and partner places');
+  assert.ok(r.champions.every(x => x.vsAncestors.length === 0), 'champions do not enter push-off fitness');
+  await assert.rejects(() => evolveBlocks({ pool, opponents, settings, families: ['combo'], partners: [partner] }), /pushoff/);
+});

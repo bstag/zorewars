@@ -238,7 +238,27 @@ node scripts/blocks.js build --family compass --generator evolved/blocks-run-1/e
 Block mode supports the existing CPU/GPU/auto battle backend. Recipe generation
 and detailed behavior gates run on CPU. The initial experiment used CPU; GPU
 execution of this path has not been measured. Unsupported combinations such as
-scratch, torus, push-off and MAP-Elites are rejected rather than ignored.
+scratch, torus and MAP-Elites are rejected rather than ignored.
+
+### Ranking by push-off place
+
+`--objective pushoff` (with `--hill`) scores each recipe by its median place in
+an iterative diversity push-off against the hill, as instruction evolution does:
+the field plays one round robin up front, each candidate is placed in it, and a
+recipe that wins in its own way ranks above a stronger clone. `--partner a.red`
+enters our other entries beside every candidate; their places count half
+against it, so the search looks for the best partner rather than the best
+warrior. `--field-rounds` sets the field's own round robin (default 50).
+Red Queen champions are kept as a record but do not enter push-off fitness, and
+`--validate` re-ranks finalists on fresh seeds with the same objective.
+
+```sh
+node cli/zorewars.js evolve --representation blocks --families combo --rules 94nop --length 50 --hill koenigstuhl:94nop --objective pushoff --partner mine.red --validate --out evolved/partner-search
+```
+
+Mutation only picks parameters the program uses (changing one changes its
+canonical form), so a paper body is not "mutated" by changing its unused chain
+settings. On a fixed test field this cut re-proposed programs from 57% to 41%.
 
 ## First integration experiment
 
