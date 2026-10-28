@@ -52,7 +52,6 @@ export function speciesFromVM(vm) {
   let coverage = 0;
   for (const last of vm.lastExec) if (last >= 0) coverage++;
   const w = vm.warriors[0];
-  const axes = speciesAxes(cfg);
   // On a torus: how many axes the cells it wrote (or was loaded into) spread
   // over: 1 = one row, 2 = one layer (or a plane), 3 = through the volume.
   let shape = 1;
@@ -61,12 +60,18 @@ export function speciesFromVM(vm) {
     for (let k = 0; k < cfg.coreSize; k++) if (vm.owner[k] === 0) { const [, y, z] = vm.geo.decode(k); ys.add(y); zs.add(z); }
     shape = zs.size > 1 ? 3 : ys.size > 1 ? 2 : 1;
   }
-  const p = bin(w.peak, axes.processes.edges);
+  return speciesFromStats({ processes: w.peak, coverage, survives: w.alive, shape }, cfg);
+}
+
+// Shared formatting of CPU measurements and compact GPU readbacks.
+export function speciesFromStats({ processes, coverage, survives, shape = 1 }, settings = {}) {
+  const axes = speciesAxes(settings);
+  const p = bin(processes, axes.processes.edges);
   const c = bin(coverage, axes.coverage.edges);
   return {
-    processes: w.peak,
+    processes,
     coverage,
-    survives: w.alive,               // false: it kills itself when alone
+    survives,               // false: it kills itself when alone
     shape,
     cell: [p, c],
     key: `${p},${c}`,

@@ -34,6 +34,141 @@ and six unique finalists (`--seeds`, `--check-rounds`, `--finalists`).
 large library warriors can be baselines too. `evolve` retains its 40-instruction
 default. Set `--genome` to restrict either search explicitly.
 
+## Shared GPU execution
+
+The command-line tools and browser use the same GPU interpreter and batch
+runner in `src/engine/gpu/`. Node supplies the optional `webgpu` runtime
+(Dawn); the browser supplies WebGPU in a module worker. Battles execute on
+the user's hardware. CPU remains the CLI default. Install optional packages
+with `npm install --include=optional` if your installation omitted them.
+
+```sh
+node cli/zorewars.js evolve --backend gpu --rules 94nop --seed 4242 --out evolved/gpu-ring
+node cli/zorewars.js train --backend gpu --profiles volume --seed 4242
+node cli/zorewars.js hill @silk --backend gpu --rounds 20
+
+# Prefer GPU, but retry on CPU if it is unavailable or the device fails.
+# Limit fallback CPU workers when other evolution campaigns are running.
+node cli/zorewars.js evolve --backend auto --threads 1 --seed 4242
+
+# Compare identical workloads, with one CPU worker by default.
+node scripts/benchmark-gpu.js --matches 64 --rounds 3 --samples 3
+node scripts/benchmark-gpu.js --scenario volume --matches 64 --rounds 3
+
+# Full CLI evolution timing, using current library bots and one CPU worker.
+# Two samples per backend, same seed, with identical evolved outputs checked.
+node scripts/benchmark-evolution-gpu.js --samples 2
+
+# Replay a saved CPU push-off evolution from its compiled input snapshots.
+# INDEX is the original partner's zero-based position in inputs.sources.
+node scripts/replay-evolution-gpu.js --input saved/evolve.json --partner-sources INDEX --field-rounds 50 --out evolved/gpu-replay
+
+# Verify saved CPU pair counts using pinned programs/settings and strict GPU.
+node scripts/check-roundrobin-gpu.js --manifest evolved/parity/manifest.json --out evolved/parity/new-result
+
+# Opt-in hardware correctness checks (PowerShell).
+$env:ZOREWARS_GPU_TEST='1'
+node --test --test-concurrency=1 test/gpu.test.js test/gpu-solo.test.js test/gpu-solo-fallback.test.js
+
+# Isolated real-Chrome check of GPU, CPU fallback, cancellation and arena UI.
+node scripts/check-browser-gpu.js
+```
+
+This is an experimental interpreter, with support for rings, planes, volumes,
+P-space and the loss symptoms used by mutation selection. Each GPU invocation
+owns an entire match, including sequential rounds and persistent P-space.
+Evolution submits candidates together, then applies results in birth order
+to preserve seeded selection and mutation credit. Push-off reference rows
+are also queued together on GPU while retaining each row's original seed and
+opponent order; CPU reference rows retain their existing schedule. Dispatches use bounded
+instruction slices to avoid one long GPU kernel monopolizing the device.
+
+Breeding, compilation, library preparation and push-off ranking run on the
+CPU. Candidate survival/species checks run in GPU batches, reusing the same
+instruction interpreter as battles. Each returns only peak processes, executed
+cell coverage, survival and torus shape (16 bytes), then uses the CPU
+formatter for identical species bins and labels. Fresh P-space is used for
+each solo check. Pending checks are cached by genotype, and evolution still
+applies results in birth order. Scratch initialization awaits its checks in
+the original draw order to preserve the seeded random sequence. `--threads` controls the CPU backend only; GPU mode
+does not start battle worker threads. `--gpu-batch N` caps concurrent matches
+(default 1024), further limited by the GPU's buffer capacity. Lower it if GPU
+memory is needed by other applications. Explicit `--backend gpu` requires a
+hardware adapter and reports device errors. `--backend auto` prefers GPU and
+falls back to CPU on missing support, device loss or backend failure. Failed
+matches restart from their original seed and fresh P-space; scores are never
+partially committed. Bad warrior input still reports its error. The backend
+and fallback reason are recorded in `evolve.json` (and reported on stderr
+outside JSON mode).
+Push-off rankings cache fixed-field spreads and pair distances. Absolute
+feature differences are precomputed once into a flat Float64Array, with a
+64 MiB difference-table limit and a scalar path for larger fields. Current-field
+spreads and distances are refreshed each round; symmetric distances are reused
+within that round only. Distance and neighbour loops use plain loops, retaining
+the original column/feature addition order and tie-breaking rules.
+
+Limits are 200000 core cells, processes and P-space cells, and 10000000 cycles.
+GPU execution reports separate `soloChecks`, `soloBatches` and
+`soloMilliseconds` counters. `auto` retries failed solo checks through the
+same CPU fallback pool used for battles. Explicit `gpu` mode remains strict.
+
+Saved-run replay uses the recorded source and opponent order, roles, settings
+and seed, then checks every champion, generation record and the complete final
+result. Legacy reports omit partners and the reference-field round count, so
+these must be provided explicitly from the original run. The replay writes to
+a new directory and uses strict GPU execution. It excludes CLI source
+compilation and remote hill fetching from timing. Push-off ranking, compilation
+and other host work still use CPU; competing CPU work can therefore
+substantially affect whole-evolution timing even when battles run on GPU.
+
+A saved-round-robin manifest must pin every compiled program in roster order,
+the original seed and seed protocol, the effective settings (including minimum
+separation and P-space), and the baseline file hash. The checker verifies every
+pair, mirrored results, score matrices and the archived ranking when present.
+It records the GPU adapter, engine hashes and per-pair comparisons in a new
+output directory. Legacy matrices need these inputs reconstructed explicitly;
+entry length/P-space restrictions can differ from the hill execution settings.
+
+The browser automatically uses GPU for ladder batches and two-warrior
+tournaments, with a smaller 128-match batch limit. CPU fallback normally
+uses a worker too; when workers are blocked, the CPU runner yields on the
+page. Stop terminates the worker, and results from cancelled jobs or old
+rules cannot overwrite the current ladder. Three- and four-warrior
+tournaments and solo species measurement keep their existing CPU paths.
+The interactive live arena has a separate persistent GPU session for 1–4
+warriors, with CPU fallback and a **Live battles** setting to select CPU.
+It preserves stepping, pause, finish, replay, inspector history and effects.
+Browser round plans preserve the earlier random
+placement and first-mover behavior, including P-space between rounds.
+
+GPU mode requires browser WebGPU support in a secure context (HTTPS or a
+trusted local origin). Unsupported devices continue on CPU. See the
+[live arena implementation](../design/gpu-live-arena.md) for execution,
+recovery, readback limits and validation.
+
+GPU performance depends on batch size, divergent warrior execution and memory
+accesses. Small jobs may be slower than CPU; compare on your workload. The
+benchmark excludes initial shader compilation from warm timings, reports it
+separately, and checks identical match scores and loss symptoms. Results on a
+CPU already running other evolution campaigns are not an idle-machine speed
+comparison. `evolve.json` records the selected backend, adapter and GPU counts.
+
+An initial RTX 4060 Ti run (Windows, Node 22, CPU already running other
+evolution campaigns) measured the following warm medians over three samples.
+These are comparisons against **one busy CPU worker**, not an idle multicore
+baseline or complete evolution runtimes:
+
+| Workload | CPU | GPU | Observed ratio |
+| --- | ---: | ---: | ---: |
+| Ring: 64 matches × 3 rounds, 20000-cycle limit | 16.36 s | 0.43 s | 38.5× |
+| Volume: 32 matches × 3 rounds, 6500-cycle limit | 1.67 s | 0.52 s | 3.2× |
+
+The volume batch consumed 546 ms of CPU time through the CPU backend and
+78 ms through the GPU backend (about 86% less host CPU work). Its initial
+GPU batch, including shader compilation, took 1.89 s. CPU contention varied
+during the measurements, so repeat the benchmark before choosing batch sizes
+or estimating campaign runtimes.
+
 ## What is already in the library
 
 The source of truth is [`warriors/index.json`](../warriors/index.json).

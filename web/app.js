@@ -9,6 +9,8 @@ import { Highlights } from './highlights.js';
 import { initPicker } from './picker.js';
 import { scanLibraryFit } from './library-fit.js';
 import { createSimulationRunner } from './simulation.js';
+import { createBrowserMatchPool } from './matches.js';
+import { createBrowserLiveController } from './live.js';
 import { generateFromPython, loadPython, pythonReady } from './python.js';
 import { createCodeEditor } from './editor.js';
 import { initLadder, initSpecies } from './ladder.js';
@@ -22,6 +24,7 @@ const STORAGE_KEY = 'zorewars.slots.v1';
 // still listed here at the next start is skipped until it is edited.
 const GENERATING_KEY = 'zorewars.generating.v1';
 const SETTINGS_KEY = 'zorewars.settings.v1';
+const LIVE_BACKEND_KEY = 'zorewars.liveBackend.v1';
 
 const TEMPLATES = {
   redcode: `;name My Warrior
@@ -57,6 +60,11 @@ const state = {
   slots: [],
   active: 0,
   vm: null,
+  live: null,
+  liveGeneration: 0,
+  livePending: null,
+  liveEpoch: 0,
+  livePreference: safeGet(LIVE_BACKEND_KEY) === 'cpu' ? 'cpu' : 'auto',
   roster: [],        // slot indices loaded in the current round
   running: false,
   stepsPerFrame: 1,
@@ -653,6 +661,7 @@ async function convertActive(lang) {
 
 function newRound() {
   stopRunning();
+  discardLive();
   const roster = state.slots.map((s, i) => (s.compiled?.ok ? i : -1)).filter((i) => i >= 0);
   state.roster = roster;
   setColorSlots(roster);
@@ -685,6 +694,7 @@ function newRound() {
     return;
   }
   state.vm = vm;
+  installLive(vm);
   renderer3d.stopFollowingWarrior();                   // warrior numbers change between rounds
   updateFollow();
   state.round++;
@@ -710,25 +720,50 @@ function forgetRound() {
   $('pmCard').hidden = true;
 }
 
+function discardLive() {
+  state.live?.close(); state.live = null; state.liveGeneration++;
+  state.livePending = null; state.carry = 0; finishing = null;
+  $('liveBackendStatus').textContent = ''; $('liveBackendStatus').dataset.backend = '';
+  $('stepBtn').disabled = false; $('finishBtn').disabled = false;
+}
+function installLive(vm) {
+  const generation = state.liveGeneration;
+  const status = $('liveBackendStatus');
+  const show = (backend, reason) => {
+    if (state.liveGeneration !== generation || state.vm !== vm) return;
+    status.textContent = backend === 'initializing' ? 'Preparing GPU…' : backend.toUpperCase();
+    status.dataset.backend = backend; status.title = reason ?? '';
+    state.dirtyFrame = true;
+  };
+  const live = createBrowserLiveController(vm, { backend: state.livePreference, onBackend: show });
+  state.live = live; show(live.backend, live.fallbackReason);
+}
+
 function colorName(k, name) {
   const slot = state.roster[k];
   return `<b style="color:${WARRIOR_COLORS[slot]}">${escapeHtml(name)}</b>`;
 }
 const pad4 = (n) => String(n).padStart(4, '0');
 
-function stepVM(maxSteps, budgetMs = 14) {
+async function stepVM(maxSteps, valid = () => true) {
   const vm = state.vm;
-  if (!vm || vm.done) return 0;
-  const t0 = performance.now();
-  let n = 0;
-  while (n < maxSteps && !vm.done) {
-    state.lastStep = vm.step();
-    n++;
-    if ((n & 1023) === 0 && performance.now() - t0 > budgetMs) break;
+  const live = state.live;
+  if (!vm || vm.done || !live) return 0;
+  const token = { vm, live }; state.livePending = token; $('stepBtn').disabled = true;
+  try {
+    const n = await live.advance(maxSteps, { cancelled: () => state.vm !== vm || state.live !== live || !valid() });
+    if (state.vm !== vm || state.live !== live) return 0;
+    state.lastStep = live.lastStep;
+    checkDeaths();
+    if (vm.done) finishRound();
+    sampleChart(); updateCycle(); state.dirtyFrame = true;
+    return n;
+  } catch (error) {
+    if (state.vm === vm && state.live === live) { stopRunning(); log(`Live battle stopped: ${escapeHtml(error.message)}`); }
+    return 0;
+  } finally {
+    if (state.livePending === token) { state.livePending = null; $('stepBtn').disabled = false; }
   }
-  checkDeaths();
-  if (vm.done) finishRound();
-  return n;
 }
 
 function checkDeaths() {
@@ -805,18 +840,30 @@ function showKillingBlow() {
 
 // Rounds are deterministic, so a replay re-runs this exact round from the
 // start and pauses shortly before the end; then Step through the finish.
-function replayEnd(cyclesBefore = 100) {
+async function replayEnd(cyclesBefore = 100) {
   const setup = state.roundSetup;
   const end = state.vm?.cycle ?? 0;
   if (!setup) return;
   stopRunning();
+  discardLive();
+  const generation = state.liveGeneration;
   const vm = new VM(state.settings);
   vm.enableEvents();
   highlights.reset(vm.size);
   vm.load(setup.warriors, { positions: setup.positions, firstTurn: setup.firstTurn, pspaces: setup.pspaces.map((ps) => ps.slice()) });
   const target = Math.max(0, end - cyclesBefore);
-  while (!vm.done && vm.cycle < target) vm.step();
+  let deadline = performance.now() + 4;
+  while (!vm.done && vm.cycle < target) {
+    vm.step();
+    if ((vm.steps & 511) === 0 && performance.now() >= deadline) {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      if (state.liveGeneration !== generation) return;
+      deadline = performance.now() + 4;
+    }
+  }
+  if (state.liveGeneration !== generation) return;
   state.vm = vm;
+  installLive(vm);
   state.replaying = true;
   state.lastStep = null;
   state.alive = vm.warriors.map((w) => w.alive);
@@ -847,32 +894,25 @@ function startRunning() {
 }
 function stopRunning() {
   state.running = false;
+  state.liveEpoch++;
   $('runIcon').setAttribute('href', '#i-play');
   $('runLabel').textContent = 'Run';
   $('runBtn').setAttribute('aria-label', 'Run');
 }
 
-let finishing = false;
-function finishFast() {
+let finishing = null;
+async function finishFast() {
   if (!state.vm || state.vm.done || finishing) return;
   stopRunning();
-  finishing = true;
+  const token = { vm: state.vm, live: state.live }; finishing = token;
   $('finishBtn').disabled = true;
-  const vm = state.vm;               // a new round or new settings end this finish
-  const chunk = () => {
-    let more = false;
-    try {
-      if (state.vm !== vm) return;
-      stepVM(Infinity, 30);
-      sampleChart();
-      state.dirtyFrame = true;
-      more = !vm.done;
-    } finally {
-      if (more) setTimeout(chunk, 0);
-      else { finishing = false; $('finishBtn').disabled = false; }
+  try {
+    while (finishing === token && state.vm === token.vm && state.live === token.live && !token.vm.done) {
+      const n = await stepVM(Infinity);
+      if (!n) break;
+      await new Promise((resolve) => setTimeout(resolve, 0));
     }
-  };
-  chunk();
+  } finally { if (finishing === token) { finishing = null; $('finishBtn').disabled = false; } }
 }
 
 // ---------------------------------------------------------------- rendering loop
@@ -885,14 +925,13 @@ function sampleChart() {
 function frame() {
   requestAnimationFrame(frame);           // first, so one bad frame can't stop the loop
   const vm = state.vm;
-  if (vm && state.running && !vm.done) {
+  if (vm && state.running && !vm.done && !state.livePending) {
     state.carry += state.stepsPerFrame * vm.warriors.filter((w) => w.alive).length;
     const want = Math.floor(state.carry);
     state.carry -= want;
     if (want > 0) {
-      stepVM(want);
-      sampleChart();
-      state.dirtyFrame = true;
+      const epoch = state.liveEpoch;
+      stepVM(want, () => state.running && state.liveEpoch === epoch);
     }
   }
   const now = performance.now();
@@ -943,6 +982,7 @@ function updateCycle() {
   const vm = state.vm;
   const c = vm ? vm.cycle : 0;
   $('cycleOut').textContent = `Cycle ${c.toLocaleString()} / ${state.settings.maxCycles.toLocaleString()}`;
+  $('cycleOut').dataset.steps = String(vm?.steps ?? 0);
   $('cycleBar').style.width = `${Math.min(100, (c / state.settings.maxCycles) * 100)}%`;
 }
 
@@ -1060,19 +1100,21 @@ function log(html) {
 // ---------------------------------------------------------------- tournament
 
 function runTournamentUI() {
-  if (state.tournament) { state.tournament.cancel = true; return; }
+  if (state.tournament) { state.tournament.cancel = true; state.tournament.pool?.close(); return; }
   const roster = state.slots.map((s, i) => (s.compiled?.ok ? i : -1)).filter((i) => i >= 0);
   if (roster.length < 2) { $('tourResults').innerHTML = '<p class="muted small">Need at least two working warriors.</p>'; return; }
   const rounds = Math.max(1, Math.min(1000, parseInt($('tourRounds').value, 10) || 50));
   const warriors = roster.map((i) => state.slots[i].compiled);
   const stats = warriors.map((w) => ({ name: w.name, wins: 0, losses: 0, ties: 0, score: 0 }));
   const rng = mulberry32((Math.random() * 2 ** 32) >>> 0);
-  const settings = state.settings;   // the rules the warriors were compiled for
+  const settings = { ...state.settings };   // the rules the warriors were compiled for
   const pspaces = warriors.map(() => VM.freshPSpace(settings));
   const t = { cancel: false, done: 0 };
   state.tournament = t;
   const runner = createSimulationRunner({ cancelled: () => t.cancel });
   $('tourBtn').textContent = 'Stop';
+  $('tourBar').style.width = '0%';
+  $('tourResults').innerHTML = '<p class="muted small">Starting…</p>';
 
   const render = () => {
     const rows = stats.map((s, k) => ({ ...s, k })).sort((a, b) => b.score - a.score);
@@ -1082,7 +1124,40 @@ function runTournamentUI() {
     $('tourBar').style.width = `${(t.done / rounds) * 100}%`;
   };
 
-  const stop = () => { state.tournament = null; $('tourBtn').textContent = 'Run'; };
+  const stop = () => {
+    t.pool?.close();
+    if (state.tournament === t) {
+      state.tournament = null; $('tourBtn').textContent = 'Run';
+      if (t.cancel) $('tourResults').insertAdjacentHTML('beforeend', '<p class="muted small">Stopped.</p>');
+    }
+  };
+  // The shared GPU kernel owns two-warrior matches. Multiplayer rounds keep
+  // using the yielding CPU runner, with their existing scoring and P-space.
+  if (warriors.length === 2) {
+    const cancelled = () => t.cancel || state.tournament !== t;
+    (async () => {
+      try {
+        const pool = t.pool = await createBrowserMatchPool({ cancelled });
+        $('tourResults').innerHTML = `<p class="muted small">Running ${rounds} rounds on ${pool.backend.toUpperCase()}…</p>`;
+        const result = await pool.match({ a: warriors[0], b: warriors[1], settings: { ...settings, rounds }, details: true,
+          roundOptions: Array.from({ length: rounds }, (_, r) => ({ seed: Math.floor(rng() * 2 ** 32), firstTurn: r % 2 })) });
+        if (cancelled()) return;
+        result.rounds.forEach((res) => {
+          const points = roundPoints(2, res.survivors.length);
+          stats.forEach((s, k) => {
+            if (res.winner === k) { s.wins++; s.score += points; }
+            else if (res.winner === null) { s.ties++; s.score += points; }
+            else s.losses++;
+          });
+        });
+        t.done = result.rounds.length; render();
+        $('tourResults').insertAdjacentHTML('beforeend', `<p class="muted small">${pool.backend.toUpperCase()}</p>`);
+      } catch (error) {
+        if (!cancelled()) $('tourResults').innerHTML = `<p class="muted small">Stopped: ${escapeHtml(error.message)}</p>`;
+      } finally { stop(); }
+    })();
+    return;
+  }
   const next = async () => {
     const t0 = performance.now();
     try {
@@ -1148,6 +1223,7 @@ function renderCustomField() {
   if (key) $('setCoreSize').value = x * y * z;
 }
 function renderSettings() {
+  $('setLiveBackend').value = state.livePreference;
   for (const [k, id] of Object.entries(SETTING_INPUTS)) $(id).value = state.settings[k];
   const key = fieldKey(state.settings);
   $('setField').value = PRESET_FIELDS().includes(key) ? key : 'custom';
@@ -1162,13 +1238,14 @@ const battlefieldSettings = (field) => (field === 'ring'
   ? { ...DEFAULT_SETTINGS, ...fieldSettings('ring'), ...NO_HILL_RULES }
   : { ...NO_HILL_RULES, ...fieldSettings(field) });
 function applySettings(values) {
+  stopRunning(); discardLive();
   state.settings = { ...state.settings, ...values };
   state.view3d = undefined;          // each battlefield opens in its natural view
   safeSet(SETTINGS_KEY, state.settings);
   renderSettings();
   renderer.layout(state.settings.coreSize, state.vm?.geo ?? null);
   state.vm = null;
-  if (state.tournament) state.tournament.cancel = true;
+  if (state.tournament) { state.tournament.cancel = true; state.tournament.pool?.close(); }
   forgetRound();
   state.pinned = state.hover = -1;  // cells of the old core
   // All of them are compiling before any finishes, so the round starts once,
@@ -1331,13 +1408,11 @@ function wireEvents() {
 
   $('removeSlot').addEventListener('click', removeSlot);
   $('runBtn').addEventListener('click', () => (state.running ? stopRunning() : startRunning()));
-  $('stepBtn').addEventListener('click', () => {
+  $('stepBtn').addEventListener('click', async () => {
     stopRunning();
     if (!state.vm) return;
     if (state.vm.done) newRound();
-    stepVM(1);
-    sampleChart();
-    state.dirtyFrame = true;
+    await stepVM(1);
   });
   $('resetBtn').addEventListener('click', newRound);
   $('finishBtn').addEventListener('click', finishFast);
@@ -1481,6 +1556,8 @@ function wireEvents() {
     }
     const field = chosenField();
     if (!field) { $('setSizeX').focus(); return; }
+    state.livePreference = $('setLiveBackend').value === 'cpu' ? 'cpu' : 'auto';
+    safeSet(LIVE_BACKEND_KEY, state.livePreference);
     applySettings({ ...v, ...fieldSettings(field) });
   });
   $('setField').addEventListener('change', () => {

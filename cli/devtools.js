@@ -13,6 +13,7 @@ import { evolve } from '../tools/evolve.js';
 import { trainingProfiles, validateCandidates } from '../tools/training.js';
 import { roleOf, toRedcode } from '../tools/genes.js';
 import { makeGeometry } from '../src/engine/geometry.js';
+import { createMatchBackend } from '../src/engine/match-backend.js';
 
 const SYMPTOMS = {
   tie: 'ties (both alive at the end: no kill power)',
@@ -23,6 +24,22 @@ const SYMPTOMS = {
 };
 const progress = (json, text) => { if (!json && process.stderr.isTTY) process.stderr.write(`\r${text}\x1b[K`); };
 const done = (json) => { if (!json && process.stderr.isTTY) process.stderr.write('\r\x1b[K'); };
+
+async function battlePool(flags, h) {
+  const backend = flags.backend ?? 'cpu';
+  if (!['auto', 'cpu', 'gpu'].includes(backend)) h.usage('--backend takes auto, cpu or gpu');
+  const positive = (key) => {
+    if (flags[key] === undefined) return undefined;
+    const value = Number(flags[key]);
+    if (!Number.isSafeInteger(value) || value < 1) h.usage(`--${key} must be a positive integer`);
+    return value;
+  };
+  const threads = positive('threads'), batchSize = positive('gpu-batch');
+  return createMatchBackend({ backend, createCpu: () => createPool(threads),
+    createGpu: async () => (await import('../tools/gpu.js')).createGpuPool({ batchSize }),
+    onFallback: (reason) => { if (!flags.json) console.error(`Using CPU for battles: ${reason}`); },
+  });
+}
 
 async function opponents(h, settings, flags, exclude) {
   const json = !!flags.json;
@@ -53,7 +70,7 @@ export async function cmdHill(args, h) {
   const [w] = await h.loadAll(args._, settings, json);
   const field = await opponents(h, settings, args.flags, [w.name, path.basename(w.file)]);
   if (args.flags.hill) Object.assign(settings, hillSettingsFor(settings));
-  const pool = createPool();
+  const pool = await battlePool(args.flags, h);
   try {
     progress(json, `Playing ${field.length} opponents, ${settings.rounds} rounds each…`);
     const r = await evaluate(pool, w, field, { rounds: settings.rounds, seed: parseInt(args.flags.seed ?? '1', 10), settings, diagnose: true });
@@ -114,7 +131,7 @@ export async function cmdTune(args, h) {
   if (args.flags.hill) Object.assign(settings, hillSettingsFor(settings));
   const candidates = Math.max(1, parseInt(args.flags.candidates ?? '40', 10));
   const seeds = Math.max(1, parseInt(args.flags.seeds ?? '3', 10));
-  const pool = createPool();
+  const pool = await battlePool(args.flags, h);
   try {
     const r = await tune({ pool, source, field, settings, candidates, seeds, onProgress: (i, n) => progress(json, i <= candidates + 1 ? `Screening candidate ${i}/${candidates + 1}…` : `Checking finalists on ${seeds} fresh seeds (${i}/${n})…`) });
     done(json);
@@ -161,7 +178,6 @@ export async function cmdEvolve(args, h, { quiet = false } = {}) {
   const checkRounds = integer('check-rounds', 30);
   const seeds = integer('seeds', 3, 2);
   const finalists = integer('finalists', 6);
-  const threads = args.flags.threads === undefined ? undefined : integer('threads', 1);
   const out = args.flags.out ?? 'evolved';
   // Gene pool and starting opponents: the library, plus any warriors given.
   // --scratch: none of that. Random programs, scored only against each
@@ -194,7 +210,7 @@ export async function cmdEvolve(args, h, { quiet = false } = {}) {
   if (hill) Object.assign(settings, hillSettingsFor(settings));   // genomes keep the entry limit above
   if (!scratch && !field.length) h.usage('no opponents compiled for this battlefield');
   fs.mkdirSync(out, { recursive: true });
-  const pool = createPool(threads);
+  const pool = await battlePool(args.flags, h);
   try {
     if (!json) console.log(`Evolving${scratch ? ' from scratch' : ''}: ${generations} Red Queen generations, ${batches}x${batchSize} children each, ${scratch ? 'random programs, no gene pool' : `${sources.length} warriors in the gene pool`}, genomes up to ${maxLength} instructions${kings.length ? `, starting champions: ${kings.map((k) => k.name).join(', ')}` : ''}${heldOut.length ? `, ${heldOut.length} ${scratch ? 'library warriors and classics' : 'classics'} held out` : ''}\n`);
     const geo = settings.topology === 'torus' ? makeGeometry(settings) : null;
@@ -237,9 +253,10 @@ export async function cmdEvolve(args, h, { quiet = false } = {}) {
         dialect: settings.dialect, strategy: r.validation.improved ? `Validated improvement over starting baseline (${best.gain.toFixed(3)} points per round).` : 'Starting baseline retained: no finalist cleared the validation noise margin.' }));
       if (!json) console.log(`\nValidation: ${r.validation.improved ? 'improved version' : 'starting baseline retained'} -> ${path.join(out, 'best.red')}`);
     }
+    r.execution = pool.stats ? structuredClone(pool.stats) : { backend: 'cpu', threads: pool.size };
     fs.writeFileSync(path.join(out, 'evolve.json'), JSON.stringify(r, null, 1));
     if (quiet) return r;
-    if (json) { console.log(JSON.stringify({ ok: true, out, config: r.config, stats: r.stats, validation: r.validation, champions: r.champions.map(({ w, ...c }) => c), archive: r.archive, operators: r.operators }, null, 2)); return r; }
+    if (json) { console.log(JSON.stringify({ ok: true, out, config: r.config, execution: r.execution, stats: r.stats, validation: r.validation, champions: r.champions.map(({ w, ...c }) => c), archive: r.archive, operators: r.operators }, null, 2)); return r; }
     console.log(`\nFinal archive: ${r.archive.length} species, best first`);
     h.printTable(r.archive.slice(0, 12).map((x) => ({ Cell: x.cell, Usually: x.species.hint, Processes: x.species.processes, 'Cells run': x.species.coverage, Length: x.g.code.length, Fitness: x.fit.toFixed(2) })));
     console.log(`\nWritten to ${out}/: redqueen-N.red (each generation's champion), elite-pP-cC.red (best of each species), evolve.json.`);
@@ -357,9 +374,10 @@ export async function cmdPushoff(args, h) {
   const all = [...entries.map((w) => ({ w, entry: true })), ...hill.map((w) => ({ w, entry: false }))];
   const rounds = Math.max(2, parseInt(args.flags.rounds ?? '50', 10));
   if (!json) console.log(`Push-off: ${entries.length} entr${entries.length === 1 ? 'y' : 'ies'} + ${hill.length} hill warriors, ${rounds} rounds a pair (core ${settings.coreSize}, ${settings.maxProcesses} processes, ${settings.maxCycles} cycles)\n`);
-  const pool = createPool();
+  const pool = await battlePool(args.flags, h);
   try {
-    const { scores, results } = await roundRobin(pool, all.map((x) => strip(x.w)), { rounds, seed: parseInt(args.flags.seed ?? '1', 10), settings: hillSettings, self: variant.self || !!args.flags.save, onProgress: (i, n) => progress(json, `round robin: ${i}/${n}`) });
+    const seed = parseInt(args.flags.seed ?? '1', 10);
+    const { scores, results } = await roundRobin(pool, all.map((x) => strip(x.w)), { rounds, seed, settings: hillSettings, self: variant.self || !!args.flags.save, onProgress: (i, n) => progress(json, `round robin: ${i}/${n}`) });
     done(json);
     const warriors = all.map((x) => ({ name: x.w.name, entry: x.entry }));
     // --save: keep every result (self-fights too) to rank again with --load.

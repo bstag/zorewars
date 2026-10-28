@@ -14,7 +14,7 @@ export async function roundRobin(pool, warriors, { rounds = 50, seed = 1, settin
   const n = warriors.length;
   const scores = Array.from({ length: n }, () => new Array(n).fill(0));
   const results = Array.from({ length: n }, () => new Array(n).fill(null));
-  for (let i = 0; i < n; i++) {
+  const playRow = async (i) => {
     const first = self ? i : i + 1;
     const field = warriors.slice(first).map((w, k) => ({ name: String(first + k), group: 'x', w }));
     if (field.length) {
@@ -28,6 +28,16 @@ export async function roundRobin(pool, warriors, { rounds = 50, seed = 1, settin
         scores[j][i] = (3 * r.l + r.t) / rounds;
       });
     }
+  };
+  // GPU rows are independent: queue them together to fill batches. Row i
+  // uses seed+i; evaluate adds 7 times the opponent's index within that
+  // row's field. These are explicit seeds, with no shared random state.
+  // CPU execution keeps its existing bounded row-at-a-time workload.
+  if (pool.backend === 'gpu') {
+    let completed = 0;
+    await Promise.all(warriors.map((_, i) => playRow(i).then(() => onProgress(++completed, n))));
+  } else for (let i = 0; i < n; i++) {
+    await playRow(i);
     onProgress(i + 1, n);
   }
   return { scores, results };

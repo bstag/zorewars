@@ -134,6 +134,7 @@
           <output id="speedOut"></output>
         </label>
         <div class="cycle" id="cycleOut">Cycle 0</div>
+        <span class="muted small" id="liveBackendStatus" aria-live="polite"></span>
       </div>
       <div class="progress" aria-hidden="true"><div id="cycleBar"></div></div>
 
@@ -193,6 +194,7 @@
         <p class="muted small">King of the hill. Your warrior plays everyone on the ladder; finish in the top 10 and it stays, and the bottom warrior drops off. To stay on, a warrior has to keep up with everyone who got there first. Kept in this browser.</p>
         <div class="row">
           <button class="btn" id="ladderChallenge">Challenge</button>
+          <span class="muted small" id="ladderBackend" aria-live="polite"></span>
           <label class="field inline"><span>Rounds</span><input type="number" id="ladderRounds" min="2" max="200" value="20"></label>
         </div>
         <label class="field inline"><span>Rank by</span>
@@ -259,6 +261,7 @@
           </select>
         </label>
         <div class="settings-grid">
+          <label class="field"><span>Live battles</span><select id="setLiveBackend"><option value="auto">GPU when available</option><option value="cpu">CPU</option></select></label>
           <label class="field"><span>Core size</span><input type="number" id="setCoreSize" min="200" max="100000"></label>
           <label class="field"><span>Max cycles</span><input type="number" id="setMaxCycles" min="100" max="10000000"></label>
           <label class="field"><span>Max processes</span><input type="number" id="setMaxProcesses" min="1" max="100000"></label>

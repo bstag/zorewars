@@ -29,12 +29,13 @@ export const strip = (w) => ({
 });
 
 export function createPool(threads = os.cpus().length) {
-  let next = 0;
+  let next = 0, closed = false;
   const pending = new Map();
   const workers = Array.from({ length: Math.max(1, threads) }, () => {
     const w = new Worker(new URL('./worker.js', import.meta.url));
     w.on('message', (msg) => {
       const p = pending.get(msg.id);
+      if (!p) return;
       pending.delete(msg.id);
       if (msg.error) p.reject(new Error(msg.error)); else p.resolve(msg);
     });
@@ -44,13 +45,26 @@ export function createPool(threads = os.cpus().length) {
   return {
     size: workers.length,
     match(task) {
+      if (closed) return Promise.reject(new Error('CPU pool is closed'));
       const id = next++;
       return new Promise((resolve, reject) => {
         pending.set(id, { resolve, reject });
         workers[id % workers.length].postMessage({ ...task, id });
       });
     },
-    close() { for (const w of workers) w.terminate(); },
+    async measureSpecies(warrior, settings) {
+      if (closed) throw new Error('CPU pool is closed');
+      // Keep the original local CPU path: per-program worker messages are
+      // costly for scratch screening's many short-lived random programs.
+      return measureSpecies(warrior, settings);
+    },
+    close() {
+      if (closed) return;
+      closed = true;
+      for (const p of pending.values()) p.reject(new Error('CPU pool is closed'));
+      pending.clear();
+      for (const w of workers) w.terminate();
+    },
   };
 }
 

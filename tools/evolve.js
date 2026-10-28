@@ -98,6 +98,8 @@ export async function evolve({
     return { fit: -(places[0] + places.slice(1).reduce((s, p) => s + p, 0) / 2) + a.score / 100, places };
   };
 
+  const solo = async (w) => pool.measureSpecies ? pool.measureSpecies(strip(w), settings) : measureSpecies(w, settings);
+
   async function assess(input, round, origin = { operator: 'seed', parents: [] }) {
     let g = clone(input);
     if (!fits(g, maxLength)) return null;
@@ -110,29 +112,40 @@ export async function evolve({
       // Compile what will actually be exported. This also enforces P-space,
       // dialect and geometry limits instead of bypassing them via toWarrior.
       const w = compile(toRedcode(g, { coreSize, geo, dialect: entrySettings.dialect }), 'redcode', entrySettings);
-      const species = w.ok ? measureSpecies(w, settings) : null;
-      measured.set(id, species?.survives ? { w, species } : null);
+      measured.set(id, w.ok ? solo(w).then((species) => species.survives ? { w, species } : null) : null);
     }
-    const m = measured.get(id);
-    if (!m) { stats.rejected++; assessed.set(id, null); return null; }
-    const { w, species } = m;
-    const matchSeed = (seed + round * 1000) % 2147483646 + 1;
-    const field = base ? [...base.ws, { name: 'self', group: 'self', w: strip(w) }] : opponents;
-    const a = field.length ? await evaluate(pool, w, field, { rounds: evalRounds, seed: matchSeed, settings, diagnose: true }) : null;
-    let fit = a ? a[metric] : 0, places;
-    if (base) ({ fit, places } = placeOf(a));
-    const sym = a ? { ...a.symptoms } : {};
-    if (champions.length && !base) {
-      const c = await evaluate(pool, w, champions.map((x) => ({ name: x.name, group: 'champion', w: x.w })), { rounds: evalRounds, seed: matchSeed, settings, diagnose: true });
-      const vsChamps = c.rows.reduce((s, r) => s + r[rowMetric] - ((1 - tieValue) * r.t) / evalRounds, 0) / c.rows.length;
-      fit = a ? (a[metric] + vsChamps) / 2 : vsChamps;
-      for (const k in c.symptoms) sym[k] = (sym[k] ?? 0) + c.symptoms[k];
-    }
-    const result = { id, g, fit, sym, species, ...(places ? { places } : {}) };
-    stats.evaluated++;
-    assessed.set(id, result);
-    return result;
+    // Cache pending solo checks as well as pending fitness assessments.
+    // Duplicate births retain one measurement and the same cache accounting.
+    const pending = (async () => {
+      const m = await measured.get(id);
+      if (!m) { stats.rejected++; assessed.set(id, null); return null; }
+      const { w, species } = m;
+      const matchSeed = (seed + round * 1000) % 2147483646 + 1;
+      const field = base ? [...base.ws, { name: 'self', group: 'self', w: strip(w) }] : opponents;
+      const a = field.length ? await evaluate(pool, w, field, { rounds: evalRounds, seed: matchSeed, settings, diagnose: true }) : null;
+      let fit = a ? a[metric] : 0, places;
+      if (base) ({ fit, places } = placeOf(a));
+      const sym = a ? { ...a.symptoms } : {};
+      if (champions.length && !base) {
+        const c = await evaluate(pool, w, champions.map((x) => ({ name: x.name, group: 'champion', w: x.w })), { rounds: evalRounds, seed: matchSeed, settings, diagnose: true });
+        const vsChamps = c.rows.reduce((s, r) => s + r[rowMetric] - ((1 - tieValue) * r.t) / evalRounds, 0) / c.rows.length;
+        fit = a ? (a[metric] + vsChamps) / 2 : vsChamps;
+        for (const k in c.symptoms) sym[k] = (sym[k] ?? 0) + c.symptoms[k];
+      }
+      const result = { id, g, fit, sym, species, ...(places ? { places } : {}) };
+      stats.evaluated++;
+      assessed.set(id, result);
+      return result;
+    })();
+    assessed.set(id, pending);
+    return pending;
   }
+  const assessBatch = async (items, round) => {
+    if (pool.backend === 'gpu') return Promise.all(items.map(({ g, origin }) => assess(g, round, origin)));
+    const results = [];
+    for (const { g, origin } of items) results.push(await assess(g, round, origin));
+    return results;
+  };
   const place = (archive, x) => {
     if (!x) return false;
     const key = algorithm === 'ga' ? x.id : niche(x.species);
@@ -154,7 +167,7 @@ export async function evolve({
       const min = Math.min(4, maxLength);
       const g = randomGenome(min + Math.floor(random() * (maxLength - min + 1)), { coreSize, geo, random, pSpace: entrySettings.pSpace !== false && entrySettings.dialect !== '88' });
       if (settings.dialect === '88') g.code.forEach(legal88);
-      if (measureSpecies(toWarrior(g, 'Random', coreSize), settings).survives) alive.push(g);
+      if ((await solo(toWarrior(g, 'Random', coreSize))).survives) alive.push(g);
     }
     if (!alive.length) throw new Error('no random program survived alone');
     if (!champions.length) {
@@ -178,9 +191,9 @@ export async function evolve({
     // Warm start: last round's elites are judged again against the new opponents.
     const prev = round === 1 ? start : [...archive.values()].map((x) => x.g);
     archive = new Map();
-    for (const [i, g] of prev.entries()) {
-      const x = await assess(g, round, { operator: 'seed', parents: [],
-        ...(round === 1 && i < startingSources.length ? { source: startingSources[i].name } : {}) });
+    const seeds = await assessBatch(prev.map((g, i) => ({ g, origin: { operator: 'seed', parents: [],
+      ...(round === 1 && i < startingSources.length ? { source: startingSources[i].name } : {}) } })), round);
+    for (const [i, x] of seeds.entries()) {
       place(archive, x);
       if (round === 1 && i < originalCount && x && (!baseline || x.fit > baseline.fit)) baseline = x;
     }
@@ -204,8 +217,11 @@ export async function evolve({
         const child = ops[op](base);
         if (child && fits(child, maxLength)) kids.push({ child, op, parent: p, mate });
       }
-      for (const k of kids) {
-        const x = await assess(k.child, round, { operator: k.op, parents: [k.parent.id, ...(k.mate ? [k.mate.id] : [])] });
+      const evaluated = await assessBatch(kids.map((k) => ({ g: k.child,
+        origin: { operator: k.op, parents: [k.parent.id, ...(k.mate ? [k.mate.id] : [])] } })), round);
+      // Apply results and mutation credit in birth order, never finish order.
+      for (const [i, k] of kids.entries()) {
+        const x = evaluated[i];
         chooser.record(k.op, !!x && x.fit > k.parent.fit);
         if (place(archive, x)) placed++;
       }

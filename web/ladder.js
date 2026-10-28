@@ -11,9 +11,10 @@
 // Species map: where warriors sit by behaviour, measured alone in the core
 // (src/engine/species.js), with the library for comparison.
 
-import { compile, VM, mulberry32, roundPoints, smoothPoints, speciesAxes, speciesHint, inLibraryFor, pushOff } from '../src/engine/index.js';
+import { compile, mulberry32, roundPoints, smoothPoints, speciesAxes, speciesHint, inLibraryFor, pushOff } from '../src/engine/index.js';
 import { WARRIOR_COLORS } from './arena.js';
 import { createSimulationRunner } from './simulation.js';
+import { createBrowserMatchPool } from './matches.js';
 
 const LADDER_KEY = 'zorewars.ladder.v1';
 const LADDER_SIZE = 10;
@@ -99,60 +100,51 @@ export function initLadder(ctx) {
     $('ladderChallenge').disabled = !job && !name;
   }
 
-  // Plays the given pairs (a vs b) round by round in short time slices, so
-  // the page stays responsive. Stores each result for both sides.
+  // Submit independent matches together. Each match keeps its own sequential
+  // P-space rounds; results retain the browser's existing placement seeds.
   function play(pairs, rounds, onDone) {
-    const settings = ctx.settings();
+    const settings = { ...ctx.settings() };
     const rng = mulberry32((Math.random() * 2 ** 32) >>> 0);
     const total = pairs.length * rounds;
-    let k = 0, r = 0, done = 0, acc = null, pspaces = null;
-    job = { cancel: false };
-    const runner = createSimulationRunner({ cancelled: () => job.cancel || rulesKey(ctx.settings()) !== rulesKey(settings) });
-    render();                         // the button now says Stop
-    const step = async () => {
-      // New rules make this ladder's warriors and results stale: start over.
-      if (rulesKey(ctx.settings()) !== rulesKey(settings)) {
-        job = null;
-        ladder = load();
-        fillGaps();
-        render('The rules changed: setting the ladder up again for them…');
-        return;
-      }
+    let done = 0;
+    const ownJob = { cancel: false, pool: null };
+    job = ownJob;
+    const cancelled = () => job !== ownJob || ownJob.cancel || rulesKey(ctx.settings()) !== rulesKey(settings);
+    render();
+    const run = async () => {
       try {
-        await slice();
-      } catch (e) {
-        // A round that can't be played ends the run; the ladder stays usable.
-        job = null;
-        render(`Stopped: ${esc(e.message)}`);
-        return;
-      }
-      if (k < pairs.length && !job.cancel) { setTimeout(step, 0); return; }
-      const cancelled = job.cancel;
-      job = null;
-      save();
-      onDone(cancelled);
-    };
-    const slice = async () => {
-      const t0 = performance.now();
-      while (k < pairs.length && !job.cancel && performance.now() - t0 < 40) {
-        const [a, b] = pairs[k];
-        if (r === 0) { acc = { w: 0, l: 0, t: 0, smooth: 0, bs: 0 }; pspaces = [VM.freshPSpace(settings), VM.freshPSpace(settings)]; }
-        const res = await runner.round([compileMember(a), compileMember(b)], settings, { seed: Math.floor(rng() * 2 ** 32), firstTurn: r % 2, pspaces });
-        if (!res) break;
-        const points = roundPoints(2, res.survivors.length);
-        if (res.winner === 0) acc.w++; else if (res.winner === 1) acc.l++; else acc.t++;
-        acc.smooth += smoothPoints(res, 0, points, settings.maxCycles);
-        acc.bs += smoothPoints(res, 1, points, settings.maxCycles);
-        r++; done++;
-        if (r === rounds) {
-          ladder.results[key(a.id, b.id)] = { w: acc.w, l: acc.l, t: acc.t, smooth: acc.smooth, rounds };
-          ladder.results[key(b.id, a.id)] = { w: acc.l, l: acc.w, t: acc.t, smooth: acc.bs, rounds };
-          k++; r = 0;
+        const pool = ownJob.pool = await createBrowserMatchPool({ cancelled });
+        const badge = $('ladderBackend');
+        const showBackend = () => { if (badge) { badge.textContent = pool.backend.toUpperCase(); badge.title = pool.stats.fallbackReason ?? ''; } };
+        showBackend();
+        const tasks = pairs.map(([a, b]) => ({ a: compileMember(a), b: compileMember(b), settings: { ...settings, rounds }, details: true,
+          roundOptions: Array.from({ length: rounds }, (_, r) => ({ seed: Math.floor(rng() * 2 ** 32), firstTurn: r % 2 })) }));
+        await Promise.all(tasks.map(async (task, i) => {
+          const result = await pool.match(task);
+          if (cancelled()) return;
+          const [a, b] = pairs[i];
+          const smooth = (side) => result.rounds.reduce((sum, r) => sum + smoothPoints(r, side, roundPoints(2, r.survivors.length), settings.maxCycles), 0);
+          ladder.results[key(a.id, b.id)] = { w: result.w, l: result.l, t: result.t, smooth: smooth(0), rounds };
+          ladder.results[key(b.id, a.id)] = { w: result.l, l: result.w, t: result.t, smooth: smooth(1), rounds };
+          done += rounds;
+          $('ladderBar').style.width = `${(done / total) * 100}%`;
+          showBackend();
+        }));
+      } catch (error) {
+        if (!cancelled()) {
+          ownJob.cancel = true;
+          ownJob.error = error.message;
         }
+      } finally { ownJob.pool?.close(); }
+      if (job !== ownJob) return;
+      job = null;
+      if (rulesKey(ctx.settings()) !== rulesKey(settings)) {
+        ladder = load(); render('The rules changed: setting the ladder up again for them…'); fillGaps(); return;
       }
-      $('ladderBar').style.width = `${(done / total) * 100}%`;
+      save(); onDone(ownJob.cancel);
+      if (ownJob.error) render(`Stopped: ${esc(ownJob.error)}`);
     };
-    step();
+    run();
   }
 
   const roundsWanted = () => Math.max(2, Math.min(200, parseInt($('ladderRounds').value, 10) || 20));
@@ -170,7 +162,7 @@ export function initLadder(ctx) {
   }
 
   function challenge() {
-    if (job) { job.cancel = true; return; }
+    if (job) { job.cancel = true; job.pool?.close(); return; }
     const slot = ctx.activeSlot();
     if (!slot?.compiled?.ok) return;
     const w = slot.compiled;
@@ -229,6 +221,7 @@ export function initLadder(ctx) {
   });
   return {
     refresh: () => {
+      if (job && ladder.rules !== rulesKey(ctx.settings())) { job.cancel = true; job.pool?.close(); }
       if (!ladder || !$('ladderCard').open) return;
       if (!job && ladder.rules !== rulesKey(ctx.settings())) { ladder = load(); render(''); fillGaps(); return; }
       render();
