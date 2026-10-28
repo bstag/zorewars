@@ -1,0 +1,652 @@
+{
+  "sourceHash": "f2d2ce8472667d731942d595a24bda58c2a757aad74c52d03fc7430bd6d3e2d0",
+  "seed": 4242,
+  "settings": {
+    "coreSize": 55440,
+    "maxProcesses": 10000,
+    "maxCycles": 500000,
+    "maxLength": 200,
+    "minDistance": 200,
+    "pSpace": false,
+    "assertErrors": true
+  },
+  "entrySettings": {
+    "coreSize": 55440,
+    "maxProcesses": 10000,
+    "maxCycles": 500000,
+    "maxLength": 50,
+    "minDistance": 200,
+    "pSpace": false,
+    "assertErrors": true
+  },
+  "schedule": {
+    "candidates": 12,
+    "screenRounds": 4,
+    "checkRounds": 12,
+    "seeds": 3,
+    "generations": 2,
+    "batches": 2,
+    "batchSize": 12
+  },
+  "counts": {
+    "matches": 1645,
+    "battleRounds": 10932
+  },
+  "milliseconds": 199527,
+  "execution": {
+    "backend": "cpu",
+    "threads": 4,
+    "requestedBackend": "cpu"
+  },
+  "training": [
+    "dwarf.red",
+    "scanner.red",
+    "silk.red",
+    "vampire.red",
+    "twopass.red",
+    "stunner.red",
+    "quickscan.js",
+    "fastsilk.js"
+  ],
+  "heldOut": [
+    "seeker.red",
+    "oneshot.red",
+    "mice.red",
+    "gatekeeper.js",
+    "papercut.js",
+    "hydra.js"
+  ],
+  "excludedSoloFailures": [
+    "impring.red"
+  ],
+  "tuning": {
+    "improved": false,
+    "samples": [
+      {
+        "OPENING": 0,
+        "TRIGGER": 1,
+        "BACKWARD": 1,
+        "WAIT": 128,
+        "STEP": 997,
+        "HOP": 19000,
+        "SENSOR": 911
+      },
+      {
+        "OPENING": 1,
+        "TRIGGER": 0,
+        "BACKWARD": 1,
+        "WAIT": 405,
+        "STEP": 1391,
+        "HOP": 15276,
+        "SENSOR": 657
+      },
+      {
+        "OPENING": 0,
+        "TRIGGER": 0,
+        "BACKWARD": 1,
+        "WAIT": 570,
+        "STEP": 1561,
+        "HOP": 29969,
+        "SENSOR": 1791
+      },
+      {
+        "OPENING": 0,
+        "TRIGGER": 1,
+        "BACKWARD": 1,
+        "WAIT": 179,
+        "STEP": 1338,
+        "HOP": 6965,
+        "SENSOR": 545
+      },
+      {
+        "OPENING": 0,
+        "TRIGGER": 0,
+        "BACKWARD": 0,
+        "WAIT": 124,
+        "STEP": 455,
+        "HOP": 22841,
+        "SENSOR": 919
+      },
+      {
+        "OPENING": 1,
+        "TRIGGER": 0,
+        "BACKWARD": 1,
+        "WAIT": 298,
+        "STEP": 311,
+        "HOP": 41306,
+        "SENSOR": 379
+      },
+      {
+        "OPENING": 1,
+        "TRIGGER": 1,
+        "BACKWARD": 0,
+        "WAIT": 658,
+        "STEP": 110,
+        "HOP": 47786,
+        "SENSOR": 411
+      },
+      {
+        "OPENING": 0,
+        "TRIGGER": 1,
+        "BACKWARD": 1,
+        "WAIT": 381,
+        "STEP": 1484,
+        "HOP": 30187,
+        "SENSOR": 1716
+      },
+      {
+        "OPENING": 0,
+        "TRIGGER": 1,
+        "BACKWARD": 1,
+        "WAIT": 96,
+        "STEP": 791,
+        "HOP": 37306,
+        "SENSOR": 545
+      },
+      {
+        "OPENING": 1,
+        "TRIGGER": 1,
+        "BACKWARD": 1,
+        "WAIT": 181,
+        "STEP": 1656,
+        "HOP": 41716,
+        "SENSOR": 1420
+      },
+      {
+        "OPENING": 1,
+        "TRIGGER": 0,
+        "BACKWARD": 1,
+        "WAIT": 652,
+        "STEP": 902,
+        "HOP": 41648,
+        "SENSOR": 1778
+      },
+      {
+        "OPENING": 0,
+        "TRIGGER": 1,
+        "BACKWARD": 1,
+        "WAIT": 537,
+        "STEP": 1566,
+        "HOP": 29626,
+        "SENSOR": 897
+      },
+      {
+        "OPENING": 1,
+        "TRIGGER": 0,
+        "BACKWARD": 0,
+        "WAIT": 532,
+        "STEP": 1553,
+        "HOP": 9824,
+        "SENSOR": 907
+      }
+    ],
+    "seeds": [
+      1001,
+      2001,
+      3001
+    ],
+    "results": [
+      {
+        "P": {
+          "OPENING": 0,
+          "TRIGGER": 1,
+          "BACKWARD": 1,
+          "WAIT": 128,
+          "STEP": 997,
+          "HOP": 19000,
+          "SENSOR": 911
+        },
+        "screen": 1.023703125,
+        "current": true,
+        "score": 0.8159722222222223,
+        "smooth": 0.9689420138888889,
+        "gain": 0,
+        "margin": 0,
+        "significant": false
+      },
+      {
+        "P": {
+          "OPENING": 0,
+          "TRIGGER": 1,
+          "BACKWARD": 1,
+          "WAIT": 179,
+          "STEP": 1338,
+          "HOP": 6965,
+          "SENSOR": 545
+        },
+        "screen": 1.1410968750000001,
+        "current": false,
+        "score": 0.8194444444444443,
+        "smooth": 0.9550315972222223,
+        "gain": -0.013910416666666654,
+        "margin": 0.20493260245794667,
+        "significant": false
+      },
+      {
+        "P": {
+          "OPENING": 1,
+          "TRIGGER": 1,
+          "BACKWARD": 1,
+          "WAIT": 181,
+          "STEP": 1656,
+          "HOP": 41716,
+          "SENSOR": 1420
+        },
+        "screen": 1.0435343750000001,
+        "current": false,
+        "score": 0.795138888888889,
+        "smooth": 0.9300371527777779,
+        "gain": -0.0389048611111111,
+        "margin": 0.15558506171731787,
+        "significant": false
+      },
+      {
+        "P": {
+          "OPENING": 1,
+          "TRIGGER": 1,
+          "BACKWARD": 0,
+          "WAIT": 658,
+          "STEP": 110,
+          "HOP": 47786,
+          "SENSOR": 411
+        },
+        "screen": 1.3811968749999999,
+        "current": false,
+        "score": 0.8090277777777778,
+        "smooth": 0.926795138888889,
+        "gain": -0.04214687499999998,
+        "margin": 0.4252396355348953,
+        "significant": false
+      }
+    ]
+  },
+  "evolution": [
+    {
+      "name": "standard",
+      "config": {
+        "seed": 4242,
+        "algorithm": "map-elites",
+        "objective": "points",
+        "selection": "default",
+        "epsilon": "auto",
+        "descriptor": "species",
+        "archiveSize": 64,
+        "localSteps": 0,
+        "fieldRounds": 50,
+        "rounds": 2,
+        "batches": 2,
+        "batchSize": 12,
+        "evalRounds": 4,
+        "maxLength": 50,
+        "populationSize": 12,
+        "tieValue": 0.5,
+        "scratch": false,
+        "settings": {
+          "coreSize": 55440,
+          "maxCycles": 500000,
+          "maxProcesses": 10000,
+          "maxLength": 200,
+          "minDistance": 200,
+          "rounds": 1,
+          "pSpace": false,
+          "assertErrors": true
+        },
+        "entrySettings": {
+          "coreSize": 55440,
+          "maxCycles": 500000,
+          "maxProcesses": 10000,
+          "maxLength": 50,
+          "minDistance": 200,
+          "rounds": 1,
+          "pSpace": false,
+          "assertErrors": true
+        }
+      },
+      "stats": {
+        "evaluated": 61,
+        "cacheHits": 9,
+        "rejected": 26,
+        "matches": 515,
+        "battleRounds": 2076,
+        "localTried": 0,
+        "localImproved": 0
+      },
+      "lineage": {
+        "id": "873e65ed99fb6efb",
+        "generation": 1,
+        "operator": "procs",
+        "parents": [
+          "e97704a0dc2d915e"
+        ]
+      },
+      "validation": {
+        "objective": "points",
+        "fieldRounds": 50,
+        "partners": [],
+        "seeds": [
+          100004243,
+          100014243,
+          100024243
+        ],
+        "rounds": 12,
+        "opponents": [
+          {
+            "name": "Dwarf",
+            "group": "training",
+            "file": "dwarf.red",
+            "category": "Stone (bomber)"
+          },
+          {
+            "name": "Scout",
+            "group": "training",
+            "file": "scanner.red",
+            "category": "B-scanner"
+          },
+          {
+            "name": "Silk",
+            "group": "training",
+            "file": "silk.red",
+            "category": "Silk paper"
+          },
+          {
+            "name": "Vampire",
+            "group": "training",
+            "file": "vampire.red",
+            "category": "Vampire"
+          },
+          {
+            "name": "Two-Pass Clear",
+            "group": "training",
+            "file": "twopass.red",
+            "category": "Core clear"
+          },
+          {
+            "name": "Stunner",
+            "group": "training",
+            "file": "stunner.red",
+            "category": "Stun bomber"
+          },
+          {
+            "name": "Quickscan",
+            "group": "training",
+            "file": "quickscan.js",
+            "category": "Quickscan"
+          },
+          {
+            "name": "Fast Silk",
+            "group": "training",
+            "file": "fastsilk.js",
+            "category": "Silk paper"
+          }
+        ],
+        "improved": true,
+        "recommended": "873e65ed99fb6efb",
+        "baseline": "b7971cb6e2cde3c9",
+        "results": [
+          {
+            "id": "873e65ed99fb6efb",
+            "baseline": false,
+            "score": 1.53125,
+            "smooth": 1.6265826388888887,
+            "objectiveValue": 1.53125,
+            "gain": 0.7569444444444443,
+            "margin": 0.06076388888888894,
+            "improved": true
+          },
+          {
+            "id": "eaff94c5e9cba39c",
+            "baseline": false,
+            "score": 1.5069444444444446,
+            "smooth": 1.5653809027777779,
+            "objectiveValue": 1.5069444444444446,
+            "gain": 0.732638888888889,
+            "margin": 0.056922209412343765,
+            "improved": true
+          },
+          {
+            "id": "67cdf4245130e2d6",
+            "baseline": false,
+            "score": 1.2708333333333333,
+            "smooth": 1.3554475694444446,
+            "objectiveValue": 1.2708333333333333,
+            "gain": 0.4965277777777779,
+            "margin": 0.08680555555555552,
+            "improved": true
+          },
+          {
+            "id": "b7971cb6e2cde3c9",
+            "baseline": true,
+            "score": 0.7743055555555557,
+            "smooth": 0.9110513888888888,
+            "objectiveValue": 0.7743055555555557,
+            "gain": 0,
+            "margin": 0,
+            "improved": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "specialist",
+      "config": {
+        "seed": 4242,
+        "algorithm": "map-elites",
+        "objective": "points",
+        "selection": "lexicase",
+        "epsilon": "auto",
+        "descriptor": "outcomes",
+        "archiveSize": 16,
+        "localSteps": 1,
+        "fieldRounds": 50,
+        "rounds": 2,
+        "batches": 2,
+        "batchSize": 12,
+        "evalRounds": 4,
+        "maxLength": 50,
+        "populationSize": 12,
+        "tieValue": 0.5,
+        "scratch": false,
+        "settings": {
+          "coreSize": 55440,
+          "maxCycles": 500000,
+          "maxProcesses": 10000,
+          "maxLength": 200,
+          "minDistance": 200,
+          "rounds": 1,
+          "pSpace": false,
+          "assertErrors": true
+        },
+        "entrySettings": {
+          "coreSize": 55440,
+          "maxCycles": 500000,
+          "maxProcesses": 10000,
+          "maxLength": 50,
+          "minDistance": 200,
+          "rounds": 1,
+          "pSpace": false,
+          "assertErrors": true
+        }
+      },
+      "stats": {
+        "evaluated": 50,
+        "cacheHits": 13,
+        "rejected": 34,
+        "matches": 422,
+        "battleRounds": 1704,
+        "localTried": 0,
+        "localImproved": 0
+      },
+      "lineage": {
+        "id": "9e23bf7938ace676",
+        "generation": 2,
+        "operator": "procs",
+        "parents": [
+          "873e65ed99fb6efb"
+        ]
+      },
+      "validation": {
+        "objective": "points",
+        "fieldRounds": 50,
+        "partners": [],
+        "seeds": [
+          100004243,
+          100014243,
+          100024243
+        ],
+        "rounds": 12,
+        "opponents": [
+          {
+            "name": "Dwarf",
+            "group": "training",
+            "file": "dwarf.red",
+            "category": "Stone (bomber)"
+          },
+          {
+            "name": "Scout",
+            "group": "training",
+            "file": "scanner.red",
+            "category": "B-scanner"
+          },
+          {
+            "name": "Silk",
+            "group": "training",
+            "file": "silk.red",
+            "category": "Silk paper"
+          },
+          {
+            "name": "Vampire",
+            "group": "training",
+            "file": "vampire.red",
+            "category": "Vampire"
+          },
+          {
+            "name": "Two-Pass Clear",
+            "group": "training",
+            "file": "twopass.red",
+            "category": "Core clear"
+          },
+          {
+            "name": "Stunner",
+            "group": "training",
+            "file": "stunner.red",
+            "category": "Stun bomber"
+          },
+          {
+            "name": "Quickscan",
+            "group": "training",
+            "file": "quickscan.js",
+            "category": "Quickscan"
+          },
+          {
+            "name": "Fast Silk",
+            "group": "training",
+            "file": "fastsilk.js",
+            "category": "Silk paper"
+          }
+        ],
+        "improved": true,
+        "recommended": "9e23bf7938ace676",
+        "baseline": "b7971cb6e2cde3c9",
+        "results": [
+          {
+            "id": "9e23bf7938ace676",
+            "baseline": false,
+            "score": 1.5590277777777777,
+            "smooth": 1.6044864583333334,
+            "objectiveValue": 1.5590277777777777,
+            "gain": 0.7847222222222222,
+            "margin": 0.2052359447489039,
+            "improved": true
+          },
+          {
+            "id": "873e65ed99fb6efb",
+            "baseline": false,
+            "score": 1.53125,
+            "smooth": 1.6265826388888887,
+            "objectiveValue": 1.53125,
+            "gain": 0.7569444444444443,
+            "margin": 0.06076388888888894,
+            "improved": true
+          },
+          {
+            "id": "82fc39de4fcc5303",
+            "baseline": false,
+            "score": 1.496527777777778,
+            "smooth": 1.5400135416666665,
+            "objectiveValue": 1.496527777777778,
+            "gain": 0.7222222222222222,
+            "margin": 0.08680555555555572,
+            "improved": true
+          },
+          {
+            "id": "b7971cb6e2cde3c9",
+            "baseline": true,
+            "score": 0.7743055555555557,
+            "smooth": 0.9110513888888888,
+            "objectiveValue": 0.7743055555555557,
+            "gain": 0,
+            "margin": 0,
+            "improved": false
+          }
+        ]
+      }
+    }
+  ],
+  "comparisonSeeds": [
+    900001,
+    910001,
+    920001
+  ],
+  "comparison": [
+    {
+      "name": "original",
+      "length": 30,
+      "trainingScore": 0.7465277777777777,
+      "heldOutScore": 0.9398148148148148,
+      "trainingSmooth": 0.8933874999999999,
+      "heldOutSmooth": 1.149350925925926
+    },
+    {
+      "name": "tuned",
+      "length": 30,
+      "trainingScore": 0.7465277777777777,
+      "heldOutScore": 0.9398148148148148,
+      "trainingSmooth": 0.8933874999999999,
+      "heldOutSmooth": 1.149350925925926
+    },
+    {
+      "name": "standard",
+      "length": 16,
+      "trainingScore": 1.4340277777777777,
+      "heldOutScore": 0.3981481481481482,
+      "trainingSmooth": 1.5410402777777776,
+      "heldOutSmooth": 0.6130425925925925
+    },
+    {
+      "name": "specialist",
+      "length": 17,
+      "trainingScore": 1.4444444444444446,
+      "heldOutScore": 0.4259259259259259,
+      "trainingSmooth": 1.5165958333333334,
+      "heldOutSmooth": 0.6096412037037037
+    },
+    {
+      "name": "skip-opening",
+      "length": 30,
+      "trainingScore": 0.7777777777777777,
+      "heldOutScore": 1.0231481481481481,
+      "trainingSmooth": 0.9228565972222222,
+      "heldOutSmooth": 1.2265504629629629
+    },
+    {
+      "name": "clear-in-place",
+      "length": 30,
+      "trainingScore": 0.8854166666666666,
+      "heldOutScore": 1.037037037037037,
+      "trainingSmooth": 0.9900743055555555,
+      "heldOutSmooth": 1.2442824074074075
+    }
+  ],
+  "rawReport": "evolved/molting-94x-4242/report.json",
+  "limitations": "Small local-library experiment, not a public-hill benchmark or equal-compute algorithm comparison. Held-out opponents never select finalists. Standard compiled evolution need not preserve Molting behavior."
+}
