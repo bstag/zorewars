@@ -1,0 +1,111 @@
+{
+  "seed": 4242,
+  "rounds": 8,
+  "stats": [
+    {
+      "name": "Molting 94x",
+      "author": "ZoreWars",
+      "wins": 2,
+      "losses": 4,
+      "ties": 2,
+      "score": 8,
+      "smooth": 10.6555
+    },
+    {
+      "name": "Fast Silk",
+      "author": "ZoreWars",
+      "wins": 4,
+      "losses": 2,
+      "ties": 2,
+      "score": 14,
+      "smooth": 15.3624
+    }
+  ],
+  "symptoms": {
+    "suicide": 2,
+    "converted": 1,
+    "early": 0,
+    "late": 1,
+    "tie": 2
+  },
+  "outcomes": [
+    {
+      "round": 1,
+      "cycle": 356798,
+      "summary": "Fast Silk won at cycle 356,798. Molting 94x's last process ran DAT.F #0, #0 at 19006: a bomb Fast Silk wrote at cycle 356796 using MOV.I >-2, }-2 at 35616.",
+      "killingBlow": {
+        "victim": "Molting 94x",
+        "pc": 19006,
+        "cause": "enemyCode",
+        "writerPc": 35616
+      }
+    },
+    {
+      "round": 2,
+      "cycle": 384074,
+      "summary": "Molting 94x won at cycle 384,074. Fast Silk's last process ran DAT.F #0, #0 at 49024: a bomb Molting 94x wrote at cycle 384071 using MOV.I $6, <3 at 19006.",
+      "killingBlow": {
+        "victim": "Fast Silk",
+        "pc": 49024,
+        "cause": "enemyCode",
+        "writerPc": 19006
+      }
+    },
+    {
+      "round": 3,
+      "cycle": 240971,
+      "summary": "Fast Silk won at cycle 240,971. Molting 94x's last process ran DAT.F #0, #0 at 10737: its own code or data. Fast Silk has been converted: 8,878 of its 8,979 processes are running Molting 94x's program.",
+      "killingBlow": {
+        "victim": "Molting 94x",
+        "pc": 10737,
+        "cause": "ownCode",
+        "writerPc": 19006
+      }
+    },
+    {
+      "round": 4,
+      "cycle": 441193,
+      "summary": "Fast Silk won at cycle 441,193. Molting 94x's last process ran DAT.F $0, $0 at 19012: a bomb Fast Silk wrote at cycle 404063 using MOV.I >-3, }-3 at 39644.",
+      "killingBlow": {
+        "victim": "Molting 94x",
+        "pc": 19012,
+        "cause": "enemyCode",
+        "writerPc": 39644
+      }
+    },
+    {
+      "round": 5,
+      "cycle": 288810,
+      "summary": "Fast Silk won at cycle 288,810. Molting 94x's last process ran DAT.F #0, #0 at 19007: its own code or data.",
+      "killingBlow": {
+        "victim": "Molting 94x",
+        "pc": 19007,
+        "cause": "ownCode",
+        "writerPc": 19006
+      }
+    },
+    {
+      "round": 6,
+      "cycle": 500000,
+      "summary": "Tie: Molting 94x and Fast Silk were still running when the cycle limit (500,000) was reached.",
+      "killingBlow": null
+    },
+    {
+      "round": 7,
+      "cycle": 500000,
+      "summary": "Tie: Molting 94x and Fast Silk were still running when the cycle limit (500,000) was reached. Molting 94x has been converted: 10,000 of its 10,000 processes are running Fast Silk's program.",
+      "killingBlow": null
+    },
+    {
+      "round": 8,
+      "cycle": 297171,
+      "summary": "Molting 94x won at cycle 297,171. Fast Silk's last process ran DAT.F #0, #0 at 42045: a bomb Molting 94x wrote at cycle 287172 using MOV.I $6, <3 at 19006.",
+      "killingBlow": {
+        "victim": "Fast Silk",
+        "pc": 42045,
+        "cause": "enemyCode",
+        "writerPc": 19006
+      }
+    }
+  ]
+}

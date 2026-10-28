@@ -1,0 +1,1129 @@
+{
+  "schemaVersion": 2,
+  "blocks": [
+    {
+      "id": "opening-none",
+      "family": "control",
+      "purpose": "Skip attack and transfer immediately.",
+      "parameters": [],
+      "topology": "ring",
+      "dialects": [
+        "88",
+        "94"
+      ],
+      "rules": [
+        "88",
+        "94nop",
+        "lp",
+        "94x",
+        "94x-hill"
+      ],
+      "entry": "Exactly one process; private pointers and counters; pristine image.",
+      "processEffect": "One process throughout; SPL is written as a bomb, never executed locally.",
+      "cost": "Measured after assembly, including data and linking instructions.",
+      "searchLimits": "Current shared search: STEP 1..2048, HOP 256..7000, WAIT 1..768, STUN 1..4096. This deliberately bounded first grammar does not cover every landing site in 94x.",
+      "validation": {
+        "documented": true,
+        "behaviorTest": "test/blocks.test.js",
+        "benchmark": null
+      },
+      "limitations": "Solo behavior does not guarantee safety after enemy writes. No arbitrary block ordering or shared-state concurrency.",
+      "reads": [],
+      "writes": [],
+      "exit": "transition",
+      "sources": [
+        "examples/experimental-94x/molting-phases.js"
+      ],
+      "implementation": "tools/blocks/recipes.js",
+      "selectable": true
+    },
+    {
+      "id": "opening-bomber",
+      "family": "attack",
+      "purpose": "Bounded stride DAT bombing with own-image guard.",
+      "parameters": [
+        "STEP",
+        "WAIT"
+      ],
+      "topology": "ring",
+      "dialects": [
+        "88",
+        "94"
+      ],
+      "rules": [
+        "88",
+        "94nop",
+        "lp",
+        "94x",
+        "94x-hill"
+      ],
+      "entry": "Exactly one process; private pointers and counters; pristine image.",
+      "processEffect": "One process throughout; SPL is written as a bomb, never executed locally.",
+      "cost": "Measured after assembly, including data and linking instructions.",
+      "searchLimits": "Current shared search: STEP 1..2048, HOP 256..7000, WAIT 1..768, STUN 1..4096. This deliberately bounded first grammar does not cover every landing site in 94x.",
+      "validation": {
+        "documented": true,
+        "behaviorTest": "test/blocks.test.js",
+        "benchmark": null
+      },
+      "limitations": "Solo behavior does not guarantee safety after enemy writes. No arbitrary block ordering or shared-state concurrency.",
+      "reads": [
+        "probe",
+        "clock",
+        "clearKill"
+      ],
+      "writes": [
+        "probe.B",
+        "clock.B",
+        "core outside original image"
+      ],
+      "exit": "transition when timer reaches zero",
+      "sources": [
+        "warriors/dwarf.red",
+        "examples/experimental-94x/molting-phases.js"
+      ],
+      "implementation": "tools/blocks/recipes.js",
+      "selectable": true
+    },
+    {
+      "id": "opening-bscan",
+      "family": "scan",
+      "purpose": "B-field scan with bounded SPL bombing and timer.",
+      "parameters": [
+        "STEP",
+        "WAIT"
+      ],
+      "topology": "ring",
+      "dialects": [
+        "88",
+        "94"
+      ],
+      "rules": [
+        "88",
+        "94nop",
+        "lp",
+        "94x",
+        "94x-hill"
+      ],
+      "entry": "Exactly one process; private pointers and counters; pristine image.",
+      "processEffect": "One process throughout; SPL is written as a bomb, never executed locally.",
+      "cost": "Measured after assembly, including data and linking instructions.",
+      "searchLimits": "Current shared search: STEP 1..2048, HOP 256..7000, WAIT 1..768, STUN 1..4096. This deliberately bounded first grammar does not cover every landing site in 94x.",
+      "validation": {
+        "documented": true,
+        "behaviorTest": "test/blocks.test.js",
+        "benchmark": null
+      },
+      "limitations": "Solo behavior does not guarantee safety after enemy writes. No arbitrary block ordering or shared-state concurrency.",
+      "reads": [
+        "probe",
+        "clock",
+        "target.B",
+        "clearStun"
+      ],
+      "writes": [
+        "probe.B",
+        "clock.B",
+        "core outside original image"
+      ],
+      "exit": "transition when timer reaches zero",
+      "sources": [
+        "warriors/scanner.red",
+        "examples/experimental-94x/molting-phases.js"
+      ],
+      "implementation": "tools/blocks/recipes.js",
+      "selectable": true
+    },
+    {
+      "id": "relocate-copy",
+      "family": "movement",
+      "purpose": "Backward copy of a self-contained payload; jump once into the copy.",
+      "parameters": [
+        "HOP"
+      ],
+      "topology": "ring",
+      "dialects": [
+        "88",
+        "94"
+      ],
+      "rules": [
+        "88",
+        "94nop",
+        "lp",
+        "94x",
+        "94x-hill"
+      ],
+      "entry": "Exactly one process; private pointers and counters; pristine image.",
+      "processEffect": "One process throughout; SPL is written as a bomb, never executed locally.",
+      "cost": "Measured after assembly, including data and linking instructions.",
+      "searchLimits": "Current shared search: STEP 1..2048, HOP 256..7000, WAIT 1..768, STUN 1..4096. This deliberately bounded first grammar does not cover every landing site in 94x.",
+      "validation": {
+        "documented": true,
+        "behaviorTest": "test/blocks.test.js",
+        "benchmark": null
+      },
+      "limitations": "Solo behavior does not guarantee safety after enemy writes. No arbitrary block ordering or shared-state concurrency.",
+      "reads": [
+        "payload",
+        "copySource",
+        "copyTarget",
+        "copyCount"
+      ],
+      "writes": [
+        "copy pointers",
+        "copyCount.B",
+        "destination payload range"
+      ],
+      "exit": "payload at HOP",
+      "sources": [
+        "examples/experimental-94x/molting-phases.js",
+        "warriors/gemini.red"
+      ],
+      "implementation": "tools/blocks/recipes.js",
+      "selectable": true
+    },
+    {
+      "id": "enter-in-place",
+      "family": "control",
+      "purpose": "Enter the payload in the original image.",
+      "parameters": [],
+      "topology": "ring",
+      "dialects": [
+        "88",
+        "94"
+      ],
+      "rules": [
+        "88",
+        "94nop",
+        "lp",
+        "94x",
+        "94x-hill"
+      ],
+      "entry": "Exactly one process; private pointers and counters; pristine image.",
+      "processEffect": "One process throughout; SPL is written as a bomb, never executed locally.",
+      "cost": "Measured after assembly, including data and linking instructions.",
+      "searchLimits": "Current shared search: STEP 1..2048, HOP 256..7000, WAIT 1..768, STUN 1..4096. This deliberately bounded first grammar does not cover every landing site in 94x.",
+      "validation": {
+        "documented": true,
+        "behaviorTest": "test/blocks.test.js",
+        "benchmark": null
+      },
+      "limitations": "Solo behavior does not guarantee safety after enemy writes. No arbitrary block ordering or shared-state concurrency.",
+      "reads": [],
+      "writes": [],
+      "exit": "payload",
+      "sources": [
+        "examples/experimental-94x/molting-phases.js"
+      ],
+      "implementation": "tools/blocks/recipes.js",
+      "selectable": true
+    },
+    {
+      "id": "clear-dat",
+      "family": "clear",
+      "purpose": "Repeated bounded DAT passes excluding the complete active payload.",
+      "parameters": [
+        "BACKWARD"
+      ],
+      "topology": "ring",
+      "dialects": [
+        "88",
+        "94"
+      ],
+      "rules": [
+        "88",
+        "94nop",
+        "lp",
+        "94x",
+        "94x-hill"
+      ],
+      "entry": "Exactly one process; private pointers and counters; pristine image.",
+      "processEffect": "One process throughout; SPL is written as a bomb, never executed locally.",
+      "cost": "Measured after assembly, including data and linking instructions.",
+      "searchLimits": "Current shared search: STEP 1..2048, HOP 256..7000, WAIT 1..768, STUN 1..4096. This deliberately bounded first grammar does not cover every landing site in 94x.",
+      "validation": {
+        "documented": true,
+        "behaviorTest": "test/blocks.test.js",
+        "benchmark": null
+      },
+      "limitations": "Solo behavior does not guarantee safety after enemy writes. No arbitrary block ordering or shared-state concurrency.",
+      "reads": [
+        "clearKill",
+        "clearPtr",
+        "remaining"
+      ],
+      "writes": [
+        "clearPtr.B",
+        "remaining.B",
+        "core outside active payload"
+      ],
+      "exit": "terminal loop",
+      "sources": [
+        "examples/experimental-94x/molting-phases.js"
+      ],
+      "implementation": "tools/blocks/recipes.js",
+      "selectable": true
+    },
+    {
+      "id": "clear-stun-dat",
+      "family": "clear",
+      "purpose": "Short or full SPL pass, then reset pointer for repeated DAT passes.",
+      "parameters": [
+        "BACKWARD",
+        "PHASE",
+        "STUN"
+      ],
+      "topology": "ring",
+      "dialects": [
+        "88",
+        "94"
+      ],
+      "rules": [
+        "88",
+        "94nop",
+        "lp",
+        "94x",
+        "94x-hill"
+      ],
+      "entry": "Exactly one process; private pointers and counters; pristine image.",
+      "processEffect": "One process throughout; SPL is written as a bomb, never executed locally.",
+      "cost": "Measured after assembly, including data and linking instructions.",
+      "searchLimits": "Current shared search: STEP 1..2048, HOP 256..7000, WAIT 1..768, STUN 1..4096. This deliberately bounded first grammar does not cover every landing site in 94x.",
+      "validation": {
+        "documented": true,
+        "behaviorTest": "test/blocks.test.js",
+        "benchmark": null
+      },
+      "limitations": "Solo behavior does not guarantee safety after enemy writes. No arbitrary block ordering or shared-state concurrency.",
+      "reads": [
+        "clearStun",
+        "clearKill",
+        "clearPtr",
+        "remaining"
+      ],
+      "writes": [
+        "clearPtr.B",
+        "remaining.B",
+        "core outside active payload"
+      ],
+      "exit": "terminal loop",
+      "sources": [
+        "warriors/twopass.red",
+        "examples/experimental-94x/molting-phases.js"
+      ],
+      "implementation": "tools/blocks/recipes.js",
+      "selectable": true
+    },
+    {
+      "id": "marker-trigger",
+      "family": "trigger",
+      "purpose": "Change phase when a remote marker is damaged, with timer fallback.",
+      "sources": [
+        "examples/experimental-94x/molting-phases.js"
+      ],
+      "requirements": "Existing Molting verifier covers the whole template; extract sensor placement and marker ownership contracts.",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "compare-scan",
+      "family": "scan",
+      "purpose": "Compare two cells to detect an opponent.",
+      "sources": [
+        "warriors/seeker.red",
+        "warriors/gatekeeper.js"
+      ],
+      "requirements": "Preserve scan offsets, skip/jump coupling, self-scan exclusion and attack handoff.",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "quickscan",
+      "family": "scan",
+      "purpose": "Unrolled early probes followed by a targeting decoder.",
+      "sources": [
+        "warriors/quickscan.js",
+        "warriors/blitz.js"
+      ],
+      "requirements": "Tables, decoder constants and probe order form one linked section; measure instruction cost.",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "one-shot",
+      "family": "scan",
+      "purpose": "Switch from scanning to a clear on the first hit.",
+      "sources": [
+        "warriors/oneshot.red",
+        "docs/monowire-mechanisms.md",
+        "docs/monowire-review.md"
+      ],
+      "requirements": "Scanner and clear must agree on pointer interpretation and direction. Preserve probe spacing, bomb-selector offsets and self-modifying phase transition; test targets at either probe, first-write location, queue growth and decoy/boot coupling.",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "vampire-fang",
+      "family": "capture",
+      "purpose": "Place a jump that transfers opponent processes to a pit.",
+      "sources": [
+        "warriors/vampire.red"
+      ],
+      "requirements": "Fang and pit are linked by destination-relative arithmetic; copying a fang alone changes its target.",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "paper-copy",
+      "family": "replication",
+      "purpose": "Copy a body and launch it elsewhere.",
+      "sources": [
+        "warriors/mice.red"
+      ],
+      "requirements": "Per-copy counters, initialization and parent/child scheduling; safe overlap must be tested.",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "silk-launch",
+      "family": "replication",
+      "purpose": "SPL/MOV replication using cooperating processes.",
+      "sources": [
+        "warriors/silk.red",
+        "warriors/fastsilk.js",
+        "warriors/papercut.js"
+      ],
+      "requirements": "Process count and scheduling are part of the interface; incompatible with single-process clear counters.",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "imp-spiral",
+      "family": "survival",
+      "purpose": "Launch mutually supporting imp processes.",
+      "sources": [
+        "warriors/impring.red",
+        "warriors/stoneimp.red"
+      ],
+      "requirements": "Core-relative stride congruences, launch order and process budget; impring fails solo on 94x.",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "decrement-gate",
+      "family": "defense",
+      "purpose": "Damage advancing imps or streams through a guarded cell.",
+      "sources": [
+        "warriors/gatekeeper.js",
+        "warriors/stunner.red"
+      ],
+      "requirements": "Gate location and timing must match the clear; no blanket anti-imp guarantee.",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "pspace-selector",
+      "family": "control",
+      "purpose": "Select behavior using persistent round outcomes.",
+      "sources": [
+        "warriors/chameleon.js",
+        "warriors/bandit.js"
+      ],
+      "requirements": "Requires P-space-enabled profile, cell ownership and multi-round tests. Forbidden under 88, lp, 94nop and 94x.",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "torus-turn",
+      "family": "geometry",
+      "purpose": "Turn and sweep across axes.",
+      "sources": [
+        "warriors/plane/raster.js",
+        "warriors/volume/battleship.js"
+      ],
+      "requirements": "TRN extension, heading on entry/exit, dimension-specific bounds; not ring code.",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "torus-replicate",
+      "family": "replication",
+      "purpose": "Distribute copies through a volume.",
+      "sources": [
+        "warriors/volume/scatter.js",
+        "warriors/volume/slant.js"
+      ],
+      "requirements": "Vector offsets, heading inheritance, copy overlap and geometry-specific cycle coverage.",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "anti-clear-relocation",
+      "family": "movement",
+      "purpose": "Watch a clear front and jump behind it.",
+      "sources": [
+        "warriors/volume/leapfrog.js",
+        "warriors/volume/adapter.js",
+        "warriors/prototypes/README.md"
+      ],
+      "requirements": "Sensor direction, latency and safe landing; preserve negative hybrid evidence in prototypes README.",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "worker-refresher",
+      "family": "deployment",
+      "purpose": "Repeatedly deploy and refresh compact attacks at derived destinations.",
+      "sources": [
+        "docs/planar-other-mechanisms.md",
+        "docs/planar-warrior-history.json"
+      ],
+      "requirements": "Derive destination sequence including pointer side effects; protect controller; verify worker revisit, useful restored execution, process growth and starvation.",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "numeric-disruptor",
+      "family": "attack",
+      "purpose": "Damage numeric fields with a stream before a controlled phase handoff.",
+      "sources": [
+        "docs/planar-other-review.md",
+        "docs/planar-warrior-history.json"
+      ],
+      "requirements": "Measure actual write addresses and opponent effects; protect pointer and payload; verify repeated wraps and handoff; do not infer whole-instruction bombing from operand damage.",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "mutual-repair",
+      "family": "repair",
+      "purpose": "Partners detect supported damage, terminate stray processes, restore and restart each other.",
+      "sources": [
+        "docs/planar-other-mechanisms.md",
+        "docs/planar-warrior-history.json"
+      ],
+      "requirements": "Derive reciprocal offsets and checksums from emitted code; test opcode/A/B faults, simultaneous damage and kill-wait-restore queue cleanup; historical 4000 spacing is not portable to 94x.",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "schedule-watchdog",
+      "family": "trigger",
+      "purpose": "Use process scheduling and balanced pointer side effects to detect missing work.",
+      "sources": [
+        "docs/planar-other-mechanisms.md",
+        "docs/planar-warrior-history.json"
+      ],
+      "requirements": "Specify queue order, entry locations and process count; inject lost/extra processes; measure trigger latency and real fallback behavior. Demo JMP 0 is not an attack.",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "execution-report-bomb",
+      "family": "sensor",
+      "purpose": "A bomb executed by an opponent reports its location to an in-round receiver.",
+      "sources": [
+        "docs/planar-other-mechanisms.md",
+        "docs/planar-warrior-history.json"
+      ],
+      "requirements": "New no-P-space adaptation required; derive bomb/receiver relocation; distinguish execution reports from passive writes; reject stale reports; validate usefulness against multiple enemy components.",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "fang-backtrack",
+      "family": "counterattack",
+      "purpose": "Use a vampire fang to infer and attack its remote target.",
+      "sources": [
+        "docs/planar-other-mechanisms.md",
+        "docs/planar-warrior-history.json"
+      ],
+      "requirements": "Validate relative-address reconstruction, false targets and no-fang behavior; original failed solo and needs a bounded lifetime or revised protection before composition.",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "airbag-stone",
+      "family": "leader-derived",
+      "purpose": "Booted bomber with a separate clear fallback. Preserve boot layout, remote bomb installation and process schedule.",
+      "sources": [
+        "docs/hill-leaders.md"
+      ],
+      "requirements": "Exact copies at both destinations; Bomb stream and self-transition occur; Fallback clear runs after trigger damage",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "concurrent-boot",
+      "family": "leader-derived",
+      "purpose": "Child execution overlaps parent copying. Copy order and scheduling are parameters only within proven bounds.",
+      "sources": [
+        "docs/hill-leaders.md"
+      ],
+      "requirements": "Child never reaches an uncopied cell; Parent erases pointers only after last copy; Wrapping and process-limit cases",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "parallel-paper-stone",
+      "family": "leader-derived",
+      "purpose": "Launcher and two payloads form one process-aware recipe before any further splitting.",
+      "sources": [
+        "docs/hill-leaders.md"
+      ],
+      "requirements": "Launch wave count; Both relocated payloads match; Paper replicates while stone bombs without shared-counter interference",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "lp-bombing-paper",
+      "family": "leader-derived",
+      "purpose": "Replication and bombing with a bounded process queue and copy spans larger than visible code.",
+      "sources": [
+        "docs/hill-leaders.md"
+      ],
+      "requirements": "First and second generation copy bounds; Eight-process scheduling; Attack side effects; No unintentional total process loss",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "stone-imp-boot",
+      "family": "leader-derived",
+      "purpose": "Joint placement of stone, bomb, imp seeds and continuous launcher; stride must satisfy core congruence.",
+      "sources": [
+        "docs/hill-leaders.md"
+      ],
+      "requirements": "Imp launch order; Remote bomb present before stone starts; Full-cycle survival and actual kills against controls",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    },
+    {
+      "id": "distributed-stones",
+      "family": "leader-derived",
+      "purpose": "Multiple compact stones with explicit separation and process allocation.",
+      "sources": [
+        "docs/hill-leaders.md"
+      ],
+      "requirements": "Each stone initialized; Mutual bombing exclusion; Spawn tree reaches every intended copy",
+      "selectable": false,
+      "validation": {
+        "documented": true,
+        "behaviorTest": null,
+        "benchmark": null
+      },
+      "limitation": "Source reference only. Section boundaries are not a proven independent block."
+    }
+  ],
+  "standaloneRecipes": [
+    {
+      "id": "lifeboat-94x",
+      "family": "stone with watchdog clear",
+      "purpose": "Original contiguous boot, bounded guarded bomber and independent fallback process.",
+      "implementation": "tools/blocks/airbag.js",
+      "runner": "scripts/evolve-airbag.js",
+      "rules": [
+        "94x"
+      ],
+      "topology": "ring",
+      "instructions": "27/31 in place; 33/37 booted",
+      "parameters": [
+        "BOOT",
+        "STEP",
+        "HOP",
+        "SHOTS",
+        "BOMB",
+        "BACKWARD",
+        "PHASE",
+        "STUN"
+      ],
+      "entry": "One process at boot or launch; private pristine payload.",
+      "processes": "Two processes during bombing; stone retires intentionally, watchdog exclusively owns clear counters; one final survivor in tested scenarios.",
+      "writes": "Bombs and clear exclude the complete active payload. Probe, timers, flag and clear pointers are private mutable B-fields.",
+      "transitions": [
+        "bombing count exhausted",
+        "watched stone instruction changed",
+        "watchdog timeout"
+      ],
+      "validation": {
+        "behaviorTest": "test/airbag.test.js",
+        "benchmark": "docs/lifeboat-results.json"
+      },
+      "composition": "A separate process-aware grammar; do not splice into single-process clear recipes.",
+      "limitations": "Tests cover exact copy, attack coverage and selected injected faults, not arbitrary enemy damage. Initial search did not establish general superiority."
+    },
+    {
+      "id": "compass-94x",
+      "family": "comparison scanner with decoy layout and guarded clear",
+      "purpose": "Original single-process scanner; Monowire-inspired layout contracts with explicit bounded phases.",
+      "implementation": "tools/blocks/compass.js",
+      "runner": "cli/block-devtools.js",
+      "rules": [
+        "94x"
+      ],
+      "topology": "ring",
+      "instructions": "20/26 payload + 0..18 decoys + optional 6-instruction boot; 44 by default",
+      "parameters": [
+        "BOOT",
+        "HOP",
+        "STEP",
+        "GAP",
+        "START",
+        "SCANS",
+        "PHASE",
+        "STUN",
+        "DECOYS",
+        "DECOY"
+      ],
+      "entry": "One process enters scan after an exact copy, or scans in place.",
+      "processes": "Exactly one process in pristine operation; SPL bombs are data until opponents execute them.",
+      "writes": "Scanner probe A/B and private counters; clear excludes the complete active protected span.",
+      "transitions": [
+        "unequal probe pair",
+        "scan timer exhausted",
+        "bounded SPL phase exhausted"
+      ],
+      "validation": {
+        "behaviorTest": "test/block-evolve.test.js",
+        "benchmark": "docs/block-evolution-results.json"
+      },
+      "composition": "Boot destination is payload-origin relative; decoys lie outside the copied payload. Handoff and clear share one pointer.",
+      "limitations": "Equal probes can hide targets. No general enemy-damage guarantee. Initial screen did not establish a decoy advantage."
+    }
+  ],
+  "runnableRecipes": [
+    {
+      "id": "clear",
+      "defaults": {
+        "OPENING": 1,
+        "RELOCATE": 1,
+        "BACKWARD": 0,
+        "PHASE": 1,
+        "WAIT": 128,
+        "STEP": 997,
+        "HOP": 4096,
+        "STUN": 64
+      },
+      "space": {
+        "OPENING": [
+          0,
+          2
+        ],
+        "RELOCATE": [
+          0,
+          1
+        ],
+        "BACKWARD": [
+          0,
+          1
+        ],
+        "PHASE": [
+          0,
+          2
+        ],
+        "WAIT": [
+          1,
+          768
+        ],
+        "STEP": [
+          1,
+          2048
+        ],
+        "HOP": [
+          256,
+          7000
+        ],
+        "STUN": [
+          1,
+          4096
+        ]
+      },
+      "rules": [
+        "88",
+        "94nop",
+        "lp",
+        "94x",
+        "94x-hill"
+      ],
+      "numeric": [
+        "WAIT",
+        "STEP",
+        "HOP",
+        "STUN"
+      ],
+      "blocks": [
+        "opening-none",
+        "opening-bomber",
+        "opening-bscan",
+        "relocate-copy",
+        "enter-in-place",
+        "clear-dat",
+        "clear-stun-dat"
+      ]
+    },
+    {
+      "id": "lifeboat",
+      "defaults": {
+        "BOOT": 1,
+        "STEP": 2019,
+        "HOP": 18000,
+        "SHOTS": 512,
+        "BOMB": 0,
+        "BACKWARD": 0,
+        "PHASE": 1,
+        "STUN": 64
+      },
+      "space": {
+        "BOOT": [
+          0,
+          1
+        ],
+        "STEP": [
+          1,
+          55439
+        ],
+        "HOP": [
+          256,
+          54000
+        ],
+        "SHOTS": [
+          16,
+          2048
+        ],
+        "BOMB": [
+          0,
+          1
+        ],
+        "BACKWARD": [
+          0,
+          1
+        ],
+        "PHASE": [
+          0,
+          2
+        ],
+        "STUN": [
+          1,
+          4096
+        ]
+      },
+      "rules": [
+        "94x"
+      ],
+      "numeric": [
+        "STEP",
+        "HOP",
+        "SHOTS",
+        "STUN"
+      ],
+      "blocks": [
+        "relocate-copy",
+        "bounded-stone",
+        "schedule-watchdog",
+        "clear-dat",
+        "clear-stun-dat"
+      ]
+    },
+    {
+      "id": "compass",
+      "defaults": {
+        "BOOT": 1,
+        "HOP": 18000,
+        "STEP": 997,
+        "GAP": 7,
+        "START": 512,
+        "SCANS": 64,
+        "PHASE": 1,
+        "STUN": 32,
+        "DECOYS": 12,
+        "DECOY": 1
+      },
+      "space": {
+        "BOOT": [
+          0,
+          1
+        ],
+        "HOP": [
+          256,
+          54000
+        ],
+        "STEP": [
+          1,
+          55439
+        ],
+        "GAP": [
+          1,
+          31
+        ],
+        "START": [
+          128,
+          54000
+        ],
+        "SCANS": [
+          8,
+          256
+        ],
+        "PHASE": [
+          0,
+          2
+        ],
+        "STUN": [
+          1,
+          512
+        ],
+        "DECOYS": [
+          0,
+          18
+        ],
+        "DECOY": [
+          0,
+          2
+        ]
+      },
+      "rules": [
+        "94x"
+      ],
+      "numeric": [
+        "HOP",
+        "STEP",
+        "GAP",
+        "START",
+        "SCANS",
+        "STUN",
+        "DECOYS"
+      ],
+      "blocks": [
+        "relocate-copy",
+        "comparison-scan",
+        "scan-to-clear",
+        "decoy-layout",
+        "guarded-clear"
+      ]
+    }
+  ],
+  "familyReadiness": [
+    {
+      "category": "stone",
+      "recipes": [
+        "clear",
+        "lifeboat"
+      ],
+      "status": "partial",
+      "nextContract": "Bounded bombing; probe ownership and timeout."
+    },
+    {
+      "category": "paper",
+      "recipes": [],
+      "status": "reference",
+      "nextContract": "Copy extent, source restoration, child entry and parent/child queue schedule."
+    },
+    {
+      "category": "vamp",
+      "recipes": [],
+      "status": "reference",
+      "nextContract": "Fang destination arithmetic, enemy entry, pit ownership and pit safety."
+    },
+    {
+      "category": "stun",
+      "recipes": [
+        "clear",
+        "lifeboat",
+        "compass"
+      ],
+      "status": "partial",
+      "nextContract": "Bomb count, process contract and guaranteed pristine transition to DAT."
+    },
+    {
+      "category": "imp",
+      "recipes": [],
+      "status": "reference",
+      "nextContract": "Core-specific modular step, launch order and process count."
+    },
+    {
+      "category": "clear",
+      "recipes": [
+        "clear",
+        "lifeboat",
+        "compass"
+      ],
+      "status": "partial",
+      "nextContract": "Pointer frame, own-image exclusion, phase boundaries and wrap."
+    },
+    {
+      "category": "scan",
+      "recipes": [
+        "clear",
+        "compass"
+      ],
+      "status": "partial",
+      "nextContract": "Probe width, both target cases, equal-cell blind spots and self-exclusion."
+    },
+    {
+      "category": "pspace",
+      "recipes": [],
+      "status": "reference",
+      "nextContract": "Separate P-space-enabled profile, cell ownership and between-round state."
+    },
+    {
+      "category": "boot",
+      "recipes": [
+        "clear",
+        "lifeboat",
+        "compass"
+      ],
+      "status": "partial",
+      "nextContract": "Exact copied payload, entry process and destination independent of other section lengths."
+    },
+    {
+      "category": "gate",
+      "recipes": [],
+      "status": "reference",
+      "nextContract": "Gate position, decrement timing and interaction with imp launch/clear processes."
+    },
+    {
+      "category": "quick",
+      "recipes": [],
+      "status": "reference",
+      "nextContract": "Probe table, decoding arithmetic and correct pointer at handoff."
+    },
+    {
+      "category": "factor",
+      "recipes": [],
+      "status": "reference",
+      "nextContract": "Special-purpose factoring benchmark and correctness objective; not a combat block."
+    },
+    {
+      "category": "sort",
+      "recipes": [],
+      "status": "reference",
+      "nextContract": "Special-purpose sorting benchmark and correctness objective; not a combat block."
+    },
+    {
+      "category": "other",
+      "recipes": [
+        "lifeboat"
+      ],
+      "status": "partial",
+      "nextContract": "Watchdog admitted only inside Lifeboat; repair, numeric disruption and reporting remain candidates."
+    }
+  ]
+}

@@ -4,6 +4,7 @@
 .github
 .claude
 .wrangler
+.worktrees
 .dev.vars*
 .env*
 node_modules
@@ -11,6 +12,9 @@ cli
 scripts
 tools
 evolved
+docs
+imported
+__pycache__
 test
 worker
 examples

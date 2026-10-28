@@ -1,0 +1,4053 @@
+{
+  "sourceHash": "a3db5e99f371c56c1e1d019532091948264cec941f9c9e74bb2df4186b75d3dd",
+  "settings": {
+    "coreSize": 55440,
+    "maxProcesses": 10000,
+    "maxCycles": 500000,
+    "maxLength": 200,
+    "minDistance": 200,
+    "pSpace": false,
+    "assertErrors": true
+  },
+  "entrySettings": {
+    "coreSize": 55440,
+    "maxProcesses": 10000,
+    "maxCycles": 500000,
+    "maxLength": 50,
+    "minDistance": 200,
+    "pSpace": false,
+    "assertErrors": true
+  },
+  "seeds": [
+    1400001,
+    1410001,
+    1420001,
+    1430001
+  ],
+  "rounds": 12,
+  "phases": [
+    {
+      "name": "full",
+      "PHASE": 2,
+      "STUN": 512
+    },
+    {
+      "name": "short64",
+      "PHASE": 1,
+      "STUN": 64
+    },
+    {
+      "name": "short512",
+      "PHASE": 1,
+      "STUN": 512
+    },
+    {
+      "name": "short4096",
+      "PHASE": 1,
+      "STUN": 4096
+    },
+    {
+      "name": "dat",
+      "PHASE": 0,
+      "STUN": 512
+    }
+  ],
+  "parents": [
+    {
+      "seed": 4242,
+      "P": {
+        "OPENING": 0,
+        "TRIGGER": 0,
+        "BACKWARD": 0,
+        "WAIT": 211,
+        "STEP": 1338,
+        "HOP": 6965,
+        "SENSOR": 545
+      },
+      "sourceHash": "3952b1a6259d97a973af9ac15d270a5c731c809f54802b7de4eadf374b4fd93f"
+    },
+    {
+      "seed": 4243,
+      "P": {
+        "OPENING": 1,
+        "TRIGGER": 1,
+        "BACKWARD": 0,
+        "WAIT": 128,
+        "STEP": 997,
+        "HOP": 5540,
+        "SENSOR": 911
+      },
+      "sourceHash": "d2cf54d2730c86016194c25db9db24ab14c0c6586958d4c59b45e07f6c37a27c"
+    }
+  ],
+  "development": [
+    "dwarf.red",
+    "scanner.red",
+    "silk.red",
+    "vampire.red",
+    "twopass.red",
+    "stunner.red",
+    "quickscan.js",
+    "fastsilk.js",
+    "seeker.red",
+    "oneshot.red",
+    "mice.red",
+    "gatekeeper.js",
+    "papercut.js",
+    "hydra.js"
+  ],
+  "comparison": [
+    "imp.red",
+    "gemini.red",
+    "sweeper.red",
+    "stoneimp.red",
+    "evolvedsilk.red",
+    "redqueen.red",
+    "carpet.js",
+    "blitz.js"
+  ],
+  "variants": [
+    {
+      "name": "4242-full",
+      "P": {
+        "OPENING": 0,
+        "TRIGGER": 0,
+        "BACKWARD": 0,
+        "WAIT": 211,
+        "STEP": 1338,
+        "HOP": 6965,
+        "SENSOR": 545,
+        "PHASE": 2,
+        "STUN": 512
+      },
+      "length": 27,
+      "verification": {
+        "ok": true,
+        "payloadLength": 13,
+        "observations": [
+          {
+            "base": 0,
+            "disturbed": false,
+            "movedAt": 871,
+            "killLastExecuted": 499999,
+            "survives": true,
+            "phase": {
+              "stunWrites": 55427,
+              "firstKillAt": 111730,
+              "turnsToKill": 110859
+            }
+          },
+          {
+            "base": 55419,
+            "disturbed": false,
+            "movedAt": 871,
+            "killLastExecuted": 499999,
+            "survives": true,
+            "phase": {
+              "stunWrites": 55427,
+              "firstKillAt": 111730,
+              "turnsToKill": 110859
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "4242-short64",
+      "P": {
+        "OPENING": 0,
+        "TRIGGER": 0,
+        "BACKWARD": 0,
+        "WAIT": 211,
+        "STEP": 1338,
+        "HOP": 6965,
+        "SENSOR": 545,
+        "PHASE": 1,
+        "STUN": 64
+      },
+      "length": 27,
+      "verification": {
+        "ok": true,
+        "payloadLength": 13,
+        "observations": [
+          {
+            "base": 0,
+            "disturbed": false,
+            "movedAt": 871,
+            "killLastExecuted": 500000,
+            "survives": true,
+            "phase": {
+              "stunWrites": 64,
+              "firstKillAt": 1004,
+              "turnsToKill": 133
+            }
+          },
+          {
+            "base": 55419,
+            "disturbed": false,
+            "movedAt": 871,
+            "killLastExecuted": 500000,
+            "survives": true,
+            "phase": {
+              "stunWrites": 64,
+              "firstKillAt": 1004,
+              "turnsToKill": 133
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "4242-short512",
+      "P": {
+        "OPENING": 0,
+        "TRIGGER": 0,
+        "BACKWARD": 0,
+        "WAIT": 211,
+        "STEP": 1338,
+        "HOP": 6965,
+        "SENSOR": 545,
+        "PHASE": 1,
+        "STUN": 512
+      },
+      "length": 27,
+      "verification": {
+        "ok": true,
+        "payloadLength": 13,
+        "observations": [
+          {
+            "base": 0,
+            "disturbed": false,
+            "movedAt": 871,
+            "killLastExecuted": 500000,
+            "survives": true,
+            "phase": {
+              "stunWrites": 512,
+              "firstKillAt": 1900,
+              "turnsToKill": 1029
+            }
+          },
+          {
+            "base": 55419,
+            "disturbed": false,
+            "movedAt": 871,
+            "killLastExecuted": 500000,
+            "survives": true,
+            "phase": {
+              "stunWrites": 512,
+              "firstKillAt": 1900,
+              "turnsToKill": 1029
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "4242-short4096",
+      "P": {
+        "OPENING": 0,
+        "TRIGGER": 0,
+        "BACKWARD": 0,
+        "WAIT": 211,
+        "STEP": 1338,
+        "HOP": 6965,
+        "SENSOR": 545,
+        "PHASE": 1,
+        "STUN": 4096
+      },
+      "length": 27,
+      "verification": {
+        "ok": true,
+        "payloadLength": 13,
+        "observations": [
+          {
+            "base": 0,
+            "disturbed": false,
+            "movedAt": 871,
+            "killLastExecuted": 500000,
+            "survives": true,
+            "phase": {
+              "stunWrites": 4096,
+              "firstKillAt": 9068,
+              "turnsToKill": 8197
+            }
+          },
+          {
+            "base": 55419,
+            "disturbed": false,
+            "movedAt": 871,
+            "killLastExecuted": 500000,
+            "survives": true,
+            "phase": {
+              "stunWrites": 4096,
+              "firstKillAt": 9068,
+              "turnsToKill": 8197
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "4242-dat",
+      "P": {
+        "OPENING": 0,
+        "TRIGGER": 0,
+        "BACKWARD": 0,
+        "WAIT": 211,
+        "STEP": 1338,
+        "HOP": 6965,
+        "SENSOR": 545,
+        "PHASE": 0,
+        "STUN": 512
+      },
+      "length": 23,
+      "verification": {
+        "ok": true,
+        "payloadLength": 9,
+        "observations": [
+          {
+            "base": 0,
+            "disturbed": false,
+            "movedAt": 863,
+            "killLastExecuted": 500000,
+            "survives": true,
+            "phase": {
+              "stunWrites": 0,
+              "firstKillAt": 866,
+              "turnsToKill": 3
+            }
+          },
+          {
+            "base": 55419,
+            "disturbed": false,
+            "movedAt": 863,
+            "killLastExecuted": 500000,
+            "survives": true,
+            "phase": {
+              "stunWrites": 0,
+              "firstKillAt": 866,
+              "turnsToKill": 3
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "4243-full",
+      "P": {
+        "OPENING": 1,
+        "TRIGGER": 1,
+        "BACKWARD": 0,
+        "WAIT": 128,
+        "STEP": 997,
+        "HOP": 5540,
+        "SENSOR": 911,
+        "PHASE": 2,
+        "STUN": 512
+      },
+      "length": 31,
+      "verification": {
+        "ok": true,
+        "payloadLength": 13,
+        "observations": [
+          {
+            "base": 0,
+            "disturbed": false,
+            "movedAt": 668,
+            "killLastExecuted": 500000,
+            "survives": true,
+            "phase": {
+              "stunWrites": 55427,
+              "firstKillAt": 111527,
+              "turnsToKill": 110859
+            }
+          },
+          {
+            "base": 55419,
+            "disturbed": false,
+            "movedAt": 668,
+            "killLastExecuted": 500000,
+            "survives": true,
+            "phase": {
+              "stunWrites": 55427,
+              "firstKillAt": 111527,
+              "turnsToKill": 110859
+            }
+          },
+          {
+            "base": 0,
+            "disturbed": true,
+            "movedAt": 33,
+            "killLastExecuted": 499999,
+            "survives": true,
+            "phase": {
+              "stunWrites": 55427,
+              "firstKillAt": 110892,
+              "turnsToKill": 110859
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "4243-short64",
+      "P": {
+        "OPENING": 1,
+        "TRIGGER": 1,
+        "BACKWARD": 0,
+        "WAIT": 128,
+        "STEP": 997,
+        "HOP": 5540,
+        "SENSOR": 911,
+        "PHASE": 1,
+        "STUN": 64
+      },
+      "length": 31,
+      "verification": {
+        "ok": true,
+        "payloadLength": 13,
+        "observations": [
+          {
+            "base": 0,
+            "disturbed": false,
+            "movedAt": 668,
+            "killLastExecuted": 499999,
+            "survives": true,
+            "phase": {
+              "stunWrites": 64,
+              "firstKillAt": 801,
+              "turnsToKill": 133
+            }
+          },
+          {
+            "base": 55419,
+            "disturbed": false,
+            "movedAt": 668,
+            "killLastExecuted": 499999,
+            "survives": true,
+            "phase": {
+              "stunWrites": 64,
+              "firstKillAt": 801,
+              "turnsToKill": 133
+            }
+          },
+          {
+            "base": 0,
+            "disturbed": true,
+            "movedAt": 33,
+            "killLastExecuted": 500000,
+            "survives": true,
+            "phase": {
+              "stunWrites": 64,
+              "firstKillAt": 166,
+              "turnsToKill": 133
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "4243-short512",
+      "P": {
+        "OPENING": 1,
+        "TRIGGER": 1,
+        "BACKWARD": 0,
+        "WAIT": 128,
+        "STEP": 997,
+        "HOP": 5540,
+        "SENSOR": 911,
+        "PHASE": 1,
+        "STUN": 512
+      },
+      "length": 31,
+      "verification": {
+        "ok": true,
+        "payloadLength": 13,
+        "observations": [
+          {
+            "base": 0,
+            "disturbed": false,
+            "movedAt": 668,
+            "killLastExecuted": 499999,
+            "survives": true,
+            "phase": {
+              "stunWrites": 512,
+              "firstKillAt": 1697,
+              "turnsToKill": 1029
+            }
+          },
+          {
+            "base": 55419,
+            "disturbed": false,
+            "movedAt": 668,
+            "killLastExecuted": 499999,
+            "survives": true,
+            "phase": {
+              "stunWrites": 512,
+              "firstKillAt": 1697,
+              "turnsToKill": 1029
+            }
+          },
+          {
+            "base": 0,
+            "disturbed": true,
+            "movedAt": 33,
+            "killLastExecuted": 500000,
+            "survives": true,
+            "phase": {
+              "stunWrites": 512,
+              "firstKillAt": 1062,
+              "turnsToKill": 1029
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "4243-short4096",
+      "P": {
+        "OPENING": 1,
+        "TRIGGER": 1,
+        "BACKWARD": 0,
+        "WAIT": 128,
+        "STEP": 997,
+        "HOP": 5540,
+        "SENSOR": 911,
+        "PHASE": 1,
+        "STUN": 4096
+      },
+      "length": 31,
+      "verification": {
+        "ok": true,
+        "payloadLength": 13,
+        "observations": [
+          {
+            "base": 0,
+            "disturbed": false,
+            "movedAt": 668,
+            "killLastExecuted": 499999,
+            "survives": true,
+            "phase": {
+              "stunWrites": 4096,
+              "firstKillAt": 8865,
+              "turnsToKill": 8197
+            }
+          },
+          {
+            "base": 55419,
+            "disturbed": false,
+            "movedAt": 668,
+            "killLastExecuted": 499999,
+            "survives": true,
+            "phase": {
+              "stunWrites": 4096,
+              "firstKillAt": 8865,
+              "turnsToKill": 8197
+            }
+          },
+          {
+            "base": 0,
+            "disturbed": true,
+            "movedAt": 33,
+            "killLastExecuted": 500000,
+            "survives": true,
+            "phase": {
+              "stunWrites": 4096,
+              "firstKillAt": 8230,
+              "turnsToKill": 8197
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "4243-dat",
+      "P": {
+        "OPENING": 1,
+        "TRIGGER": 1,
+        "BACKWARD": 0,
+        "WAIT": 128,
+        "STEP": 997,
+        "HOP": 5540,
+        "SENSOR": 911,
+        "PHASE": 0,
+        "STUN": 512
+      },
+      "length": 27,
+      "verification": {
+        "ok": true,
+        "payloadLength": 9,
+        "observations": [
+          {
+            "base": 0,
+            "disturbed": false,
+            "movedAt": 660,
+            "killLastExecuted": 499999,
+            "survives": true,
+            "phase": {
+              "stunWrites": 0,
+              "firstKillAt": 663,
+              "turnsToKill": 3
+            }
+          },
+          {
+            "base": 55419,
+            "disturbed": false,
+            "movedAt": 660,
+            "killLastExecuted": 499999,
+            "survives": true,
+            "phase": {
+              "stunWrites": 0,
+              "firstKillAt": 663,
+              "turnsToKill": 3
+            }
+          },
+          {
+            "base": 0,
+            "disturbed": true,
+            "movedAt": 25,
+            "killLastExecuted": 500000,
+            "survives": true,
+            "phase": {
+              "stunWrites": 0,
+              "firstKillAt": 28,
+              "turnsToKill": 3
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "results": [
+    {
+      "name": "4242-full",
+      "parent": 4242,
+      "phase": "full",
+      "kind": "molting",
+      "id": "2fe1f201de69c757",
+      "length": 27,
+      "developmentScore": 0.9880952380952379,
+      "comparisonScore": 1.15625,
+      "developmentSeeds": [
+        1.0833333333333333,
+        1,
+        0.8988095238095238,
+        0.9702380952380951
+      ],
+      "comparisonSeeds": [
+        1.3854166666666667,
+        1.03125,
+        1.1458333333333333,
+        1.0624999999999998
+      ],
+      "developmentOpponents": [
+        {
+          "name": "Dwarf",
+          "points": 1.125
+        },
+        {
+          "name": "Scout",
+          "points": 0.9583333333333333
+        },
+        {
+          "name": "Silk",
+          "points": 0.4791666666666667
+        },
+        {
+          "name": "Vampire",
+          "points": 1.2916666666666667
+        },
+        {
+          "name": "Two-Pass Clear",
+          "points": 1.4375
+        },
+        {
+          "name": "Stunner",
+          "points": 1.2916666666666665
+        },
+        {
+          "name": "Quickscan",
+          "points": 0.6875000000000001
+        },
+        {
+          "name": "Fast Silk",
+          "points": 0.3541666666666667
+        },
+        {
+          "name": "Seeker",
+          "points": 0.5833333333333333
+        },
+        {
+          "name": "One-Shot",
+          "points": 0.8125
+        },
+        {
+          "name": "Mice",
+          "points": 2.7708333333333335
+        },
+        {
+          "name": "Gatekeeper",
+          "points": 0.8125
+        },
+        {
+          "name": "Papercut",
+          "points": 0.5625
+        },
+        {
+          "name": "Hydra",
+          "points": 0.6666666666666666
+        }
+      ],
+      "comparisonOpponents": [
+        {
+          "name": "Imp",
+          "points": 1
+        },
+        {
+          "name": "Gemini",
+          "points": 1.8958333333333335
+        },
+        {
+          "name": "Sweeper",
+          "points": 1.9375
+        },
+        {
+          "name": "Stone and Imp",
+          "points": 0.7083333333333334
+        },
+        {
+          "name": "Evolved Silk",
+          "points": 0.6041666666666667
+        },
+        {
+          "name": "Red Queen",
+          "points": 1.4375
+        },
+        {
+          "name": "Carpet Bomber",
+          "points": 1.375
+        },
+        {
+          "name": "Blitz",
+          "points": 0.2916666666666667
+        }
+      ]
+    },
+    {
+      "name": "4242-full-in-place",
+      "parent": 4242,
+      "phase": "full",
+      "kind": "in-place",
+      "id": "99403470b794e974",
+      "length": 27,
+      "developmentScore": 0.9404761904761904,
+      "comparisonScore": 1.171875,
+      "developmentSeeds": [
+        0.9464285714285713,
+        0.9464285714285713,
+        0.982142857142857,
+        0.8869047619047619
+      ],
+      "comparisonSeeds": [
+        1.1145833333333333,
+        1.1354166666666667,
+        1.2812500000000002,
+        1.15625
+      ],
+      "developmentOpponents": [
+        {
+          "name": "Dwarf",
+          "points": 1.0416666666666667
+        },
+        {
+          "name": "Scout",
+          "points": 0.7708333333333334
+        },
+        {
+          "name": "Silk",
+          "points": 0.5625
+        },
+        {
+          "name": "Vampire",
+          "points": 1.3333333333333335
+        },
+        {
+          "name": "Two-Pass Clear",
+          "points": 1.3125
+        },
+        {
+          "name": "Stunner",
+          "points": 1.1041666666666665
+        },
+        {
+          "name": "Quickscan",
+          "points": 0.625
+        },
+        {
+          "name": "Fast Silk",
+          "points": 0.8958333333333333
+        },
+        {
+          "name": "Seeker",
+          "points": 1
+        },
+        {
+          "name": "One-Shot",
+          "points": 0.375
+        },
+        {
+          "name": "Mice",
+          "points": 2.8125
+        },
+        {
+          "name": "Gatekeeper",
+          "points": 0.3125
+        },
+        {
+          "name": "Papercut",
+          "points": 0.6041666666666666
+        },
+        {
+          "name": "Hydra",
+          "points": 0.4166666666666667
+        }
+      ],
+      "comparisonOpponents": [
+        {
+          "name": "Imp",
+          "points": 1
+        },
+        {
+          "name": "Gemini",
+          "points": 2.2083333333333335
+        },
+        {
+          "name": "Sweeper",
+          "points": 1.4375
+        },
+        {
+          "name": "Stone and Imp",
+          "points": 0.7083333333333334
+        },
+        {
+          "name": "Evolved Silk",
+          "points": 0.8333333333333333
+        },
+        {
+          "name": "Red Queen",
+          "points": 1.4375
+        },
+        {
+          "name": "Carpet Bomber",
+          "points": 1.0833333333333333
+        },
+        {
+          "name": "Blitz",
+          "points": 0.6666666666666667
+        }
+      ]
+    },
+    {
+      "name": "plain-full",
+      "phase": "full",
+      "kind": "plain",
+      "id": "6ddaf32ad264fb18",
+      "length": 13,
+      "developmentScore": 0.9732142857142857,
+      "comparisonScore": 1.1041666666666667,
+      "developmentSeeds": [
+        0.9285714285714286,
+        1.005952380952381,
+        0.9880952380952381,
+        0.9702380952380952
+      ],
+      "comparisonSeeds": [
+        1.03125,
+        1.1354166666666667,
+        1.1770833333333335,
+        1.0729166666666667
+      ],
+      "developmentOpponents": [
+        {
+          "name": "Dwarf",
+          "points": 0.8958333333333333
+        },
+        {
+          "name": "Scout",
+          "points": 0.6458333333333333
+        },
+        {
+          "name": "Silk",
+          "points": 0.7708333333333333
+        },
+        {
+          "name": "Vampire",
+          "points": 1.3333333333333335
+        },
+        {
+          "name": "Two-Pass Clear",
+          "points": 1.3125
+        },
+        {
+          "name": "Stunner",
+          "points": 1.2291666666666665
+        },
+        {
+          "name": "Quickscan",
+          "points": 0.5833333333333334
+        },
+        {
+          "name": "Fast Silk",
+          "points": 0.7916666666666666
+        },
+        {
+          "name": "Seeker",
+          "points": 1
+        },
+        {
+          "name": "One-Shot",
+          "points": 0.375
+        },
+        {
+          "name": "Mice",
+          "points": 2.8125
+        },
+        {
+          "name": "Gatekeeper",
+          "points": 0.75
+        },
+        {
+          "name": "Papercut",
+          "points": 0.6458333333333333
+        },
+        {
+          "name": "Hydra",
+          "points": 0.47916666666666663
+        }
+      ],
+      "comparisonOpponents": [
+        {
+          "name": "Imp",
+          "points": 1
+        },
+        {
+          "name": "Gemini",
+          "points": 1.8333333333333335
+        },
+        {
+          "name": "Sweeper",
+          "points": 1.4375
+        },
+        {
+          "name": "Stone and Imp",
+          "points": 0.6041666666666666
+        },
+        {
+          "name": "Evolved Silk",
+          "points": 0.7708333333333334
+        },
+        {
+          "name": "Red Queen",
+          "points": 1.4375
+        },
+        {
+          "name": "Carpet Bomber",
+          "points": 1.2916666666666667
+        },
+        {
+          "name": "Blitz",
+          "points": 0.45833333333333337
+        }
+      ]
+    },
+    {
+      "name": "4242-short64",
+      "parent": 4242,
+      "phase": "short64",
+      "kind": "molting",
+      "id": "b914aa45bfe5b9d1",
+      "length": 27,
+      "developmentScore": 0.9226190476190476,
+      "comparisonScore": 1.3541666666666667,
+      "developmentSeeds": [
+        1,
+        0.9285714285714287,
+        0.857142857142857,
+        0.9047619047619048
+      ],
+      "comparisonSeeds": [
+        1.3645833333333335,
+        1.34375,
+        1.46875,
+        1.2395833333333333
+      ],
+      "developmentOpponents": [
+        {
+          "name": "Dwarf",
+          "points": 1.625
+        },
+        {
+          "name": "Scout",
+          "points": 2.125
+        },
+        {
+          "name": "Silk",
+          "points": 0.16666666666666666
+        },
+        {
+          "name": "Vampire",
+          "points": 1.8958333333333335
+        },
+        {
+          "name": "Two-Pass Clear",
+          "points": 1.4375
+        },
+        {
+          "name": "Stunner",
+          "points": 1.3125
+        },
+        {
+          "name": "Quickscan",
+          "points": 1.1875
+        },
+        {
+          "name": "Fast Silk",
+          "points": 0.125
+        },
+        {
+          "name": "Seeker",
+          "points": 0.8125
+        },
+        {
+          "name": "One-Shot",
+          "points": 0.8125
+        },
+        {
+          "name": "Mice",
+          "points": 0.3125
+        },
+        {
+          "name": "Gatekeeper",
+          "points": 0.875
+        },
+        {
+          "name": "Papercut",
+          "points": 0.08333333333333333
+        },
+        {
+          "name": "Hydra",
+          "points": 0.14583333333333331
+        }
+      ],
+      "comparisonOpponents": [
+        {
+          "name": "Imp",
+          "points": 1
+        },
+        {
+          "name": "Gemini",
+          "points": 2.479166666666667
+        },
+        {
+          "name": "Sweeper",
+          "points": 1.9375
+        },
+        {
+          "name": "Stone and Imp",
+          "points": 1.4375
+        },
+        {
+          "name": "Evolved Silk",
+          "points": 0.33333333333333337
+        },
+        {
+          "name": "Red Queen",
+          "points": 1.4375
+        },
+        {
+          "name": "Carpet Bomber",
+          "points": 2.1041666666666665
+        },
+        {
+          "name": "Blitz",
+          "points": 0.10416666666666666
+        }
+      ]
+    },
+    {
+      "name": "4242-short64-in-place",
+      "parent": 4242,
+      "phase": "short64",
+      "kind": "in-place",
+      "id": "0940164000555534",
+      "length": 27,
+      "developmentScore": 0.8258928571428572,
+      "comparisonScore": 1.2682291666666667,
+      "developmentSeeds": [
+        0.8273809523809524,
+        0.7738095238095237,
+        0.8750000000000001,
+        0.8273809523809524
+      ],
+      "comparisonSeeds": [
+        1.3020833333333335,
+        1.2916666666666667,
+        1.3541666666666667,
+        1.1250000000000002
+      ],
+      "developmentOpponents": [
+        {
+          "name": "Dwarf",
+          "points": 1.375
+        },
+        {
+          "name": "Scout",
+          "points": 2.2083333333333335
+        },
+        {
+          "name": "Silk",
+          "points": 0.1875
+        },
+        {
+          "name": "Vampire",
+          "points": 1.9375
+        },
+        {
+          "name": "Two-Pass Clear",
+          "points": 1.3125
+        },
+        {
+          "name": "Stunner",
+          "points": 1.3125
+        },
+        {
+          "name": "Quickscan",
+          "points": 1.1875
+        },
+        {
+          "name": "Fast Silk",
+          "points": 0.10416666666666666
+        },
+        {
+          "name": "Seeker",
+          "points": 1
+        },
+        {
+          "name": "One-Shot",
+          "points": 0.3125
+        },
+        {
+          "name": "Mice",
+          "points": 0.10416666666666666
+        },
+        {
+          "name": "Gatekeeper",
+          "points": 0.375
+        },
+        {
+          "name": "Papercut",
+          "points": 0.10416666666666666
+        },
+        {
+          "name": "Hydra",
+          "points": 0.041666666666666664
+        }
+      ],
+      "comparisonOpponents": [
+        {
+          "name": "Imp",
+          "points": 1
+        },
+        {
+          "name": "Gemini",
+          "points": 2.5
+        },
+        {
+          "name": "Sweeper",
+          "points": 1.4375
+        },
+        {
+          "name": "Stone and Imp",
+          "points": 1.5
+        },
+        {
+          "name": "Evolved Silk",
+          "points": 0.35416666666666663
+        },
+        {
+          "name": "Red Queen",
+          "points": 1.4375
+        },
+        {
+          "name": "Carpet Bomber",
+          "points": 1.8541666666666667
+        },
+        {
+          "name": "Blitz",
+          "points": 0.0625
+        }
+      ]
+    },
+    {
+      "name": "plain-short64",
+      "phase": "short64",
+      "kind": "plain",
+      "id": "63c81b900bef4604",
+      "length": 13,
+      "developmentScore": 0.855654761904762,
+      "comparisonScore": 1.2109375,
+      "developmentSeeds": [
+        0.8630952380952381,
+        0.7678571428571429,
+        0.904761904761905,
+        0.886904761904762
+      ],
+      "comparisonSeeds": [
+        1.1875,
+        1.2083333333333333,
+        1.3229166666666667,
+        1.125
+      ],
+      "developmentOpponents": [
+        {
+          "name": "Dwarf",
+          "points": 1.375
+        },
+        {
+          "name": "Scout",
+          "points": 1.9791666666666665
+        },
+        {
+          "name": "Silk",
+          "points": 0.22916666666666666
+        },
+        {
+          "name": "Vampire",
+          "points": 1.9375
+        },
+        {
+          "name": "Two-Pass Clear",
+          "points": 1.3125
+        },
+        {
+          "name": "Stunner",
+          "points": 1.3125
+        },
+        {
+          "name": "Quickscan",
+          "points": 1.3125
+        },
+        {
+          "name": "Fast Silk",
+          "points": 0
+        },
+        {
+          "name": "Seeker",
+          "points": 1.3125
+        },
+        {
+          "name": "One-Shot",
+          "points": 0.3125
+        },
+        {
+          "name": "Mice",
+          "points": 0.16666666666666669
+        },
+        {
+          "name": "Gatekeeper",
+          "points": 0.5625
+        },
+        {
+          "name": "Papercut",
+          "points": 0.10416666666666666
+        },
+        {
+          "name": "Hydra",
+          "points": 0.0625
+        }
+      ],
+      "comparisonOpponents": [
+        {
+          "name": "Imp",
+          "points": 1
+        },
+        {
+          "name": "Gemini",
+          "points": 2.104166666666667
+        },
+        {
+          "name": "Sweeper",
+          "points": 1.4375
+        },
+        {
+          "name": "Stone and Imp",
+          "points": 1.25
+        },
+        {
+          "name": "Evolved Silk",
+          "points": 0.29166666666666663
+        },
+        {
+          "name": "Red Queen",
+          "points": 1.4375
+        },
+        {
+          "name": "Carpet Bomber",
+          "points": 2.0625
+        },
+        {
+          "name": "Blitz",
+          "points": 0.10416666666666666
+        }
+      ]
+    },
+    {
+      "name": "4242-short512",
+      "parent": 4242,
+      "phase": "short512",
+      "kind": "molting",
+      "id": "cb35a73eb336cf86",
+      "length": 27,
+      "developmentScore": 0.8988095238095238,
+      "comparisonScore": 1.3229166666666665,
+      "developmentSeeds": [
+        1.0238095238095237,
+        0.8452380952380952,
+        0.8511904761904763,
+        0.875
+      ],
+      "comparisonSeeds": [
+        1.4479166666666665,
+        1.3541666666666667,
+        1.375,
+        1.1145833333333333
+      ],
+      "developmentOpponents": [
+        {
+          "name": "Dwarf",
+          "points": 1.625
+        },
+        {
+          "name": "Scout",
+          "points": 1.9999999999999998
+        },
+        {
+          "name": "Silk",
+          "points": 0.16666666666666669
+        },
+        {
+          "name": "Vampire",
+          "points": 1.875
+        },
+        {
+          "name": "Two-Pass Clear",
+          "points": 1.4375
+        },
+        {
+          "name": "Stunner",
+          "points": 1.25
+        },
+        {
+          "name": "Quickscan",
+          "points": 1.1875
+        },
+        {
+          "name": "Fast Silk",
+          "points": 0.125
+        },
+        {
+          "name": "Seeker",
+          "points": 0.75
+        },
+        {
+          "name": "One-Shot",
+          "points": 0.8125
+        },
+        {
+          "name": "Mice",
+          "points": 0.3333333333333333
+        },
+        {
+          "name": "Gatekeeper",
+          "points": 0.8125
+        },
+        {
+          "name": "Papercut",
+          "points": 0.08333333333333333
+        },
+        {
+          "name": "Hydra",
+          "points": 0.125
+        }
+      ],
+      "comparisonOpponents": [
+        {
+          "name": "Imp",
+          "points": 1
+        },
+        {
+          "name": "Gemini",
+          "points": 2.5416666666666665
+        },
+        {
+          "name": "Sweeper",
+          "points": 1.9375
+        },
+        {
+          "name": "Stone and Imp",
+          "points": 1.3125
+        },
+        {
+          "name": "Evolved Silk",
+          "points": 0.1875
+        },
+        {
+          "name": "Red Queen",
+          "points": 1.4375
+        },
+        {
+          "name": "Carpet Bomber",
+          "points": 2.0416666666666665
+        },
+        {
+          "name": "Blitz",
+          "points": 0.125
+        }
+      ]
+    },
+    {
+      "name": "4242-short512-in-place",
+      "parent": 4242,
+      "phase": "short512",
+      "kind": "in-place",
+      "id": "d10899a49d0dacf9",
+      "length": 27,
+      "developmentScore": 0.8288690476190477,
+      "comparisonScore": 1.2630208333333335,
+      "developmentSeeds": [
+        0.8392857142857144,
+        0.7916666666666666,
+        0.8630952380952382,
+        0.8214285714285714
+      ],
+      "comparisonSeeds": [
+        1.3020833333333333,
+        1.3541666666666665,
+        1.2916666666666667,
+        1.1041666666666667
+      ],
+      "developmentOpponents": [
+        {
+          "name": "Dwarf",
+          "points": 1.375
+        },
+        {
+          "name": "Scout",
+          "points": 2.1458333333333335
+        },
+        {
+          "name": "Silk",
+          "points": 0.20833333333333331
+        },
+        {
+          "name": "Vampire",
+          "points": 1.9375
+        },
+        {
+          "name": "Two-Pass Clear",
+          "points": 1.3125
+        },
+        {
+          "name": "Stunner",
+          "points": 1.3125
+        },
+        {
+          "name": "Quickscan",
+          "points": 1.1875
+        },
+        {
+          "name": "Fast Silk",
+          "points": 0.10416666666666666
+        },
+        {
+          "name": "Seeker",
+          "points": 1
+        },
+        {
+          "name": "One-Shot",
+          "points": 0.3125
+        },
+        {
+          "name": "Mice",
+          "points": 0.22916666666666669
+        },
+        {
+          "name": "Gatekeeper",
+          "points": 0.375
+        },
+        {
+          "name": "Papercut",
+          "points": 0.0625
+        },
+        {
+          "name": "Hydra",
+          "points": 0.041666666666666664
+        }
+      ],
+      "comparisonOpponents": [
+        {
+          "name": "Imp",
+          "points": 1
+        },
+        {
+          "name": "Gemini",
+          "points": 2.5833333333333335
+        },
+        {
+          "name": "Sweeper",
+          "points": 1.4375
+        },
+        {
+          "name": "Stone and Imp",
+          "points": 1.4375
+        },
+        {
+          "name": "Evolved Silk",
+          "points": 0.25
+        },
+        {
+          "name": "Red Queen",
+          "points": 1.4375
+        },
+        {
+          "name": "Carpet Bomber",
+          "points": 1.8541666666666667
+        },
+        {
+          "name": "Blitz",
+          "points": 0.10416666666666666
+        }
+      ]
+    },
+    {
+      "name": "plain-short512",
+      "phase": "short512",
+      "kind": "plain",
+      "id": "ab943e179fd1c824",
+      "length": 13,
+      "developmentScore": 0.8422619047619049,
+      "comparisonScore": 1.2265625,
+      "developmentSeeds": [
+        0.8630952380952382,
+        0.7797619047619048,
+        0.8928571428571429,
+        0.8333333333333334
+      ],
+      "comparisonSeeds": [
+        1.1770833333333333,
+        1.21875,
+        1.4166666666666667,
+        1.09375
+      ],
+      "developmentOpponents": [
+        {
+          "name": "Dwarf",
+          "points": 1.375
+        },
+        {
+          "name": "Scout",
+          "points": 1.7916666666666665
+        },
+        {
+          "name": "Silk",
+          "points": 0.3333333333333333
+        },
+        {
+          "name": "Vampire",
+          "points": 1.9375
+        },
+        {
+          "name": "Two-Pass Clear",
+          "points": 1.3125
+        },
+        {
+          "name": "Stunner",
+          "points": 1.3125
+        },
+        {
+          "name": "Quickscan",
+          "points": 1.25
+        },
+        {
+          "name": "Fast Silk",
+          "points": 0.020833333333333332
+        },
+        {
+          "name": "Seeker",
+          "points": 1.25
+        },
+        {
+          "name": "One-Shot",
+          "points": 0.3125
+        },
+        {
+          "name": "Mice",
+          "points": 0.16666666666666666
+        },
+        {
+          "name": "Gatekeeper",
+          "points": 0.5625
+        },
+        {
+          "name": "Papercut",
+          "points": 0.08333333333333333
+        },
+        {
+          "name": "Hydra",
+          "points": 0.08333333333333333
+        }
+      ],
+      "comparisonOpponents": [
+        {
+          "name": "Imp",
+          "points": 1
+        },
+        {
+          "name": "Gemini",
+          "points": 2.2916666666666665
+        },
+        {
+          "name": "Sweeper",
+          "points": 1.4375
+        },
+        {
+          "name": "Stone and Imp",
+          "points": 1.25
+        },
+        {
+          "name": "Evolved Silk",
+          "points": 0.29166666666666663
+        },
+        {
+          "name": "Red Queen",
+          "points": 1.4375
+        },
+        {
+          "name": "Carpet Bomber",
+          "points": 2
+        },
+        {
+          "name": "Blitz",
+          "points": 0.10416666666666666
+        }
+      ]
+    },
+    {
+      "name": "4242-short4096",
+      "parent": 4242,
+      "phase": "short4096",
+      "kind": "molting",
+      "id": "3f155f3a4610192c",
+      "length": 27,
+      "developmentScore": 0.7455357142857142,
+      "comparisonScore": 1.1536458333333333,
+      "developmentSeeds": [
+        0.7857142857142858,
+        0.744047619047619,
+        0.6964285714285713,
+        0.755952380952381
+      ],
+      "comparisonSeeds": [
+        1.3333333333333333,
+        1.0833333333333333,
+        1.1875,
+        1.0104166666666667
+      ],
+      "developmentOpponents": [
+        {
+          "name": "Dwarf",
+          "points": 1.3125
+        },
+        {
+          "name": "Scout",
+          "points": 1.3333333333333333
+        },
+        {
+          "name": "Silk",
+          "points": 0.2708333333333333
+        },
+        {
+          "name": "Vampire",
+          "points": 1.4375
+        },
+        {
+          "name": "Two-Pass Clear",
+          "points": 1.3125
+        },
+        {
+          "name": "Stunner",
+          "points": 1.0625
+        },
+        {
+          "name": "Quickscan",
+          "points": 1
+        },
+        {
+          "name": "Fast Silk",
+          "points": 0.14583333333333331
+        },
+        {
+          "name": "Seeker",
+          "points": 0.4166666666666667
+        },
+        {
+          "name": "One-Shot",
+          "points": 0.6875
+        },
+        {
+          "name": "Mice",
+          "points": 0.4166666666666667
+        },
+        {
+          "name": "Gatekeeper",
+          "points": 0.75
+        },
+        {
+          "name": "Papercut",
+          "points": 0.0625
+        },
+        {
+          "name": "Hydra",
+          "points": 0.22916666666666666
+        }
+      ],
+      "comparisonOpponents": [
+        {
+          "name": "Imp",
+          "points": 1
+        },
+        {
+          "name": "Gemini",
+          "points": 2.1875
+        },
+        {
+          "name": "Sweeper",
+          "points": 1.6875
+        },
+        {
+          "name": "Stone and Imp",
+          "points": 0.9375
+        },
+        {
+          "name": "Evolved Silk",
+          "points": 0.33333333333333337
+        },
+        {
+          "name": "Red Queen",
+          "points": 1.3125
+        },
+        {
+          "name": "Carpet Bomber",
+          "points": 1.6666666666666665
+        },
+        {
+          "name": "Blitz",
+          "points": 0.10416666666666666
+        }
+      ]
+    },
+    {
+      "name": "4242-short4096-in-place",
+      "parent": 4242,
+      "phase": "short4096",
+      "kind": "in-place",
+      "id": "b5166a15696b1195",
+      "length": 27,
+      "developmentScore": 0.663690476190476,
+      "comparisonScore": 1.1380208333333333,
+      "developmentSeeds": [
+        0.630952380952381,
+        0.6785714285714285,
+        0.6547619047619045,
+        0.6904761904761905
+      ],
+      "comparisonSeeds": [
+        1.1354166666666665,
+        1.1458333333333333,
+        1.2083333333333333,
+        1.0625000000000002
+      ],
+      "developmentOpponents": [
+        {
+          "name": "Dwarf",
+          "points": 1.1875
+        },
+        {
+          "name": "Scout",
+          "points": 1.2291666666666665
+        },
+        {
+          "name": "Silk",
+          "points": 0.1875
+        },
+        {
+          "name": "Vampire",
+          "points": 1.5416666666666665
+        },
+        {
+          "name": "Two-Pass Clear",
+          "points": 1.125
+        },
+        {
+          "name": "Stunner",
+          "points": 1.1666666666666665
+        },
+        {
+          "name": "Quickscan",
+          "points": 0.875
+        },
+        {
+          "name": "Fast Silk",
+          "points": 0.14583333333333334
+        },
+        {
+          "name": "Seeker",
+          "points": 0.8333333333333334
+        },
+        {
+          "name": "One-Shot",
+          "points": 0.1875
+        },
+        {
+          "name": "Mice",
+          "points": 0.33333333333333337
+        },
+        {
+          "name": "Gatekeeper",
+          "points": 0.3125
+        },
+        {
+          "name": "Papercut",
+          "points": 0.08333333333333333
+        },
+        {
+          "name": "Hydra",
+          "points": 0.08333333333333333
+        }
+      ],
+      "comparisonOpponents": [
+        {
+          "name": "Imp",
+          "points": 1
+        },
+        {
+          "name": "Gemini",
+          "points": 2.395833333333333
+        },
+        {
+          "name": "Sweeper",
+          "points": 1.4375
+        },
+        {
+          "name": "Stone and Imp",
+          "points": 1.25
+        },
+        {
+          "name": "Evolved Silk",
+          "points": 0.3125
+        },
+        {
+          "name": "Red Queen",
+          "points": 1.375
+        },
+        {
+          "name": "Carpet Bomber",
+          "points": 1.1875
+        },
+        {
+          "name": "Blitz",
+          "points": 0.14583333333333334
+        }
+      ]
+    },
+    {
+      "name": "plain-short4096",
+      "phase": "short4096",
+      "kind": "plain",
+      "id": "2b58f973ecf4b0bf",
+      "length": 13,
+      "developmentScore": 0.6815476190476191,
+      "comparisonScore": 1.0338541666666667,
+      "developmentSeeds": [
+        0.613095238095238,
+        0.6785714285714286,
+        0.7976190476190477,
+        0.6369047619047619
+      ],
+      "comparisonSeeds": [
+        0.9270833333333333,
+        1.0104166666666667,
+        1.25,
+        0.9479166666666667
+      ],
+      "developmentOpponents": [
+        {
+          "name": "Dwarf",
+          "points": 1.125
+        },
+        {
+          "name": "Scout",
+          "points": 1.0208333333333333
+        },
+        {
+          "name": "Silk",
+          "points": 0.25
+        },
+        {
+          "name": "Vampire",
+          "points": 1.5416666666666665
+        },
+        {
+          "name": "Two-Pass Clear",
+          "points": 1.125
+        },
+        {
+          "name": "Stunner",
+          "points": 1.25
+        },
+        {
+          "name": "Quickscan",
+          "points": 1
+        },
+        {
+          "name": "Fast Silk",
+          "points": 0.0625
+        },
+        {
+          "name": "Seeker",
+          "points": 1
+        },
+        {
+          "name": "One-Shot",
+          "points": 0.1875
+        },
+        {
+          "name": "Mice",
+          "points": 0.14583333333333331
+        },
+        {
+          "name": "Gatekeeper",
+          "points": 0.625
+        },
+        {
+          "name": "Papercut",
+          "points": 0.10416666666666666
+        },
+        {
+          "name": "Hydra",
+          "points": 0.10416666666666666
+        }
+      ],
+      "comparisonOpponents": [
+        {
+          "name": "Imp",
+          "points": 1
+        },
+        {
+          "name": "Gemini",
+          "points": 1.75
+        },
+        {
+          "name": "Sweeper",
+          "points": 1.4375
+        },
+        {
+          "name": "Stone and Imp",
+          "points": 1
+        },
+        {
+          "name": "Evolved Silk",
+          "points": 0.29166666666666663
+        },
+        {
+          "name": "Red Queen",
+          "points": 1.375
+        },
+        {
+          "name": "Carpet Bomber",
+          "points": 1.3333333333333333
+        },
+        {
+          "name": "Blitz",
+          "points": 0.08333333333333333
+        }
+      ]
+    },
+    {
+      "name": "4242-dat",
+      "parent": 4242,
+      "phase": "dat",
+      "kind": "molting",
+      "id": "684851353bc6adab",
+      "length": 23,
+      "developmentScore": 0.9449404761904763,
+      "comparisonScore": 1.2864583333333333,
+      "developmentSeeds": [
+        0.9880952380952381,
+        1.005952380952381,
+        0.8392857142857143,
+        0.9464285714285714
+      ],
+      "comparisonSeeds": [
+        1.4270833333333333,
+        1.3333333333333333,
+        1.2291666666666667,
+        1.1562500000000002
+      ],
+      "developmentOpponents": [
+        {
+          "name": "Dwarf",
+          "points": 1.625
+        },
+        {
+          "name": "Scout",
+          "points": 2.0208333333333335
+        },
+        {
+          "name": "Silk",
+          "points": 0.3125
+        },
+        {
+          "name": "Vampire",
+          "points": 1.8125
+        },
+        {
+          "name": "Two-Pass Clear",
+          "points": 1.4375
+        },
+        {
+          "name": "Stunner",
+          "points": 1.3125
+        },
+        {
+          "name": "Quickscan",
+          "points": 1.1875
+        },
+        {
+          "name": "Fast Silk",
+          "points": 0.08333333333333333
+        },
+        {
+          "name": "Seeker",
+          "points": 0.875
+        },
+        {
+          "name": "One-Shot",
+          "points": 0.8125
+        },
+        {
+          "name": "Mice",
+          "points": 0.2916666666666667
+        },
+        {
+          "name": "Gatekeeper",
+          "points": 1.25
+        },
+        {
+          "name": "Papercut",
+          "points": 0.16666666666666666
+        },
+        {
+          "name": "Hydra",
+          "points": 0.041666666666666664
+        }
+      ],
+      "comparisonOpponents": [
+        {
+          "name": "Imp",
+          "points": 1
+        },
+        {
+          "name": "Gemini",
+          "points": 2.1458333333333335
+        },
+        {
+          "name": "Sweeper",
+          "points": 1.9375
+        },
+        {
+          "name": "Stone and Imp",
+          "points": 1.4375
+        },
+        {
+          "name": "Evolved Silk",
+          "points": 0.22916666666666666
+        },
+        {
+          "name": "Red Queen",
+          "points": 1.4375
+        },
+        {
+          "name": "Carpet Bomber",
+          "points": 2
+        },
+        {
+          "name": "Blitz",
+          "points": 0.10416666666666666
+        }
+      ]
+    },
+    {
+      "name": "4242-dat-in-place",
+      "parent": 4242,
+      "phase": "dat",
+      "kind": "in-place",
+      "id": "5242ca27c5415d18",
+      "length": 23,
+      "developmentScore": 0.8571428571428572,
+      "comparisonScore": 1.265625,
+      "developmentSeeds": [
+        0.755952380952381,
+        0.9047619047619049,
+        0.8630952380952381,
+        0.9047619047619048
+      ],
+      "comparisonSeeds": [
+        1.2395833333333335,
+        1.3229166666666667,
+        1.364583333333333,
+        1.1354166666666667
+      ],
+      "developmentOpponents": [
+        {
+          "name": "Dwarf",
+          "points": 1.375
+        },
+        {
+          "name": "Scout",
+          "points": 2.041666666666667
+        },
+        {
+          "name": "Silk",
+          "points": 0.29166666666666663
+        },
+        {
+          "name": "Vampire",
+          "points": 1.9583333333333335
+        },
+        {
+          "name": "Two-Pass Clear",
+          "points": 1.3125
+        },
+        {
+          "name": "Stunner",
+          "points": 1.25
+        },
+        {
+          "name": "Quickscan",
+          "points": 1.1875
+        },
+        {
+          "name": "Fast Silk",
+          "points": 0.0625
+        },
+        {
+          "name": "Seeker",
+          "points": 1.375
+        },
+        {
+          "name": "One-Shot",
+          "points": 0.375
+        },
+        {
+          "name": "Mice",
+          "points": 0.3125
+        },
+        {
+          "name": "Gatekeeper",
+          "points": 0.1875
+        },
+        {
+          "name": "Papercut",
+          "points": 0.10416666666666666
+        },
+        {
+          "name": "Hydra",
+          "points": 0.16666666666666669
+        }
+      ],
+      "comparisonOpponents": [
+        {
+          "name": "Imp",
+          "points": 1
+        },
+        {
+          "name": "Gemini",
+          "points": 2.604166666666667
+        },
+        {
+          "name": "Sweeper",
+          "points": 1.4375
+        },
+        {
+          "name": "Stone and Imp",
+          "points": 1.5
+        },
+        {
+          "name": "Evolved Silk",
+          "points": 0.2916666666666667
+        },
+        {
+          "name": "Red Queen",
+          "points": 1.4375
+        },
+        {
+          "name": "Carpet Bomber",
+          "points": 1.75
+        },
+        {
+          "name": "Blitz",
+          "points": 0.10416666666666666
+        }
+      ]
+    },
+    {
+      "name": "plain-dat",
+      "phase": "dat",
+      "kind": "plain",
+      "id": "dba67ef40f81a5e9",
+      "length": 9,
+      "developmentScore": 0.9032738095238095,
+      "comparisonScore": 1.2213541666666665,
+      "developmentSeeds": [
+        0.8869047619047619,
+        0.8869047619047619,
+        0.9940476190476192,
+        0.8452380952380952
+      ],
+      "comparisonSeeds": [
+        1.1145833333333335,
+        1.2604166666666665,
+        1.3854166666666665,
+        1.125
+      ],
+      "developmentOpponents": [
+        {
+          "name": "Dwarf",
+          "points": 1.375
+        },
+        {
+          "name": "Scout",
+          "points": 2.2083333333333335
+        },
+        {
+          "name": "Silk",
+          "points": 0.2916666666666667
+        },
+        {
+          "name": "Vampire",
+          "points": 1.9583333333333335
+        },
+        {
+          "name": "Two-Pass Clear",
+          "points": 1.3125
+        },
+        {
+          "name": "Stunner",
+          "points": 1.375
+        },
+        {
+          "name": "Quickscan",
+          "points": 1.3125
+        },
+        {
+          "name": "Fast Silk",
+          "points": 0.08333333333333333
+        },
+        {
+          "name": "Seeker",
+          "points": 1
+        },
+        {
+          "name": "One-Shot",
+          "points": 0.375
+        },
+        {
+          "name": "Mice",
+          "points": 0.14583333333333331
+        },
+        {
+          "name": "Gatekeeper",
+          "points": 1
+        },
+        {
+          "name": "Papercut",
+          "points": 0.12499999999999999
+        },
+        {
+          "name": "Hydra",
+          "points": 0.08333333333333333
+        }
+      ],
+      "comparisonOpponents": [
+        {
+          "name": "Imp",
+          "points": 1
+        },
+        {
+          "name": "Gemini",
+          "points": 2.5208333333333335
+        },
+        {
+          "name": "Sweeper",
+          "points": 1.4375
+        },
+        {
+          "name": "Stone and Imp",
+          "points": 1.25
+        },
+        {
+          "name": "Evolved Silk",
+          "points": 0.22916666666666669
+        },
+        {
+          "name": "Red Queen",
+          "points": 1.4375
+        },
+        {
+          "name": "Carpet Bomber",
+          "points": 1.7916666666666667
+        },
+        {
+          "name": "Blitz",
+          "points": 0.10416666666666666
+        }
+      ]
+    },
+    {
+      "name": "4243-full",
+      "parent": 4243,
+      "phase": "full",
+      "kind": "molting",
+      "id": "3249e31445559c69",
+      "length": 31,
+      "developmentScore": 0.9732142857142858,
+      "comparisonScore": 1.140625,
+      "developmentSeeds": [
+        1.0476190476190477,
+        0.9404761904761906,
+        0.9404761904761906,
+        0.9642857142857143
+      ],
+      "comparisonSeeds": [
+        1.3020833333333333,
+        1.0208333333333333,
+        1.0624999999999998,
+        1.1770833333333335
+      ],
+      "developmentOpponents": [
+        {
+          "name": "Dwarf",
+          "points": 1.1458333333333335
+        },
+        {
+          "name": "Scout",
+          "points": 0.75
+        },
+        {
+          "name": "Silk",
+          "points": 0.625
+        },
+        {
+          "name": "Vampire",
+          "points": 1.5208333333333335
+        },
+        {
+          "name": "Two-Pass Clear",
+          "points": 1.3125
+        },
+        {
+          "name": "Stunner",
+          "points": 1.25
+        },
+        {
+          "name": "Quickscan",
+          "points": 0.75
+        },
+        {
+          "name": "Fast Silk",
+          "points": 0.45833333333333337
+        },
+        {
+          "name": "Seeker",
+          "points": 0.4583333333333333
+        },
+        {
+          "name": "One-Shot",
+          "points": 0.75
+        },
+        {
+          "name": "Mice",
+          "points": 2.8958333333333335
+        },
+        {
+          "name": "Gatekeeper",
+          "points": 0.375
+        },
+        {
+          "name": "Papercut",
+          "points": 0.5833333333333334
+        },
+        {
+          "name": "Hydra",
+          "points": 0.75
+        }
+      ],
+      "comparisonOpponents": [
+        {
+          "name": "Imp",
+          "points": 1
+        },
+        {
+          "name": "Gemini",
+          "points": 1.75
+        },
+        {
+          "name": "Sweeper",
+          "points": 1.75
+        },
+        {
+          "name": "Stone and Imp",
+          "points": 0.6458333333333333
+        },
+        {
+          "name": "Evolved Silk",
+          "points": 0.5416666666666667
+        },
+        {
+          "name": "Red Queen",
+          "points": 1.375
+        },
+        {
+          "name": "Carpet Bomber",
+          "points": 1.5
+        },
+        {
+          "name": "Blitz",
+          "points": 0.5625
+        }
+      ]
+    },
+    {
+      "name": "4243-full-in-place",
+      "parent": 4243,
+      "phase": "full",
+      "kind": "in-place",
+      "id": "344490dfe92e1a34",
+      "length": 31,
+      "developmentScore": 0.9642857142857143,
+      "comparisonScore": 1.1484375,
+      "developmentSeeds": [
+        0.9583333333333333,
+        0.9047619047619049,
+        0.994047619047619,
+        1
+      ],
+      "comparisonSeeds": [
+        1.1875,
+        1.1875000000000002,
+        1.1770833333333333,
+        1.0416666666666667
+      ],
+      "developmentOpponents": [
+        {
+          "name": "Dwarf",
+          "points": 1.0416666666666667
+        },
+        {
+          "name": "Scout",
+          "points": 0.6458333333333333
+        },
+        {
+          "name": "Silk",
+          "points": 0.625
+        },
+        {
+          "name": "Vampire",
+          "points": 1.2083333333333333
+        },
+        {
+          "name": "Two-Pass Clear",
+          "points": 1.3125
+        },
+        {
+          "name": "Stunner",
+          "points": 1.2499999999999998
+        },
+        {
+          "name": "Quickscan",
+          "points": 0.625
+        },
+        {
+          "name": "Fast Silk",
+          "points": 1.0625
+        },
+        {
+          "name": "Seeker",
+          "points": 1.0208333333333333
+        },
+        {
+          "name": "One-Shot",
+          "points": 0.375
+        },
+        {
+          "name": "Mice",
+          "points": 2.875
+        },
+        {
+          "name": "Gatekeeper",
+          "points": 0.375
+        },
+        {
+          "name": "Papercut",
+          "points": 0.5416666666666666
+        },
+        {
+          "name": "Hydra",
+          "points": 0.5416666666666667
+        }
+      ],
+      "comparisonOpponents": [
+        {
+          "name": "Imp",
+          "points": 1
+        },
+        {
+          "name": "Gemini",
+          "points": 1.9583333333333335
+        },
+        {
+          "name": "Sweeper",
+          "points": 1.4375
+        },
+        {
+          "name": "Stone and Imp",
+          "points": 0.7083333333333334
+        },
+        {
+          "name": "Evolved Silk",
+          "points": 0.6875
+        },
+        {
+          "name": "Red Queen",
+          "points": 1.4375
+        },
+        {
+          "name": "Carpet Bomber",
+          "points": 1.4166666666666667
+        },
+        {
+          "name": "Blitz",
+          "points": 0.5416666666666666
+        }
+      ]
+    },
+    {
+      "name": "4243-short64",
+      "parent": 4243,
+      "phase": "short64",
+      "kind": "molting",
+      "id": "5c233fa52222adcc",
+      "length": 31,
+      "developmentScore": 0.8586309523809523,
+      "comparisonScore": 1.2395833333333333,
+      "developmentSeeds": [
+        0.9345238095238095,
+        0.8809523809523808,
+        0.8154761904761905,
+        0.8035714285714287
+      ],
+      "comparisonSeeds": [
+        1.2708333333333333,
+        1.15625,
+        1.3020833333333335,
+        1.2291666666666667
+      ],
+      "developmentOpponents": [
+        {
+          "name": "Dwarf",
+          "points": 1.5625
+        },
+        {
+          "name": "Scout",
+          "points": 2.0625
+        },
+        {
+          "name": "Silk",
+          "points": 0.20833333333333331
+        },
+        {
+          "name": "Vampire",
+          "points": 1.75
+        },
+        {
+          "name": "Two-Pass Clear",
+          "points": 1.3125
+        },
+        {
+          "name": "Stunner",
+          "points": 1.25
+        },
+        {
+          "name": "Quickscan",
+          "points": 1.6875
+        },
+        {
+          "name": "Fast Silk",
+          "points": 0.041666666666666664
+        },
+        {
+          "name": "Seeker",
+          "points": 0.625
+        },
+        {
+          "name": "One-Shot",
+          "points": 0.75
+        },
+        {
+          "name": "Mice",
+          "points": 0.18750000000000003
+        },
+        {
+          "name": "Gatekeeper",
+          "points": 0.375
+        },
+        {
+          "name": "Papercut",
+          "points": 0.14583333333333334
+        },
+        {
+          "name": "Hydra",
+          "points": 0.0625
+        }
+      ],
+      "comparisonOpponents": [
+        {
+          "name": "Imp",
+          "points": 1
+        },
+        {
+          "name": "Gemini",
+          "points": 1.9166666666666665
+        },
+        {
+          "name": "Sweeper",
+          "points": 1.75
+        },
+        {
+          "name": "Stone and Imp",
+          "points": 1.25
+        },
+        {
+          "name": "Evolved Silk",
+          "points": 0.3125
+        },
+        {
+          "name": "Red Queen",
+          "points": 1.375
+        },
+        {
+          "name": "Carpet Bomber",
+          "points": 2.2083333333333335
+        },
+        {
+          "name": "Blitz",
+          "points": 0.10416666666666666
+        }
+      ]
+    },
+    {
+      "name": "4243-short64-in-place",
+      "parent": 4243,
+      "phase": "short64",
+      "kind": "in-place",
+      "id": "6f4e1ac754b4c9fa",
+      "length": 31,
+      "developmentScore": 0.8318452380952381,
+      "comparisonScore": 1.265625,
+      "developmentSeeds": [
+        0.7916666666666666,
+        0.8333333333333334,
+        0.8511904761904762,
+        0.8511904761904763
+      ],
+      "comparisonSeeds": [
+        1.2604166666666665,
+        1.28125,
+        1.375,
+        1.1458333333333333
+      ],
+      "developmentOpponents": [
+        {
+          "name": "Dwarf",
+          "points": 1.375
+        },
+        {
+          "name": "Scout",
+          "points": 1.9791666666666665
+        },
+        {
+          "name": "Silk",
+          "points": 0.2708333333333333
+        },
+        {
+          "name": "Vampire",
+          "points": 1.7083333333333333
+        },
+        {
+          "name": "Two-Pass Clear",
+          "points": 1.3125
+        },
+        {
+          "name": "Stunner",
+          "points": 1.375
+        },
+        {
+          "name": "Quickscan",
+          "points": 1.1875
+        },
+        {
+          "name": "Fast Silk",
+          "points": 0.041666666666666664
+        },
+        {
+          "name": "Seeker",
+          "points": 1.3125
+        },
+        {
+          "name": "One-Shot",
+          "points": 0.3125
+        },
+        {
+          "name": "Mice",
+          "points": 0.1875
+        },
+        {
+          "name": "Gatekeeper",
+          "points": 0.375
+        },
+        {
+          "name": "Papercut",
+          "points": 0.10416666666666666
+        },
+        {
+          "name": "Hydra",
+          "points": 0.10416666666666666
+        }
+      ],
+      "comparisonOpponents": [
+        {
+          "name": "Imp",
+          "points": 1
+        },
+        {
+          "name": "Gemini",
+          "points": 2.1875
+        },
+        {
+          "name": "Sweeper",
+          "points": 1.4375
+        },
+        {
+          "name": "Stone and Imp",
+          "points": 1.5
+        },
+        {
+          "name": "Evolved Silk",
+          "points": 0.22916666666666666
+        },
+        {
+          "name": "Red Queen",
+          "points": 1.4375
+        },
+        {
+          "name": "Carpet Bomber",
+          "points": 2.2083333333333335
+        },
+        {
+          "name": "Blitz",
+          "points": 0.125
+        }
+      ]
+    },
+    {
+      "name": "4243-short512",
+      "parent": 4243,
+      "phase": "short512",
+      "kind": "molting",
+      "id": "0315f1fe41f38a4c",
+      "length": 31,
+      "developmentScore": 0.8705357142857143,
+      "comparisonScore": 1.2395833333333335,
+      "developmentSeeds": [
+        0.988095238095238,
+        0.880952380952381,
+        0.8154761904761906,
+        0.7976190476190476
+      ],
+      "comparisonSeeds": [
+        1.2604166666666667,
+        1.15625,
+        1.28125,
+        1.2604166666666667
+      ],
+      "developmentOpponents": [
+        {
+          "name": "Dwarf",
+          "points": 1.5
+        },
+        {
+          "name": "Scout",
+          "points": 2.020833333333333
+        },
+        {
+          "name": "Silk",
+          "points": 0.3958333333333333
+        },
+        {
+          "name": "Vampire",
+          "points": 1.75
+        },
+        {
+          "name": "Two-Pass Clear",
+          "points": 1.3125
+        },
+        {
+          "name": "Stunner",
+          "points": 1.25
+        },
+        {
+          "name": "Quickscan",
+          "points": 1.6875
+        },
+        {
+          "name": "Fast Silk",
+          "points": 0.0625
+        },
+        {
+          "name": "Seeker",
+          "points": 0.625
+        },
+        {
+          "name": "One-Shot",
+          "points": 0.75
+        },
+        {
+          "name": "Mice",
+          "points": 0.22916666666666669
+        },
+        {
+          "name": "Gatekeeper",
+          "points": 0.375
+        },
+        {
+          "name": "Papercut",
+          "points": 0.16666666666666666
+        },
+        {
+          "name": "Hydra",
+          "points": 0.0625
+        }
+      ],
+      "comparisonOpponents": [
+        {
+          "name": "Imp",
+          "points": 1
+        },
+        {
+          "name": "Gemini",
+          "points": 2.104166666666667
+        },
+        {
+          "name": "Sweeper",
+          "points": 1.75
+        },
+        {
+          "name": "Stone and Imp",
+          "points": 1.1875
+        },
+        {
+          "name": "Evolved Silk",
+          "points": 0.125
+        },
+        {
+          "name": "Red Queen",
+          "points": 1.375
+        },
+        {
+          "name": "Carpet Bomber",
+          "points": 2.2083333333333335
+        },
+        {
+          "name": "Blitz",
+          "points": 0.16666666666666666
+        }
+      ]
+    },
+    {
+      "name": "4243-short512-in-place",
+      "parent": 4243,
+      "phase": "short512",
+      "kind": "in-place",
+      "id": "bcde64ebc6488350",
+      "length": 31,
+      "developmentScore": 0.8035714285714285,
+      "comparisonScore": 1.265625,
+      "developmentSeeds": [
+        0.8154761904761905,
+        0.8333333333333333,
+        0.7738095238095238,
+        0.7916666666666666
+      ],
+      "comparisonSeeds": [
+        1.3854166666666667,
+        1.2604166666666665,
+        1.3125,
+        1.1041666666666667
+      ],
+      "developmentOpponents": [
+        {
+          "name": "Dwarf",
+          "points": 1.375
+        },
+        {
+          "name": "Scout",
+          "points": 1.7916666666666665
+        },
+        {
+          "name": "Silk",
+          "points": 0.20833333333333334
+        },
+        {
+          "name": "Vampire",
+          "points": 1.6875
+        },
+        {
+          "name": "Two-Pass Clear",
+          "points": 1.3125
+        },
+        {
+          "name": "Stunner",
+          "points": 1.3125
+        },
+        {
+          "name": "Quickscan",
+          "points": 1.1875
+        },
+        {
+          "name": "Fast Silk",
+          "points": 0.08333333333333333
+        },
+        {
+          "name": "Seeker",
+          "points": 1.25
+        },
+        {
+          "name": "One-Shot",
+          "points": 0.3125
+        },
+        {
+          "name": "Mice",
+          "points": 0.25
+        },
+        {
+          "name": "Gatekeeper",
+          "points": 0.375
+        },
+        {
+          "name": "Papercut",
+          "points": 0.0625
+        },
+        {
+          "name": "Hydra",
+          "points": 0.041666666666666664
+        }
+      ],
+      "comparisonOpponents": [
+        {
+          "name": "Imp",
+          "points": 1
+        },
+        {
+          "name": "Gemini",
+          "points": 2.4166666666666665
+        },
+        {
+          "name": "Sweeper",
+          "points": 1.4375
+        },
+        {
+          "name": "Stone and Imp",
+          "points": 1.4375
+        },
+        {
+          "name": "Evolved Silk",
+          "points": 0.1875
+        },
+        {
+          "name": "Red Queen",
+          "points": 1.4375
+        },
+        {
+          "name": "Carpet Bomber",
+          "points": 2.1458333333333335
+        },
+        {
+          "name": "Blitz",
+          "points": 0.0625
+        }
+      ]
+    },
+    {
+      "name": "4243-short4096",
+      "parent": 4243,
+      "phase": "short4096",
+      "kind": "molting",
+      "id": "594a575f916e1b68",
+      "length": 31,
+      "developmentScore": 0.7127976190476191,
+      "comparisonScore": 1.1458333333333333,
+      "developmentSeeds": [
+        0.7916666666666667,
+        0.7142857142857143,
+        0.6785714285714287,
+        0.6666666666666667
+      ],
+      "comparisonSeeds": [
+        1.2604166666666667,
+        1.0625,
+        1.1145833333333333,
+        1.1458333333333333
+      ],
+      "developmentOpponents": [
+        {
+          "name": "Dwarf",
+          "points": 1.375
+        },
+        {
+          "name": "Scout",
+          "points": 1.1458333333333333
+        },
+        {
+          "name": "Silk",
+          "points": 0.3333333333333333
+        },
+        {
+          "name": "Vampire",
+          "points": 1.3125
+        },
+        {
+          "name": "Two-Pass Clear",
+          "points": 1.1875
+        },
+        {
+          "name": "Stunner",
+          "points": 1.1875
+        },
+        {
+          "name": "Quickscan",
+          "points": 1.3125
+        },
+        {
+          "name": "Fast Silk",
+          "points": 0.10416666666666666
+        },
+        {
+          "name": "Seeker",
+          "points": 0.5
+        },
+        {
+          "name": "One-Shot",
+          "points": 0.625
+        },
+        {
+          "name": "Mice",
+          "points": 0.375
+        },
+        {
+          "name": "Gatekeeper",
+          "points": 0.375
+        },
+        {
+          "name": "Papercut",
+          "points": 0.0625
+        },
+        {
+          "name": "Hydra",
+          "points": 0.08333333333333333
+        }
+      ],
+      "comparisonOpponents": [
+        {
+          "name": "Imp",
+          "points": 1
+        },
+        {
+          "name": "Gemini",
+          "points": 1.8958333333333333
+        },
+        {
+          "name": "Sweeper",
+          "points": 1.625
+        },
+        {
+          "name": "Stone and Imp",
+          "points": 1
+        },
+        {
+          "name": "Evolved Silk",
+          "points": 0.2708333333333333
+        },
+        {
+          "name": "Red Queen",
+          "points": 1.375
+        },
+        {
+          "name": "Carpet Bomber",
+          "points": 1.8541666666666665
+        },
+        {
+          "name": "Blitz",
+          "points": 0.14583333333333331
+        }
+      ]
+    },
+    {
+      "name": "4243-short4096-in-place",
+      "parent": 4243,
+      "phase": "short4096",
+      "kind": "in-place",
+      "id": "a14c9f1984281099",
+      "length": 31,
+      "developmentScore": 0.6279761904761905,
+      "comparisonScore": 1.15625,
+      "developmentSeeds": [
+        0.5476190476190477,
+        0.7261904761904762,
+        0.6369047619047619,
+        0.6011904761904763
+      ],
+      "comparisonSeeds": [
+        1.1354166666666667,
+        1.2083333333333333,
+        1.2291666666666667,
+        1.0520833333333335
+      ],
+      "developmentOpponents": [
+        {
+          "name": "Dwarf",
+          "points": 1.1875
+        },
+        {
+          "name": "Scout",
+          "points": 1.0208333333333333
+        },
+        {
+          "name": "Silk",
+          "points": 0.20833333333333334
+        },
+        {
+          "name": "Vampire",
+          "points": 1.1041666666666667
+        },
+        {
+          "name": "Two-Pass Clear",
+          "points": 1.125
+        },
+        {
+          "name": "Stunner",
+          "points": 1.125
+        },
+        {
+          "name": "Quickscan",
+          "points": 0.875
+        },
+        {
+          "name": "Fast Silk",
+          "points": 0.020833333333333332
+        },
+        {
+          "name": "Seeker",
+          "points": 1
+        },
+        {
+          "name": "One-Shot",
+          "points": 0.25
+        },
+        {
+          "name": "Mice",
+          "points": 0.3125
+        },
+        {
+          "name": "Gatekeeper",
+          "points": 0.375
+        },
+        {
+          "name": "Papercut",
+          "points": 0.14583333333333331
+        },
+        {
+          "name": "Hydra",
+          "points": 0.041666666666666664
+        }
+      ],
+      "comparisonOpponents": [
+        {
+          "name": "Imp",
+          "points": 1
+        },
+        {
+          "name": "Gemini",
+          "points": 2.0833333333333335
+        },
+        {
+          "name": "Sweeper",
+          "points": 1.4375
+        },
+        {
+          "name": "Stone and Imp",
+          "points": 1.25
+        },
+        {
+          "name": "Evolved Silk",
+          "points": 0.22916666666666666
+        },
+        {
+          "name": "Red Queen",
+          "points": 1.375
+        },
+        {
+          "name": "Carpet Bomber",
+          "points": 1.7291666666666667
+        },
+        {
+          "name": "Blitz",
+          "points": 0.14583333333333334
+        }
+      ]
+    },
+    {
+      "name": "4243-dat",
+      "parent": 4243,
+      "phase": "dat",
+      "kind": "molting",
+      "id": "46de8857dcf27641",
+      "length": 27,
+      "developmentScore": 0.9166666666666667,
+      "comparisonScore": 1.2682291666666667,
+      "developmentSeeds": [
+        0.9523809523809523,
+        0.9285714285714286,
+        0.9404761904761906,
+        0.8452380952380951
+      ],
+      "comparisonSeeds": [
+        1.3125,
+        1.2500000000000002,
+        1.2708333333333335,
+        1.2395833333333335
+      ],
+      "developmentOpponents": [
+        {
+          "name": "Dwarf",
+          "points": 1.5625
+        },
+        {
+          "name": "Scout",
+          "points": 2.0208333333333335
+        },
+        {
+          "name": "Silk",
+          "points": 0.33333333333333337
+        },
+        {
+          "name": "Vampire",
+          "points": 2.1041666666666665
+        },
+        {
+          "name": "Two-Pass Clear",
+          "points": 1.3125
+        },
+        {
+          "name": "Stunner",
+          "points": 1.1875
+        },
+        {
+          "name": "Quickscan",
+          "points": 1.6875
+        },
+        {
+          "name": "Fast Silk",
+          "points": 0.08333333333333333
+        },
+        {
+          "name": "Seeker",
+          "points": 0.875
+        },
+        {
+          "name": "One-Shot",
+          "points": 0.75
+        },
+        {
+          "name": "Mice",
+          "points": 0.18749999999999997
+        },
+        {
+          "name": "Gatekeeper",
+          "points": 0.5
+        },
+        {
+          "name": "Papercut",
+          "points": 0.08333333333333333
+        },
+        {
+          "name": "Hydra",
+          "points": 0.14583333333333331
+        }
+      ],
+      "comparisonOpponents": [
+        {
+          "name": "Imp",
+          "points": 1
+        },
+        {
+          "name": "Gemini",
+          "points": 2.4583333333333335
+        },
+        {
+          "name": "Sweeper",
+          "points": 1.75
+        },
+        {
+          "name": "Stone and Imp",
+          "points": 1.25
+        },
+        {
+          "name": "Evolved Silk",
+          "points": 0.2916666666666667
+        },
+        {
+          "name": "Red Queen",
+          "points": 1.375
+        },
+        {
+          "name": "Carpet Bomber",
+          "points": 1.9583333333333335
+        },
+        {
+          "name": "Blitz",
+          "points": 0.0625
+        }
+      ]
+    },
+    {
+      "name": "4243-dat-in-place",
+      "parent": 4243,
+      "phase": "dat",
+      "kind": "in-place",
+      "id": "58e7cca6459eecda",
+      "length": 27,
+      "developmentScore": 0.8482142857142857,
+      "comparisonScore": 1.2630208333333333,
+      "developmentSeeds": [
+        0.8511904761904764,
+        0.7738095238095237,
+        0.9047619047619048,
+        0.8630952380952381
+      ],
+      "comparisonSeeds": [
+        1.3541666666666665,
+        1.3125,
+        1.28125,
+        1.1041666666666667
+      ],
+      "developmentOpponents": [
+        {
+          "name": "Dwarf",
+          "points": 1.375
+        },
+        {
+          "name": "Scout",
+          "points": 2.2083333333333335
+        },
+        {
+          "name": "Silk",
+          "points": 0.22916666666666666
+        },
+        {
+          "name": "Vampire",
+          "points": 1.9375
+        },
+        {
+          "name": "Two-Pass Clear",
+          "points": 1.3125
+        },
+        {
+          "name": "Stunner",
+          "points": 1.3125
+        },
+        {
+          "name": "Quickscan",
+          "points": 1.1875
+        },
+        {
+          "name": "Fast Silk",
+          "points": 0.14583333333333331
+        },
+        {
+          "name": "Seeker",
+          "points": 1.0625
+        },
+        {
+          "name": "One-Shot",
+          "points": 0.375
+        },
+        {
+          "name": "Mice",
+          "points": 0.2708333333333333
+        },
+        {
+          "name": "Gatekeeper",
+          "points": 0.375
+        },
+        {
+          "name": "Papercut",
+          "points": 0.020833333333333332
+        },
+        {
+          "name": "Hydra",
+          "points": 0.0625
+        }
+      ],
+      "comparisonOpponents": [
+        {
+          "name": "Imp",
+          "points": 1
+        },
+        {
+          "name": "Gemini",
+          "points": 2.5833333333333335
+        },
+        {
+          "name": "Sweeper",
+          "points": 1.4375
+        },
+        {
+          "name": "Stone and Imp",
+          "points": 1.5
+        },
+        {
+          "name": "Evolved Silk",
+          "points": 0.2708333333333333
+        },
+        {
+          "name": "Red Queen",
+          "points": 1.4375
+        },
+        {
+          "name": "Carpet Bomber",
+          "points": 1.8541666666666667
+        },
+        {
+          "name": "Blitz",
+          "points": 0.020833333333333332
+        }
+      ]
+    }
+  ],
+  "paired": [
+    {
+      "name": "4242-full",
+      "reference": "plain-full",
+      "panel": "development",
+      "gain": 0.014880952380952328,
+      "margin": 0.12721546233365233,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-full",
+      "reference": "plain-full",
+      "panel": "comparison",
+      "gain": 0.052083333333333204,
+      "margin": 0.25670092157328567,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-full",
+      "reference": "4242-full-in-place",
+      "panel": "development",
+      "gain": 0.0476190476190477,
+      "margin": 0.117330120759076,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-full",
+      "reference": "4242-full-in-place",
+      "panel": "comparison",
+      "gain": -0.01562500000000011,
+      "margin": 0.23973896666044253,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-short64",
+      "reference": "4242-full",
+      "panel": "development",
+      "gain": -0.06547619047619044,
+      "margin": 0.02190416881529708,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-short64",
+      "reference": "4242-full",
+      "panel": "comparison",
+      "gain": 0.19791666666666674,
+      "margin": 0.20031216595858203,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-short64",
+      "reference": "plain-short64",
+      "panel": "development",
+      "gain": 0.06696428571428562,
+      "margin": 0.12336764261058009,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-short64",
+      "reference": "plain-short64",
+      "panel": "comparison",
+      "gain": 0.14322916666666669,
+      "margin": 0.03255208333333343,
+      "clearedMargin": true
+    },
+    {
+      "name": "4242-short64",
+      "reference": "4242-short64-in-place",
+      "panel": "development",
+      "gain": 0.09672619047619044,
+      "margin": 0.10856893070739498,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-short64",
+      "reference": "4242-short64-in-place",
+      "panel": "comparison",
+      "gain": 0.08593749999999989,
+      "margin": 0.04168700675412001,
+      "clearedMargin": true
+    },
+    {
+      "name": "4242-short64",
+      "reference": "plain-full",
+      "panel": "development",
+      "gain": -0.05059523809523811,
+      "margin": 0.10773713605641608,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-short64",
+      "reference": "plain-full",
+      "panel": "comparison",
+      "gain": 0.24999999999999994,
+      "margin": 0.09509072178909146,
+      "clearedMargin": true
+    },
+    {
+      "name": "4242-short512",
+      "reference": "4242-full",
+      "panel": "development",
+      "gain": -0.08928571428571425,
+      "margin": 0.06014065304058603,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-short512",
+      "reference": "4242-full",
+      "panel": "comparison",
+      "gain": 0.16666666666666669,
+      "margin": 0.16504473387006555,
+      "clearedMargin": true
+    },
+    {
+      "name": "4242-short512",
+      "reference": "plain-short512",
+      "panel": "development",
+      "gain": 0.056547619047618985,
+      "margin": 0.1040780518767721,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-short512",
+      "reference": "plain-short512",
+      "panel": "comparison",
+      "gain": 0.09635416666666663,
+      "margin": 0.17187993206307403,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-short512",
+      "reference": "4242-short512-in-place",
+      "panel": "development",
+      "gain": 0.06994047619047614,
+      "margin": 0.10298633282239357,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-short512",
+      "reference": "4242-short512-in-place",
+      "panel": "comparison",
+      "gain": 0.059895833333333315,
+      "margin": 0.0853005382249719,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-short512",
+      "reference": "plain-full",
+      "panel": "development",
+      "gain": -0.07440476190476192,
+      "margin": 0.1453593081556805,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-short512",
+      "reference": "plain-full",
+      "panel": "comparison",
+      "gain": 0.2187499999999999,
+      "margin": 0.19225030026345571,
+      "clearedMargin": true
+    },
+    {
+      "name": "4242-short4096",
+      "reference": "4242-full",
+      "panel": "development",
+      "gain": -0.24255952380952378,
+      "margin": 0.054124883042646725,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-short4096",
+      "reference": "4242-full",
+      "panel": "comparison",
+      "gain": -0.0026041666666666297,
+      "margin": 0.07161458333333327,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-short4096",
+      "reference": "plain-short4096",
+      "panel": "development",
+      "gain": 0.06398809523809523,
+      "margin": 0.14811033658775602,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-short4096",
+      "reference": "plain-short4096",
+      "panel": "comparison",
+      "gain": 0.11979166666666663,
+      "margin": 0.25079896203461227,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-short4096",
+      "reference": "4242-short4096-in-place",
+      "panel": "development",
+      "gain": 0.08184523809523814,
+      "margin": 0.06236255436845313,
+      "clearedMargin": true
+    },
+    {
+      "name": "4242-short4096",
+      "reference": "4242-short4096-in-place",
+      "panel": "comparison",
+      "gain": 0.015625,
+      "margin": 0.15351336097072396,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-short4096",
+      "reference": "plain-full",
+      "panel": "development",
+      "gain": -0.22767857142857145,
+      "margin": 0.0811375883083116,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-short4096",
+      "reference": "plain-full",
+      "panel": "comparison",
+      "gain": 0.049479166666666574,
+      "margin": 0.21431701001041248,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-dat",
+      "reference": "4242-full",
+      "panel": "development",
+      "gain": -0.04315476190476186,
+      "margin": 0.054802529250953205,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-dat",
+      "reference": "4242-full",
+      "panel": "comparison",
+      "gain": 0.13020833333333343,
+      "margin": 0.1459650322986131,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-dat",
+      "reference": "plain-dat",
+      "panel": "development",
+      "gain": 0.04166666666666666,
+      "margin": 0.16402833098994501,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-dat",
+      "reference": "plain-dat",
+      "panel": "comparison",
+      "gain": 0.06510416666666674,
+      "margin": 0.24088541666666644,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-dat",
+      "reference": "4242-dat-in-place",
+      "panel": "development",
+      "gain": 0.08779761904761899,
+      "margin": 0.13616613528977878,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-dat",
+      "reference": "4242-dat-in-place",
+      "panel": "comparison",
+      "gain": 0.02083333333333337,
+      "margin": 0.16504473387006519,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-dat",
+      "reference": "plain-full",
+      "panel": "development",
+      "gain": -0.028273809523809534,
+      "margin": 0.10958401096287389,
+      "clearedMargin": false
+    },
+    {
+      "name": "4242-dat",
+      "reference": "plain-full",
+      "panel": "comparison",
+      "gain": 0.18229166666666663,
+      "margin": 0.1944425068107822,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-full",
+      "reference": "plain-full",
+      "panel": "development",
+      "gain": 5.551115123125783e-17,
+      "margin": 0.10398936157359434,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-full",
+      "reference": "plain-full",
+      "panel": "comparison",
+      "gain": 0.036458333333333204,
+      "margin": 0.23401303067202395,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-full",
+      "reference": "4243-full-in-place",
+      "panel": "development",
+      "gain": 0.008928571428571508,
+      "margin": 0.08251887281554625,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-full",
+      "reference": "4243-full-in-place",
+      "panel": "comparison",
+      "gain": -0.007812500000000111,
+      "margin": 0.19382389897071706,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-short64",
+      "reference": "4243-full",
+      "panel": "development",
+      "gain": -0.1145833333333334,
+      "margin": 0.05239243594810897,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-short64",
+      "reference": "4243-full",
+      "panel": "comparison",
+      "gain": 0.09895833333333343,
+      "margin": 0.14479884824316233,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-short64",
+      "reference": "plain-short64",
+      "panel": "development",
+      "gain": 0.0029761904761903824,
+      "margin": 0.13065046816533651,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-short64",
+      "reference": "plain-short64",
+      "panel": "comparison",
+      "gain": 0.02864583333333337,
+      "margin": 0.09590442618916814,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-short64",
+      "reference": "4243-short64-in-place",
+      "panel": "development",
+      "gain": 0.026785714285714274,
+      "margin": 0.11027645870741917,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-short64",
+      "reference": "4243-short64-in-place",
+      "panel": "comparison",
+      "gain": -0.026041666666666574,
+      "margin": 0.11475090335418657,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-short64",
+      "reference": "plain-full",
+      "panel": "development",
+      "gain": -0.11458333333333334,
+      "margin": 0.10387839220939218,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-short64",
+      "reference": "plain-full",
+      "panel": "comparison",
+      "gain": 0.13541666666666663,
+      "margin": 0.11301403269350294,
+      "clearedMargin": true
+    },
+    {
+      "name": "4243-short512",
+      "reference": "4243-full",
+      "panel": "development",
+      "gain": -0.10267857142857148,
+      "margin": 0.06581773070295437,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-short512",
+      "reference": "4243-full",
+      "panel": "comparison",
+      "gain": 0.09895833333333343,
+      "margin": 0.13635658048962684,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-short512",
+      "reference": "plain-short512",
+      "panel": "development",
+      "gain": 0.02827380952380948,
+      "margin": 0.12485450125205218,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-short512",
+      "reference": "plain-short512",
+      "panel": "comparison",
+      "gain": 0.01302083333333337,
+      "margin": 0.17122107029144434,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-short512",
+      "reference": "4243-short512-in-place",
+      "panel": "development",
+      "gain": 0.06696428571428575,
+      "margin": 0.09100019746506607,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-short512",
+      "reference": "4243-short512-in-place",
+      "panel": "comparison",
+      "gain": -0.02604166666666663,
+      "margin": 0.16000267874276697,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-short512",
+      "reference": "plain-full",
+      "panel": "development",
+      "gain": -0.10267857142857142,
+      "margin": 0.1380504115720198,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-short512",
+      "reference": "plain-full",
+      "panel": "comparison",
+      "gain": 0.13541666666666663,
+      "margin": 0.11548728034418473,
+      "clearedMargin": true
+    },
+    {
+      "name": "4243-short4096",
+      "reference": "4243-full",
+      "panel": "development",
+      "gain": -0.26041666666666663,
+      "margin": 0.03664009598882473,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-short4096",
+      "reference": "4243-full",
+      "panel": "comparison",
+      "gain": 0.00520833333333337,
+      "margin": 0.06060868074552501,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-short4096",
+      "reference": "plain-short4096",
+      "panel": "development",
+      "gain": 0.03125000000000008,
+      "margin": 0.15192364084275983,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-short4096",
+      "reference": "plain-short4096",
+      "panel": "comparison",
+      "gain": 0.11197916666666663,
+      "margin": 0.25122111173925443,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-short4096",
+      "reference": "4243-short4096-in-place",
+      "panel": "development",
+      "gain": 0.08482142857142863,
+      "margin": 0.13871716460124012,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-short4096",
+      "reference": "4243-short4096-in-place",
+      "panel": "comparison",
+      "gain": -0.01041666666666674,
+      "margin": 0.17436900543924186,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-short4096",
+      "reference": "plain-full",
+      "panel": "development",
+      "gain": -0.26041666666666663,
+      "margin": 0.10334408060516201,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-short4096",
+      "reference": "plain-full",
+      "panel": "comparison",
+      "gain": 0.041666666666666574,
+      "margin": 0.1769428568631903,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-dat",
+      "reference": "4243-full",
+      "panel": "development",
+      "gain": -0.056547619047619124,
+      "margin": 0.07428065045571404,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-dat",
+      "reference": "4243-full",
+      "panel": "comparison",
+      "gain": 0.12760416666666685,
+      "margin": 0.1346360882747059,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-dat",
+      "reference": "plain-dat",
+      "panel": "development",
+      "gain": 0.013392857142857123,
+      "margin": 0.065254573992673,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-dat",
+      "reference": "plain-dat",
+      "panel": "comparison",
+      "gain": 0.04687500000000017,
+      "margin": 0.17192102708627022,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-dat",
+      "reference": "4243-dat-in-place",
+      "panel": "development",
+      "gain": 0.0684523809523809,
+      "margin": 0.09421339242669938,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-dat",
+      "reference": "4243-dat-in-place",
+      "panel": "comparison",
+      "gain": 0.005208333333333481,
+      "margin": 0.11175688532624761,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-dat",
+      "reference": "plain-full",
+      "panel": "development",
+      "gain": -0.05654761904761907,
+      "margin": 0.07791804599407247,
+      "clearedMargin": false
+    },
+    {
+      "name": "4243-dat",
+      "reference": "plain-full",
+      "panel": "comparison",
+      "gain": 0.16406250000000006,
+      "margin": 0.10490999969854006,
+      "clearedMargin": true
+    }
+  ],
+  "counts": {
+    "matches": 2200,
+    "battleRounds": 26400
+  },
+  "milliseconds": 315287,
+  "rawReport": "evolved/molting-phases/report.json",
+  "limitations": "Fixed matched ablation, no parameter evolution or promotion. Fresh placements on previously examined local-library opponents; no untouched-opponent or public-hill claim. Multiple exploratory comparisons, not formal significance tests."
+}

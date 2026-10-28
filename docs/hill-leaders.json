@@ -1,0 +1,6555 @@
+{
+  "schemaVersion": 1,
+  "fetchedAt": "2026-10-28T02:41:46.087Z",
+  "ranking": "Koenigstuhl recursive scores",
+  "top": 3,
+  "settingsSource": "https://asdflkj.net/COREWAR/koenigstuhl.html",
+  "scope": "Snapshot of the published recursive tables at retrieval time, not Battle Royale or top-50 flat rankings. Retrieval date is not the hill recomputation date.",
+  "license": "Not established for originals; source and reference extractions stay in ignored imported/. Metadata and analysis only are tracked.",
+  "hills": [
+    {
+      "id": "94x",
+      "rankingUrl": "https://asdflkj.net/COREWAR/X/hill32_rec.html",
+      "settings": {
+        "coreSize": 55440,
+        "maxProcesses": 10000,
+        "maxCycles": 500000,
+        "maxLength": 200,
+        "minDistance": 200,
+        "pSpace": true,
+        "assertErrors": true
+      },
+      "note": "Native X hill allows P-space; our 94x tournament profile does not.",
+      "rankingHash": "350bc54dc308645b8a249438e8dd27f8c341f7314773b07cfbe1b1898a434ed2",
+      "resolvedUrl": "https://asdflkj.net/COREWAR/X/hill32_rec.html",
+      "status": "fetched"
+    },
+    {
+      "id": "88",
+      "rankingUrl": "https://asdflkj.net/COREWAR/88/hill32_rec.html",
+      "settings": {
+        "coreSize": 8000,
+        "maxProcesses": 8000,
+        "maxCycles": 80000,
+        "maxLength": 100,
+        "minDistance": 100,
+        "pSpace": false,
+        "dialect": "88",
+        "assertErrors": true
+      },
+      "note": "Strict ICWS 88; native length 100.",
+      "rankingHash": "55f6ca7c5e68e5a7ffb4f82a6597df993371b02a89b2eaf0c69bf87cc3ef0d19",
+      "resolvedUrl": "https://asdflkj.net/COREWAR/88/hill32_rec.html",
+      "status": "fetched"
+    },
+    {
+      "id": "94nop",
+      "rankingUrl": "https://asdflkj.net/COREWAR/94/hill32_rec.html",
+      "settings": {
+        "coreSize": 8000,
+        "maxProcesses": 8000,
+        "maxCycles": 80000,
+        "maxLength": 100,
+        "minDistance": 100,
+        "pSpace": false,
+        "assertErrors": true
+      },
+      "note": "No P-space; native length 100.",
+      "rankingHash": "d179d9de2788cc879af9b51cd96fc6184cd4769f5df21551468ba7e7272325dd",
+      "resolvedUrl": "https://asdflkj.net/COREWAR/94/hill32_rec.html",
+      "status": "fetched"
+    },
+    {
+      "id": "lp",
+      "rankingUrl": "https://asdflkj.net/COREWAR/LP/hill32_rec.html",
+      "settings": {
+        "coreSize": 8000,
+        "maxProcesses": 8,
+        "maxCycles": 80000,
+        "maxLength": 200,
+        "minDistance": 200,
+        "pSpace": true,
+        "assertErrors": true
+      },
+      "note": "Native LP hill permits 200 instructions and P-space. Repo lp defaults remain unchanged.",
+      "rankingHash": "ab1cf2a21f20a4ccac0336f41a2436f9c49717bd7e72571428f7f4cd2548c363",
+      "resolvedUrl": "https://asdflkj.net/COREWAR/LP/hill32_rec.html",
+      "status": "fetched"
+    }
+  ],
+  "leaders": [
+    {
+      "hill": "94x",
+      "rankingUrl": "https://asdflkj.net/COREWAR/X/hill32_rec.html",
+      "rank": 1,
+      "name": "Fatamorgana X",
+      "author": "Zul Nadzri",
+      "score": 184.423,
+      "style": "P-Space",
+      "url": "https://asdflkj.net/COREWAR/X/HILL32/fatamorganaX.red",
+      "resolvedUrl": "https://asdflkj.net/COREWAR/X/HILL32/fatamorganaX.red",
+      "status": "inspected",
+      "inspection": {
+        "hash": "6e1371149537ebb970b92e59e8a393a2dce10a83fba115ffba82e4f63f255f2c",
+        "lines": 297,
+        "opcodes": [
+          "ADD",
+          "DAT",
+          "DJN",
+          "JMN",
+          "JMP",
+          "JMZ",
+          "LDP",
+          "MOD",
+          "MOV",
+          "MUL",
+          "NOP",
+          "SEQ",
+          "SLT",
+          "SNE",
+          "SPL",
+          "STP",
+          "SUB"
+        ],
+        "constants": [
+          {
+            "name": "maxdraw",
+            "line": 10,
+            "expression": "4"
+          },
+          {
+            "name": "compa",
+            "line": 11,
+            "expression": "count+CORESIZE/3"
+          },
+          {
+            "name": "compb",
+            "line": 12,
+            "expression": "compa+1"
+          },
+          {
+            "name": "compc",
+            "line": 13,
+            "expression": "compb+1"
+          },
+          {
+            "name": "compd",
+            "line": 14,
+            "expression": "compc+1"
+          },
+          {
+            "name": "war1loc",
+            "line": 15,
+            "expression": "dBoot-exec"
+          },
+          {
+            "name": "war2loc",
+            "line": 16,
+            "expression": "kBoot-exec"
+          },
+          {
+            "name": "war3loc",
+            "line": 17,
+            "expression": "mula-exec"
+          },
+          {
+            "name": "war4loc",
+            "line": 18,
+            "expression": "sBoot-exec"
+          },
+          {
+            "name": "pbwashval",
+            "line": 19,
+            "expression": "651"
+          },
+          {
+            "name": "init",
+            "line": 21,
+            "expression": "11"
+          },
+          {
+            "name": "pbwashbox",
+            "line": 22,
+            "expression": "init+4"
+          },
+          {
+            "name": "pactivebox",
+            "line": 23,
+            "expression": "pbwashbox+10"
+          },
+          {
+            "name": "pincrlocbox",
+            "line": 24,
+            "expression": "pactivebox+10"
+          },
+          {
+            "name": "pdrawbox",
+            "line": 25,
+            "expression": "pincrlocbox+10"
+          },
+          {
+            "name": "dDist",
+            "line": 113,
+            "expression": "(dBoot+43990)"
+          },
+          {
+            "name": "dGate",
+            "line": 114,
+            "expression": "-5"
+          },
+          {
+            "name": "dStep",
+            "line": 115,
+            "expression": "53421"
+          },
+          {
+            "name": "dbPos",
+            "line": 116,
+            "expression": "11"
+          },
+          {
+            "name": "step",
+            "line": 153,
+            "expression": "4876"
+          },
+          {
+            "name": "ptr",
+            "line": 155,
+            "expression": "(scan-8)"
+          },
+          {
+            "name": "kAway",
+            "line": 156,
+            "expression": "CORESIZE/2"
+          },
+          {
+            "name": "len",
+            "line": 195,
+            "expression": "9"
+          },
+          {
+            "name": "QB",
+            "line": 196,
+            "expression": "(start+400)"
+          },
+          {
+            "name": "fcp",
+            "line": 197,
+            "expression": "(3039*3)"
+          },
+          {
+            "name": "scp",
+            "line": 198,
+            "expression": "(2365*2)"
+          },
+          {
+            "name": "tcp",
+            "line": 199,
+            "expression": "(777)"
+          },
+          {
+            "name": "QS",
+            "line": 200,
+            "expression": "1000"
+          },
+          {
+            "name": "QD",
+            "line": 201,
+            "expression": "500"
+          },
+          {
+            "name": "sDist",
+            "line": 243,
+            "expression": "19241+18-4"
+          },
+          {
+            "name": "sStep",
+            "line": 244,
+            "expression": "13379"
+          },
+          {
+            "name": "sTop",
+            "line": 245,
+            "expression": "(sPtr-1)"
+          },
+          {
+            "name": "pbox",
+            "line": 271,
+            "expression": "300"
+          },
+          {
+            "name": "pnum",
+            "line": 272,
+            "expression": "300"
+          },
+          {
+            "name": "pmula",
+            "line": 273,
+            "expression": "1-(MAXLENGTH+10)"
+          }
+        ],
+        "sections": [
+          {
+            "label": "normal",
+            "line": 27,
+            "endLine": 29,
+            "references": [
+              "check",
+              "bwash"
+            ],
+            "constantReferences": [
+              "pbwashval",
+              "pbwashbox"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "active",
+            "line": 30,
+            "endLine": 32,
+            "references": [
+              "incrlocbox",
+              "incrloc",
+              "a"
+            ],
+            "constantReferences": [
+              "pactivebox",
+              "pincrlocbox"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "incrlocbox",
+            "line": 33,
+            "endLine": 33,
+            "references": [
+              "incrloc",
+              "a"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "check",
+            "line": 34,
+            "endLine": 35,
+            "references": [
+              "draw",
+              "WL",
+              "start"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "draw",
+            "line": 36,
+            "endLine": 37,
+            "references": [
+              "drawval",
+              "a"
+            ],
+            "constantReferences": [
+              "pdrawbox"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "gula1",
+            "line": 38,
+            "endLine": 39,
+            "references": [
+              "check",
+              "draw",
+              "drawval",
+              "drawadjust",
+              "a"
+            ],
+            "constantReferences": [
+              "maxdraw"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "drawval",
+            "line": 40,
+            "endLine": 48,
+            "references": [
+              "active",
+              "drawd",
+              "drawb",
+              "drawc",
+              "exec"
+            ],
+            "constantReferences": [
+              "pdrawbox"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "drawadjust",
+            "line": 49,
+            "endLine": 51,
+            "references": [
+              "draw",
+              "lose"
+            ],
+            "constantReferences": [
+              "pdrawbox"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "WL",
+            "line": 52,
+            "endLine": 52,
+            "references": [
+              "check",
+              "win",
+              "start"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "lose",
+            "line": 53,
+            "endLine": 53,
+            "references": [
+              "a"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "win",
+            "line": 54,
+            "endLine": 54,
+            "references": [
+              "a"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "incrloc",
+            "line": 55,
+            "endLine": 55,
+            "references": [],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "select",
+            "line": 56,
+            "endLine": 60,
+            "references": [
+              "active",
+              "comp1",
+              "comp4",
+              "comp2",
+              "comp3"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "gula2",
+            "line": 61,
+            "endLine": 64,
+            "references": [
+              "a",
+              "comp1",
+              "comp4",
+              "comp2",
+              "comp3"
+            ],
+            "constantReferences": [
+              "compa",
+              "compb",
+              "compc",
+              "compd"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "compare",
+            "line": 65,
+            "endLine": 66,
+            "references": [
+              "a",
+              "bcd",
+              "b",
+              "exec"
+            ],
+            "constantReferences": [
+              "compa",
+              "compb"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "acd",
+            "line": 67,
+            "endLine": 68,
+            "references": [
+              "a",
+              "cd"
+            ],
+            "constantReferences": [
+              "compa",
+              "compc"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "ad",
+            "line": 69,
+            "endLine": 70,
+            "references": [
+              "a",
+              "d"
+            ],
+            "constantReferences": [
+              "compa",
+              "compd"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "a",
+            "line": 71,
+            "endLine": 71,
+            "references": [
+              "active"
+            ],
+            "constantReferences": [
+              "pactivebox"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "comp1",
+            "line": 72,
+            "endLine": 74,
+            "references": [
+              "active",
+              "exec"
+            ],
+            "constantReferences": [
+              "pincrlocbox"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "gula3",
+            "line": 75,
+            "endLine": 76,
+            "references": [],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "d",
+            "line": 77,
+            "endLine": 77,
+            "references": [],
+            "constantReferences": [
+              "pactivebox"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "comp4",
+            "line": 78,
+            "endLine": 78,
+            "references": [],
+            "constantReferences": [
+              "pincrlocbox"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "drawd",
+            "line": 79,
+            "endLine": 81,
+            "references": [
+              "a",
+              "exec"
+            ],
+            "constantReferences": [
+              "war4loc"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "bcd",
+            "line": 82,
+            "endLine": 85,
+            "references": [
+              "a",
+              "d",
+              "cd"
+            ],
+            "constantReferences": [
+              "compb",
+              "compc",
+              "compd"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "b",
+            "line": 86,
+            "endLine": 86,
+            "references": [],
+            "constantReferences": [
+              "pactivebox"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "comp2",
+            "line": 87,
+            "endLine": 87,
+            "references": [],
+            "constantReferences": [
+              "pincrlocbox"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "drawb",
+            "line": 88,
+            "endLine": 90,
+            "references": [
+              "a",
+              "exec"
+            ],
+            "constantReferences": [
+              "war2loc"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "cd",
+            "line": 91,
+            "endLine": 92,
+            "references": [
+              "a",
+              "d"
+            ],
+            "constantReferences": [
+              "compc",
+              "compd"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "c",
+            "line": 93,
+            "endLine": 93,
+            "references": [],
+            "constantReferences": [
+              "pactivebox"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "comp3",
+            "line": 94,
+            "endLine": 94,
+            "references": [],
+            "constantReferences": [
+              "pincrlocbox"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "drawc",
+            "line": 95,
+            "endLine": 97,
+            "references": [
+              "a",
+              "exec"
+            ],
+            "constantReferences": [
+              "war3loc"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "bwash",
+            "line": 98,
+            "endLine": 99,
+            "references": [],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "gula4",
+            "line": 100,
+            "endLine": 108,
+            "references": [
+              "bwash"
+            ],
+            "constantReferences": [
+              "pbwashval",
+              "init",
+              "pbwashbox",
+              "pactivebox",
+              "pincrlocbox",
+              "pdrawbox"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "exec",
+            "line": 109,
+            "endLine": 117,
+            "references": [
+              "dBoot"
+            ],
+            "constantReferences": [
+              "war1loc",
+              "dDist",
+              "dGate",
+              "dStep",
+              "dbPos"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dBoot",
+            "line": 118,
+            "endLine": 121,
+            "references": [
+              "dAway1",
+              "dSpl",
+              "dTop",
+              "dPtr",
+              "dBoot2"
+            ],
+            "constantReferences": [
+              "dDist",
+              "dStep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "gula5",
+            "line": 122,
+            "endLine": 123,
+            "references": [
+              "dAway1",
+              "dSpl",
+              "dBoot2",
+              "dAway2"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dAway1",
+            "line": 124,
+            "endLine": 128,
+            "references": [
+              "dTop",
+              "dLast"
+            ],
+            "constantReferences": [
+              "dDist"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dDat",
+            "line": 129,
+            "endLine": 130,
+            "references": [],
+            "constantReferences": [
+              "dGate"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dSpl",
+            "line": 131,
+            "endLine": 132,
+            "references": [
+              "dLast"
+            ],
+            "constantReferences": [
+              "dGate"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "gula6",
+            "line": 133,
+            "endLine": 134,
+            "references": [
+              "dSpl"
+            ],
+            "constantReferences": [
+              "dGate"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dTop",
+            "line": 135,
+            "endLine": 136,
+            "references": [
+              "dPtr"
+            ],
+            "constantReferences": [
+              "dStep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dPtr",
+            "line": 137,
+            "endLine": 137,
+            "references": [],
+            "constantReferences": [
+              "dStep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "madu5",
+            "line": 138,
+            "endLine": 138,
+            "references": [
+              "b",
+              "dTop"
+            ],
+            "constantReferences": [
+              "dbPos"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dLast",
+            "line": 139,
+            "endLine": 140,
+            "references": [
+              "dPtr"
+            ],
+            "constantReferences": [
+              "dGate",
+              "dStep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dBomb",
+            "line": 141,
+            "endLine": 145,
+            "references": [],
+            "constantReferences": [
+              "dStep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dBoot2",
+            "line": 146,
+            "endLine": 148,
+            "references": [
+              "dAway1",
+              "dSpl",
+              "dTop",
+              "dPtr",
+              "dBomb"
+            ],
+            "constantReferences": [
+              "dDist",
+              "dStep",
+              "dbPos"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dAway2",
+            "line": 149,
+            "endLine": 149,
+            "references": [
+              "dDat",
+              "dTop",
+              "dPtr"
+            ],
+            "constantReferences": [
+              "dDist",
+              "dStep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "gula7",
+            "line": 150,
+            "endLine": 157,
+            "references": [
+              "dAway1",
+              "dAway2",
+              "scan"
+            ],
+            "constantReferences": [
+              "step",
+              "ptr",
+              "kAway"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "kay",
+            "line": 158,
+            "endLine": 160,
+            "references": [],
+            "constantReferences": [
+              "kAway"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "diff",
+            "line": 161,
+            "endLine": 161,
+            "references": [],
+            "constantReferences": [
+              "step"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "wipe",
+            "line": 162,
+            "endLine": 162,
+            "references": [
+              "diff"
+            ],
+            "constantReferences": [
+              "ptr"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "w2",
+            "line": 163,
+            "endLine": 165,
+            "references": [
+              "a",
+              "wipe",
+              "length"
+            ],
+            "constantReferences": [
+              "ptr"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "loop",
+            "line": 166,
+            "endLine": 166,
+            "references": [
+              "diff",
+              "s2"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "scan",
+            "line": 167,
+            "endLine": 168,
+            "references": [
+              "check",
+              "a",
+              "diff"
+            ],
+            "constantReferences": [
+              "step"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "s2",
+            "line": 169,
+            "endLine": 170,
+            "references": [
+              "check",
+              "a",
+              "scan"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "timer",
+            "line": 171,
+            "endLine": 172,
+            "references": [
+              "loop",
+              "count"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "length",
+            "line": 173,
+            "endLine": 173,
+            "references": [
+              "wipe"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "tweak",
+            "line": 174,
+            "endLine": 174,
+            "references": [
+              "wipe",
+              "s2"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "t2",
+            "line": 175,
+            "endLine": 177,
+            "references": [
+              "a",
+              "w2",
+              "timer",
+              "tweak"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "kBoot",
+            "line": 178,
+            "endLine": 178,
+            "references": [
+              "kay"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "gula8",
+            "line": 179,
+            "endLine": 188,
+            "references": [
+              "select",
+              "gula5",
+              "kay",
+              "kBoot",
+              "madu3",
+              "madu4"
+            ],
+            "constantReferences": [
+              "kAway"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "gula9",
+            "line": 189,
+            "endLine": 190,
+            "references": [
+              "ad",
+              "madu5"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "madu3",
+            "line": 191,
+            "endLine": 202,
+            "references": [
+              "start"
+            ],
+            "constantReferences": [
+              "len",
+              "QB",
+              "fcp",
+              "scp",
+              "tcp",
+              "QS",
+              "QD"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "mula",
+            "line": 203,
+            "endLine": 204,
+            "references": [],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "gula10",
+            "line": 205,
+            "endLine": 211,
+            "references": [
+              "frog"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "frog",
+            "line": 212,
+            "endLine": 212,
+            "references": [],
+            "constantReferences": [
+              "len",
+              "fcp"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sweet",
+            "line": 213,
+            "endLine": 216,
+            "references": [],
+            "constantReferences": [
+              "scp",
+              "tcp"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "madu7",
+            "line": 217,
+            "endLine": 219,
+            "references": [],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "gula50",
+            "line": 220,
+            "endLine": 224,
+            "references": [
+              "sBoot"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sBoot",
+            "line": 225,
+            "endLine": 231,
+            "references": [
+              "sAway",
+              "sBP"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sAway",
+            "line": 232,
+            "endLine": 240,
+            "references": [
+              "gula3",
+              "gula5",
+              "gula7",
+              "gula9",
+              "gula10",
+              "gula",
+              "sPtr",
+              "sI2",
+              "sStart"
+            ],
+            "constantReferences": [
+              "sDist"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "gula",
+            "line": 241,
+            "endLine": 246,
+            "references": [
+              "sPtr"
+            ],
+            "constantReferences": [
+              "sDist",
+              "sStep",
+              "sTop"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sPtr",
+            "line": 247,
+            "endLine": 247,
+            "references": [],
+            "constantReferences": [
+              "sStep",
+              "sTop"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sI1",
+            "line": 248,
+            "endLine": 250,
+            "references": [
+              "b",
+              "sMain"
+            ],
+            "constantReferences": [
+              "sTop"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sI2",
+            "line": 251,
+            "endLine": 255,
+            "references": [
+              "sI1",
+              "sSpl",
+              "sWash"
+            ],
+            "constantReferences": [
+              "sTop"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sGate",
+            "line": 256,
+            "endLine": 256,
+            "references": [
+              "sI1"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sI3",
+            "line": 257,
+            "endLine": 257,
+            "references": [
+              "sPtr",
+              "sI2"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sMain",
+            "line": 258,
+            "endLine": 258,
+            "references": [
+              "a",
+              "sPtr"
+            ],
+            "constantReferences": [
+              "sStep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sStart",
+            "line": 259,
+            "endLine": 261,
+            "references": [
+              "a",
+              "sPtr",
+              "sI1",
+              "sGate",
+              "sI3"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sSpl",
+            "line": 262,
+            "endLine": 264,
+            "references": [
+              "sGate"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sBP",
+            "line": 265,
+            "endLine": 265,
+            "references": [
+              "sPtr",
+              "sGate"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sWash",
+            "line": 266,
+            "endLine": 267,
+            "references": [],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "madu4",
+            "line": 268,
+            "endLine": 274,
+            "references": [
+              "bwash"
+            ],
+            "constantReferences": [
+              "pbox",
+              "pnum",
+              "pmula"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "start",
+            "line": 275,
+            "endLine": 277,
+            "references": [
+              "x1"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "test",
+            "line": 278,
+            "endLine": 286,
+            "references": [
+              "normal",
+              "bwash",
+              "start",
+              "x1"
+            ],
+            "constantReferences": [
+              "pbox",
+              "pnum"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "x1",
+            "line": 287,
+            "endLine": 287,
+            "references": [
+              "bwash"
+            ],
+            "constantReferences": [
+              "pbox",
+              "pnum"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "seek",
+            "line": 288,
+            "endLine": 288,
+            "references": [
+              "count"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "count",
+            "line": 289,
+            "endLine": 297,
+            "references": [
+              "normal",
+              "compare",
+              "sBoot",
+              "start"
+            ],
+            "constantReferences": [
+              "pmula"
+            ],
+            "status": "candidate-boundary"
+          }
+        ],
+        "familyHints": [
+          "pspace-control",
+          "scan-or-condition",
+          "replication-or-stun",
+          "copy-or-bomb-or-clear",
+          "counter-or-decrement-stream"
+        ],
+        "confidence": "lexical hints only; macros, generated labels and dataflow require review"
+      },
+      "assembly": {
+        "native": {
+          "ok": true,
+          "length": 200,
+          "errors": []
+        },
+        "tournament50": {
+          "ok": false,
+          "errors": [
+            {
+              "line": 0,
+              "message": "program is 169 instructions long; the limit is 50"
+            },
+            {
+              "line": 27,
+              "message": "LDP: these rules have no P-space"
+            },
+            {
+              "line": 30,
+              "message": "LDP: these rules have no P-space"
+            },
+            {
+              "line": 31,
+              "message": "LDP: these rules have no P-space"
+            },
+            {
+              "line": 32,
+              "message": "LDP: these rules have no P-space"
+            },
+            {
+              "line": 33,
+              "message": "LDP: these rules have no P-space"
+            },
+            {
+              "line": 36,
+              "message": "LDP: these rules have no P-space"
+            },
+            {
+              "line": 40,
+              "message": "STP: these rules have no P-space"
+            },
+            {
+              "line": 49,
+              "message": "STP: these rules have no P-space"
+            },
+            {
+              "line": 55,
+              "message": "STP: these rules have no P-space"
+            },
+            {
+              "line": 61,
+              "message": "LDP: these rules have no P-space"
+            },
+            {
+              "line": 62,
+              "message": "LDP: these rules have no P-space"
+            },
+            {
+              "line": 63,
+              "message": "LDP: these rules have no P-space"
+            },
+            {
+              "line": 64,
+              "message": "LDP: these rules have no P-space"
+            },
+            {
+              "line": 71,
+              "message": "STP: these rules have no P-space"
+            },
+            {
+              "line": 72,
+              "message": "STP: these rules have no P-space"
+            },
+            {
+              "line": 77,
+              "message": "STP: these rules have no P-space"
+            },
+            {
+              "line": 78,
+              "message": "STP: these rules have no P-space"
+            },
+            {
+              "line": 86,
+              "message": "STP: these rules have no P-space"
+            },
+            {
+              "line": 87,
+              "message": "STP: these rules have no P-space"
+            },
+            {
+              "line": 93,
+              "message": "STP: these rules have no P-space"
+            },
+            {
+              "line": 94,
+              "message": "STP: these rules have no P-space"
+            },
+            {
+              "line": 98,
+              "message": "STP: these rules have no P-space"
+            },
+            {
+              "line": 104,
+              "message": "STP: these rules have no P-space"
+            },
+            {
+              "line": 105,
+              "message": "STP: these rules have no P-space"
+            },
+            {
+              "line": 106,
+              "message": "STP: these rules have no P-space"
+            },
+            {
+              "line": 107,
+              "message": "STP: these rules have no P-space"
+            },
+            {
+              "line": 266,
+              "message": "STP: these rules have no P-space"
+            },
+            {
+              "line": 275,
+              "message": "LDP: these rules have no P-space"
+            },
+            {
+              "line": 278,
+              "message": "LDP: these rules have no P-space"
+            },
+            {
+              "line": 283,
+              "message": "STP: these rules have no P-space"
+            },
+            {
+              "line": 287,
+              "message": "STP: these rules have no P-space"
+            }
+          ]
+        }
+      },
+      "solo": {
+        "processes": 1,
+        "coverage": 7,
+        "survives": false,
+        "shape": 1,
+        "cell": [
+          0,
+          0
+        ],
+        "key": "0,0",
+        "hint": "lean scanner or stone"
+      },
+      "soloScope": "One fresh single-warrior VM run; no enemy and no learned match history. Not a strength or controller-conformance test.",
+      "review": {
+        "hash": "6e1371149537ebb970b92e59e8a393a2dce10a83fba115ffba82e4f63f255f2c",
+        "family": "P-space portfolio: stone, scanners and paper",
+        "parts": [
+          [
+            10,
+            109,
+            "Persistent selector and recovery"
+          ],
+          [
+            113,
+            150,
+            "Booted stone with clear fallback"
+          ],
+          [
+            153,
+            190,
+            "Compare scanner, wipe and boot"
+          ],
+          [
+            195,
+            220,
+            "Paper launcher and replication"
+          ],
+          [
+            225,
+            266,
+            "Second scanner, boot, clear and P-space bomb"
+          ],
+          [
+            271,
+            290,
+            "Match-entry and result-dependent logic"
+          ]
+        ],
+        "reuse": "Study the attack portfolio separately from its controller. Several shared labels and deliberate source edits cross section boundaries.",
+        "requirements": [
+          "P-space enabled for original",
+          "Four different payload process contracts",
+          "Multi-round controller tests; solo failure is not a hill-strength verdict"
+        ],
+        "targets": [
+          "pspace-selector",
+          "compare-scan",
+          "silk-launch",
+          "airbag-stone"
+        ],
+        "current": true
+      }
+    },
+    {
+      "hill": "94x",
+      "rankingUrl": "https://asdflkj.net/COREWAR/X/hill32_rec.html",
+      "rank": 2,
+      "name": "Fire and Ice II",
+      "author": "David Moore",
+      "score": 182.505,
+      "style": "P-Space",
+      "url": "https://asdflkj.net/COREWAR/X/HILL32/fireandice2.red",
+      "resolvedUrl": "https://asdflkj.net/COREWAR/X/HILL32/fireandice2.red",
+      "status": "inspected",
+      "inspection": {
+        "hash": "b8bc715eb117d4cc0f31337241b8405b12a8e8a4abe319bb7eae820a4fb8ea2a",
+        "lines": 135,
+        "opcodes": [
+          "ADD",
+          "DAT",
+          "DJN",
+          "JMN",
+          "JMP",
+          "JMZ",
+          "LDP",
+          "MOD",
+          "MOV",
+          "SLT",
+          "SNE",
+          "SPL",
+          "STP"
+        ],
+        "constants": [
+          {
+            "name": "dDist",
+            "line": 15,
+            "expression": "(dBoot+43990)"
+          },
+          {
+            "name": "dGate",
+            "line": 16,
+            "expression": "-5"
+          },
+          {
+            "name": "dStep",
+            "line": 17,
+            "expression": "53421"
+          },
+          {
+            "name": "dbPos",
+            "line": 18,
+            "expression": "11"
+          },
+          {
+            "name": "pState",
+            "line": 64,
+            "expression": "2001"
+          },
+          {
+            "name": "sDist",
+            "line": 96,
+            "expression": "19241"
+          },
+          {
+            "name": "sStep",
+            "line": 97,
+            "expression": "13379"
+          },
+          {
+            "name": "sTop",
+            "line": 98,
+            "expression": "(sPtr-1)"
+          }
+        ],
+        "sections": [
+          {
+            "label": "dBoot",
+            "line": 20,
+            "endLine": 25,
+            "references": [
+              "dAway1",
+              "dSpl",
+              "dTop",
+              "dPtr",
+              "dBoot2",
+              "dAway2"
+            ],
+            "constantReferences": [
+              "dDist",
+              "dStep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dAway1",
+            "line": 26,
+            "endLine": 30,
+            "references": [
+              "dTop",
+              "dLast"
+            ],
+            "constantReferences": [
+              "dDist"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dDat",
+            "line": 31,
+            "endLine": 32,
+            "references": [],
+            "constantReferences": [
+              "dGate"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dSpl",
+            "line": 33,
+            "endLine": 36,
+            "references": [
+              "dLast"
+            ],
+            "constantReferences": [
+              "dGate"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dTop",
+            "line": 37,
+            "endLine": 38,
+            "references": [
+              "dPtr"
+            ],
+            "constantReferences": [
+              "dStep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dPtr",
+            "line": 39,
+            "endLine": 40,
+            "references": [
+              "dTop"
+            ],
+            "constantReferences": [
+              "dStep",
+              "dbPos"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dLast",
+            "line": 41,
+            "endLine": 42,
+            "references": [
+              "dPtr"
+            ],
+            "constantReferences": [
+              "dGate",
+              "dStep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dBomb",
+            "line": 43,
+            "endLine": 47,
+            "references": [],
+            "constantReferences": [
+              "dStep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dBoot2",
+            "line": 48,
+            "endLine": 50,
+            "references": [
+              "dAway1",
+              "dSpl",
+              "dTop",
+              "dPtr",
+              "dBomb"
+            ],
+            "constantReferences": [
+              "dDist",
+              "dStep",
+              "dbPos"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dAway2",
+            "line": 51,
+            "endLine": 65,
+            "references": [
+              "dAway1",
+              "dDat",
+              "dTop",
+              "dPtr"
+            ],
+            "constantReferences": [
+              "dDist",
+              "dStep",
+              "pState"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "start",
+            "line": 66,
+            "endLine": 69,
+            "references": [
+              "pTable",
+              "pTab2"
+            ],
+            "constantReferences": [
+              "pState"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "pTable",
+            "line": 70,
+            "endLine": 81,
+            "references": [
+              "dBoot",
+              "sBoot"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "pTab2",
+            "line": 82,
+            "endLine": 99,
+            "references": [
+              "sPtr"
+            ],
+            "constantReferences": [
+              "sDist",
+              "sStep",
+              "sTop"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sPtr",
+            "line": 100,
+            "endLine": 100,
+            "references": [],
+            "constantReferences": [
+              "sStep",
+              "sTop"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sI1",
+            "line": 101,
+            "endLine": 103,
+            "references": [
+              "sMain"
+            ],
+            "constantReferences": [
+              "sTop"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sI2",
+            "line": 104,
+            "endLine": 108,
+            "references": [
+              "sI1",
+              "sSpl",
+              "sWash"
+            ],
+            "constantReferences": [
+              "sTop"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sGate",
+            "line": 109,
+            "endLine": 109,
+            "references": [
+              "sI1"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sI3",
+            "line": 110,
+            "endLine": 110,
+            "references": [
+              "sPtr",
+              "sI2"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sMain",
+            "line": 111,
+            "endLine": 111,
+            "references": [
+              "sPtr"
+            ],
+            "constantReferences": [
+              "sStep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sStart",
+            "line": 112,
+            "endLine": 114,
+            "references": [
+              "sPtr",
+              "sI1",
+              "sGate",
+              "sI3"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sSpl",
+            "line": 115,
+            "endLine": 117,
+            "references": [
+              "sGate"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sBP",
+            "line": 118,
+            "endLine": 118,
+            "references": [
+              "sPtr",
+              "sGate"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sWash",
+            "line": 119,
+            "endLine": 122,
+            "references": [],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sBoot",
+            "line": 123,
+            "endLine": 129,
+            "references": [
+              "sBP",
+              "sAway"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sAway",
+            "line": 130,
+            "endLine": 135,
+            "references": [
+              "sPtr",
+              "sStart"
+            ],
+            "constantReferences": [
+              "sDist"
+            ],
+            "status": "candidate-boundary"
+          }
+        ],
+        "familyHints": [
+          "pspace-control",
+          "scan-or-condition",
+          "replication-or-stun",
+          "copy-or-bomb-or-clear",
+          "counter-or-decrement-stream"
+        ],
+        "confidence": "lexical hints only; macros, generated labels and dataflow require review"
+      },
+      "assembly": {
+        "native": {
+          "ok": true,
+          "length": 200,
+          "errors": []
+        },
+        "tournament50": {
+          "ok": false,
+          "errors": [
+            {
+              "line": 0,
+              "message": "program is 196 instructions long; the limit is 50"
+            },
+            {
+              "line": 66,
+              "message": "LDP: these rules have no P-space"
+            },
+            {
+              "line": 67,
+              "message": "LDP: these rules have no P-space"
+            },
+            {
+              "line": 69,
+              "message": "STP: these rules have no P-space"
+            },
+            {
+              "line": 119,
+              "message": "STP: these rules have no P-space"
+            }
+          ]
+        }
+      },
+      "solo": {
+        "processes": 882,
+        "coverage": 32,
+        "survives": true,
+        "shape": 1,
+        "cell": [
+          3,
+          0
+        ],
+        "key": "3,0",
+        "hint": "stunner or SPL carpet"
+      },
+      "soloScope": "One fresh single-warrior VM run; no enemy and no learned match history. Not a strength or controller-conformance test.",
+      "review": {
+        "hash": "b8bc715eb117d4cc0f31337241b8405b12a8e8a4abe319bb7eae820a4fb8ea2a",
+        "family": "P-space choice of airbag stone or anti-imp scanner",
+        "parts": [
+          [
+            15,
+            52,
+            "Stone boot, bombing and clear fallback"
+          ],
+          [
+            64,
+            84,
+            "Result/state table and dispatch"
+          ],
+          [
+            96,
+            119,
+            "Scanner, clear and P-space bomb"
+          ],
+          [
+            123,
+            130,
+            "Scanner boot"
+          ]
+        ],
+        "reuse": "The stone branch is a bounded source extraction candidate. The scanner still contains STP after removing the selector.",
+        "requirements": [
+          "55440-cell arithmetic",
+          "Preserve noncontiguous boot placement and process schedule",
+          "Do not classify the scanner as P-space-free"
+        ],
+        "targets": [
+          "airbag-stone",
+          "pspace-selector",
+          "compare-scan"
+        ],
+        "extraction": {
+          "id": "airbag-stone-94x",
+          "rules": "94x",
+          "ranges": [
+            [
+              15,
+              52
+            ]
+          ],
+          "entry": "dBoot",
+          "note": "Complete stone boot and payload; controller and scanner omitted. Requires a multi-process boot verifier before evolution admission."
+        },
+        "current": true
+      }
+    },
+    {
+      "hill": "94x",
+      "rankingUrl": "https://asdflkj.net/COREWAR/X/hill32_rec.html",
+      "rank": 3,
+      "name": "Fire and Brimstone",
+      "author": "David Moore/Steve Gunnell",
+      "score": 180.761,
+      "style": "P-Space",
+      "url": "https://asdflkj.net/COREWAR/X/HILL32/fireandbrim.red",
+      "resolvedUrl": "https://asdflkj.net/COREWAR/X/HILL32/fireandbrim.red",
+      "status": "inspected",
+      "inspection": {
+        "hash": "86f9707094d8402a2a94e69cf916ec7901ca8eaebdb4bfded98242000e87aed8",
+        "lines": 128,
+        "opcodes": [
+          "ADD",
+          "DAT",
+          "DJN",
+          "JMN",
+          "JMP",
+          "JMZ",
+          "LDP",
+          "MOD",
+          "MOV",
+          "SLT",
+          "SPL",
+          "STP",
+          "SUB"
+        ],
+        "constants": [
+          {
+            "name": "dDist",
+            "line": 14,
+            "expression": "(dBoot+43990)"
+          },
+          {
+            "name": "dGate",
+            "line": 15,
+            "expression": "-5"
+          },
+          {
+            "name": "dStep",
+            "line": 16,
+            "expression": "53421"
+          },
+          {
+            "name": "dbPos",
+            "line": 17,
+            "expression": "11"
+          },
+          {
+            "name": "pState",
+            "line": 63,
+            "expression": "123"
+          },
+          {
+            "name": "STEP",
+            "line": 95,
+            "expression": "15331"
+          },
+          {
+            "name": "START",
+            "line": 96,
+            "expression": "51541"
+          },
+          {
+            "name": "LEAP",
+            "line": 97,
+            "expression": "(head+32003)"
+          },
+          {
+            "name": "bptr",
+            "line": 98,
+            "expression": "(head-2)"
+          }
+        ],
+        "sections": [
+          {
+            "label": "dBoot",
+            "line": 19,
+            "endLine": 24,
+            "references": [
+              "dAway1",
+              "dSpl",
+              "dTop",
+              "dPtr",
+              "dBoot2",
+              "dAway2"
+            ],
+            "constantReferences": [
+              "dDist",
+              "dStep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dAway1",
+            "line": 25,
+            "endLine": 29,
+            "references": [
+              "dTop",
+              "dLast"
+            ],
+            "constantReferences": [
+              "dDist"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dDat",
+            "line": 30,
+            "endLine": 31,
+            "references": [],
+            "constantReferences": [
+              "dGate"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dSpl",
+            "line": 32,
+            "endLine": 35,
+            "references": [
+              "dLast"
+            ],
+            "constantReferences": [
+              "dGate"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dTop",
+            "line": 36,
+            "endLine": 37,
+            "references": [
+              "dPtr"
+            ],
+            "constantReferences": [
+              "dStep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dPtr",
+            "line": 38,
+            "endLine": 39,
+            "references": [
+              "dTop"
+            ],
+            "constantReferences": [
+              "dStep",
+              "dbPos"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dLast",
+            "line": 40,
+            "endLine": 41,
+            "references": [
+              "dPtr"
+            ],
+            "constantReferences": [
+              "dGate",
+              "dStep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dBomb",
+            "line": 42,
+            "endLine": 46,
+            "references": [],
+            "constantReferences": [
+              "dStep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dBoot2",
+            "line": 47,
+            "endLine": 49,
+            "references": [
+              "dAway1",
+              "dSpl",
+              "dTop",
+              "dPtr",
+              "dBomb"
+            ],
+            "constantReferences": [
+              "dDist",
+              "dStep",
+              "dbPos"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dAway2",
+            "line": 50,
+            "endLine": 64,
+            "references": [
+              "dAway1",
+              "dDat",
+              "dTop",
+              "dPtr"
+            ],
+            "constantReferences": [
+              "dDist",
+              "dStep",
+              "pState"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "start",
+            "line": 65,
+            "endLine": 68,
+            "references": [
+              "pTable",
+              "pTab2"
+            ],
+            "constantReferences": [
+              "pState"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "pTable",
+            "line": 69,
+            "endLine": 80,
+            "references": [
+              "dBoot",
+              "sBoot"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "pTab2",
+            "line": 81,
+            "endLine": 99,
+            "references": [
+              "head"
+            ],
+            "constantReferences": [
+              "STEP",
+              "START",
+              "LEAP",
+              "bptr"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sBoot",
+            "line": 100,
+            "endLine": 114,
+            "references": [
+              "head"
+            ],
+            "constantReferences": [
+              "LEAP"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "head",
+            "line": 115,
+            "endLine": 116,
+            "references": [
+              "tail"
+            ],
+            "constantReferences": [
+              "START",
+              "bptr"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "trash",
+            "line": 117,
+            "endLine": 119,
+            "references": [
+              "head",
+              "hptr",
+              "tail"
+            ],
+            "constantReferences": [
+              "STEP",
+              "bptr"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "hptr",
+            "line": 120,
+            "endLine": 121,
+            "references": [
+              "head",
+              "tail"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "tail",
+            "line": 122,
+            "endLine": 128,
+            "references": [
+              "start"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          }
+        ],
+        "familyHints": [
+          "pspace-control",
+          "scan-or-condition",
+          "replication-or-stun",
+          "copy-or-bomb-or-clear",
+          "counter-or-decrement-stream"
+        ],
+        "confidence": "lexical hints only; macros, generated labels and dataflow require review"
+      },
+      "assembly": {
+        "native": {
+          "ok": true,
+          "length": 193,
+          "errors": []
+        },
+        "tournament50": {
+          "ok": false,
+          "errors": [
+            {
+              "line": 0,
+              "message": "program is 190 instructions long; the limit is 50"
+            },
+            {
+              "line": 65,
+              "message": "LDP: these rules have no P-space"
+            },
+            {
+              "line": 66,
+              "message": "LDP: these rules have no P-space"
+            },
+            {
+              "line": 68,
+              "message": "STP: these rules have no P-space"
+            }
+          ]
+        }
+      },
+      "solo": {
+        "processes": 2,
+        "coverage": 25,
+        "survives": true,
+        "shape": 1,
+        "cell": [
+          1,
+          0
+        ],
+        "key": "1,0",
+        "hint": "lean scanner or stone"
+      },
+      "soloScope": "One fresh single-warrior VM run; no enemy and no learned match history. Not a strength or controller-conformance test.",
+      "review": {
+        "hash": "86f9707094d8402a2a94e69cf916ec7901ca8eaebdb4bfded98242000e87aed8",
+        "family": "P-space choice of shared airbag stone or Kenshin scanner",
+        "parts": [
+          [
+            14,
+            51,
+            "Stone branch shared with Fire and Ice II"
+          ],
+          [
+            63,
+            83,
+            "Result/state controller"
+          ],
+          [
+            95,
+            112,
+            "Kenshin constants and copying launcher"
+          ],
+          [
+            115,
+            124,
+            "Scanner and attack continuation"
+          ]
+        ],
+        "reuse": "The Kenshin branch can be assembled without the P-brain. Its child starts while the parent is copying, so copy order is part of the behavior.",
+        "requirements": [
+          "55440-cell offsets",
+          "Concurrent copy/execute schedule",
+          "Self-modifying pointer and attack transitions"
+        ],
+        "targets": [
+          "concurrent-boot",
+          "compare-scan",
+          "pspace-selector"
+        ],
+        "extraction": {
+          "id": "kenshin-branch-94x",
+          "rules": "94x",
+          "ranges": [
+            [
+              95,
+              124
+            ]
+          ],
+          "entry": "sBoot",
+          "note": "Controller and stone omitted; concurrent launch/copy must be verified before mutation."
+        },
+        "current": true
+      }
+    },
+    {
+      "hill": "88",
+      "rankingUrl": "https://asdflkj.net/COREWAR/88/hill32_rec.html",
+      "rank": 1,
+      "name": "Lithobolia C yvfp",
+      "author": "Steve Gunnell",
+      "score": 171.784,
+      "style": "88",
+      "url": "https://asdflkj.net/COREWAR/88/HILL32/lithoboliaC-yvfp.red",
+      "resolvedUrl": "https://asdflkj.net/COREWAR/88/HILL32/lithoboliaC-yvfp.red",
+      "status": "inspected",
+      "inspection": {
+        "hash": "57d4774c7c31c48c167e58007bcd0c531947cb3dae530fc068f9a373e7909a46",
+        "lines": 151,
+        "opcodes": [
+          "ADD",
+          "CMP",
+          "DAT",
+          "DJN",
+          "JMP",
+          "JMZ",
+          "MOV",
+          "SPL",
+          "SUB"
+        ],
+        "constants": [
+          {
+            "name": "QGAP",
+            "line": 11,
+            "expression": "1168"
+          },
+          {
+            "name": "qfirst",
+            "line": 13,
+            "expression": "(qp2+2*qstep)"
+          },
+          {
+            "name": "qdist",
+            "line": 14,
+            "expression": "qfirst+QGAP"
+          },
+          {
+            "name": "qstep",
+            "line": 15,
+            "expression": "(QGAP+QGAP)"
+          },
+          {
+            "name": "qi",
+            "line": 17,
+            "expression": "5"
+          },
+          {
+            "name": "qr",
+            "line": 18,
+            "expression": "10"
+          },
+          {
+            "name": "qa",
+            "line": 22,
+            "expression": "qstep*16"
+          },
+          {
+            "name": "qb",
+            "line": 23,
+            "expression": "qstep*5+2"
+          },
+          {
+            "name": "qc",
+            "line": 24,
+            "expression": "qstep*10"
+          },
+          {
+            "name": "qd",
+            "line": 25,
+            "expression": "qstep*2"
+          },
+          {
+            "name": "qe",
+            "line": 26,
+            "expression": "qstep*1"
+          },
+          {
+            "name": "MARK",
+            "line": 73,
+            "expression": "4573"
+          },
+          {
+            "name": "HOP",
+            "line": 74,
+            "expression": "992"
+          },
+          {
+            "name": "FIRST",
+            "line": 75,
+            "expression": "warr+6247"
+          },
+          {
+            "name": "GAP",
+            "line": 76,
+            "expression": "10"
+          },
+          {
+            "name": "STEP",
+            "line": 77,
+            "expression": "2190"
+          },
+          {
+            "name": "PAPER1",
+            "line": 78,
+            "expression": "2302"
+          },
+          {
+            "name": "PAPER2",
+            "line": 79,
+            "expression": "2949"
+          },
+          {
+            "name": "PAPER3",
+            "line": 80,
+            "expression": "4368"
+          },
+          {
+            "name": "ptr",
+            "line": 124,
+            "expression": "(A-GAP-1)"
+          },
+          {
+            "name": "IMPN",
+            "line": 141,
+            "expression": "2667"
+          }
+        ],
+        "sections": [
+          {
+            "label": "qbomb",
+            "line": 20,
+            "endLine": 27,
+            "references": [],
+            "constantReferences": [
+              "qstep",
+              "qi",
+              "qr",
+              "qa",
+              "qb",
+              "qc",
+              "qd",
+              "qe"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qscan",
+            "line": 28,
+            "endLine": 30,
+            "references": [
+              "qfast"
+            ],
+            "constantReferences": [
+              "qfirst",
+              "qdist",
+              "qa",
+              "qc",
+              "qd",
+              "qe"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qp1",
+            "line": 31,
+            "endLine": 31,
+            "references": [
+              "qfast"
+            ],
+            "constantReferences": [
+              "qc"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qp2",
+            "line": 32,
+            "endLine": 32,
+            "references": [],
+            "constantReferences": [
+              "qfirst",
+              "qdist"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qp3",
+            "line": 33,
+            "endLine": 35,
+            "references": [
+              "qskip"
+            ],
+            "constantReferences": [
+              "qfirst",
+              "qdist",
+              "qb",
+              "qe"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "q1",
+            "line": 36,
+            "endLine": 40,
+            "references": [
+              "qp1",
+              "qslow",
+              "qfast"
+            ],
+            "constantReferences": [
+              "qfirst",
+              "qdist",
+              "qb",
+              "qc",
+              "qd"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "x1",
+            "line": 41,
+            "endLine": 42,
+            "references": [
+              "q1",
+              "qslow"
+            ],
+            "constantReferences": [
+              "qfirst",
+              "qdist",
+              "qc"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "q2",
+            "line": 43,
+            "endLine": 55,
+            "references": [
+              "qp2",
+              "q1",
+              "x1",
+              "qslower",
+              "qslow",
+              "qfast"
+            ],
+            "constantReferences": [
+              "qfirst",
+              "qdist",
+              "qa",
+              "qb",
+              "qc",
+              "qd",
+              "qe"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "q3",
+            "line": 56,
+            "endLine": 59,
+            "references": [
+              "qp3",
+              "qslower",
+              "warr"
+            ],
+            "constantReferences": [
+              "qdist",
+              "qc",
+              "qd",
+              "qe"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qslower",
+            "line": 60,
+            "endLine": 60,
+            "references": [
+              "q3",
+              "qslow"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qslow",
+            "line": 61,
+            "endLine": 61,
+            "references": [
+              "q2",
+              "qkil"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qfast",
+            "line": 62,
+            "endLine": 63,
+            "references": [
+              "q1",
+              "qslow"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qskip",
+            "line": 64,
+            "endLine": 67,
+            "references": [
+              "qloop",
+              "qkil"
+            ],
+            "constantReferences": [
+              "qfirst",
+              "qdist",
+              "qstep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qloop",
+            "line": 68,
+            "endLine": 68,
+            "references": [
+              "qbomb",
+              "qkil"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qkil",
+            "line": 69,
+            "endLine": 81,
+            "references": [
+              "qloop",
+              "warr"
+            ],
+            "constantReferences": [
+              "qfirst",
+              "qstep",
+              "qi",
+              "qr",
+              "MARK",
+              "HOP",
+              "FIRST",
+              "GAP",
+              "STEP",
+              "PAPER1",
+              "PAPER2",
+              "PAPER3"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "warr",
+            "line": 82,
+            "endLine": 124,
+            "references": [
+              "A",
+              "B",
+              "C",
+              "D",
+              "paper"
+            ],
+            "constantReferences": [
+              "MARK",
+              "HOP",
+              "FIRST",
+              "GAP",
+              "ptr"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "A",
+            "line": 125,
+            "endLine": 125,
+            "references": [
+              "qscan"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "B",
+            "line": 126,
+            "endLine": 126,
+            "references": [
+              "C"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "C",
+            "line": 127,
+            "endLine": 127,
+            "references": [],
+            "constantReferences": [
+              "HOP"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "D",
+            "line": 128,
+            "endLine": 130,
+            "references": [
+              "qscan",
+              "A"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "paper",
+            "line": 131,
+            "endLine": 146,
+            "references": [
+              "imp"
+            ],
+            "constantReferences": [
+              "MARK",
+              "PAPER1",
+              "PAPER2",
+              "PAPER3",
+              "IMPN"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "imp",
+            "line": 147,
+            "endLine": 151,
+            "references": [
+              "qscan"
+            ],
+            "constantReferences": [
+              "IMPN"
+            ],
+            "status": "candidate-boundary"
+          }
+        ],
+        "familyHints": [
+          "scan-or-condition",
+          "replication-or-stun",
+          "copy-or-bomb-or-clear",
+          "counter-or-decrement-stream"
+        ],
+        "confidence": "lexical hints only; macros, generated labels and dataflow require review"
+      },
+      "assembly": {
+        "native": {
+          "ok": true,
+          "length": 99,
+          "errors": []
+        },
+        "tournament50": {
+          "ok": false,
+          "errors": [
+            {
+              "line": 0,
+              "message": "program is 99 instructions long; the limit is 50"
+            }
+          ]
+        }
+      },
+      "solo": {
+        "processes": 8000,
+        "coverage": 407,
+        "survives": true,
+        "shape": 1,
+        "cell": [
+          5,
+          2
+        ],
+        "key": "5,2",
+        "hint": "paper/stone hybrid"
+      },
+      "soloScope": "One fresh single-warrior VM run; no enemy and no learned match history. Not a strength or controller-conformance test.",
+      "review": {
+        "hash": "57d4774c7c31c48c167e58007bcd0c531947cb3dae530fc068f9a373e7909a46",
+        "family": "'88 quickscan, distributed stones, paper/imp",
+        "parts": [
+          [
+            11,
+            27,
+            "Scan constants and bomb"
+          ],
+          [
+            28,
+            71,
+            "Compare probes, decode and attack"
+          ],
+          [
+            73,
+            123,
+            "Placement constants and seven stone boots"
+          ],
+          [
+            124,
+            128,
+            "Compact stone"
+          ],
+          [
+            131,
+            147,
+            "Paper and imp launch"
+          ]
+        ],
+        "reuse": "A distributed set of small stones is more interesting for a 50-instruction recipe than copying the entire opening.",
+        "requirements": [
+          "Legal 88 modes only",
+          "Stone side effects reference the original qscan region",
+          "Spawn tree, placement spacing and payload copies must agree"
+        ],
+        "targets": [
+          "distributed-stones",
+          "quickscan",
+          "silk-launch",
+          "imp-spiral"
+        ],
+        "current": true
+      }
+    },
+    {
+      "hill": "88",
+      "rankingUrl": "https://asdflkj.net/COREWAR/88/hill32_rec.html",
+      "rank": 2,
+      "name": "Talisman",
+      "author": "John Metcalf",
+      "score": 170.387,
+      "style": "88",
+      "url": "https://asdflkj.net/COREWAR/88/HILL32/talisman.red",
+      "resolvedUrl": "https://asdflkj.net/COREWAR/88/HILL32/talisman.red",
+      "status": "inspected",
+      "inspection": {
+        "hash": "21cd594b26e725e804026673ed9cb5e9991de55347846defe5b901e8d7d9cd3b",
+        "lines": 119,
+        "opcodes": [
+          "ADD",
+          "CMP",
+          "DAT",
+          "DJN",
+          "JMP",
+          "JMZ",
+          "MOV",
+          "SLT",
+          "SPL",
+          "SUB"
+        ],
+        "constants": [
+          {
+            "name": "qfirst",
+            "line": 9,
+            "expression": "(qp2+2*qstep)"
+          },
+          {
+            "name": "qdist",
+            "line": 10,
+            "expression": "qfirst+qeee"
+          },
+          {
+            "name": "qstep",
+            "line": 11,
+            "expression": "(qeee*2)"
+          },
+          {
+            "name": "qeee",
+            "line": 12,
+            "expression": "130"
+          },
+          {
+            "name": "qi",
+            "line": 14,
+            "expression": "7"
+          },
+          {
+            "name": "qr",
+            "line": 15,
+            "expression": "7"
+          },
+          {
+            "name": "qa",
+            "line": 19,
+            "expression": "qstep*16"
+          },
+          {
+            "name": "qb",
+            "line": 20,
+            "expression": "qstep*5+2"
+          },
+          {
+            "name": "qc",
+            "line": 21,
+            "expression": "qstep*10"
+          },
+          {
+            "name": "qd",
+            "line": 22,
+            "expression": "qstep*2"
+          },
+          {
+            "name": "qe",
+            "line": 23,
+            "expression": "qstep*1"
+          },
+          {
+            "name": "sdist",
+            "line": 80,
+            "expression": "(warr+4716)"
+          },
+          {
+            "name": "ldist",
+            "line": 81,
+            "expression": "(sdist-309)"
+          },
+          {
+            "name": "idist",
+            "line": 82,
+            "expression": "959"
+          },
+          {
+            "name": "bdist",
+            "line": 83,
+            "expression": "16"
+          },
+          {
+            "name": "step",
+            "line": 97,
+            "expression": "2211"
+          },
+          {
+            "name": "time",
+            "line": 98,
+            "expression": "1819"
+          },
+          {
+            "name": "hop",
+            "line": 99,
+            "expression": "20"
+          },
+          {
+            "name": "istep",
+            "line": 109,
+            "expression": "2667"
+          }
+        ],
+        "sections": [
+          {
+            "label": "qbomb",
+            "line": 17,
+            "endLine": 24,
+            "references": [],
+            "constantReferences": [
+              "qstep",
+              "qi",
+              "qr",
+              "qa",
+              "qb",
+              "qc",
+              "qd",
+              "qe"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qscan",
+            "line": 25,
+            "endLine": 27,
+            "references": [
+              "qfast"
+            ],
+            "constantReferences": [
+              "qfirst",
+              "qdist",
+              "qa",
+              "qc",
+              "qd",
+              "qe"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qp1",
+            "line": 28,
+            "endLine": 28,
+            "references": [
+              "qfast"
+            ],
+            "constantReferences": [
+              "qc"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qp2",
+            "line": 29,
+            "endLine": 29,
+            "references": [],
+            "constantReferences": [
+              "qfirst",
+              "qdist"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qp3",
+            "line": 30,
+            "endLine": 32,
+            "references": [
+              "qskip"
+            ],
+            "constantReferences": [
+              "qfirst",
+              "qdist",
+              "qb",
+              "qe"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "q1",
+            "line": 33,
+            "endLine": 37,
+            "references": [
+              "qp1",
+              "qslow",
+              "qfast"
+            ],
+            "constantReferences": [
+              "qfirst",
+              "qdist",
+              "qb",
+              "qc",
+              "qd"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "x1",
+            "line": 38,
+            "endLine": 39,
+            "references": [
+              "q1",
+              "qslow"
+            ],
+            "constantReferences": [
+              "qfirst",
+              "qdist",
+              "qc"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "q2",
+            "line": 40,
+            "endLine": 56,
+            "references": [
+              "qp2",
+              "q1",
+              "x1",
+              "qslower",
+              "qslow",
+              "qfast"
+            ],
+            "constantReferences": [
+              "qfirst",
+              "qdist",
+              "qa",
+              "qb",
+              "qc",
+              "qd",
+              "qe"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "q3",
+            "line": 57,
+            "endLine": 66,
+            "references": [
+              "qp3",
+              "q1",
+              "q2",
+              "qslower",
+              "qfast",
+              "warr"
+            ],
+            "constantReferences": [
+              "qfirst",
+              "qdist",
+              "qb",
+              "qc",
+              "qd",
+              "qe"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qslower",
+            "line": 67,
+            "endLine": 67,
+            "references": [
+              "q3",
+              "qslow"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qslow",
+            "line": 68,
+            "endLine": 68,
+            "references": [
+              "q2",
+              "qkil"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qfast",
+            "line": 69,
+            "endLine": 70,
+            "references": [
+              "q1",
+              "qslow"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qskip",
+            "line": 71,
+            "endLine": 74,
+            "references": [
+              "qloop",
+              "qkil"
+            ],
+            "constantReferences": [
+              "qfirst",
+              "qdist",
+              "qstep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qloop",
+            "line": 75,
+            "endLine": 75,
+            "references": [
+              "qbomb",
+              "qkil"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qkil",
+            "line": 76,
+            "endLine": 84,
+            "references": [
+              "qloop",
+              "warr"
+            ],
+            "constantReferences": [
+              "qfirst",
+              "qstep",
+              "qi",
+              "qr",
+              "sdist",
+              "ldist",
+              "idist",
+              "bdist"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "warr",
+            "line": 85,
+            "endLine": 88,
+            "references": [
+              "sbomb",
+              "imp"
+            ],
+            "constantReferences": [
+              "sdist",
+              "ldist",
+              "idist",
+              "bdist"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sboot",
+            "line": 89,
+            "endLine": 94,
+            "references": [
+              "lboot",
+              "stone",
+              "launch"
+            ],
+            "constantReferences": [
+              "sdist"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "lboot",
+            "line": 95,
+            "endLine": 101,
+            "references": [],
+            "constantReferences": [
+              "ldist",
+              "step",
+              "time",
+              "hop"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "stone",
+            "line": 102,
+            "endLine": 102,
+            "references": [
+              "hit"
+            ],
+            "constantReferences": [
+              "bdist",
+              "step",
+              "time"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "hit",
+            "line": 103,
+            "endLine": 106,
+            "references": [
+              "stone"
+            ],
+            "constantReferences": [
+              "bdist",
+              "step"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sbomb",
+            "line": 107,
+            "endLine": 110,
+            "references": [],
+            "constantReferences": [
+              "hop",
+              "istep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "imp",
+            "line": 111,
+            "endLine": 112,
+            "references": [],
+            "constantReferences": [
+              "istep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "launch",
+            "line": 113,
+            "endLine": 114,
+            "references": [
+              "iptr"
+            ],
+            "constantReferences": [
+              "istep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "iptr",
+            "line": 115,
+            "endLine": 119,
+            "references": [
+              "qscan",
+              "launch"
+            ],
+            "constantReferences": [
+              "idist",
+              "istep"
+            ],
+            "status": "candidate-boundary"
+          }
+        ],
+        "familyHints": [
+          "scan-or-condition",
+          "replication-or-stun",
+          "copy-or-bomb-or-clear",
+          "counter-or-decrement-stream"
+        ],
+        "confidence": "lexical hints only; macros, generated labels and dataflow require review"
+      },
+      "assembly": {
+        "native": {
+          "ok": true,
+          "length": 69,
+          "errors": []
+        },
+        "tournament50": {
+          "ok": false,
+          "errors": [
+            {
+              "line": 0,
+              "message": "program is 69 instructions long; the limit is 50"
+            }
+          ]
+        }
+      },
+      "solo": {
+        "processes": 270,
+        "coverage": 7513,
+        "survives": true,
+        "shape": 1,
+        "cell": [
+          3,
+          5
+        ],
+        "key": "3,5",
+        "hint": "imp spiral or small paper"
+      },
+      "soloScope": "One fresh single-warrior VM run; no enemy and no learned match history. Not a strength or controller-conformance test.",
+      "review": {
+        "hash": "21cd594b26e725e804026673ed9cb5e9991de55347846defe5b901e8d7d9cd3b",
+        "family": "'88 quickscan then booted stone/imp",
+        "parts": [
+          [
+            9,
+            23,
+            "Scan constants and bomb"
+          ],
+          [
+            25,
+            78,
+            "Compare scan, decoder and bombing"
+          ],
+          [
+            80,
+            95,
+            "Boot distances and launcher"
+          ],
+          [
+            97,
+            107,
+            "Stone and bomb"
+          ],
+          [
+            109,
+            115,
+            "Imp and continuous launcher"
+          ]
+        ],
+        "reuse": "Study the shared boot as a stone/imp recipe. A standalone stone slice would miss the separately installed bomb.",
+        "requirements": [
+          "8000-cell imp stride",
+          "Boot installs distant bomb and imp seeds",
+          "Continuous launcher consumes process budget"
+        ],
+        "targets": [
+          "stone-imp-boot",
+          "quickscan"
+        ],
+        "current": true
+      }
+    },
+    {
+      "hill": "88",
+      "rankingUrl": "https://asdflkj.net/COREWAR/88/hill32_rec.html",
+      "rank": 3,
+      "name": "Freight Train v0.2",
+      "author": "David Moore",
+      "score": 170.027,
+      "style": "88",
+      "url": "https://asdflkj.net/COREWAR/88/HILL32/freighttrainv02.red",
+      "resolvedUrl": "https://asdflkj.net/COREWAR/88/HILL32/freighttrainv02.red",
+      "status": "inspected",
+      "inspection": {
+        "hash": "4c22745e4cb978b7884c9465a1ffe63371f83b2a7c71400e010a42d27e89a2be",
+        "lines": 152,
+        "opcodes": [
+          "ADD",
+          "CMP",
+          "DAT",
+          "DJN",
+          "JMP",
+          "MOV",
+          "SPL",
+          "SUB"
+        ],
+        "constants": [
+          {
+            "name": "switch",
+            "line": 14,
+            "expression": "1"
+          },
+          {
+            "name": "QB",
+            "line": 18,
+            "expression": "1748"
+          },
+          {
+            "name": "QS",
+            "line": 19,
+            "expression": "328"
+          },
+          {
+            "name": "QI",
+            "line": 20,
+            "expression": "163"
+          },
+          {
+            "name": "stbd",
+            "line": 24,
+            "expression": "1500"
+          },
+          {
+            "name": "c1bd",
+            "line": 25,
+            "expression": "2004"
+          },
+          {
+            "name": "c2bd",
+            "line": 26,
+            "expression": "6508"
+          },
+          {
+            "name": "is",
+            "line": 30,
+            "expression": "((CORESIZE+1)/7)"
+          },
+          {
+            "name": "step",
+            "line": 34,
+            "expression": "82"
+          },
+          {
+            "name": "time",
+            "line": 35,
+            "expression": "2437"
+          },
+          {
+            "name": "dd",
+            "line": 36,
+            "expression": "7"
+          }
+        ],
+        "sections": [
+          {
+            "label": "cont",
+            "line": 42,
+            "endLine": 53,
+            "references": [
+              "main",
+              "imp"
+            ],
+            "constantReferences": [
+              "switch",
+              "c1bd",
+              "is"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qjb",
+            "line": 54,
+            "endLine": 55,
+            "references": [],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qa3",
+            "line": 56,
+            "endLine": 56,
+            "references": [
+              "qp",
+              "qs3"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qa2",
+            "line": 57,
+            "endLine": 57,
+            "references": [
+              "qs2"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qa1",
+            "line": 58,
+            "endLine": 58,
+            "references": [
+              "qs1"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qa0",
+            "line": 59,
+            "endLine": 59,
+            "references": [
+              "qp",
+              "last"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qjbp",
+            "line": 60,
+            "endLine": 68,
+            "references": [
+              "cont",
+              "qjb",
+              "qp",
+              "qt2",
+              "stone"
+            ],
+            "constantReferences": [
+              "QI"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qp",
+            "line": 69,
+            "endLine": 72,
+            "references": [
+              "main",
+              "cboot",
+              "launch",
+              "last"
+            ],
+            "constantReferences": [
+              "QB",
+              "QS"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qt2",
+            "line": 73,
+            "endLine": 75,
+            "references": [],
+            "constantReferences": [
+              "QS"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qscan",
+            "line": 76,
+            "endLine": 76,
+            "references": [
+              "main"
+            ],
+            "constantReferences": [
+              "QB",
+              "QS",
+              "QI"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qs1",
+            "line": 77,
+            "endLine": 79,
+            "references": [
+              "qa0",
+              "main",
+              "qt1"
+            ],
+            "constantReferences": [
+              "QB",
+              "QS",
+              "QI"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qs2",
+            "line": 80,
+            "endLine": 84,
+            "references": [
+              "qa1",
+              "qt2",
+              "qs1",
+              "main"
+            ],
+            "constantReferences": [
+              "QB",
+              "QS",
+              "QI"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qs3",
+            "line": 85,
+            "endLine": 110,
+            "references": [
+              "qa3",
+              "qa2",
+              "qa1",
+              "qs1",
+              "qs2",
+              "main",
+              "imp",
+              "stone",
+              "qt3"
+            ],
+            "constantReferences": [
+              "QB",
+              "QS",
+              "QI"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "main",
+            "line": 111,
+            "endLine": 116,
+            "references": [
+              "cont",
+              "stptr",
+              "c1ptr",
+              "stone",
+              "launch",
+              "c2ptr"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "stptr",
+            "line": 117,
+            "endLine": 118,
+            "references": [
+              "main"
+            ],
+            "constantReferences": [
+              "stbd"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "cboot",
+            "line": 119,
+            "endLine": 120,
+            "references": [
+              "main",
+              "db",
+              "imp"
+            ],
+            "constantReferences": [
+              "stbd",
+              "is",
+              "dd"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "c1ptr",
+            "line": 121,
+            "endLine": 124,
+            "references": [
+              "main",
+              "imp"
+            ],
+            "constantReferences": [
+              "c1bd",
+              "c2bd",
+              "is"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "db",
+            "line": 125,
+            "endLine": 126,
+            "references": [],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "imp",
+            "line": 127,
+            "endLine": 128,
+            "references": [],
+            "constantReferences": [
+              "is"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "stone",
+            "line": 129,
+            "endLine": 133,
+            "references": [
+              "db"
+            ],
+            "constantReferences": [
+              "step",
+              "time",
+              "dd"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "launch",
+            "line": 134,
+            "endLine": 134,
+            "references": [
+              "cboot"
+            ],
+            "constantReferences": [
+              "QS"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qt1",
+            "line": 135,
+            "endLine": 135,
+            "references": [],
+            "constantReferences": [
+              "QS"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qt3",
+            "line": 136,
+            "endLine": 136,
+            "references": [],
+            "constantReferences": [
+              "QS"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "c2ptr",
+            "line": 137,
+            "endLine": 140,
+            "references": [
+              "main",
+              "imp"
+            ],
+            "constantReferences": [
+              "c2bd",
+              "is"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "last",
+            "line": 141,
+            "endLine": 152,
+            "references": [
+              "qscan",
+              "main"
+            ],
+            "constantReferences": [
+              "switch",
+              "stbd"
+            ],
+            "status": "candidate-boundary"
+          }
+        ],
+        "familyHints": [
+          "scan-or-condition",
+          "replication-or-stun",
+          "copy-or-bomb-or-clear",
+          "counter-or-decrement-stream"
+        ],
+        "confidence": "lexical hints only; macros, generated labels and dataflow require review"
+      },
+      "assembly": {
+        "native": {
+          "ok": true,
+          "length": 74,
+          "errors": []
+        },
+        "tournament50": {
+          "ok": false,
+          "errors": [
+            {
+              "line": 0,
+              "message": "program is 74 instructions long; the limit is 50"
+            }
+          ]
+        }
+      },
+      "solo": {
+        "processes": 3750,
+        "coverage": 322,
+        "survives": true,
+        "shape": 1,
+        "cell": [
+          4,
+          2
+        ],
+        "key": "4,2",
+        "hint": "paper/stone hybrid"
+      },
+      "soloScope": "One fresh single-warrior VM run; no enemy and no learned match history. Not a strength or controller-conformance test.",
+      "review": {
+        "hash": "4c22745e4cb978b7884c9465a1ffe63371f83b2a7c71400e010a42d27e89a2be",
+        "family": "'88 optional quickscan, stone and dual imp launchers",
+        "parts": [
+          [
+            14,
+            36,
+            "Documented scan switch and constants"
+          ],
+          [
+            42,
+            44,
+            "Continuous launcher"
+          ],
+          [
+            50,
+            105,
+            "Conditional quickscan"
+          ],
+          [
+            111,
+            127,
+            "Stone and launcher boot, bomb and imp"
+          ],
+          [
+            129,
+            141,
+            "Stone and initial launch tree"
+          ],
+          [
+            145,
+            151,
+            "Conditional entry point"
+          ]
+        ],
+        "reuse": "The original already provides a scan-off switch. This gives a meaningful small reference variant without guessing which scan lines to delete.",
+        "requirements": [
+          "Seven-point imp stride congruence",
+          "Both continuous launchers and initial seeding are coupled",
+          "Self-bombing stone transition must remain intact"
+        ],
+        "targets": [
+          "stone-imp-boot",
+          "quickscan"
+        ],
+        "extraction": {
+          "id": "freight-no-qscan-88",
+          "rules": "88",
+          "switchOff": true,
+          "note": "Only the author-provided switch EQU changes from 1 to 0. This retains the full source and assembles its non-scanning variant."
+        },
+        "current": true
+      }
+    },
+    {
+      "hill": "94nop",
+      "rankingUrl": "https://asdflkj.net/COREWAR/94/hill32_rec.html",
+      "rank": 1,
+      "name": "Arvon",
+      "author": "Stefan Kammann & Forge-AI",
+      "score": 161.444,
+      "style": "94",
+      "url": "https://asdflkj.net/COREWAR/94/HILL32/arvon.red",
+      "resolvedUrl": "https://asdflkj.net/COREWAR/94/HILL32/arvon.red",
+      "status": "inspected",
+      "inspection": {
+        "hash": "f8562b067d40451fdb518a156f951d0eeb7cb162f2af93e18073a4e84192db78",
+        "lines": 114,
+        "opcodes": [
+          "ADD",
+          "DAT",
+          "DJN",
+          "JMP",
+          "JMZ",
+          "MOV",
+          "MUL",
+          "SEQ",
+          "SNE",
+          "SPL",
+          "SUB"
+        ],
+        "constants": [
+          {
+            "name": "qfac",
+            "line": 14,
+            "expression": "163"
+          },
+          {
+            "name": "qdec",
+            "line": 15,
+            "expression": "1228"
+          },
+          {
+            "name": "qgap",
+            "line": 16,
+            "expression": "-67"
+          },
+          {
+            "name": "qstep",
+            "line": 17,
+            "expression": "9"
+          },
+          {
+            "name": "qtime",
+            "line": 18,
+            "expression": "15"
+          },
+          {
+            "name": "qa",
+            "line": 20,
+            "expression": "(qfac*(qtab0-1-qptr)+1)"
+          },
+          {
+            "name": "qb",
+            "line": 21,
+            "expression": "(qfac*(qtab0-qptr)+1)"
+          },
+          {
+            "name": "qc",
+            "line": 22,
+            "expression": "(qfac*(qtab1-1-qptr)+1)"
+          },
+          {
+            "name": "qd",
+            "line": 23,
+            "expression": "(qfac*(qtab1-qptr)+1)"
+          },
+          {
+            "name": "qe",
+            "line": 24,
+            "expression": "(qfac*(qtab1+1-qptr)+1)"
+          },
+          {
+            "name": "qf",
+            "line": 25,
+            "expression": "(qfac*(qtab2-qptr)+1)"
+          },
+          {
+            "name": "pbo2",
+            "line": 65,
+            "expression": "843"
+          },
+          {
+            "name": "sbo",
+            "line": 66,
+            "expression": "3200"
+          },
+          {
+            "name": "pboot",
+            "line": 67,
+            "expression": "warr + pbo2"
+          },
+          {
+            "name": "sboot",
+            "line": 68,
+            "expression": "warr + sbo"
+          },
+          {
+            "name": "d1",
+            "line": 69,
+            "expression": "3828"
+          },
+          {
+            "name": "d2",
+            "line": 70,
+            "expression": "2602"
+          },
+          {
+            "name": "d3",
+            "line": 71,
+            "expression": "1351"
+          },
+          {
+            "name": "d4",
+            "line": 72,
+            "expression": "3493"
+          },
+          {
+            "name": "d5",
+            "line": 73,
+            "expression": "1406"
+          },
+          {
+            "name": "d6",
+            "line": 74,
+            "expression": "3947"
+          },
+          {
+            "name": "sstep",
+            "line": 88,
+            "expression": "2431"
+          },
+          {
+            "name": "stime",
+            "line": 89,
+            "expression": "1470"
+          },
+          {
+            "name": "sback",
+            "line": 90,
+            "expression": "-2122"
+          },
+          {
+            "name": "sfirst",
+            "line": 91,
+            "expression": "(shit + sptr + sstep * stime)"
+          },
+          {
+            "name": "pstep",
+            "line": 102,
+            "expression": "1365"
+          }
+        ],
+        "sections": [
+          {
+            "label": "qdecode",
+            "line": 27,
+            "endLine": 27,
+            "references": [
+              "q1",
+              "qptr"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "q0",
+            "line": 28,
+            "endLine": 28,
+            "references": [
+              "qptr",
+              "qtab0"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "q1",
+            "line": 29,
+            "endLine": 29,
+            "references": [
+              "qptr",
+              "qtab1"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "q2",
+            "line": 30,
+            "endLine": 30,
+            "references": [
+              "qptr",
+              "qtab2"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qptr",
+            "line": 31,
+            "endLine": 34,
+            "references": [
+              "q2",
+              "qtab2",
+              "warr"
+            ],
+            "constantReferences": [
+              "qdec",
+              "qstep",
+              "qtime",
+              "qc"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qtab1",
+            "line": 35,
+            "endLine": 37,
+            "references": [],
+            "constantReferences": [
+              "qd",
+              "qe"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qscan",
+            "line": 38,
+            "endLine": 55,
+            "references": [
+              "qdecode",
+              "q1",
+              "qptr",
+              "qtab1",
+              "qtab0",
+              "qtab2"
+            ],
+            "constantReferences": [
+              "qdec",
+              "qa",
+              "qb",
+              "qc",
+              "qd",
+              "qe",
+              "qf"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qtab0",
+            "line": 56,
+            "endLine": 56,
+            "references": [
+              "warr"
+            ],
+            "constantReferences": [
+              "qb"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qtab2",
+            "line": 57,
+            "endLine": 75,
+            "references": [
+              "warr"
+            ],
+            "constantReferences": [
+              "qgap",
+              "qf",
+              "pbo2",
+              "sbo",
+              "pboot",
+              "sboot",
+              "d1",
+              "d2",
+              "d3",
+              "d4",
+              "d5",
+              "d6"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "warr",
+            "line": 76,
+            "endLine": 80,
+            "references": [
+              "s",
+              "p",
+              "sgo"
+            ],
+            "constantReferences": [
+              "d1",
+              "d2",
+              "d3"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "s",
+            "line": 81,
+            "endLine": 83,
+            "references": [],
+            "constantReferences": [
+              "sboot",
+              "d4",
+              "d5",
+              "d6"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "p",
+            "line": 84,
+            "endLine": 92,
+            "references": [
+              "shit",
+              "sptr",
+              "silk1"
+            ],
+            "constantReferences": [
+              "pboot",
+              "sboot",
+              "sstep",
+              "stime",
+              "sback",
+              "sfirst"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sgo",
+            "line": 93,
+            "endLine": 93,
+            "references": [],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sloop",
+            "line": 94,
+            "endLine": 94,
+            "references": [
+              "sptr",
+              "sbomb"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "shit",
+            "line": 95,
+            "endLine": 95,
+            "references": [
+              "sloop"
+            ],
+            "constantReferences": [
+              "sstep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sptr",
+            "line": 96,
+            "endLine": 96,
+            "references": [],
+            "constantReferences": [
+              "sback",
+              "sfirst"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sdjn",
+            "line": 97,
+            "endLine": 97,
+            "references": [
+              "shit",
+              "sptr"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sbomb",
+            "line": 98,
+            "endLine": 103,
+            "references": [],
+            "constantReferences": [
+              "pboot",
+              "sstep",
+              "pstep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "silk1",
+            "line": 104,
+            "endLine": 106,
+            "references": [
+              "px"
+            ],
+            "constantReferences": [
+              "pstep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "px",
+            "line": 107,
+            "endLine": 114,
+            "references": [
+              "silk1"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          }
+        ],
+        "familyHints": [
+          "scan-or-condition",
+          "replication-or-stun",
+          "copy-or-bomb-or-clear",
+          "counter-or-decrement-stream"
+        ],
+        "confidence": "lexical hints only; macros, generated labels and dataflow require review"
+      },
+      "assembly": {
+        "native": {
+          "ok": true,
+          "length": 81,
+          "errors": []
+        },
+        "tournament50": {
+          "ok": false,
+          "errors": [
+            {
+              "line": 0,
+              "message": "program is 81 instructions long; the limit is 50"
+            }
+          ]
+        }
+      },
+      "solo": {
+        "processes": 2600,
+        "coverage": 5002,
+        "survives": true,
+        "shape": 1,
+        "cell": [
+          4,
+          5
+        ],
+        "key": "4,5",
+        "hint": "paper (replicator)"
+      },
+      "soloScope": "One fresh single-warrior VM run; no enemy and no learned match history. Not a strength or controller-conformance test.",
+      "review": {
+        "hash": "f8562b067d40451fdb518a156f951d0eeb7cb162f2af93e18073a4e84192db78",
+        "family": "Quickscan, parallel boot, paper/stone",
+        "parts": [
+          [
+            14,
+            36,
+            "Coupled scan constants, decoder and bomb loop"
+          ],
+          [
+            38,
+            57,
+            "Unrolled probes and table"
+          ],
+          [
+            65,
+            84,
+            "Parallel two-payload launcher"
+          ],
+          [
+            88,
+            98,
+            "Stone"
+          ],
+          [
+            102,
+            108,
+            "Silk paper"
+          ]
+        ],
+        "reuse": "Preserve the launcher and both payloads as one recipe initially. Source credits Azathoth; pst_v4 shares the body, so these are related examples.",
+        "requirements": [
+          "8000 cells and 8000 processes asserted",
+          "Six-process launch wave and six-cell copy extents",
+          "Quickscan multiplier/inverse must be changed together"
+        ],
+        "targets": [
+          "parallel-paper-stone",
+          "quickscan"
+        ],
+        "extraction": {
+          "id": "parallel-paper-stone-94nop",
+          "rules": "94nop",
+          "ranges": [
+            [
+              65,
+              108
+            ]
+          ],
+          "entry": "warr",
+          "note": "Quickscan and padding omitted. Keep launcher, stone and paper together; copied blank tail cells still matter."
+        },
+        "current": true
+      }
+    },
+    {
+      "hill": "94nop",
+      "rankingUrl": "https://asdflkj.net/COREWAR/94/hill32_rec.html",
+      "rank": 2,
+      "name": "Azathoth",
+      "author": "John Metcalf",
+      "score": 160.017,
+      "style": "94",
+      "url": "https://asdflkj.net/COREWAR/94/HILL32/azathoth.red",
+      "resolvedUrl": "https://asdflkj.net/COREWAR/94/HILL32/azathoth.red",
+      "status": "inspected",
+      "inspection": {
+        "hash": "6bf12111344f2e4e0c8b77bf4152b001eb1663abf7befcdc8e1ec764acbc7a57",
+        "lines": 93,
+        "opcodes": [
+          "ADD",
+          "DAT",
+          "DJN",
+          "JMP",
+          "JMZ",
+          "MOV",
+          "MUL",
+          "SEQ",
+          "SNE",
+          "SPL",
+          "SUB"
+        ],
+        "constants": [
+          {
+            "name": "sboot",
+            "line": 9,
+            "expression": "warr+3200"
+          },
+          {
+            "name": "pboot",
+            "line": 10,
+            "expression": "warr+843"
+          },
+          {
+            "name": "sstep",
+            "line": 22,
+            "expression": "2431"
+          },
+          {
+            "name": "time",
+            "line": 23,
+            "expression": "1470"
+          },
+          {
+            "name": "first",
+            "line": 24,
+            "expression": "(hit+ptr+sstep*time)"
+          },
+          {
+            "name": "pstep",
+            "line": 33,
+            "expression": "1365"
+          },
+          {
+            "name": "qfac",
+            "line": 45,
+            "expression": "1533"
+          },
+          {
+            "name": "qdec",
+            "line": 46,
+            "expression": "2198"
+          },
+          {
+            "name": "qa",
+            "line": 48,
+            "expression": "(qfac*(qtab0-1-qptr)+1)"
+          },
+          {
+            "name": "qb",
+            "line": 49,
+            "expression": "(qfac*(qtab0-qptr)+1)"
+          },
+          {
+            "name": "qc",
+            "line": 50,
+            "expression": "(qfac*(qtab1-1-qptr)+1)"
+          },
+          {
+            "name": "qd",
+            "line": 51,
+            "expression": "(qfac*(qtab1-qptr)+1)"
+          },
+          {
+            "name": "qe",
+            "line": 52,
+            "expression": "(qfac*(qtab1+1-qptr)+1)"
+          },
+          {
+            "name": "qf",
+            "line": 53,
+            "expression": "(qfac*(qtab2-qptr)+1)"
+          },
+          {
+            "name": "qtime",
+            "line": 55,
+            "expression": "21"
+          },
+          {
+            "name": "qstep",
+            "line": 56,
+            "expression": "7"
+          },
+          {
+            "name": "qgap",
+            "line": 57,
+            "expression": "-80"
+          }
+        ],
+        "sections": [
+          {
+            "label": "warr",
+            "line": 12,
+            "endLine": 16,
+            "references": [
+              "s",
+              "p",
+              "stone"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "s",
+            "line": 17,
+            "endLine": 19,
+            "references": [],
+            "constantReferences": [
+              "sboot"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "p",
+            "line": 20,
+            "endLine": 26,
+            "references": [
+              "hit",
+              "ptr",
+              "paper"
+            ],
+            "constantReferences": [
+              "pboot",
+              "sstep",
+              "time",
+              "first"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "stone",
+            "line": 27,
+            "endLine": 27,
+            "references": [
+              "ptr",
+              "bomb"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "hit",
+            "line": 28,
+            "endLine": 28,
+            "references": [
+              "stone",
+              "x"
+            ],
+            "constantReferences": [
+              "sstep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "ptr",
+            "line": 29,
+            "endLine": 30,
+            "references": [
+              "hit"
+            ],
+            "constantReferences": [
+              "first"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "bomb",
+            "line": 31,
+            "endLine": 34,
+            "references": [],
+            "constantReferences": [
+              "sstep",
+              "pstep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "paper",
+            "line": 35,
+            "endLine": 37,
+            "references": [
+              "x"
+            ],
+            "constantReferences": [
+              "pstep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "x",
+            "line": 38,
+            "endLine": 58,
+            "references": [
+              "paper",
+              "qptr",
+              "qtab1",
+              "qtab0",
+              "qtab2"
+            ],
+            "constantReferences": [
+              "qfac",
+              "qdec",
+              "qa",
+              "qb",
+              "qc",
+              "qd",
+              "qe",
+              "qf",
+              "qtime",
+              "qstep",
+              "qgap"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qdecode",
+            "line": 59,
+            "endLine": 59,
+            "references": [
+              "q1",
+              "qptr"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "q0",
+            "line": 60,
+            "endLine": 60,
+            "references": [
+              "qptr",
+              "qtab0"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "q1",
+            "line": 61,
+            "endLine": 61,
+            "references": [
+              "qptr",
+              "qtab1"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "q2",
+            "line": 62,
+            "endLine": 62,
+            "references": [
+              "qptr",
+              "qtab2"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qptr",
+            "line": 63,
+            "endLine": 66,
+            "references": [
+              "warr",
+              "q2",
+              "qtab2"
+            ],
+            "constantReferences": [
+              "qdec",
+              "qc",
+              "qtime",
+              "qstep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qtab1",
+            "line": 67,
+            "endLine": 69,
+            "references": [],
+            "constantReferences": [
+              "qd",
+              "qe"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qscan",
+            "line": 70,
+            "endLine": 87,
+            "references": [
+              "qdecode",
+              "q1",
+              "qptr",
+              "qtab1",
+              "qtab0",
+              "qtab2"
+            ],
+            "constantReferences": [
+              "qdec",
+              "qa",
+              "qb",
+              "qc",
+              "qd",
+              "qe",
+              "qf"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qtab0",
+            "line": 88,
+            "endLine": 88,
+            "references": [
+              "warr"
+            ],
+            "constantReferences": [
+              "qb"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qtab2",
+            "line": 89,
+            "endLine": 93,
+            "references": [],
+            "constantReferences": [
+              "qf",
+              "qgap"
+            ],
+            "status": "candidate-boundary"
+          }
+        ],
+        "familyHints": [
+          "scan-or-condition",
+          "replication-or-stun",
+          "copy-or-bomb-or-clear",
+          "counter-or-decrement-stream"
+        ],
+        "confidence": "lexical hints only; macros, generated labels and dataflow require review"
+      },
+      "assembly": {
+        "native": {
+          "ok": true,
+          "length": 100,
+          "errors": []
+        },
+        "tournament50": {
+          "ok": false,
+          "errors": [
+            {
+              "line": 0,
+              "message": "program is 100 instructions long; the limit is 50"
+            }
+          ]
+        }
+      },
+      "solo": {
+        "processes": 2526,
+        "coverage": 4892,
+        "survives": true,
+        "shape": 1,
+        "cell": [
+          4,
+          5
+        ],
+        "key": "4,5",
+        "hint": "paper (replicator)"
+      },
+      "soloScope": "One fresh single-warrior VM run; no enemy and no learned match history. Not a strength or controller-conformance test.",
+      "review": {
+        "hash": "6bf12111344f2e4e0c8b77bf4152b001eb1663abf7befcdc8e1ec764acbc7a57",
+        "family": "Quickscan and parallel paper/stone",
+        "parts": [
+          [
+            9,
+            20,
+            "Boot distances and shared launcher"
+          ],
+          [
+            22,
+            31,
+            "Stone constants and loop"
+          ],
+          [
+            33,
+            39,
+            "Silk paper"
+          ],
+          [
+            45,
+            68,
+            "Lattice constants, decoder and bomb loop"
+          ],
+          [
+            70,
+            89,
+            "Probe fan and table"
+          ]
+        ],
+        "reuse": "Reference ancestor for the Arvon/pst_v4 body. Catalog it as a related lineage, not three independent strategies.",
+        "requirements": [
+          "Core-specific inverse relation",
+          "Pointers in launch instructions act as copy counters",
+          "Process scheduling and payload lengths are coupled"
+        ],
+        "targets": [
+          "parallel-paper-stone",
+          "quickscan"
+        ],
+        "current": true
+      }
+    },
+    {
+      "hill": "94nop",
+      "rankingUrl": "https://asdflkj.net/COREWAR/94/hill32_rec.html",
+      "rank": 3,
+      "name": "pst_v4",
+      "author": "Stefan Kammann & Forge-AI",
+      "score": 159.897,
+      "style": "94",
+      "url": "https://asdflkj.net/COREWAR/94/HILL32/pst_v4.red",
+      "resolvedUrl": "https://asdflkj.net/COREWAR/94/HILL32/pst_v4.red",
+      "status": "inspected",
+      "inspection": {
+        "hash": "827dd21442ea5dfc2a5b9dcdbddd4c73c9ae689c885d80a8bea2ca58d582ae1c",
+        "lines": 138,
+        "opcodes": [
+          "ADD",
+          "DAT",
+          "DJN",
+          "JMP",
+          "JMZ",
+          "MOV",
+          "MUL",
+          "SEQ",
+          "SNE",
+          "SPL",
+          "SUB"
+        ],
+        "constants": [
+          {
+            "name": "qbstep",
+            "line": 14,
+            "expression": "9"
+          },
+          {
+            "name": "qbhop",
+            "line": 15,
+            "expression": "-67"
+          },
+          {
+            "name": "qbcnt",
+            "line": 16,
+            "expression": "21"
+          },
+          {
+            "name": "qxa",
+            "line": 18,
+            "expression": "3325"
+          },
+          {
+            "name": "qxb",
+            "line": 19,
+            "expression": "7515"
+          },
+          {
+            "name": "qa1",
+            "line": 20,
+            "expression": "3270"
+          },
+          {
+            "name": "qa2",
+            "line": 21,
+            "expression": "5778"
+          },
+          {
+            "name": "qb1",
+            "line": 22,
+            "expression": "3495"
+          },
+          {
+            "name": "qb2",
+            "line": 23,
+            "expression": "4498"
+          },
+          {
+            "name": "qstep",
+            "line": 24,
+            "expression": "3949"
+          },
+          {
+            "name": "qa2qb2",
+            "line": 26,
+            "expression": "((qa2*qb2)%CORESIZE)"
+          },
+          {
+            "name": "qa2p1qb",
+            "line": 27,
+            "expression": "(((qa2+1)*qb2)%CORESIZE)"
+          },
+          {
+            "name": "qa2m1qb",
+            "line": 28,
+            "expression": "(((qa2-1)*qb2)%CORESIZE)"
+          },
+          {
+            "name": "nil",
+            "line": 29,
+            "expression": "(-CURLINE-1)"
+          },
+          {
+            "name": "X",
+            "line": 30,
+            "expression": "found"
+          },
+          {
+            "name": "pbo2",
+            "line": 89,
+            "expression": "843"
+          },
+          {
+            "name": "sbo",
+            "line": 90,
+            "expression": "3200"
+          },
+          {
+            "name": "pboot",
+            "line": 91,
+            "expression": "warr + pbo2"
+          },
+          {
+            "name": "sboot",
+            "line": 92,
+            "expression": "warr + sbo"
+          },
+          {
+            "name": "d1",
+            "line": 93,
+            "expression": "3828"
+          },
+          {
+            "name": "d2",
+            "line": 94,
+            "expression": "2602"
+          },
+          {
+            "name": "d3",
+            "line": 95,
+            "expression": "1351"
+          },
+          {
+            "name": "d4",
+            "line": 96,
+            "expression": "3493"
+          },
+          {
+            "name": "d5",
+            "line": 97,
+            "expression": "1406"
+          },
+          {
+            "name": "d6",
+            "line": 98,
+            "expression": "3947"
+          },
+          {
+            "name": "sstep",
+            "line": 112,
+            "expression": "2431"
+          },
+          {
+            "name": "stime",
+            "line": 113,
+            "expression": "1470"
+          },
+          {
+            "name": "sback",
+            "line": 114,
+            "expression": "-2122"
+          },
+          {
+            "name": "sfirst",
+            "line": 115,
+            "expression": "(shit + sptr + sstep * stime)"
+          },
+          {
+            "name": "pstep",
+            "line": 126,
+            "expression": "1365"
+          }
+        ],
+        "sections": [
+          {
+            "label": "qscan",
+            "line": 33,
+            "endLine": 60,
+            "references": [
+              "dec1",
+              "dec0de",
+              "decide",
+              "found",
+              "qtab",
+              "warr"
+            ],
+            "constantReferences": [
+              "qxa",
+              "qxb",
+              "qa1",
+              "qa2",
+              "qb1",
+              "qb2",
+              "qstep",
+              "qa2qb2",
+              "X"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dec1",
+            "line": 61,
+            "endLine": 61,
+            "references": [
+              "qtab"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dec0de",
+            "line": 62,
+            "endLine": 62,
+            "references": [
+              "dec1",
+              "found"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "decide",
+            "line": 63,
+            "endLine": 67,
+            "references": [
+              "found",
+              "qinc"
+            ],
+            "constantReferences": [
+              "nil"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qbloop",
+            "line": 68,
+            "endLine": 68,
+            "references": [
+              "found",
+              "qbomb"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "found",
+            "line": 69,
+            "endLine": 72,
+            "references": [
+              "qbloop",
+              "warr"
+            ],
+            "constantReferences": [
+              "qbstep",
+              "qbcnt",
+              "qxa",
+              "qxb"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qbomb",
+            "line": 73,
+            "endLine": 75,
+            "references": [],
+            "constantReferences": [
+              "qbhop",
+              "qa1",
+              "qb1"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qtab",
+            "line": 76,
+            "endLine": 76,
+            "references": [],
+            "constantReferences": [
+              "qa2",
+              "qb2"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qinc",
+            "line": 77,
+            "endLine": 99,
+            "references": [
+              "warr",
+              "s",
+              "p"
+            ],
+            "constantReferences": [
+              "qstep",
+              "pbo2",
+              "sbo",
+              "pboot",
+              "sboot",
+              "d1",
+              "d2",
+              "d3",
+              "d4",
+              "d5",
+              "d6"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "warr",
+            "line": 100,
+            "endLine": 104,
+            "references": [
+              "s",
+              "p",
+              "sgo"
+            ],
+            "constantReferences": [
+              "d1",
+              "d2",
+              "d3"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "s",
+            "line": 105,
+            "endLine": 107,
+            "references": [],
+            "constantReferences": [
+              "sboot",
+              "d4",
+              "d5",
+              "d6"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "p",
+            "line": 108,
+            "endLine": 116,
+            "references": [
+              "shit",
+              "sptr",
+              "silk1"
+            ],
+            "constantReferences": [
+              "pboot",
+              "sboot",
+              "sstep",
+              "stime",
+              "sback",
+              "sfirst"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sgo",
+            "line": 117,
+            "endLine": 117,
+            "references": [],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sloop",
+            "line": 118,
+            "endLine": 118,
+            "references": [
+              "sptr",
+              "sbomb"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "shit",
+            "line": 119,
+            "endLine": 119,
+            "references": [
+              "sloop"
+            ],
+            "constantReferences": [
+              "sstep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sptr",
+            "line": 120,
+            "endLine": 120,
+            "references": [],
+            "constantReferences": [
+              "sback",
+              "sfirst"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sdjn",
+            "line": 121,
+            "endLine": 121,
+            "references": [
+              "shit",
+              "sptr"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "sbomb",
+            "line": 122,
+            "endLine": 127,
+            "references": [],
+            "constantReferences": [
+              "pboot",
+              "sstep",
+              "pstep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "silk1",
+            "line": 128,
+            "endLine": 130,
+            "references": [
+              "px"
+            ],
+            "constantReferences": [
+              "pstep"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "px",
+            "line": 131,
+            "endLine": 138,
+            "references": [
+              "silk1"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          }
+        ],
+        "familyHints": [
+          "scan-or-condition",
+          "replication-or-stun",
+          "copy-or-bomb-or-clear",
+          "counter-or-decrement-stream"
+        ],
+        "confidence": "lexical hints only; macros, generated labels and dataflow require review"
+      },
+      "assembly": {
+        "native": {
+          "ok": true,
+          "length": 81,
+          "errors": []
+        },
+        "tournament50": {
+          "ok": false,
+          "errors": [
+            {
+              "line": 0,
+              "message": "program is 81 instructions long; the limit is 50"
+            }
+          ]
+        }
+      },
+      "solo": {
+        "processes": 2600,
+        "coverage": 5003,
+        "survives": true,
+        "shape": 1,
+        "cell": [
+          4,
+          5
+        ],
+        "key": "4,5",
+        "hint": "paper (replicator)"
+      },
+      "soloScope": "One fresh single-warrior VM run; no enemy and no learned match history. Not a strength or controller-conformance test.",
+      "review": {
+        "hash": "827dd21442ea5dfc2a5b9dcdbddd4c73c9ae689c885d80a8bea2ca58d582ae1c",
+        "family": "Alternative quickscan over related paper/stone body",
+        "parts": [
+          [
+            14,
+            30,
+            "Scan constants and aliases"
+          ],
+          [
+            33,
+            59,
+            "Probe fan"
+          ],
+          [
+            61,
+            77,
+            "Decoder, bombing and tables"
+          ],
+          [
+            89,
+            108,
+            "Parallel launcher"
+          ],
+          [
+            112,
+            122,
+            "Stone"
+          ],
+          [
+            126,
+            132,
+            "Silk paper"
+          ]
+        ],
+        "reuse": "Useful controlled comparison of scanner front ends over a related body. Source credits Azathoth and Eternal Exile.",
+        "requirements": [
+          "8000 cells and 8000 processes asserted",
+          "Decoder/table/probe equations form one unit",
+          "Same process-aware body contract as Arvon"
+        ],
+        "targets": [
+          "parallel-paper-stone",
+          "quickscan"
+        ],
+        "current": true
+      }
+    },
+    {
+      "hill": "lp",
+      "rankingUrl": "https://asdflkj.net/COREWAR/LP/hill32_rec.html",
+      "rank": 1,
+      "name": "R.O.U.S.",
+      "author": "S.Fernandes",
+      "score": 190.873,
+      "style": "94",
+      "url": "https://asdflkj.net/COREWAR/LP/HILL32/rous.red",
+      "resolvedUrl": "https://asdflkj.net/COREWAR/LP/HILL32/rous.red",
+      "status": "inspected",
+      "inspection": {
+        "hash": "e7c0c725223e19ff5c6c5fb392736db5762dad9fd5610c372dab79fcdaee90f3",
+        "lines": 23,
+        "opcodes": [
+          "ADD",
+          "JMN",
+          "JMZ",
+          "MOV",
+          "SPL"
+        ],
+        "constants": [
+          {
+            "name": "pstep",
+            "line": 9,
+            "expression": "6192"
+          },
+          {
+            "name": "ipos",
+            "line": 10,
+            "expression": "5033"
+          },
+          {
+            "name": "spos",
+            "line": 11,
+            "expression": "1319"
+          }
+        ],
+        "sections": [
+          {
+            "label": "paper",
+            "line": 13,
+            "endLine": 13,
+            "references": [],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "loop",
+            "line": 14,
+            "endLine": 18,
+            "references": [
+              "paper",
+              "pboot"
+            ],
+            "constantReferences": [
+              "ipos",
+              "spos"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "pboot",
+            "line": 19,
+            "endLine": 23,
+            "references": [],
+            "constantReferences": [
+              "pstep"
+            ],
+            "status": "candidate-boundary"
+          }
+        ],
+        "familyHints": [
+          "scan-or-condition",
+          "replication-or-stun"
+        ],
+        "confidence": "lexical hints only; macros, generated labels and dataflow require review"
+      },
+      "assembly": {
+        "native": {
+          "ok": true,
+          "length": 7,
+          "errors": []
+        },
+        "tournament50": {
+          "ok": true,
+          "errors": []
+        }
+      },
+      "solo": {
+        "processes": 8,
+        "coverage": 2670,
+        "survives": true,
+        "shape": 1,
+        "cell": [
+          1,
+          4
+        ],
+        "key": "1,4",
+        "hint": "imp or mover"
+      },
+      "soloScope": "One fresh single-warrior VM run; no enemy and no learned match history. Not a strength or controller-conformance test.",
+      "review": {
+        "hash": "e7c0c725223e19ff5c6c5fb392736db5762dad9fd5610c372dab79fcdaee90f3",
+        "family": "Compact limited-process paper with bombing side effects",
+        "parts": [
+          [
+            9,
+            11,
+            "Copy and bombing offsets"
+          ],
+          [
+            13,
+            19,
+            "Copy state, attack, loop and child handoff"
+          ]
+        ],
+        "reuse": "A seven-instruction leader is a strong reason to add process-aware replication. Small source length does not mean only seven cells participate in copying.",
+        "requirements": [
+          "Test under eight-process scheduling",
+          "Entry is loop, not initialization",
+          "Pre/postincrement side effects and copy extent are part of the algorithm"
+        ],
+        "targets": [
+          "lp-bombing-paper"
+        ],
+        "extraction": {
+          "id": "rous-reference-lp",
+          "rules": "lp",
+          "whole": true,
+          "note": "Unchanged original reference; already fits 50 instructions. This is not our new implementation."
+        },
+        "current": true
+      }
+    },
+    {
+      "hill": "lp",
+      "rankingUrl": "https://asdflkj.net/COREWAR/LP/hill32_rec.html",
+      "rank": 2,
+      "name": "Replinator",
+      "author": "Christian Schmidt",
+      "score": 178.452,
+      "style": "94",
+      "url": "https://asdflkj.net/COREWAR/LP/HILL32/l111.red",
+      "resolvedUrl": "https://asdflkj.net/COREWAR/LP/HILL32/l111.red",
+      "status": "inspected",
+      "inspection": {
+        "hash": "7e48d196215460013f5701604b8934bebf73e7f89ad63d6900d45a908fce3a00",
+        "lines": 149,
+        "opcodes": [
+          "ADD",
+          "DAT",
+          "DJN",
+          "JMN",
+          "JMP",
+          "JMZ",
+          "MOV",
+          "MUL",
+          "SEQ",
+          "SNE",
+          "SPL",
+          "SUB"
+        ],
+        "constants": [
+          {
+            "name": "zero",
+            "line": 10,
+            "expression": "qbomb"
+          },
+          {
+            "name": "qtab3",
+            "line": 11,
+            "expression": "qbomb"
+          },
+          {
+            "name": "qz",
+            "line": 12,
+            "expression": "2108"
+          },
+          {
+            "name": "qy",
+            "line": 13,
+            "expression": "243"
+          },
+          {
+            "name": "qc2",
+            "line": 15,
+            "expression": "((1 + (qtab3-qptr)*qy) % CORESIZE)"
+          },
+          {
+            "name": "qb1",
+            "line": 16,
+            "expression": "((1 + (qtab2-1-qptr)*qy) % CORESIZE)"
+          },
+          {
+            "name": "qb2",
+            "line": 17,
+            "expression": "((1 + (qtab2-qptr)*qy) % CORESIZE)"
+          },
+          {
+            "name": "qb3",
+            "line": 18,
+            "expression": "((1 + (qtab2+1-qptr)*qy) % CORESIZE)"
+          },
+          {
+            "name": "qa1",
+            "line": 19,
+            "expression": "((1 + (qtab1-1-qptr)*qy) % CORESIZE)"
+          },
+          {
+            "name": "qa2",
+            "line": 20,
+            "expression": "((1 + (qtab1-qptr)*qy) % CORESIZE)"
+          },
+          {
+            "name": "qoff",
+            "line": 22,
+            "expression": "-88"
+          },
+          {
+            "name": "qstep",
+            "line": 23,
+            "expression": "-7"
+          },
+          {
+            "name": "qtime",
+            "line": 24,
+            "expression": "20"
+          },
+          {
+            "name": "sDist",
+            "line": 28,
+            "expression": "1745"
+          },
+          {
+            "name": "iDist",
+            "line": 29,
+            "expression": "1048"
+          },
+          {
+            "name": "iDist2",
+            "line": 30,
+            "expression": "931"
+          },
+          {
+            "name": "iAwa",
+            "line": 31,
+            "expression": "6846"
+          },
+          {
+            "name": "iAwa2",
+            "line": 32,
+            "expression": "2876"
+          },
+          {
+            "name": "istep",
+            "line": 34,
+            "expression": "2667"
+          },
+          {
+            "name": "dstep",
+            "line": 36,
+            "expression": "81"
+          },
+          {
+            "name": "dhop",
+            "line": 37,
+            "expression": "5277"
+          },
+          {
+            "name": "dtime",
+            "line": 38,
+            "expression": "1677"
+          },
+          {
+            "name": "l",
+            "line": 42,
+            "expression": "21"
+          },
+          {
+            "name": "zofs",
+            "line": 43,
+            "expression": "6667"
+          },
+          {
+            "name": "bo1",
+            "line": 46,
+            "expression": "548"
+          },
+          {
+            "name": "bo2",
+            "line": 47,
+            "expression": "109"
+          },
+          {
+            "name": "color",
+            "line": 48,
+            "expression": "7293"
+          },
+          {
+            "name": "xxx",
+            "line": 51,
+            "expression": "80"
+          }
+        ],
+        "sections": [
+          {
+            "label": "pGo",
+            "line": 57,
+            "endLine": 57,
+            "references": [],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "from",
+            "line": 58,
+            "endLine": 58,
+            "references": [],
+            "constantReferences": [
+              "l"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "loop",
+            "line": 59,
+            "endLine": 63,
+            "references": [
+              "from",
+              "to"
+            ],
+            "constantReferences": [
+              "bo1",
+              "bo2",
+              "color"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "to",
+            "line": 64,
+            "endLine": 74,
+            "references": [],
+            "constantReferences": [
+              "zofs",
+              "xxx"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qbomb",
+            "line": 75,
+            "endLine": 86,
+            "references": [],
+            "constantReferences": [
+              "qc2",
+              "qb1",
+              "qoff"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qtab2",
+            "line": 87,
+            "endLine": 96,
+            "references": [],
+            "constantReferences": [
+              "zero",
+              "qb2",
+              "qb3",
+              "qa1"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qtab1",
+            "line": 97,
+            "endLine": 105,
+            "references": [],
+            "constantReferences": [
+              "zero",
+              "qa2"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qgo",
+            "line": 106,
+            "endLine": 133,
+            "references": [
+              "pGo",
+              "qtab2",
+              "qtab1",
+              "q0",
+              "q2",
+              "q1",
+              "qptr"
+            ],
+            "constantReferences": [
+              "qtab3",
+              "qz",
+              "qc2",
+              "qb1",
+              "qb2",
+              "qb3",
+              "qa1",
+              "qa2"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "q0",
+            "line": 134,
+            "endLine": 134,
+            "references": [
+              "qptr"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "q2",
+            "line": 135,
+            "endLine": 135,
+            "references": [
+              "qtab1",
+              "qptr"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "q1",
+            "line": 136,
+            "endLine": 137,
+            "references": [
+              "qtab2",
+              "qptr"
+            ],
+            "constantReferences": [
+              "qtab3"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "qptr",
+            "line": 138,
+            "endLine": 149,
+            "references": [
+              "pGo",
+              "qbomb",
+              "qgo"
+            ],
+            "constantReferences": [
+              "qz",
+              "qstep",
+              "qtime"
+            ],
+            "status": "candidate-boundary"
+          }
+        ],
+        "familyHints": [
+          "scan-or-condition",
+          "replication-or-stun",
+          "copy-or-bomb-or-clear",
+          "counter-or-decrement-stream"
+        ],
+        "confidence": "lexical hints only; macros, generated labels and dataflow require review"
+      },
+      "assembly": {
+        "native": {
+          "ok": true,
+          "length": 200,
+          "errors": []
+        },
+        "tournament50": {
+          "ok": false,
+          "errors": [
+            {
+              "line": 0,
+              "message": "program is 200 instructions long; the limit is 50"
+            }
+          ]
+        }
+      },
+      "solo": {
+        "processes": 8,
+        "coverage": 2791,
+        "survives": true,
+        "shape": 1,
+        "cell": [
+          1,
+          4
+        ],
+        "key": "1,4",
+        "hint": "imp or mover"
+      },
+      "soloScope": "One fresh single-warrior VM run; no enemy and no learned match history. Not a strength or controller-conformance test.",
+      "review": {
+        "hash": "7e48d196215460013f5701604b8934bebf73e7f89ad63d6900d45a908fce3a00",
+        "family": "Limited-process bombing paper with quickscan and padding",
+        "parts": [
+          [
+            10,
+            24,
+            "Quickscan constants"
+          ],
+          [
+            42,
+            64,
+            "Paper copy and bombing constants/body"
+          ],
+          [
+            67,
+            103,
+            "Padding and decoder tables"
+          ],
+          [
+            106,
+            132,
+            "Probe fan"
+          ],
+          [
+            134,
+            141,
+            "Decode, bomb and paper handoff"
+          ]
+        ],
+        "reuse": "The paper body resembles the compact LP family, but starts through initialization and uses a longer copy span. Remove padding only after tracing what it copies.",
+        "requirements": [
+          "200-instruction source hill limit differs from repo lp default",
+          "Quickscan tables use assembled label distances",
+          "Eight-process behavior and copy extent"
+        ],
+        "targets": [
+          "lp-bombing-paper",
+          "quickscan"
+        ],
+        "current": true
+      }
+    },
+    {
+      "hill": "lp",
+      "rankingUrl": "https://asdflkj.net/COREWAR/LP/hill32_rec.html",
+      "rank": 3,
+      "name": "Bronze minotaur",
+      "author": "G.Labarga",
+      "score": 178.409,
+      "style": "94",
+      "url": "https://asdflkj.net/COREWAR/LP/HILL32/bronzeminotaur.red",
+      "resolvedUrl": "https://asdflkj.net/COREWAR/LP/HILL32/bronzeminotaur.red",
+      "status": "inspected",
+      "inspection": {
+        "hash": "17185cef47e39a8b6b59f04178323b959b669d69216779e2dd69ed16c5c76435",
+        "lines": 42,
+        "opcodes": [
+          "ADD",
+          "DAT",
+          "JMN",
+          "JMP",
+          "JMZ",
+          "MOV",
+          "SPL"
+        ],
+        "constants": [
+          {
+            "name": "pinit1",
+            "line": 9,
+            "expression": "5741"
+          },
+          {
+            "name": "bstep1",
+            "line": 10,
+            "expression": "1171"
+          },
+          {
+            "name": "bstep2",
+            "line": 11,
+            "expression": "826"
+          },
+          {
+            "name": "increm1",
+            "line": 12,
+            "expression": "2903"
+          },
+          {
+            "name": "pinit2",
+            "line": 13,
+            "expression": "6415"
+          },
+          {
+            "name": "increm2",
+            "line": 14,
+            "expression": "155"
+          },
+          {
+            "name": "blank",
+            "line": 23,
+            "expression": "63"
+          }
+        ],
+        "sections": [
+          {
+            "label": "src1",
+            "line": 16,
+            "endLine": 16,
+            "references": [],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "loop1",
+            "line": 17,
+            "endLine": 21,
+            "references": [
+              "src1",
+              "dst1"
+            ],
+            "constantReferences": [
+              "bstep1",
+              "bstep2",
+              "increm1"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dst1",
+            "line": 22,
+            "endLine": 26,
+            "references": [],
+            "constantReferences": [
+              "pinit1",
+              "blank"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "boot",
+            "line": 27,
+            "endLine": 31,
+            "references": [
+              "loop1",
+              "loop2"
+            ],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "src2",
+            "line": 32,
+            "endLine": 32,
+            "references": [],
+            "constantReferences": [],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "loop2",
+            "line": 33,
+            "endLine": 37,
+            "references": [
+              "src2",
+              "dst2"
+            ],
+            "constantReferences": [
+              "bstep1",
+              "bstep2",
+              "increm2"
+            ],
+            "status": "candidate-boundary"
+          },
+          {
+            "label": "dst2",
+            "line": 38,
+            "endLine": 42,
+            "references": [],
+            "constantReferences": [
+              "pinit2"
+            ],
+            "status": "candidate-boundary"
+          }
+        ],
+        "familyHints": [
+          "scan-or-condition",
+          "replication-or-stun",
+          "copy-or-bomb-or-clear"
+        ],
+        "confidence": "lexical hints only; macros, generated labels and dataflow require review"
+      },
+      "assembly": {
+        "native": {
+          "ok": true,
+          "length": 200,
+          "errors": []
+        },
+        "tournament50": {
+          "ok": false,
+          "errors": [
+            {
+              "line": 0,
+              "message": "program is 200 instructions long; the limit is 50"
+            }
+          ]
+        }
+      },
+      "solo": {
+        "processes": 8,
+        "coverage": 1430,
+        "survives": false,
+        "shape": 1,
+        "cell": [
+          1,
+          4
+        ],
+        "key": "1,4",
+        "hint": "imp or mover"
+      },
+      "soloScope": "One fresh single-warrior VM run; no enemy and no learned match history. Not a strength or controller-conformance test.",
+      "review": {
+        "hash": "17185cef47e39a8b6b59f04178323b959b669d69216779e2dd69ed16c5c76435",
+        "family": "Two separated limited-process bombing papers",
+        "parts": [
+          [
+            9,
+            14,
+            "Two copy destinations and bombing constants"
+          ],
+          [
+            16,
+            22,
+            "First paper"
+          ],
+          [
+            23,
+            31,
+            "Spacing and two-way launcher"
+          ],
+          [
+            32,
+            38,
+            "Second paper"
+          ]
+        ],
+        "reuse": "An example of spatially separated copies sharing a small process budget. Its solo failure in this engine needs diagnosis before extraction or training admission.",
+        "requirements": [
+          "200-instruction layout includes spacing",
+          "Different initial copy spans",
+          "Enemy-free failure is recorded, not silently repaired"
+        ],
+        "targets": [
+          "lp-bombing-paper",
+          "parallel-paper-stone"
+        ],
+        "current": true
+      }
+    }
+  ],
+  "patterns": [
+    {
+      "id": "airbag-stone",
+      "priority": 1,
+      "contract": "Booted bomber with a separate clear fallback. Preserve boot layout, remote bomb installation and process schedule.",
+      "tests": [
+        "Exact copies at both destinations",
+        "Bomb stream and self-transition occur",
+        "Fallback clear runs after trigger damage"
+      ],
+      "selectable": false,
+      "status": "source-reviewed candidate; dedicated contract tests pending"
+    },
+    {
+      "id": "concurrent-boot",
+      "priority": 2,
+      "contract": "Child execution overlaps parent copying. Copy order and scheduling are parameters only within proven bounds.",
+      "tests": [
+        "Child never reaches an uncopied cell",
+        "Parent erases pointers only after last copy",
+        "Wrapping and process-limit cases"
+      ],
+      "selectable": false,
+      "status": "source-reviewed candidate; dedicated contract tests pending"
+    },
+    {
+      "id": "parallel-paper-stone",
+      "priority": 3,
+      "contract": "Launcher and two payloads form one process-aware recipe before any further splitting.",
+      "tests": [
+        "Launch wave count",
+        "Both relocated payloads match",
+        "Paper replicates while stone bombs without shared-counter interference"
+      ],
+      "selectable": false,
+      "status": "source-reviewed candidate; dedicated contract tests pending"
+    },
+    {
+      "id": "lp-bombing-paper",
+      "priority": 4,
+      "contract": "Replication and bombing with a bounded process queue and copy spans larger than visible code.",
+      "tests": [
+        "First and second generation copy bounds",
+        "Eight-process scheduling",
+        "Attack side effects",
+        "No unintentional total process loss"
+      ],
+      "selectable": false,
+      "status": "source-reviewed candidate; dedicated contract tests pending"
+    },
+    {
+      "id": "stone-imp-boot",
+      "priority": 5,
+      "contract": "Joint placement of stone, bomb, imp seeds and continuous launcher; stride must satisfy core congruence.",
+      "tests": [
+        "Imp launch order",
+        "Remote bomb present before stone starts",
+        "Full-cycle survival and actual kills against controls"
+      ],
+      "selectable": false,
+      "status": "source-reviewed candidate; dedicated contract tests pending"
+    },
+    {
+      "id": "distributed-stones",
+      "priority": 6,
+      "contract": "Multiple compact stones with explicit separation and process allocation.",
+      "tests": [
+        "Each stone initialized",
+        "Mutual bombing exclusion",
+        "Spawn tree reaches every intended copy"
+      ],
+      "selectable": false,
+      "status": "source-reviewed candidate; dedicated contract tests pending"
+    }
+  ],
+  "extractions": [
+    {
+      "id": "airbag-stone-94x",
+      "original": "Fire and Ice II",
+      "sourceUrl": "https://asdflkj.net/COREWAR/X/HILL32/fireandice2.red",
+      "sourceHash": "b8bc715eb117d4cc0f31337241b8405b12a8e8a4abe319bb7eae820a4fb8ea2a",
+      "outputHash": "8cd93ffa364a04558551f9b7e0953aedf6cbc8551f4cb7077e20a97d84835c38",
+      "rules": "94x",
+      "note": "Complete stone boot and payload; controller and scanner omitted. Requires a multi-process boot verifier before evolution admission.",
+      "status": "experimental public reference; not admitted to generator",
+      "compile": {
+        "ok": true,
+        "instructions": 26,
+        "errors": []
+      },
+      "solo": [
+        {
+          "base": 0,
+          "cycles": 500000,
+          "alive": true,
+          "peakProcesses": 8134
+        },
+        {
+          "base": 55433,
+          "cycles": 500000,
+          "alive": true,
+          "peakProcesses": 8134
+        }
+      ]
+    },
+    {
+      "id": "kenshin-branch-94x",
+      "original": "Fire and Brimstone",
+      "sourceUrl": "https://asdflkj.net/COREWAR/X/HILL32/fireandbrim.red",
+      "sourceHash": "86f9707094d8402a2a94e69cf916ec7901ca8eaebdb4bfded98242000e87aed8",
+      "outputHash": "d4c2eb89e0d0bc13b1c4dff3d7b63856b94c69fee6e393bc9706c7af9b18eb5e",
+      "rules": "94x",
+      "note": "Controller and stone omitted; concurrent launch/copy must be verified before mutation.",
+      "status": "experimental public reference; not admitted to generator",
+      "compile": {
+        "ok": true,
+        "instructions": 23,
+        "errors": []
+      },
+      "solo": [
+        {
+          "base": 0,
+          "cycles": 500000,
+          "alive": true,
+          "peakProcesses": 2
+        },
+        {
+          "base": 55433,
+          "cycles": 500000,
+          "alive": true,
+          "peakProcesses": 2
+        }
+      ]
+    },
+    {
+      "id": "freight-no-qscan-88",
+      "original": "Freight Train v0.2",
+      "sourceUrl": "https://asdflkj.net/COREWAR/88/HILL32/freighttrainv02.red",
+      "sourceHash": "4c22745e4cb978b7884c9465a1ffe63371f83b2a7c71400e010a42d27e89a2be",
+      "outputHash": "a57b5a4e10935760598a7db8180cb6f5c8ad09076be2dfe4c1fa18f782dc28cb",
+      "rules": "88",
+      "note": "Only the author-provided switch EQU changes from 1 to 0. This retains the full source and assembles its non-scanning variant.",
+      "status": "experimental public reference; not admitted to generator",
+      "compile": {
+        "ok": true,
+        "instructions": 29,
+        "errors": []
+      },
+      "solo": [
+        {
+          "base": 0,
+          "cycles": 80000,
+          "alive": true,
+          "peakProcesses": 3750
+        },
+        {
+          "base": 7993,
+          "cycles": 80000,
+          "alive": true,
+          "peakProcesses": 3750
+        }
+      ]
+    },
+    {
+      "id": "parallel-paper-stone-94nop",
+      "original": "Arvon",
+      "sourceUrl": "https://asdflkj.net/COREWAR/94/HILL32/arvon.red",
+      "sourceHash": "f8562b067d40451fdb518a156f951d0eeb7cb162f2af93e18073a4e84192db78",
+      "outputHash": "dc1613614c154b59b936d2fd2e3cdc81de73def55fa24893c318c8d1a41ede16",
+      "rules": "94nop",
+      "note": "Quickscan and padding omitted. Keep launcher, stone and paper together; copied blank tail cells still matter.",
+      "status": "experimental public reference; not admitted to generator",
+      "compile": {
+        "ok": true,
+        "instructions": 20,
+        "errors": []
+      },
+      "solo": [
+        {
+          "base": 0,
+          "cycles": 80000,
+          "alive": true,
+          "peakProcesses": 2600
+        },
+        {
+          "base": 7993,
+          "cycles": 80000,
+          "alive": true,
+          "peakProcesses": 2600
+        }
+      ]
+    },
+    {
+      "id": "rous-reference-lp",
+      "original": "R.O.U.S.",
+      "sourceUrl": "https://asdflkj.net/COREWAR/LP/HILL32/rous.red",
+      "sourceHash": "e7c0c725223e19ff5c6c5fb392736db5762dad9fd5610c372dab79fcdaee90f3",
+      "outputHash": "a7eef13e53ce45158bd5ca2ed9f52f445af1d3b228f4f90956228a64241beb9a",
+      "rules": "lp",
+      "note": "Unchanged original reference; already fits 50 instructions. This is not our new implementation.",
+      "status": "experimental public reference; not admitted to generator",
+      "compile": {
+        "ok": true,
+        "instructions": 7,
+        "errors": []
+      },
+      "solo": [
+        {
+          "base": 0,
+          "cycles": 80000,
+          "alive": true,
+          "peakProcesses": 8
+        },
+        {
+          "base": 7993,
+          "cycles": 80000,
+          "alive": true,
+          "peakProcesses": 8
+        }
+      ]
+    }
+  ]
+}

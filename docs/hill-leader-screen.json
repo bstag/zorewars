@@ -1,0 +1,2034 @@
+{
+  "schemaVersion": 1,
+  "snapshotAt": "2026-10-28T02:41:46.087Z",
+  "seeds": [
+    2424601,
+    2434601
+  ],
+  "rounds": 8,
+  "backend": "CPU",
+  "purpose": "Exploratory matched screen only. Previously used local library opponents, two placement seeds, no winner promotion or hill-strength claim.",
+  "groups": [
+    {
+      "rules": "94x",
+      "settings": {
+        "coreSize": 55440,
+        "maxProcesses": 10000,
+        "maxCycles": 500000,
+        "maxLength": 50,
+        "minDistance": 200,
+        "pSpace": false,
+        "assertErrors": true
+      },
+      "opponents": [
+        {
+          "file": "dwarf.red",
+          "name": "Dwarf",
+          "codeHash": "c991574f3f9cd28b89200a539b4aed9e4a4d1ff6477af906bf944f0d8b740d3c"
+        },
+        {
+          "file": "scanner.red",
+          "name": "Scout",
+          "codeHash": "6c05e60680e1cf77a3812a9c7771d956d2973fe31b6b77b285dcfd3f027e4c2d"
+        },
+        {
+          "file": "mice.red",
+          "name": "Mice",
+          "codeHash": "e30e524daf79ada59f76d62ebcf11a3a1496ad0e2380c8c4f08291fa16943b3a"
+        },
+        {
+          "file": "twopass.red",
+          "name": "Two-Pass Clear",
+          "codeHash": "328c47182995c7a0c9d928658203944caa35f56c45b0896cb93d8fa9fafa44bc"
+        }
+      ],
+      "results": [
+        {
+          "name": "airbag-stone-94x",
+          "sourceHash": "8cd93ffa364a04558551f9b7e0953aedf6cbc8551f4cb7077e20a97d84835c38",
+          "sourceUrl": "https://asdflkj.net/COREWAR/X/HILL32/fireandice2.red",
+          "instructions": 26,
+          "runs": [
+            {
+              "seed": 2424601,
+              "score": 2.25,
+              "smooth": 2.2859406250000003,
+              "groups": {
+                "library": {
+                  "score": 2.25,
+                  "smooth": 2.2859406250000003,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 6,
+                  "l": 2,
+                  "t": 0,
+                  "pts": 2.25,
+                  "smooth": 2.252675
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 8,
+                  "l": 0,
+                  "t": 0,
+                  "pts": 3,
+                  "smooth": 3
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 2,
+                  "l": 4,
+                  "t": 2,
+                  "pts": 1,
+                  "smooth": 1.1410875
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 7,
+                  "l": 0,
+                  "t": 1,
+                  "pts": 2.75,
+                  "smooth": 2.75
+                }
+              ],
+              "symptoms": null
+            },
+            {
+              "seed": 2434601,
+              "score": 2,
+              "smooth": 2.034484375,
+              "groups": {
+                "library": {
+                  "score": 2,
+                  "smooth": 2.034484375,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 8,
+                  "l": 0,
+                  "t": 0,
+                  "pts": 3,
+                  "smooth": 3
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 6,
+                  "l": 1,
+                  "t": 1,
+                  "pts": 2.375,
+                  "smooth": 2.3762125
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 1,
+                  "l": 5,
+                  "t": 2,
+                  "pts": 0.625,
+                  "smooth": 0.6795375
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 5,
+                  "l": 2,
+                  "t": 1,
+                  "pts": 2,
+                  "smooth": 2.0821875
+                }
+              ],
+              "symptoms": null
+            }
+          ],
+          "score": 2.125
+        },
+        {
+          "name": "kenshin-branch-94x",
+          "sourceHash": "d4c2eb89e0d0bc13b1c4dff3d7b63856b94c69fee6e393bc9706c7af9b18eb5e",
+          "sourceUrl": "https://asdflkj.net/COREWAR/X/HILL32/fireandbrim.red",
+          "instructions": 23,
+          "runs": [
+            {
+              "seed": 2424601,
+              "score": 2.1875,
+              "smooth": 2.208340625,
+              "groups": {
+                "library": {
+                  "score": 2.1875,
+                  "smooth": 2.208340625,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 5,
+                  "l": 3,
+                  "t": 0,
+                  "pts": 1.875,
+                  "smooth": 1.895825
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 3,
+                  "l": 4,
+                  "t": 1,
+                  "pts": 1.25,
+                  "smooth": 1.281725
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 8,
+                  "l": 0,
+                  "t": 0,
+                  "pts": 3,
+                  "smooth": 3
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 7,
+                  "l": 1,
+                  "t": 0,
+                  "pts": 2.625,
+                  "smooth": 2.6558125
+                }
+              ],
+              "symptoms": null
+            },
+            {
+              "seed": 2434601,
+              "score": 1.875,
+              "smooth": 1.88948125,
+              "groups": {
+                "library": {
+                  "score": 1.875,
+                  "smooth": 1.88948125,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 0,
+                  "l": 8,
+                  "t": 0,
+                  "pts": 0,
+                  "smooth": 0.026575
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 4,
+                  "l": 4,
+                  "t": 0,
+                  "pts": 1.5,
+                  "smooth": 1.53135
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 8,
+                  "l": 0,
+                  "t": 0,
+                  "pts": 3,
+                  "smooth": 3
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 8,
+                  "l": 0,
+                  "t": 0,
+                  "pts": 3,
+                  "smooth": 3
+                }
+              ],
+              "symptoms": null
+            }
+          ],
+          "score": 2.03125
+        },
+        {
+          "name": "plain-DAT",
+          "sourceHash": "34aa0cbeb45a2fdd5ab98e68119fe0dc69548a4fe9a83dbb2d4448df4902b484",
+          "instructions": 9,
+          "runs": [
+            {
+              "seed": 2424601,
+              "score": 1.59375,
+              "smooth": 1.6870343749999999,
+              "groups": {
+                "library": {
+                  "score": 1.59375,
+                  "smooth": 1.6870343749999999,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 4,
+                  "l": 4,
+                  "t": 0,
+                  "pts": 1.5,
+                  "smooth": 1.5081375
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 7,
+                  "l": 1,
+                  "t": 0,
+                  "pts": 2.625,
+                  "smooth": 2.6265625
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 1,
+                  "l": 7,
+                  "t": 0,
+                  "pts": 0.375,
+                  "smooth": 0.6206875
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 5,
+                  "l": 3,
+                  "t": 0,
+                  "pts": 1.875,
+                  "smooth": 1.99275
+                }
+              ],
+              "symptoms": null
+            },
+            {
+              "seed": 2434601,
+              "score": 1.375,
+              "smooth": 1.5061312500000001,
+              "groups": {
+                "library": {
+                  "score": 1.375,
+                  "smooth": 1.5061312500000001,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 4,
+                  "l": 4,
+                  "t": 0,
+                  "pts": 1.5,
+                  "smooth": 1.5159875
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 6,
+                  "l": 1,
+                  "t": 1,
+                  "pts": 2.375,
+                  "smooth": 2.3770375
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 0,
+                  "l": 7,
+                  "t": 1,
+                  "pts": 0.125,
+                  "smooth": 0.47955
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 4,
+                  "l": 4,
+                  "t": 0,
+                  "pts": 1.5,
+                  "smooth": 1.65195
+                }
+              ],
+              "symptoms": null
+            }
+          ],
+          "score": 1.484375
+        },
+        {
+          "name": "plain-short",
+          "sourceHash": "90663cadf6e167d6480fec991940f84703fdba631ebe5e1bab76d3cb4db3c06a",
+          "instructions": 13,
+          "runs": [
+            {
+              "seed": 2424601,
+              "score": 1.53125,
+              "smooth": 1.6192812499999998,
+              "groups": {
+                "library": {
+                  "score": 1.53125,
+                  "smooth": 1.6192812499999998,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 4,
+                  "l": 4,
+                  "t": 0,
+                  "pts": 1.5,
+                  "smooth": 1.5081375
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 6,
+                  "l": 1,
+                  "t": 1,
+                  "pts": 2.375,
+                  "smooth": 2.3776125
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 1,
+                  "l": 7,
+                  "t": 0,
+                  "pts": 0.375,
+                  "smooth": 0.5986125
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 5,
+                  "l": 3,
+                  "t": 0,
+                  "pts": 1.875,
+                  "smooth": 1.9927625
+                }
+              ],
+              "symptoms": null
+            },
+            {
+              "seed": 2434601,
+              "score": 1.1875,
+              "smooth": 1.3210374999999999,
+              "groups": {
+                "library": {
+                  "score": 1.1875,
+                  "smooth": 1.3210374999999999,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 4,
+                  "l": 4,
+                  "t": 0,
+                  "pts": 1.5,
+                  "smooth": 1.516
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 4,
+                  "l": 3,
+                  "t": 1,
+                  "pts": 1.625,
+                  "smooth": 1.628875
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 0,
+                  "l": 7,
+                  "t": 1,
+                  "pts": 0.125,
+                  "smooth": 0.4873125
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 4,
+                  "l": 4,
+                  "t": 0,
+                  "pts": 1.5,
+                  "smooth": 1.6519625
+                }
+              ],
+              "symptoms": null
+            }
+          ],
+          "score": 1.359375
+        },
+        {
+          "name": "plain-full",
+          "sourceHash": "8fcdb7e05bb6c16f4298d9467e825a3f308a2b0654f586b1efa7a2e94e39b1a5",
+          "instructions": 13,
+          "runs": [
+            {
+              "seed": 2424601,
+              "score": 1.90625,
+              "smooth": 1.965825,
+              "groups": {
+                "library": {
+                  "score": 1.90625,
+                  "smooth": 1.965825,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 3,
+                  "l": 5,
+                  "t": 0,
+                  "pts": 1.125,
+                  "smooth": 1.16085
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 4,
+                  "l": 3,
+                  "t": 1,
+                  "pts": 1.625,
+                  "smooth": 1.7097
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 8,
+                  "l": 0,
+                  "t": 0,
+                  "pts": 3,
+                  "smooth": 3
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 5,
+                  "l": 3,
+                  "t": 0,
+                  "pts": 1.875,
+                  "smooth": 1.99275
+                }
+              ],
+              "symptoms": null
+            },
+            {
+              "seed": 2434601,
+              "score": 1.375,
+              "smooth": 1.465990625,
+              "groups": {
+                "library": {
+                  "score": 1.375,
+                  "smooth": 1.465990625,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 2,
+                  "l": 6,
+                  "t": 0,
+                  "pts": 0.75,
+                  "smooth": 0.8214125
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 0,
+                  "l": 6,
+                  "t": 2,
+                  "pts": 0.25,
+                  "smooth": 0.3906
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 8,
+                  "l": 0,
+                  "t": 0,
+                  "pts": 3,
+                  "smooth": 3
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 4,
+                  "l": 4,
+                  "t": 0,
+                  "pts": 1.5,
+                  "smooth": 1.65195
+                }
+              ],
+              "symptoms": null
+            }
+          ],
+          "score": 1.640625
+        }
+      ]
+    },
+    {
+      "rules": "88",
+      "settings": {
+        "coreSize": 8000,
+        "maxProcesses": 8000,
+        "maxCycles": 80000,
+        "maxLength": 50,
+        "minDistance": 100,
+        "pSpace": false,
+        "dialect": "88",
+        "assertErrors": true
+      },
+      "opponents": [
+        {
+          "file": "88/dwarf.red",
+          "name": "Dwarf",
+          "codeHash": "c991574f3f9cd28b89200a539b4aed9e4a4d1ff6477af906bf944f0d8b740d3c"
+        },
+        {
+          "file": "88/scout-88.red",
+          "name": "Scout '88",
+          "codeHash": "3028dc8189aa59dc603e3353eae4c3ed72800391608dee170fdb2ee5d79971a1"
+        },
+        {
+          "file": "88/mice.red",
+          "name": "Mice",
+          "codeHash": "e30e524daf79ada59f76d62ebcf11a3a1496ad0e2380c8c4f08291fa16943b3a"
+        },
+        {
+          "file": "88/vampire.red",
+          "name": "Vampire",
+          "codeHash": "8fdbd8e3f946df08c2f927b00a78789fdba7eec1d69485ecca7331b79af11e75"
+        }
+      ],
+      "results": [
+        {
+          "name": "freight-no-qscan-88",
+          "sourceHash": "a57b5a4e10935760598a7db8180cb6f5c8ad09076be2dfe4c1fa18f782dc28cb",
+          "sourceUrl": "https://asdflkj.net/COREWAR/88/HILL32/freighttrainv02.red",
+          "instructions": 29,
+          "runs": [
+            {
+              "seed": 2424601,
+              "score": 2,
+              "smooth": 2,
+              "groups": {
+                "library": {
+                  "score": 2,
+                  "smooth": 2,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 6,
+                  "l": 0,
+                  "t": 2,
+                  "pts": 2.5,
+                  "smooth": 2.5
+                },
+                {
+                  "name": "Scout '88",
+                  "group": "library",
+                  "w": 5,
+                  "l": 0,
+                  "t": 3,
+                  "pts": 2.25,
+                  "smooth": 2.25
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 0,
+                  "l": 0,
+                  "t": 8,
+                  "pts": 1,
+                  "smooth": 1
+                },
+                {
+                  "name": "Vampire",
+                  "group": "library",
+                  "w": 5,
+                  "l": 0,
+                  "t": 3,
+                  "pts": 2.25,
+                  "smooth": 2.25
+                }
+              ],
+              "symptoms": null
+            },
+            {
+              "seed": 2434601,
+              "score": 2.375,
+              "smooth": 2.375,
+              "groups": {
+                "library": {
+                  "score": 2.375,
+                  "smooth": 2.375,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 8,
+                  "l": 0,
+                  "t": 0,
+                  "pts": 3,
+                  "smooth": 3
+                },
+                {
+                  "name": "Scout '88",
+                  "group": "library",
+                  "w": 7,
+                  "l": 0,
+                  "t": 1,
+                  "pts": 2.75,
+                  "smooth": 2.75
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 1,
+                  "l": 0,
+                  "t": 7,
+                  "pts": 1.25,
+                  "smooth": 1.25
+                },
+                {
+                  "name": "Vampire",
+                  "group": "library",
+                  "w": 6,
+                  "l": 0,
+                  "t": 2,
+                  "pts": 2.5,
+                  "smooth": 2.5
+                }
+              ],
+              "symptoms": null
+            }
+          ],
+          "score": 2.1875
+        },
+        {
+          "name": "plain-DAT",
+          "sourceHash": "29f7f3ddb834f88f74d5bdade1b7bee18802c98f85c7eddfe78b7e6e4e3c9402",
+          "instructions": 10,
+          "runs": [
+            {
+              "seed": 2424601,
+              "score": 0.15625,
+              "smooth": 0.23508125,
+              "groups": {
+                "library": {
+                  "score": 0.15625,
+                  "smooth": 0.23508125,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 1,
+                  "l": 7,
+                  "t": 0,
+                  "pts": 0.375,
+                  "smooth": 0.3989375
+                },
+                {
+                  "name": "Scout '88",
+                  "group": "library",
+                  "w": 0,
+                  "l": 8,
+                  "t": 0,
+                  "pts": 0,
+                  "smooth": 0.0371125
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 0,
+                  "l": 8,
+                  "t": 0,
+                  "pts": 0,
+                  "smooth": 0.2416625
+                },
+                {
+                  "name": "Vampire",
+                  "group": "library",
+                  "w": 0,
+                  "l": 6,
+                  "t": 2,
+                  "pts": 0.25,
+                  "smooth": 0.2626125
+                }
+              ],
+              "symptoms": null
+            },
+            {
+              "seed": 2434601,
+              "score": 0.90625,
+              "smooth": 0.97301875,
+              "groups": {
+                "library": {
+                  "score": 0.90625,
+                  "smooth": 0.97301875,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 4,
+                  "l": 4,
+                  "t": 0,
+                  "pts": 1.5,
+                  "smooth": 1.518475
+                },
+                {
+                  "name": "Scout '88",
+                  "group": "library",
+                  "w": 2,
+                  "l": 6,
+                  "t": 0,
+                  "pts": 0.75,
+                  "smooth": 0.7797125
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 0,
+                  "l": 8,
+                  "t": 0,
+                  "pts": 0,
+                  "smooth": 0.21445
+                },
+                {
+                  "name": "Vampire",
+                  "group": "library",
+                  "w": 3,
+                  "l": 3,
+                  "t": 2,
+                  "pts": 1.375,
+                  "smooth": 1.3794375
+                }
+              ],
+              "symptoms": null
+            }
+          ],
+          "score": 0.53125
+        },
+        {
+          "name": "plain-short",
+          "sourceHash": "d85c93816ce0fb4910c8f2c79fa050476d65da905d884ddcefb0efa5df656840",
+          "instructions": 15,
+          "runs": [
+            {
+              "seed": 2424601,
+              "score": 0.59375,
+              "smooth": 0.6738468750000001,
+              "groups": {
+                "library": {
+                  "score": 0.59375,
+                  "smooth": 0.6738468750000001,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 4,
+                  "l": 4,
+                  "t": 0,
+                  "pts": 1.5,
+                  "smooth": 1.5164375
+                },
+                {
+                  "name": "Scout '88",
+                  "group": "library",
+                  "w": 0,
+                  "l": 8,
+                  "t": 0,
+                  "pts": 0,
+                  "smooth": 0.0566625
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 0,
+                  "l": 8,
+                  "t": 0,
+                  "pts": 0,
+                  "smooth": 0.2408375
+                },
+                {
+                  "name": "Vampire",
+                  "group": "library",
+                  "w": 2,
+                  "l": 5,
+                  "t": 1,
+                  "pts": 0.875,
+                  "smooth": 0.88145
+                }
+              ],
+              "symptoms": null
+            },
+            {
+              "seed": 2434601,
+              "score": 1.125,
+              "smooth": 1.1804312499999998,
+              "groups": {
+                "library": {
+                  "score": 1.125,
+                  "smooth": 1.1804312499999998,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 4,
+                  "l": 4,
+                  "t": 0,
+                  "pts": 1.5,
+                  "smooth": 1.5221375
+                },
+                {
+                  "name": "Scout '88",
+                  "group": "library",
+                  "w": 4,
+                  "l": 4,
+                  "t": 0,
+                  "pts": 1.5,
+                  "smooth": 1.5393125
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 1,
+                  "l": 7,
+                  "t": 0,
+                  "pts": 0.375,
+                  "smooth": 0.5274375
+                },
+                {
+                  "name": "Vampire",
+                  "group": "library",
+                  "w": 2,
+                  "l": 3,
+                  "t": 3,
+                  "pts": 1.125,
+                  "smooth": 1.1328375
+                }
+              ],
+              "symptoms": null
+            }
+          ],
+          "score": 0.859375
+        },
+        {
+          "name": "plain-full",
+          "sourceHash": "5f6c08a572fc877c705c61e7feaa307440ea98593afbd7bd8d451d2c84977843",
+          "instructions": 15,
+          "runs": [
+            {
+              "seed": 2424601,
+              "score": 0.96875,
+              "smooth": 0.985646875,
+              "groups": {
+                "library": {
+                  "score": 0.96875,
+                  "smooth": 0.985646875,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 1,
+                  "l": 7,
+                  "t": 0,
+                  "pts": 0.375,
+                  "smooth": 0.3989375
+                },
+                {
+                  "name": "Scout '88",
+                  "group": "library",
+                  "w": 0,
+                  "l": 8,
+                  "t": 0,
+                  "pts": 0,
+                  "smooth": 0.03715
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 8,
+                  "l": 0,
+                  "t": 0,
+                  "pts": 3,
+                  "smooth": 3
+                },
+                {
+                  "name": "Vampire",
+                  "group": "library",
+                  "w": 0,
+                  "l": 4,
+                  "t": 4,
+                  "pts": 0.5,
+                  "smooth": 0.5065
+                }
+              ],
+              "symptoms": null
+            },
+            {
+              "seed": 2434601,
+              "score": 1.34375,
+              "smooth": 1.366346875,
+              "groups": {
+                "library": {
+                  "score": 1.34375,
+                  "smooth": 1.366346875,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 4,
+                  "l": 4,
+                  "t": 0,
+                  "pts": 1.5,
+                  "smooth": 1.518475
+                },
+                {
+                  "name": "Scout '88",
+                  "group": "library",
+                  "w": 1,
+                  "l": 7,
+                  "t": 0,
+                  "pts": 0.375,
+                  "smooth": 0.4421625
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 6,
+                  "l": 1,
+                  "t": 1,
+                  "pts": 2.375,
+                  "smooth": 2.3753125
+                },
+                {
+                  "name": "Vampire",
+                  "group": "library",
+                  "w": 2,
+                  "l": 3,
+                  "t": 3,
+                  "pts": 1.125,
+                  "smooth": 1.1294375
+                }
+              ],
+              "symptoms": null
+            }
+          ],
+          "score": 1.15625
+        }
+      ]
+    },
+    {
+      "rules": "94nop",
+      "settings": {
+        "coreSize": 8000,
+        "maxProcesses": 8000,
+        "maxCycles": 80000,
+        "maxLength": 50,
+        "minDistance": 100,
+        "pSpace": false,
+        "assertErrors": true
+      },
+      "opponents": [
+        {
+          "file": "dwarf.red",
+          "name": "Dwarf",
+          "codeHash": "c991574f3f9cd28b89200a539b4aed9e4a4d1ff6477af906bf944f0d8b740d3c"
+        },
+        {
+          "file": "scanner.red",
+          "name": "Scout",
+          "codeHash": "6c05e60680e1cf77a3812a9c7771d956d2973fe31b6b77b285dcfd3f027e4c2d"
+        },
+        {
+          "file": "mice.red",
+          "name": "Mice",
+          "codeHash": "e30e524daf79ada59f76d62ebcf11a3a1496ad0e2380c8c4f08291fa16943b3a"
+        },
+        {
+          "file": "twopass.red",
+          "name": "Two-Pass Clear",
+          "codeHash": "822f8991516b04c3fcacee8239a0c552730f0c9f230eee030d6b5beacad1e83c"
+        }
+      ],
+      "results": [
+        {
+          "name": "parallel-paper-stone-94nop",
+          "sourceHash": "dc1613614c154b59b936d2fd2e3cdc81de73def55fa24893c318c8d1a41ede16",
+          "sourceUrl": "https://asdflkj.net/COREWAR/94/HILL32/arvon.red",
+          "instructions": 20,
+          "runs": [
+            {
+              "seed": 2424601,
+              "score": 2.46875,
+              "smooth": 2.482021875,
+              "groups": {
+                "library": {
+                  "score": 2.46875,
+                  "smooth": 2.482021875,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 8,
+                  "l": 0,
+                  "t": 0,
+                  "pts": 3,
+                  "smooth": 3
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 8,
+                  "l": 0,
+                  "t": 0,
+                  "pts": 3,
+                  "smooth": 3
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 1,
+                  "l": 0,
+                  "t": 7,
+                  "pts": 1.25,
+                  "smooth": 1.25
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 7,
+                  "l": 1,
+                  "t": 0,
+                  "pts": 2.625,
+                  "smooth": 2.6780875
+                }
+              ],
+              "symptoms": null
+            },
+            {
+              "seed": 2434601,
+              "score": 2.03125,
+              "smooth": 2.067078125,
+              "groups": {
+                "library": {
+                  "score": 2.03125,
+                  "smooth": 2.067078125,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 6,
+                  "l": 0,
+                  "t": 2,
+                  "pts": 2.5,
+                  "smooth": 2.5
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 8,
+                  "l": 0,
+                  "t": 0,
+                  "pts": 3,
+                  "smooth": 3
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 0,
+                  "l": 0,
+                  "t": 8,
+                  "pts": 1,
+                  "smooth": 1
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 4,
+                  "l": 3,
+                  "t": 1,
+                  "pts": 1.625,
+                  "smooth": 1.7683125
+                }
+              ],
+              "symptoms": null
+            }
+          ],
+          "score": 2.25
+        },
+        {
+          "name": "plain-DAT",
+          "sourceHash": "5256eae899094bcb404feee5c99df9b75c0e1118e38a4c9123cbfaa61f50068a",
+          "instructions": 9,
+          "runs": [
+            {
+              "seed": 2424601,
+              "score": 0.59375,
+              "smooth": 0.7180031250000001,
+              "groups": {
+                "library": {
+                  "score": 0.59375,
+                  "smooth": 0.7180031250000001,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 3,
+                  "l": 5,
+                  "t": 0,
+                  "pts": 1.125,
+                  "smooth": 1.13995
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 1,
+                  "l": 7,
+                  "t": 0,
+                  "pts": 0.375,
+                  "smooth": 0.43835
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 1,
+                  "l": 6,
+                  "t": 1,
+                  "pts": 0.5,
+                  "smooth": 0.61755
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 1,
+                  "l": 7,
+                  "t": 0,
+                  "pts": 0.375,
+                  "smooth": 0.6761625
+                }
+              ],
+              "symptoms": null
+            },
+            {
+              "seed": 2434601,
+              "score": 1.21875,
+              "smooth": 1.3459,
+              "groups": {
+                "library": {
+                  "score": 1.21875,
+                  "smooth": 1.3459,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 5,
+                  "l": 3,
+                  "t": 0,
+                  "pts": 1.875,
+                  "smooth": 1.8942125
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 5,
+                  "l": 3,
+                  "t": 0,
+                  "pts": 1.875,
+                  "smooth": 1.887075
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 0,
+                  "l": 8,
+                  "t": 0,
+                  "pts": 0,
+                  "smooth": 0.2532625
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 3,
+                  "l": 5,
+                  "t": 0,
+                  "pts": 1.125,
+                  "smooth": 1.34905
+                }
+              ],
+              "symptoms": null
+            }
+          ],
+          "score": 0.90625
+        },
+        {
+          "name": "plain-short",
+          "sourceHash": "fddf27165a156f6e474866ee996e026152d450eaca9aa808d45177c0fb2e0e78",
+          "instructions": 13,
+          "runs": [
+            {
+              "seed": 2424601,
+              "score": 0.4375,
+              "smooth": 0.5622562499999999,
+              "groups": {
+                "library": {
+                  "score": 0.4375,
+                  "smooth": 0.5622562499999999,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 3,
+                  "l": 5,
+                  "t": 0,
+                  "pts": 1.125,
+                  "smooth": 1.139975
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 0,
+                  "l": 8,
+                  "t": 0,
+                  "pts": 0,
+                  "smooth": 0.0900625
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 0,
+                  "l": 6,
+                  "t": 2,
+                  "pts": 0.25,
+                  "smooth": 0.3427375
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 1,
+                  "l": 7,
+                  "t": 0,
+                  "pts": 0.375,
+                  "smooth": 0.67625
+                }
+              ],
+              "symptoms": null
+            },
+            {
+              "seed": 2434601,
+              "score": 1.34375,
+              "smooth": 1.4750812500000001,
+              "groups": {
+                "library": {
+                  "score": 1.34375,
+                  "smooth": 1.4750812500000001,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 5,
+                  "l": 3,
+                  "t": 0,
+                  "pts": 1.875,
+                  "smooth": 1.8942125
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 5,
+                  "l": 3,
+                  "t": 0,
+                  "pts": 1.875,
+                  "smooth": 1.9098375
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 1,
+                  "l": 6,
+                  "t": 1,
+                  "pts": 0.5,
+                  "smooth": 0.7471625
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 3,
+                  "l": 5,
+                  "t": 0,
+                  "pts": 1.125,
+                  "smooth": 1.3491125
+                }
+              ],
+              "symptoms": null
+            }
+          ],
+          "score": 0.890625
+        },
+        {
+          "name": "plain-full",
+          "sourceHash": "e7d6ab0a7d87ea51d89504fde30a77e467d459feda38c984e7d553e2ec7e5d19",
+          "instructions": 13,
+          "runs": [
+            {
+              "seed": 2424601,
+              "score": 0.8125,
+              "smooth": 0.923046875,
+              "groups": {
+                "library": {
+                  "score": 0.8125,
+                  "smooth": 0.923046875,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 0,
+                  "l": 7,
+                  "t": 1,
+                  "pts": 0.125,
+                  "smooth": 0.189875
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 0,
+                  "l": 8,
+                  "t": 0,
+                  "pts": 0,
+                  "smooth": 0.07615
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 7,
+                  "l": 0,
+                  "t": 1,
+                  "pts": 2.75,
+                  "smooth": 2.75
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 1,
+                  "l": 7,
+                  "t": 0,
+                  "pts": 0.375,
+                  "smooth": 0.6761625
+                }
+              ],
+              "symptoms": null
+            },
+            {
+              "seed": 2434601,
+              "score": 1.375,
+              "smooth": 1.4594624999999999,
+              "groups": {
+                "library": {
+                  "score": 1.375,
+                  "smooth": 1.4594624999999999,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 4,
+                  "l": 3,
+                  "t": 1,
+                  "pts": 1.625,
+                  "smooth": 1.6544625
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 2,
+                  "l": 6,
+                  "t": 0,
+                  "pts": 0.75,
+                  "smooth": 0.80775
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 5,
+                  "l": 2,
+                  "t": 1,
+                  "pts": 2,
+                  "smooth": 2.0265875
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 3,
+                  "l": 5,
+                  "t": 0,
+                  "pts": 1.125,
+                  "smooth": 1.34905
+                }
+              ],
+              "symptoms": null
+            }
+          ],
+          "score": 1.09375
+        }
+      ]
+    },
+    {
+      "rules": "lp",
+      "settings": {
+        "coreSize": 8000,
+        "maxProcesses": 8,
+        "maxCycles": 80000,
+        "maxLength": 50,
+        "minDistance": 200,
+        "pSpace": false,
+        "assertErrors": true
+      },
+      "opponents": [
+        {
+          "file": "dwarf.red",
+          "name": "Dwarf",
+          "codeHash": "c991574f3f9cd28b89200a539b4aed9e4a4d1ff6477af906bf944f0d8b740d3c"
+        },
+        {
+          "file": "scanner.red",
+          "name": "Scout",
+          "codeHash": "6c05e60680e1cf77a3812a9c7771d956d2973fe31b6b77b285dcfd3f027e4c2d"
+        },
+        {
+          "file": "mice.red",
+          "name": "Mice",
+          "codeHash": "e30e524daf79ada59f76d62ebcf11a3a1496ad0e2380c8c4f08291fa16943b3a"
+        },
+        {
+          "file": "twopass.red",
+          "name": "Two-Pass Clear",
+          "codeHash": "822f8991516b04c3fcacee8239a0c552730f0c9f230eee030d6b5beacad1e83c"
+        }
+      ],
+      "results": [
+        {
+          "name": "rous-reference-lp",
+          "sourceHash": "a7eef13e53ce45158bd5ca2ed9f52f445af1d3b228f4f90956228a64241beb9a",
+          "sourceUrl": "https://asdflkj.net/COREWAR/LP/HILL32/rous.red",
+          "instructions": 7,
+          "runs": [
+            {
+              "seed": 2424601,
+              "score": 2.375,
+              "smooth": 2.444328125,
+              "groups": {
+                "library": {
+                  "score": 2.375,
+                  "smooth": 2.444328125,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 8,
+                  "l": 0,
+                  "t": 0,
+                  "pts": 3,
+                  "smooth": 3
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 8,
+                  "l": 0,
+                  "t": 0,
+                  "pts": 3,
+                  "smooth": 3
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 3,
+                  "l": 2,
+                  "t": 3,
+                  "pts": 1.5,
+                  "smooth": 1.6794125
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 5,
+                  "l": 2,
+                  "t": 1,
+                  "pts": 2,
+                  "smooth": 2.0979
+                }
+              ],
+              "symptoms": null
+            },
+            {
+              "seed": 2434601,
+              "score": 2.46875,
+              "smooth": 2.48368125,
+              "groups": {
+                "library": {
+                  "score": 2.46875,
+                  "smooth": 2.48368125,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 8,
+                  "l": 0,
+                  "t": 0,
+                  "pts": 3,
+                  "smooth": 3
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 8,
+                  "l": 0,
+                  "t": 0,
+                  "pts": 3,
+                  "smooth": 3
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 1,
+                  "l": 1,
+                  "t": 6,
+                  "pts": 1.125,
+                  "smooth": 1.184725
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 7,
+                  "l": 0,
+                  "t": 1,
+                  "pts": 2.75,
+                  "smooth": 2.75
+                }
+              ],
+              "symptoms": null
+            }
+          ],
+          "score": 2.421875
+        },
+        {
+          "name": "plain-DAT",
+          "sourceHash": "1b19732161b4cda906fc4edab6af0387db70aec0ce55636555f758354744c792",
+          "instructions": 9,
+          "runs": [
+            {
+              "seed": 2424601,
+              "score": 0.625,
+              "smooth": 0.7323437500000001,
+              "groups": {
+                "library": {
+                  "score": 0.625,
+                  "smooth": 0.7323437500000001,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 2,
+                  "l": 6,
+                  "t": 0,
+                  "pts": 0.75,
+                  "smooth": 0.816825
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 1,
+                  "l": 7,
+                  "t": 0,
+                  "pts": 0.375,
+                  "smooth": 0.468225
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 0,
+                  "l": 6,
+                  "t": 2,
+                  "pts": 0.25,
+                  "smooth": 0.3220875
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 3,
+                  "l": 5,
+                  "t": 0,
+                  "pts": 1.125,
+                  "smooth": 1.3222375
+                }
+              ],
+              "symptoms": null
+            },
+            {
+              "seed": 2434601,
+              "score": 0.84375,
+              "smooth": 0.9528062500000001,
+              "groups": {
+                "library": {
+                  "score": 0.84375,
+                  "smooth": 0.9528062500000001,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 3,
+                  "l": 5,
+                  "t": 0,
+                  "pts": 1.125,
+                  "smooth": 1.18335
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 1,
+                  "l": 7,
+                  "t": 0,
+                  "pts": 0.375,
+                  "smooth": 0.4814
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 0,
+                  "l": 8,
+                  "t": 0,
+                  "pts": 0,
+                  "smooth": 0.14405
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 5,
+                  "l": 3,
+                  "t": 0,
+                  "pts": 1.875,
+                  "smooth": 2.002425
+                }
+              ],
+              "symptoms": null
+            }
+          ],
+          "score": 0.734375
+        },
+        {
+          "name": "plain-short",
+          "sourceHash": "51036f9bb0a03e241041669b3c095b33fdd8253614f2f3bc8c8c70acc58242fc",
+          "instructions": 13,
+          "runs": [
+            {
+              "seed": 2424601,
+              "score": 0.5625,
+              "smooth": 0.6732374999999999,
+              "groups": {
+                "library": {
+                  "score": 0.5625,
+                  "smooth": 0.6732374999999999,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 2,
+                  "l": 6,
+                  "t": 0,
+                  "pts": 0.75,
+                  "smooth": 0.81725
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 1,
+                  "l": 7,
+                  "t": 0,
+                  "pts": 0.375,
+                  "smooth": 0.4189375
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 0,
+                  "l": 8,
+                  "t": 0,
+                  "pts": 0,
+                  "smooth": 0.1344625
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 3,
+                  "l": 5,
+                  "t": 0,
+                  "pts": 1.125,
+                  "smooth": 1.3223
+                }
+              ],
+              "symptoms": null
+            },
+            {
+              "seed": 2434601,
+              "score": 0.84375,
+              "smooth": 0.9342593750000001,
+              "groups": {
+                "library": {
+                  "score": 0.84375,
+                  "smooth": 0.9342593750000001,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 3,
+                  "l": 5,
+                  "t": 0,
+                  "pts": 1.125,
+                  "smooth": 1.1837625
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 1,
+                  "l": 7,
+                  "t": 0,
+                  "pts": 0.375,
+                  "smooth": 0.4009625
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 0,
+                  "l": 8,
+                  "t": 0,
+                  "pts": 0,
+                  "smooth": 0.14985
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 5,
+                  "l": 3,
+                  "t": 0,
+                  "pts": 1.875,
+                  "smooth": 2.0024625
+                }
+              ],
+              "symptoms": null
+            }
+          ],
+          "score": 0.703125
+        },
+        {
+          "name": "plain-full",
+          "sourceHash": "c11c6e6f7a27841b9fe34e275ad784f0f350f18901e6e3c3eefef844291525d1",
+          "instructions": 13,
+          "runs": [
+            {
+              "seed": 2424601,
+              "score": 0.4375,
+              "smooth": 0.5999749999999999,
+              "groups": {
+                "library": {
+                  "score": 0.4375,
+                  "smooth": 0.5999749999999999,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 1,
+                  "l": 6,
+                  "t": 1,
+                  "pts": 0.5,
+                  "smooth": 0.5668
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 0,
+                  "l": 8,
+                  "t": 0,
+                  "pts": 0,
+                  "smooth": 0.1116875
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 0,
+                  "l": 7,
+                  "t": 1,
+                  "pts": 0.125,
+                  "smooth": 0.399175
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 3,
+                  "l": 5,
+                  "t": 0,
+                  "pts": 1.125,
+                  "smooth": 1.3222375
+                }
+              ],
+              "symptoms": null
+            },
+            {
+              "seed": 2434601,
+              "score": 0.6875,
+              "smooth": 0.793253125,
+              "groups": {
+                "library": {
+                  "score": 0.6875,
+                  "smooth": 0.793253125,
+                  "opponents": 4
+                }
+              },
+              "rows": [
+                {
+                  "name": "Dwarf",
+                  "group": "library",
+                  "w": 2,
+                  "l": 6,
+                  "t": 0,
+                  "pts": 0.75,
+                  "smooth": 0.8332875
+                },
+                {
+                  "name": "Scout",
+                  "group": "library",
+                  "w": 0,
+                  "l": 8,
+                  "t": 0,
+                  "pts": 0,
+                  "smooth": 0.1454375
+                },
+                {
+                  "name": "Mice",
+                  "group": "library",
+                  "w": 0,
+                  "l": 7,
+                  "t": 1,
+                  "pts": 0.125,
+                  "smooth": 0.1918625
+                },
+                {
+                  "name": "Two-Pass Clear",
+                  "group": "library",
+                  "w": 5,
+                  "l": 3,
+                  "t": 0,
+                  "pts": 1.875,
+                  "smooth": 2.002425
+                }
+              ],
+              "symptoms": null
+            }
+          ],
+          "score": 0.5625
+        }
+      ]
+    }
+  ],
+  "battleRounds": 1088
+}
