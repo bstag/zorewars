@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /api/
 
-Sitemap: https://zorewars.blackstag.workers.dev/sitemap.xml
+Sitemap: https://zorewar.app/sitemap.xml

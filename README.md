@@ -27,7 +27,7 @@ A browser-based programming game inspired by **Core War** (1984). Players write 
 - **The plane (experimental)**: the first step towards a 3D battlefield. The core can be a torus plane (100×80 or 125×64) where addresses are vectors such as `[0,1]`. Code flows along rows, and fixed strides can't cover the plane, so the strategies that win change. Classic battles are unaffected, and a plane one row high is proven identical to the ring. See [design/3d-battlefield.md](design/3d-battlefield.md).
 - **Developer tools**: `zorewars hill` (benchmark with loss diagnosis), `species` (behaviour map), `tune` (constant search), `evolve` (seeded MAP-Elites or a population genetic algorithm with Red Queen opponents), and `train` (separate validated versions for each ruleset). See [warrior training](docs/warrior-training.md) for the library strategy map, search controls and validation workflow. MAP-Elites follows [Digital Red Queen](https://github.com/SakanaAI/drq).
 
-**Play it:** [zorewars.blackstag.workers.dev](https://zorewars.blackstag.workers.dev) (full version on Cloudflare) · [bstag.github.io/zorewars](https://bstag.github.io/zorewars/) (static mirror on GitHub Pages: everything except importing originals by URL)
+**Play it:** [zorewar.app](https://zorewar.app) (full version on Cloudflare) · [bstag.github.io/zorewars](https://bstag.github.io/zorewars/) (static mirror on GitHub Pages: everything except importing originals by URL)
 
 No runtime dependencies; Node.js 18+ (Wrangler, for Cloudflare deploys, needs Node 22).
 

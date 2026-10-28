@@ -7,6 +7,10 @@
   "name": "zorewars",
   "main": "./worker/index.js",
   "compatibility_date": "2026-10-24",
+  // zorewar.app is the public address; the workers.dev URL keeps working and
+  // its pages name zorewar.app as canonical.
+  "routes": [{ "pattern": "zorewar.app", "custom_domain": true }],
+  "workers_dev": true,
   "assets": {
     "directory": "./",
     "binding": "ASSETS",
