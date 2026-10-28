@@ -1018,6 +1018,123 @@
         "decoy-layout",
         "guarded-clear"
       ]
+    },
+    {
+      "id": "combo",
+      "defaults": {
+        "OPENING": 1,
+        "RELOCATE": 1,
+        "FINISHER": 0,
+        "BOOT": 0,
+        "BACKWARD": 0,
+        "PHASE": 1,
+        "WAIT": 128,
+        "STEP": 997,
+        "HOP": 4096,
+        "STUN": 64,
+        "SSTEP": 997,
+        "GAP": 7,
+        "START": 512,
+        "SCANS": 64,
+        "DECOYS": 0,
+        "DECOY": 0
+      },
+      "space": {
+        "OPENING": [
+          0,
+          3
+        ],
+        "RELOCATE": [
+          0,
+          1
+        ],
+        "FINISHER": [
+          0,
+          1
+        ],
+        "BOOT": [
+          0,
+          1
+        ],
+        "BACKWARD": [
+          0,
+          1
+        ],
+        "PHASE": [
+          0,
+          2
+        ],
+        "WAIT": [
+          1,
+          768
+        ],
+        "STEP": [
+          1,
+          2048
+        ],
+        "HOP": [
+          256,
+          54000
+        ],
+        "STUN": [
+          1,
+          4096
+        ],
+        "SSTEP": [
+          1,
+          55439
+        ],
+        "GAP": [
+          1,
+          31
+        ],
+        "START": [
+          128,
+          54000
+        ],
+        "SCANS": [
+          8,
+          256
+        ],
+        "DECOYS": [
+          0,
+          18
+        ],
+        "DECOY": [
+          0,
+          2
+        ]
+      },
+      "rules": [
+        "88",
+        "94nop",
+        "lp",
+        "94x",
+        "94x-hill"
+      ],
+      "numeric": [
+        "WAIT",
+        "STEP",
+        "HOP",
+        "STUN",
+        "SSTEP",
+        "GAP",
+        "START",
+        "SCANS",
+        "DECOYS"
+      ],
+      "blocks": [
+        "opening-none",
+        "opening-bomber",
+        "opening-bscan",
+        "opening-cmpscan",
+        "in-place",
+        "relocate",
+        "counted-clear",
+        "guarded-clear",
+        "boot-first",
+        "decoys"
+      ]
     }
   ],
   "familyReadiness": [

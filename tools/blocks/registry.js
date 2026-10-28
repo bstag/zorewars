@@ -1,6 +1,7 @@
 import { buildRecipe, recipeDefaults, recipeSpace, recipeGenerator, recipeSettings } from './recipes.js';
 import { buildAirbag, airbagDefaults, airbagSpace, airbagGenerator } from './airbag.js';
 import { buildCompass, compassDefaults, compassSpace, compassGenerator } from './compass.js';
+import { buildCombo, comboDefaults, comboSpace, comboGenerator, comboCanonical, comboRepair, comboSlots } from './combo.js';
 
 // Whole recipes own their pointers, queues and transitions. A family identifier
 // is a structural gene; fields cross over only within that family's contract.
@@ -14,6 +15,11 @@ export const recipeFamilies = {
   compass: { defaults: compassDefaults, space: compassSpace, build: buildCompass, generator: compassGenerator,
     rules: ['94x'], numeric: ['HOP', 'STEP', 'GAP', 'START', 'SCANS', 'STUN', 'DECOYS'],
     blocks: ['relocate-copy', 'comparison-scan', 'scan-to-clear', 'decoy-layout', 'guarded-clear'] },
+  // Any fitting combination of the single-process blocks above (tools/blocks/combo.js).
+  combo: { defaults: comboDefaults, space: comboSpace, build: buildCombo, generator: comboGenerator, canonical: comboCanonical,
+    slots: comboSlots, repair: comboRepair,
+    rules: ['88', '94nop', 'lp', '94x', '94x-hill'], numeric: ['WAIT', 'STEP', 'HOP', 'STUN', 'SSTEP', 'GAP', 'START', 'SCANS', 'DECOYS'],
+    blocks: ['opening-none', 'opening-bomber', 'opening-bscan', 'opening-cmpscan', 'in-place', 'relocate', 'counted-clear', 'guarded-clear', 'boot-first', 'decoys'] },
 };
 
 export function buildBlockRecipe(recipe, options = {}) {

@@ -21,8 +21,60 @@ positional starting seeds. They supplement each selected family's default.
 | `clear` | No opening, bounded bomber or B-field scanner → optional relocation → forward/backward DAT or SPL/DAT clear | 88, 94nop, lp, 94x, 94x-hill |
 | `lifeboat` | Optional boot → bomber plus independent watchdog → guarded fallback clear; bomb type, direction and phase choices | 94x |
 | `compass` | Optional boot → comparison scanner → guarded clear, with independently sized and patterned decoys outside the payload | 94x |
+| `combo` | Any fitting chain of the single-process blocks below | 88, 94nop, lp, 94x, 94x-hill |
 
 These cover several attack and support blocks from the broader catalog.
+
+## Combining blocks
+
+`combo` ([tools/blocks/combo.js](../tools/blocks/combo.js)) turns the blocks
+inside `clear` and Compass into genes. A genome picks one block per slot and
+that block's numbers; the composer lays them out in order, and one generic gate
+checks whatever combination results.
+
+| Slot | Blocks | What the block needs, and what it hands on |
+|---|---|---|
+| Opening (`OPENING`) | none, bomber, B-scan, comparison scan | Bomber and B-scan exit on a timer and need a DAT or SPL bomb cell from the finisher; the comparison scan exits on the first differing pair and hands on the cell it found ('94 only). All leave a probe whose B-field the next block can read. |
+| Handoff (`RELOCATE`) | in place, relocate | In place passes the probe on. Relocate copies the finisher to probe+HOP and passes nothing, so the finisher must be relocatable. |
+| Finisher (`FINISHER`) | counted clear, guarded clear | The counted clear needs nothing, is relocatable and owns DAT and SPL bomb cells. The guarded clear starts at the probe's cell and skips the protected span; it reads state in the image, so it cannot be relocated ('94 only). Both take an optional stun phase (`PHASE`). |
+| Boot (`BOOT`) | none, boot first | Copies the runnable image to probe+HOP before the opening starts; excludes relocate. |
+| Decoys (`DECOYS`, `DECOY`) | 0–18 cells | After the finisher; SPL decoys are '94 only. |
+
+Combinations whose blocks do not fit are refused with the reason, for example
+"the guarded clear reads state in the image, so it cannot be relocated". The
+evolver records these refusals with every other rejection.
+
+Half of all combo mutations are block swaps: one slot gets a different block,
+then the other slots are repaired so the contracts fit, keeping the block just
+chosen (choosing the guarded clear turns relocation off; choosing relocation
+turns the counted clear back on). Ordinary mutations and crossover are repaired
+the same way. Run `combo` without `clear`: its default is the `clear` default,
+so the two families compete for the same programs.
+
+The two templates are combinations: the composer emits exactly the `clear`
+recipe's code for all 108 choices in '88, 94nop and 94x, and exactly Compass's
+code for all 54 layouts (`test/combo.test.js`). On every template variant the
+generic gate and the template's own gate agree. New combinations include a
+bomber or B-scan followed by the guarded clear, the comparison scan followed by
+a relocated counted clear, and Compass on the 8000-cell ring.
+
+The generic gate, for every combination, at three load positions (one of them
+wrapping the copy past the end of core):
+
+- the finisher is entered, intact, at the address its handoff promises;
+- a bomber or B-scan used up its timer; a bomber dropped every bomb;
+- the first clear write lands where the finisher's contract says (after
+  itself, before itself, or at the probe's cell), every clear write is the
+  right bomb outside the protected span, and the stun phase has the declared length;
+- the warrior survives a full solo round with one process, its protected code
+  intact, and every unprotected cell written after the clear began;
+- scanners react: a B-scan stuns a planted target, and the comparison scan
+  hands on a planted cell but passes over an equal pair.
+
+Parameters a combination does not use are reset to defaults before its id is
+computed, so one program has one id. Lifeboat's two-process watchdog is not a
+block yet: combining it needs blocks that run side by side, which is also what
+paper, imp spirals and vampires need.
 Lifeboat is the process-aware recipe developed from the watchdog investigations;
 the clear grammar predates that work. Compass extends scanning, boot layout and
 decoys. They are complete compositions with different process contracts, not

@@ -33,8 +33,10 @@ export async function evolveBlocks({ pool, opponents, settings, rules = '94x', l
   function admit(recipe, operator, parents, generation) {
     stats.proposed++;
     // Stable family/key ordering makes imported JSON key order irrelevant.
-    const P = Object.fromEntries(Object.keys(recipeFamilies[recipe.family].space).map(k => [k, recipe.P[k]]));
+    const family = recipeFamilies[recipe.family];
+    let P = Object.fromEntries(Object.keys(family.space).map(k => [k, recipe.P[k]]));
     if (Object.keys(recipe.P).length !== Object.keys(P).length) throw new Error('Unexpected initial recipe keys');
+    if (family.canonical) P = family.canonical(P, rules);   // one program, one id
     const normalized = { family: recipe.family, P }, id = createHash('sha256').update(JSON.stringify(normalized)).digest('hex').slice(0, 16);
     if (catalog.has(id)) { stats.duplicates++; return catalog.get(id); }
     try {
@@ -56,10 +58,18 @@ export async function evolveBlocks({ pool, opponents, settings, rules = '94x', l
   }
   function mutate(parent, local = false) {
     const spec = recipeFamilies[parent.recipe.family], P = { ...parent.recipe.P };
+    // Block swap: families made of slots change a whole block half the time,
+    // then repair the other slots so the contracts still fit.
+    if (!local && spec.slots && random() < 0.5) {
+      const slot = pick(spec.slots), [lo, hi] = spec.space[slot], options = [];
+      for (let v = lo; v <= Math.min(hi, lo + 3); v++) if (v !== P[slot]) options.push(v);
+      P[slot] = slot === 'DECOYS' ? (P.DECOYS ? 0 : sample([1, hi])) : pick(options);
+      return { family: parent.recipe.family, P: spec.repair(P, rules, slot) };
+    }
     const key = pick(local ? spec.numeric : Object.keys(spec.space)), [lo, hi] = spec.space[key];
     if (!local && random() < 0.5) P[key] = sample([lo, hi]);
     else P[key] = Math.max(lo, Math.min(hi, P[key] + (random() < 0.5 ? -1 : 1) * (local ? 1 : Math.max(1, Math.floor((hi - lo) / 32)))));
-    return { family: parent.recipe.family, P };
+    return { family: parent.recipe.family, P: spec.repair ? spec.repair(P, rules, key) : P };
   }
   function survivors(xs) {
     // Retain the best available member of every family, then outcome specialists.
