@@ -1,0 +1,272 @@
+{
+  "profiles": {
+    "88": {
+      "coreSize": 8000,
+      "maxProcesses": 8000,
+      "maxCycles": 80000,
+      "maxLength": 100,
+      "minDistance": 100,
+      "pSpace": false,
+      "dialect": "88",
+      "assertErrors": true
+    },
+    "94nop": {
+      "coreSize": 8000,
+      "maxProcesses": 8000,
+      "maxCycles": 80000,
+      "maxLength": 100,
+      "minDistance": 100,
+      "pSpace": false,
+      "assertErrors": true
+    },
+    "lp": {
+      "coreSize": 8000,
+      "maxProcesses": 8,
+      "maxCycles": 80000,
+      "maxLength": 100,
+      "minDistance": 200,
+      "pSpace": false,
+      "assertErrors": true
+    },
+    "94x": {
+      "coreSize": 55440,
+      "maxProcesses": 10000,
+      "maxCycles": 500000,
+      "maxLength": 200,
+      "minDistance": 200,
+      "pSpace": false,
+      "assertErrors": true
+    },
+    "94x-hill": {
+      "coreSize": 55440,
+      "maxProcesses": 10000,
+      "maxCycles": 500000,
+      "maxLength": 200,
+      "minDistance": 200,
+      "pSpace": true,
+      "assertErrors": true
+    }
+  },
+  "supportedDialects": [
+    "88",
+    "94"
+  ],
+  "unsupportedHistoricalDialects": [
+    "86"
+  ],
+  "modifiers": [
+    "A",
+    "B",
+    "AB",
+    "BA",
+    "F",
+    "X",
+    "I"
+  ],
+  "modes": [
+    "#",
+    "$",
+    "*",
+    "@",
+    "{",
+    "<",
+    "}",
+    ">"
+  ],
+  "modeNames": {
+    "#": "immediate",
+    "$": "direct",
+    "*": "A-field indirect",
+    "@": "B-field indirect",
+    "{": "A-field predecrement indirect",
+    "<": "B-field predecrement indirect",
+    "}": "A-field postincrement indirect",
+    ">": "B-field postincrement indirect"
+  },
+  "modifierEffects": {
+    "A": "A to A",
+    "B": "B to B",
+    "AB": "A to B",
+    "BA": "B to A",
+    "F": "A to A and B to B",
+    "X": "A to B and B to A",
+    "I": "Whole instruction for MOV/SEQ/SNE; numeric field behavior for other opcodes; see engine semantics"
+  },
+  "directives": [
+    "EQU",
+    "ORG",
+    "END",
+    "FOR",
+    "ROF",
+    ";assert"
+  ],
+  "restrictions88": {
+    "modes": [
+      "#",
+      "$",
+      "@",
+      "<"
+    ],
+    "explicitModifiers": false,
+    "entry": "END (ORG forbidden)",
+    "dat": "# or < operands only",
+    "immediateDestinationForbidden": [
+      "MOV",
+      "ADD",
+      "SUB",
+      "CMP"
+    ],
+    "immediateTargetForbidden": [
+      "JMP",
+      "JMZ",
+      "JMN",
+      "DJN",
+      "SPL"
+    ],
+    "equalitySpelling": "CMP"
+  },
+  "instructions": [
+    {
+      "op": "DAT",
+      "effect": "Terminates executing process; addressing side effects still matter.",
+      "dialect88": true,
+      "source88": "DAT",
+      "requires": "none"
+    },
+    {
+      "op": "MOV",
+      "effect": "Copies selected fields or whole instruction (.I).",
+      "dialect88": true,
+      "source88": "MOV",
+      "requires": "none"
+    },
+    {
+      "op": "ADD",
+      "effect": "Adds source to destination fields modulo core.",
+      "dialect88": true,
+      "source88": "ADD",
+      "requires": "none"
+    },
+    {
+      "op": "SUB",
+      "effect": "Subtracts source from destination fields modulo core.",
+      "dialect88": true,
+      "source88": "SUB",
+      "requires": "none"
+    },
+    {
+      "op": "MUL",
+      "effect": "Multiplies destination fields by source.",
+      "dialect88": false,
+      "source88": "MUL",
+      "requires": "none"
+    },
+    {
+      "op": "DIV",
+      "effect": "Integer division; zero divisor terminates process.",
+      "dialect88": false,
+      "source88": "DIV",
+      "requires": "none"
+    },
+    {
+      "op": "MOD",
+      "effect": "Remainder; zero divisor terminates process.",
+      "dialect88": false,
+      "source88": "MOD",
+      "requires": "none"
+    },
+    {
+      "op": "JMP",
+      "effect": "Transfers current process to A.",
+      "dialect88": true,
+      "source88": "JMP",
+      "requires": "none"
+    },
+    {
+      "op": "JMZ",
+      "effect": "Jumps when selected B fields are zero.",
+      "dialect88": true,
+      "source88": "JMZ",
+      "requires": "none"
+    },
+    {
+      "op": "JMN",
+      "effect": "Jumps when selected B fields are nonzero.",
+      "dialect88": true,
+      "source88": "JMN",
+      "requires": "none"
+    },
+    {
+      "op": "DJN",
+      "effect": "Decrements selected B fields and conditionally jumps.",
+      "dialect88": true,
+      "source88": "DJN",
+      "requires": "none"
+    },
+    {
+      "op": "SPL",
+      "effect": "Adds a child process subject to process limit.",
+      "dialect88": true,
+      "source88": "SPL",
+      "requires": "none"
+    },
+    {
+      "op": "SLT",
+      "effect": "Skips next instruction when selected source fields are less.",
+      "dialect88": true,
+      "source88": "SLT",
+      "requires": "none"
+    },
+    {
+      "op": "SEQ",
+      "effect": "Skips next instruction on equality; CMP is an alias.",
+      "dialect88": true,
+      "source88": "CMP",
+      "requires": "none"
+    },
+    {
+      "op": "SNE",
+      "effect": "Skips next instruction on inequality.",
+      "dialect88": false,
+      "source88": "SNE",
+      "requires": "none"
+    },
+    {
+      "op": "NOP",
+      "effect": "No opcode action; addressing can still mutate pointers.",
+      "dialect88": false,
+      "source88": "NOP",
+      "requires": "none"
+    },
+    {
+      "op": "LDP",
+      "effect": "Loads P-space into core fields.",
+      "dialect88": false,
+      "source88": "LDP",
+      "requires": "P-space enabled"
+    },
+    {
+      "op": "STP",
+      "effect": "Stores core fields into P-space.",
+      "dialect88": false,
+      "source88": "STP",
+      "requires": "P-space enabled"
+    },
+    {
+      "op": "TRN",
+      "effect": "ZoreWars torus extension: changes process heading.",
+      "dialect88": false,
+      "source88": "TRN",
+      "requires": "torus"
+    }
+  ],
+  "authority": [
+    "src/engine/assembler.js",
+    "src/engine/constants.js",
+    "src/engine/vm.js"
+  ],
+  "references": [
+    "https://corewars.org/docs/94spec.html"
+  ],
+  "note": "Describes this engine, including extensions; compilation is authoritative. Profiles are settings, not separate instruction sets. Assembly success is not behavioral compatibility."
+}

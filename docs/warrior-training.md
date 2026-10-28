@@ -1,5 +1,10 @@
 # Producing stronger warriors
 
+For evolution over intact behavioral sections, see the optional
+[warrior block catalog](warrior-blocks.md) and [source browser](block-source-index.md).
+The recipe runner preserves symbolic relocation and checks behavior before GA
+admission; the ordinary instruction evolver below keeps its existing defaults.
+
 `train` runs an independent search for each battlefield and exports a version
 only when it improves on the starting baseline in a fresh-placement check.
 When the search does not establish an improvement, `best.red` contains the

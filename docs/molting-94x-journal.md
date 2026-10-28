@@ -1,5 +1,11 @@
 # Molting 94x: build and experiment journal
 
+**Qualification discovered in E5:** the frozen Molting openings use an incorrect
+`SLT.B` immediate-threshold guard. The default phase specimen makes zero opening
+attacks in a solo diagnostic. E1–E4 still document their actual specimens and
+relocation behavior, but do not establish the intended bomber/scanner opening
+effectiveness. See E5 below. Frozen files and historical measurements are retained.
+
 ## Scope — 2026-10-27
 
 Build an optional experimental generator on `codex/molting-94x`, based on
@@ -462,3 +468,129 @@ Main and the old generator defaults remain unchanged.
 Possible next experiment: add a bounded local stun/kill cycle or choose payload
 mode from an in-round signal, while retaining the full-stun control. That would
 be a new design hypothesis, not a demonstrated improvement from E4.
+
+## E5 — executable block catalog and source anatomy (2026-10-27)
+
+### Build decisions and coverage
+
+Keep discovery, implementation and evidence separate. The source index covers
+all 147 warrior source files in `warriors/` and `examples/`: 44 Redcode, 82
+JavaScript, 20 Python and one C++. Language conversions and adaptations retain
+their relationships rather than counting as unrelated designs. It records
+1,056 local label regions and 306 across the 35 curated public archive originals.
+All 35 downloads succeeded. These are lexical candidate boundaries, not 1,362
+independently usable blocks. Generated labels, macros and coupled state still
+need review. Generator sources are inspected as text, not executed by inventory.
+
+Public originals remain under ignored `imported/block-sources/`, keyed by hash.
+Tracked metadata preserves author, URL, source hash, constants, line ranges,
+symbol references and assembly results by profile. Redistribution rights have
+not been established. Four sources have manual anatomy notes tied to their
+exact hashes: MICE, Silk Warrior 1.3, Torch t18 and Iron Gate 1.5. Torch's
+two-process, noncontiguous boot is explicitly incompatible with our current
+single-process copy contract.
+
+The catalog has seven executable choices and thirteen documented extraction
+candidates. Its grammar is opening (none/bomber/B-scan), transfer (in place or
+copy), and terminal payload (DAT, short stun then DAT, full stun then DAT),
+with either clear direction. Symbolic labels keep copy extents and relative
+references correct when sections change. Pure-clear controls omit the whole
+startup wrapper. Arbitrary block order, papers, P-space control and torus
+sections are not admitted yet. Their source locations and extraction contracts
+are documented rather than falsely marked safe.
+
+Strict '88 has its own legal forward-clear implementation using explicit ADD;
+'94 uses postincrement. Both are tested with the actual profile settings,
+including lp's currently implemented 100-instruction default. There is no '86
+engine profile. The initial shared search bounds limit HOP to 256–7000 even on
+94x; wider landing-site searches are an explicit future extension.
+
+Entry points: [catalog](warrior-blocks.md), [source browser](block-source-index.md),
+[machine instruction table](block-instructions.json), and
+[playable recipes](../examples/blocks/README.md).
+
+### Important correction to the earlier hypothesis
+
+While strengthening attack tests, we found that the frozen Molting opening uses
+`SLT.B #2047, probe`. With an immediate source, `.B` compares the executing
+instruction's B-field, not the immediate A-field threshold. The default
+`molting-phases.js` specimen performs **zero** opening writes before reaching
+`molt` at cycle 844. Earlier solo/copy tests established survival and relocation,
+but did not establish that the opening actually bombed or scanned as intended.
+E1–E4 are retained with this qualification; they must not be cited as a clean
+test of the intended opening-versus-relocation hypothesis.
+
+The catalog uses `SLT.AB`, and its gate checks expected bomber write coverage,
+the bomb opcode, protection of the original image, and the timer. The scanner
+must hit an injected nonzero target exactly once and skip empty cells. A
+regression deliberately changes the modifier back to `.B` and must be rejected.
+This also explains why compilation and solo survival are insufficient contracts.
+Frozen historical generators are not rewritten. The new B-field scanner and
+protected span differ from the old template, so E5 is a new recipe experiment.
+
+### Search protocol
+
+```sh
+node scripts/blocks.js inventory --public
+node scripts/blocks.js catalog
+node scripts/evolve-blocks.js --out evolved/block-search-4244-v2
+node scripts/evolve-blocks.js --rules 88 --out evolved/block-search-88 --population 4 --generations 1 --offspring 2 --rounds 2 --check-rounds 2 --tune-candidates 1
+```
+
+The primary 94x run uses seed 4244, population six, two generations and six
+offspring per generation. Six training opponents are Dwarf, Scanner, Silk,
+Vampire, Two-Pass and Mice. Seeker and One-Shot form the comparison panel;
+these are reused research opponents, not untouched held-out opponents.
+Candidate budget is 50 instructions. Both wrapped and unwrapped behavioral
+checks run before GA admission. Generation placement seeds rotate and all
+parents are rescored. All 18 admitted parameter vectors passed; four duplicate
+proposals were skipped. Numerical refinement tries eight coordinate neighbors
+across WAIT, STEP, HOP and STUN with a common seed.
+
+The existing tuner then tests four random numerical proposals plus the current
+one, holding structural choices fixed. Its two finalists pass the block gate
+again. Sampling is seeded while the tuner constructs its synchronous proposal
+list, then the global random function is immediately restored. Tuner and GA
+scores are not interchangeable: the tuner uses smooth score; the GA uses points.
+Final validation compares every selected specimen with three pure clears on
+three fresh placement seeds, eight rounds per opponent. Paired 2.5-SE margins
+use seed-level panel means, not opponents as independent seed samples.
+
+The 94x experiment ran **2,688 battle rounds**. The separate strict '88 integration
+run used the actual indexed adaptations (including `scout-88.red`), not assumed
+filenames, and ran **564 rounds**. It exercises six admitted recipes, parameter
+steps and the existing tuner. It is a smoke experiment, not a strength estimate.
+All evaluation uses CPU workers; no GPU performance claim is made.
+
+### Results and decision
+
+| 94x specimen | Instructions | Training points/round | Comparison points/round |
+|---|---:|---:|---:|
+| Starting recipe / GA champion | 26 | 1.1875 | 1.3125 |
+| Parameter steps / existing tuner | 26 | 1.1875 | 1.3125 |
+| Plain DAT | 9 | 1.4097 | 0.9375 |
+| Plain short stun | 13 | 1.2431 | 0.7500 |
+| Plain full stun | 13 | 1.4792 | 0.6875 |
+
+Neither search nor tuning established an improvement over the starting recipe.
+The recipe beats plain clears on the two-opponent comparison panel and loses
+on the six-opponent training panel. This is a different matchup profile, not an
+overall promotion. The '88 tuner also retained its input; coordinate steps
+improved its small comparison panel while lowering training scores.
+
+The initial local run `evolved/block-search-4244/` included four startup
+instructions in the plain controls and is superseded by the v2 run above.
+It remains only as local build history. The tracked
+[experiment evidence](block-experiments.json) contains the two accepted run
+reports, emitted section boundaries, lineage, parameters, behavior observations,
+per-opponent results and paired margins. All primary-run candidates, numerical
+neighbors and tuner finalists were rechecked after strengthening the gates.
+
+Validation: **185 tests, 179 passed, six optional GPU skips, no failures**;
+`evolved/blocks/tests-final.tap`. Playable examples are 26 instructions for 94x
+and 28 for '88. The existing CLI evolver, tuner defaults and library membership
+are unchanged. All work remains on `codex/molting-94x`; main is unchanged.
+
+Next extraction priorities: a certified compare-scan/one-shot handoff, a
+process-aware paper recipe, and a marker trigger contract. Add each only with
+its own scheduling/memory tests, then benchmark against same-cost plain controls.

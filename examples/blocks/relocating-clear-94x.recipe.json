@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "rules": "94x",
+  "length": 50,
+  "P": {
+    "OPENING": 1,
+    "RELOCATE": 1,
+    "BACKWARD": 0,
+    "PHASE": 1,
+    "WAIT": 128,
+    "STEP": 997,
+    "HOP": 4096,
+    "STUN": 64
+  },
+  "sourceHash": "fe12df35635d414d44b0c3a15bea8d28363e6ac9cffdd865b59107b26f886ccb"
+}
