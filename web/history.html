@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Core War history: how warriors evolved, 1984 to today | ZoreWars</title>
+  <meta name="description" content="How Core War strategy developed, traced through original posts, warrior sources and the Core Warrior newsletter: stones, scanners, quickscans, clears, papers, imps, vampires and P-space, with links to every primary source.">
+  <link rel="canonical" href="https://zorewars.blackstag.workers.dev/web/history.html">
+  <meta name="theme-color" content="#070b16">
+  <meta property="og:type" content="article">
+  <meta property="og:site_name" content="ZoreWars">
+  <meta property="og:title" content="Core War history: how warriors evolved, 1984 to today">
+  <meta property="og:description" content="Forty years of Core War strategy, traced through original posts and warrior sources, with what each family teaches.">
+  <meta property="og:url" content="https://zorewars.blackstag.workers.dev/web/history.html">
+  <meta name="twitter:card" content="summary">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='3' fill='%230b1020'/><rect x='3' y='3' width='4' height='4' fill='%2322d3ee'/><rect x='9' y='9' width='4' height='4' fill='%23f472b6'/><rect x='9' y='3' width='4' height='4' fill='%23334155'/><rect x='3' y='9' width='4' height='4' fill='%23334155'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Article",
+        "headline": "Core War history: how warriors evolved, 1984 to today",
+        "description": "How Core War strategy developed, traced through original posts, warrior sources and the Core Warrior newsletter.",
+        "url": "https://zorewars.blackstag.workers.dev/web/history.html",
+        "dateModified": "2026-10-28",
+        "inLanguage": "en",
+        "license": "https://creativecommons.org/licenses/by/4.0/",
+        "publisher": { "@type": "Organization", "name": "ZoreWars", "url": "https://zorewars.blackstag.workers.dev/" },
+        "about": { "@type": "Thing", "name": "Core War", "sameAs": "https://en.wikipedia.org/wiki/Core_War" }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "ZoreWars", "item": "https://zorewars.blackstag.workers.dev/" },
+          { "@type": "ListItem", "position": 2, "name": "History", "item": "https://zorewars.blackstag.workers.dev/web/history.html" }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    .docs { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 32px; max-width: 1180px; margin: 0 auto; padding: 24px 20px 80px; }
+    .toc { position: sticky; top: 72px; align-self: start; max-height: calc(100vh - 90px); overflow: auto; font-size: 13px; }
+    .toc h4 { margin: 16px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+    .toc a { display: block; padding: 3px 8px; color: var(--text-2); text-decoration: none; border-radius: 6px; }
+    .toc a:hover { color: var(--text); background: var(--panel-2); }
+    article { max-width: 800px; font-size: 15px; line-height: 1.7; }
+    article h1 { font: 700 34px/1.2 var(--sans); margin: 8px 0 8px; letter-spacing: -0.01em; }
+    article h2 { font-size: 23px; margin: 56px 0 12px; padding-top: 8px; border-top: 1px solid var(--line); scroll-margin-top: 72px; }
+    article h3 { font-size: 16px; color: var(--text); margin: 28px 0 8px; scroll-margin-top: 72px; }
+    article p, article li { color: #cbd5e1; }
+    article code { font: 13px var(--mono); background: var(--panel-2); border: 1px solid var(--line); padding: 1px 5px; border-radius: 5px; color: #e2e8f0; }
+    .lead { font-size: 18px; color: var(--text-2) !important; }
+    .crumbs { font-size: 13px; color: var(--muted); }
+    .crumbs a { color: var(--text-2); text-decoration: none; }
+    .callout { border: 1px solid var(--line-2); border-left: 3px solid var(--accent); background: var(--panel); border-radius: 8px; padding: 12px 16px; margin: 16px 0; }
+    .callout p { margin: 0; }
+    .lesson { border: 1px solid var(--line); border-left: 3px solid var(--accent-2); background: var(--panel); border-radius: 8px; padding: 10px 16px; margin: 14px 0; }
+    .lesson p { margin: 0; }
+    .lesson b { color: var(--accent-2); }
+    .sources { font-size: 13px; color: var(--text-2) !important; }
+    table.ref { width: 100%; border-collapse: collapse; font-size: 14px; margin: 12px 0; display: block; overflow-x: auto; }
+    table.ref th, table.ref td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+    table.ref th { color: var(--muted); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+    table.ref td:first-child { font-family: var(--mono); white-space: nowrap; color: var(--accent); }
+    @media (max-width: 860px) {
+      .docs { grid-template-columns: minmax(0, 1fr); padding: 16px; }
+      article { min-width: 0; }
+      .toc { position: static; max-height: none; border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; }
+      article h1 { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="../" aria-label="ZoreWars home">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span class="brand-name">ZORE<b>WARS</b></span>
+    </a>
+    <button class="icon-btn menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false" aria-controls="siteNav"><svg class="icon" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <nav class="nav" id="siteNav">
+      <a href="./">Arena</a>
+      <a href="docs.html">Learn</a>
+      <a href="warriors.html">Warriors</a>
+      <a href="history.html" aria-current="page">History</a>
+      <a href="docs.html#cli">CLI &amp; AI agents</a>
+    </nav>
+  </header>
+
+  <div class="docs">
+    <nav class="toc" aria-label="Contents">
+      <h4>History</h4>
+      <a href="#origins">Origins</a>
+      <a href="#milestones">Dated milestones</a>
+      <a href="#dating">How we date things</a>
+      <h4>What each family teaches</h4>
+      <a href="#stones">Stones and bombers</a>
+      <a href="#scanners">Scanners and quickscans</a>
+      <a href="#clears">Clears and gates</a>
+      <a href="#papers">Papers and silk</a>
+      <a href="#imps">Imps and launchers</a>
+      <a href="#vampires">Vampires</a>
+      <a href="#pspace">P-space switchers</a>
+      <a href="#lp">Limited processes</a>
+      <h4>Beyond</h4>
+      <a href="#pattern">The common thread</a>
+      <a href="#where">Where to go next</a>
+      <a href="#contribute">Corrections</a>
+    </nav>
+
+    <article>
+      <p class="crumbs"><a href="../">ZoreWars</a> › History</p>
+      <h1>How Core War warriors evolved</h1>
+      <p class="lead">Forty years of strategy, traced through the authors' own posts, warrior sources and the <em>Core Warrior</em> newsletter. What each family of warriors learned, and what you can use today.</p>
+      <div class="callout"><p>This page summarizes; it does not replace the originals. Every claim links to its primary source in the archives where it belongs. Please read, credit and cite those authors. Our own research notes, with hashes of every source we reviewed, are in the <a href="https://github.com/bstag/zorewars/tree/main/docs">repository's <code>docs/</code> folder</a>.</p></div>
+
+      <h2 id="origins">Origins</h2>
+      <p>Core War was introduced to the public by A. K. Dewdney in his <em>Computer Recreations</em> column in <a href="https://www.scientificamerican.com/article/computer-recreations-1984-05/">Scientific American, May 1984</a>, based on a game he had devised with D. G. Jones. The column already described the three basic ideas: programs that bomb, programs that copy themselves, and programs that move. A detailed <a href="https://corewar.co.uk/history.htm">history of the game</a> is kept at corewar.co.uk.</p>
+      <p>The International Core War Society standardised Redcode in 1986 and 1988, and a 1994 draft (<a href="https://corewar.co.uk/standards/icws94.htm">ICWS'94</a>) added modifiers, new addressing modes and new instructions. That draft, as implemented by the <a href="https://corewar.sourceforge.net/">pMARS</a> simulator, is what the public hills and ZoreWars use. From the early 1990s, the <a href="http://www.koth.org/">King of the Hill</a> servers ran standing tournaments, and players explained their warriors on <a href="https://groups.google.com/g/rec.games.corewar">rec.games.corewar</a> and in the <em>'94 Warrior</em> and <em>Core Warrior</em> newsletters, now archived at <a href="https://www.corewar.info/">corewar.info</a>.</p>
+
+      <h2 id="milestones">Dated milestones</h2>
+      <table class="ref">
+        <thead><tr><th>Date</th><th>What the sources show</th></tr></thead>
+        <tbody>
+          <tr><td>May 1984</td><td>Dewdney introduces Core War: bombing, copying and moving programs. <a href="https://www.scientificamerican.com/article/computer-recreations-1984-05/">Article record</a>.</td></tr>
+          <tr><td>1986; 1990</td><td>The archive places <a href="https://gallium.inria.fr/~doligez/corewar/rc/MICE.txt">MICE</a> (a replicator) in 1986. <a href="https://gallium.inria.fr/~doligez/corewar/rc/Stone.txt">Stone</a> and <a href="https://gallium.inria.fr/~doligez/corewar/rc/Scissors.txt">Scissors</a> name the 1990 tournament in their own headers.</td></tr>
+          <tr><td>14 Oct 1992</td><td>Anders Ivner's <a href="https://gallium.inria.fr/~doligez/corewar/post/trident+TheIMPirestrikesback.txt">original post</a> explains imp spirals, layered imps, launch vulnerability and why they produce ties.</td></tr>
+          <tr><td>10 Aug 1994</td><td>Juha Pohjalainen posts <a href="https://gallium.inria.fr/~doligez/corewar/post/SilkWarrior1.3.txt">Silk Warrior 1.3</a>, with notes on distribution and self-testing.</td></tr>
+          <tr><td>30 Nov 1994</td><td><a href="https://www.corewar.info/corewarrior/94warrior/14.htm">The '94 Warrior #14</a> discusses quickscans with '88 and '94 prototypes and scan coverage.</td></tr>
+          <tr><td>Aug–Sep 1995</td><td>The archive associates a <a href="https://gallium.inria.fr/~doligez/corewar/rc/P-spacedemo.txt">P-space demo</a> with pMARS 0.8.0. <a href="https://gallium.inria.fr/~doligez/corewar/rc/myVampv3.7.txt">myVamp v3.7</a>'s author gives 30 September 1995 as its submission date.</td></tr>
+          <tr><td>8 Jul 1996</td><td>Ivner explains Q² in <a href="https://www.corewar.info/corewarrior/cw/037.txt">Core Warrior #37</a>.</td></tr>
+          <tr><td>1999</td><td><a href="https://www.corewar.info/corewarrior/cw/073.txt">Core Warrior #73</a> presents Q³ by Humberto and Metcalf; <a href="https://www.corewar.info/corewarrior/cw/075.txt">#75</a> a compact form.</td></tr>
+          <tr><td>8 Dec 2002</td><td><a href="https://www.corewar.info/corewarrior/cw/084.txt">Core Warrior #84</a> tests quickscan correctness with every placement against a stationary target.</td></tr>
+          <tr><td>Apr 2004</td><td><a href="https://asdflkj.net/COREWAR/X/HILL32/fatamorganaX.red">Fatamorgana X</a>: a persistent controller choosing between several attacks.</td></tr>
+          <tr><td>Today</td><td>Hill leaders such as <a href="https://asdflkj.net/COREWAR/94/HILL32/arvon.red">Arvon</a> and <a href="https://asdflkj.net/COREWAR/94/HILL32/pst_v4.red">pst_v4</a> credit earlier components in their sources and refine them.</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="dating">How we date things</h2>
+      <p>Warrior history is easy to get wrong, so we separate four kinds of evidence:</p>
+      <ul>
+        <li><strong>Primary dates</strong>: an original post, a newsletter issue, or a date in the author's source. A newsletter appearance shows a warrior existed by then, not when it was invented.</li>
+        <li><strong>Archive dates</strong>: the archive maintainer's release metadata, which may belong to a later repost or version.</li>
+        <li><strong>Confirmed lineage</strong>: an author credit, an explicit replacement or a version note. Similar code alone shows a family resemblance, not descent.</li>
+        <li><strong>Observed now</strong>: a source retrieved from a hill today, which says nothing about when it was written.</li>
+      </ul>
+      <p>For example, Agony II appears in the <a href="https://www.corewar.info/corewarrior/94warrior/13.htm">31 October 1994 hill report</a>, and Torch t8 in <a href="https://www.corewar.info/corewarrior/94warrior/12.htm">August 1994</a>, while the archived Torch t18 is dated 1996. Both are true once the age of a family and the date of a version are kept apart.</p>
+
+      <h2 id="stones">Stones and bombers: from a stride to a lifecycle</h2>
+      <p>The archived <a href="https://gallium.inria.fr/~doligez/corewar/rc/Dwarf.txt">Dwarf</a> is a tiny stride and a <code>DAT</code> bomb. <a href="https://gallium.inria.fr/~doligez/corewar/rc/Torcht18.txt">Torch t18</a> combines incendiary bombing, a clear, a boot and decoys; its author notes that this version restores the boot and decoy and uses a zero test in the bombing stage. <a href="https://gallium.inria.fr/~doligez/corewar/rc/Tornado3.0.txt">Tornado 3.0</a> instead changes the clear and replaces the boot with a decoy maker. These are alternatives, not a ladder where each addition wins.</p>
+      <p><a href="https://gallium.inria.fr/~doligez/corewar/rc/ThermiteII.txt">Thermite II</a> is a confirmed relationship: its source includes the Brand 3.3 body, credits Torch, and describes changes to its scan, anti-paper settings and launcher. Opening, body and endgame were tuned together.</p>
+      <div class="lesson"><p><b>Lesson:</b> treat placement, stride, bombing duration, trigger and fallback as separate choices that must be safe together. Measure when the first bomb lands and when the fallback begins, not just whether the warrior survives. Check the stride against the actual core size.</p></div>
+
+      <h2 id="scanners">Scanners, quickscans and one-shots: buy information, then use it</h2>
+      <p><a href="https://gallium.inria.fr/~doligez/corewar/rc/Scissors.txt">Scissors</a> already combines a scan with an attack loop. <a href="https://gallium.inria.fr/~doligez/corewar/rc/IronGate%5B2%5D.txt">Iron Gate</a> uses comparisons, <code>SPL</code>/<code>JMP</code> bombing and pointer arithmetic. <a href="https://gallium.inria.fr/~doligez/corewar/rc/Blur2.txt">Blur 2</a> lays an <code>SPL</code> carpet before a <code>DAT</code>/<code>DJN</code> endgame. <a href="https://gallium.inria.fr/~doligez/corewar/rc/Frontwardsv2.txt">Frontwards v2</a> is a one-shot two-pass design whose author documents the arithmetic that keeps its scan, decrement stream and decoy from damaging each other.</p>
+      <p>Quickscans spend a different budget: many probes at the start of the round, compact decoding of a hit, a short targeted attack, then a backup warrior. <a href="https://www.corewar.info/corewarrior/cw/037.txt">Q²</a>, <a href="https://www.corewar.info/corewarrior/cw/073.txt">Q³</a> and <a href="https://www.corewar.info/corewarrior/cw/075.txt">compact Q³</a> differ mainly in how a hit selects and computes its target. Their decoder constants are part of the probe geometry, not free numbers.</p>
+      <div class="lesson"><p><b>Lesson:</b> test each probe with an injected target and confirm the right cell is attacked, with the backup switched off, as <a href="https://www.corewar.info/corewarrior/cw/084.txt">Core Warrior #84</a> does. Then switch the backup on and check whether the information pays for its startup time and size.</p></div>
+
+      <h2 id="clears">Clears and gates: the handoff is the innovation</h2>
+      <p>A clear is more than a <code>MOV</code> loop. Frontwards' two-pass setup, Blur's carpet-then-<code>DAT</code> transition and Torch's clear and gate placement are different endgames with different handoffs. A later <a href="https://www.corewar.info/corewarrior/cw/089.txt">Core Warrior #89</a> discussion distinguishes switching a scanner into a clear from keeping the scan running while changing to <code>DAT</code> attacks.</p>
+      <div class="lesson"><p><b>Lesson:</b> decide where the clear starts, what it spares, who owns its counters, whether it returns, and whether it defeats an imp or only delays it. A clear that is correct on its own can still start too late to matter.</p></div>
+
+      <h2 id="papers">Papers and silk: replication is scheduling</h2>
+      <p><a href="https://gallium.inria.fr/~doligez/corewar/rc/MICE.txt">MICE</a> copies its body, launches the copy and moves on. <a href="https://gallium.inria.fr/~doligez/corewar/rc/SilkWarrior1.3.txt">Silk Warrior</a>'s version notes discuss distribution and self-testing. <a href="https://gallium.inria.fr/~doligez/corewar/rc/TimeScape(1.0).txt">TimeScape</a> describes cooperating replication cells and the processes needed to sustain them. Copying became a schedule of which process copies, launches and attacks, and when.</p>
+      <p>Modern sources make the lineage explicit: <a href="https://asdflkj.net/COREWAR/94/HILL32/arvon.red">Arvon</a> credits <a href="https://asdflkj.net/COREWAR/94/HILL32/azathoth.red">Azathoth</a>'s decoding and body and its author's pst line; <a href="https://asdflkj.net/COREWAR/94/HILL32/pst_v4.red">pst_v4</a> credits Azathoth's launcher, stone and paper and Eternal Exile's quickscanner. They are related variants with a reused body and a new front end.</p>
+      <div class="lesson"><p><b>Lesson:</b> get the launcher and the paper working as one unit before varying either. Track where parent and child start, copy direction, queue order and how much is copied, including blank cells beyond the visible code.</p></div>
+
+      <h2 id="imps">Imps and launchers: arithmetic, not tuning</h2>
+      <p>Ivner's <a href="https://gallium.inria.fr/~doligez/corewar/post/trident+TheIMPirestrikesback.txt">1992 post</a> derives the step of a three-point imp and a layered version, and records their weak points: vulnerable launches and little winning power against fast process growth. <a href="https://gallium.inria.fr/~doligez/corewar/rc/Cannonade.txt">Cannonade</a> pairs a stone with gate-breaking imp spirals. <a href="https://asdflkj.net/COREWAR/88/HILL32/freighttrainv02.red">Freight Train</a> later uses a seven-point imp, two continuous launchers, a stone and an optional quickscan.</p>
+      <div class="lesson"><p><b>Lesson:</b> derive the step from the number of points and the core size; don't tune it by trial. Launch order, timing and process budget belong to the design. Score wins as well as survival, or you'll build a tie machine.</p></div>
+
+      <h2 id="vampires">Vampires: capture needs a pit and an endgame</h2>
+      <p><a href="https://gallium.inria.fr/~doligez/corewar/rc/PIPER.txt">PIPER</a> is an early example, though its archive metadata says the 1987 <em>or</em> 1988 tournament and gives no reliable author. <a href="https://gallium.inria.fr/~doligez/corewar/rc/myVampv3.7.txt">myVamp v3.7</a>, submitted in September 1995, combines jump bombing, opportunistic scanning and a multi-phase clear. The <a href="https://www.corewar.info/corewarrior/94warrior/12.htm">August 1994 hill report</a> links vampires' losses to stronger replicators and easy anti-vampire measures, a change in the field rather than proof that vampires stopped working.</p>
+      <div class="lesson"><p><b>Lesson:</b> the fang and the pit are one mechanism. Check that a fang dropped anywhere still points into the pit, and tell captured processes apart from killed ones.</p></div>
+
+      <h2 id="pspace">P-space switchers: a portfolio, not an attack</h2>
+      <p>P-space is memory that survives between the rounds of a match; the <a href="https://sources.debian.org/src/pmars/0.9.5-1/doc/pmars.txt">pMARS manual</a> documents it. <a href="https://asdflkj.net/COREWAR/X/HILL32/fireandice2.red">Fire and Ice II</a> chooses between a stone with a fallback clear and an anti-imp scanner. <a href="https://asdflkj.net/COREWAR/X/HILL32/fireandbrim.red">Fire and Brimstone</a> says in its source that it replaces the scanner with Kenshin. <a href="https://asdflkj.net/COREWAR/X/HILL32/fatamorganaX.red">Fatamorgana X</a> packages several attacks with a larger selector.</p>
+      <div class="lesson"><p><b>Lesson:</b> build and test each attack without P-space first, then add a small controller and test first rounds, wins, losses, ties and corrupted state. Removing the controller may not remove every P-space instruction: Fire and Ice's scanner drops an <code>STP</code> bomb.</p></div>
+
+      <h2 id="lp">Limited processes: scarcity changes the design</h2>
+      <p>On the limited-process hill, leaders such as <a href="https://asdflkj.net/COREWAR/LP/HILL32/rous.red">R.O.U.S.</a> (a compact bombing paper), <a href="https://asdflkj.net/COREWAR/LP/HILL32/l111.red">Replinator</a> (quickscan and paper) and <a href="https://asdflkj.net/COREWAR/LP/HILL32/bronzeminotaur.red">Bronze minotaur</a> (separated papers) solve the same problem in different ways. Their similarities are a family comparison, not a proven line of descent.</p>
+      <div class="lesson"><p><b>Lesson:</b> a normal silk launcher with different constants is not an LP warrior. Watch the peak queue size, which children actually start, and how the second generation copies.</p></div>
+
+      <h2 id="pattern">The common thread</h2>
+      <p>Across every family, the strongest recurring change is <strong>better cooperation between parts</strong>. Launchers place attacks safely, process schedules sustain replication, scanners hand useful pointers to attacks, and a damaged or exhausted attack turns into a suitable endgame. New instructions mattered less than the interfaces between pieces. That is also why ZoreWars' <code>evolve</code> works with whole, tested components rather than splicing random instructions.</p>
+      <p>Our <a href="docs.html#plane">plane</a> and <a href="docs.html#volume">volume</a> modes are a ZoreWars extension, not part of this history. Lessons from the ring don't automatically carry over to them.</p>
+
+      <h2 id="where">Where to go next</h2>
+      <ul>
+        <li><a href="https://corewar.co.uk/">corewar.co.uk</a>: history, <a href="https://corewar.co.uk/guides.htm">strategy guides</a> and in-depth articles on individual warriors.</li>
+        <li><a href="https://gallium.inria.fr/~doligez/corewar/">Planar's Core War archive</a>: warriors and posts <a href="https://gallium.inria.fr/~doligez/corewar/by-date/complete.htm">by date</a> and by type.</li>
+        <li><a href="https://www.corewar.info/">corewar.info</a>: the <em>Core Warrior</em> and <em>'94 Warrior</em> newsletters.</li>
+        <li><a href="https://github.com/n1LS/redcode-warriors">n1LS/redcode-warriors</a>: 567 Redcode files on GitHub.</li>
+        <li><a href="https://asdflkj.net/COREWAR/koenigstuhl.html">Koenigstuhl</a>, <a href="http://www.koth.org/">KotH.org</a> and <a href="https://sal.discontinuity.info/">SAL</a>: hills to submit to.</li>
+        <li>In ZoreWars: the <a href="warriors.html#history">Hall of Fame</a> loads many of these originals straight from the archives so you can fight them, and the <a href="warriors.html">Warrior Encyclopedia</a> explains our versions line by line.</li>
+      </ul>
+
+      <h2 id="contribute">Corrections</h2>
+      <p>If a date, credit or lineage here is wrong, please <a href="https://github.com/bstag/zorewars/issues">open an issue</a> with a source. We keep uncertain dates marked as uncertain rather than guessing, and we'd rather link to an author's own words than paraphrase them.</p>
+      <p class="sources">Last reviewed 28 October 2026. Original warriors and posts remain the work of their authors and are linked, not copied.</p>
+    </article>
+  </div>
+  <footer class="site-footer">ZoreWars · code <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache-2.0</a> · text <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a> · warriors written for ZoreWars <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a> · Core War was created by A. K. Dewdney and D. G. Jones</footer>
+  <script type="module" src="nav.js"></script>
+</body>
+</html>

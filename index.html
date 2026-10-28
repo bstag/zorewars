@@ -3,14 +3,399 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ZoreWars</title>
-  <!-- The site lives in web/; it loads the engine and warriors from the
-       repository root, so the root is what gets hosted. -->
-  <meta http-equiv="refresh" content="0; url=web/">
-  <link rel="canonical" href="web/">
-  <style>body { background: #070b16; color: #e2e8f0; font: 16px system-ui, sans-serif; padding: 40px 16px; text-align: center; } a { color: #22d3ee; }</style>
+  <title>ZoreWars: Core War with a Z axis, a 3D programming game in your browser</title>
+  <meta name="description" content="ZoreWars is a new programming game built on Core War that adds Z: warriors fight on the classic ring, on a 2D plane or in a 3D volume where every address is a vector. Write Redcode, JavaScript, Python or C++ in the browser. Free and open source, pMARS-compatible on the ring.">
+  <meta name="keywords" content="Core War, Corewar, 3D Core War, Redcode, ICWS'94, pMARS, programming game, KotH, warriors, imp, dwarf, AI agents">
+  <link rel="canonical" href="https://zorewars.blackstag.workers.dev/">
+  <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#070b16">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ZoreWars">
+  <meta property="og:title" content="ZoreWars: Core War, plus Z">
+  <meta property="og:description" content="A new programming game built on Core War: the classic ring, a 2D plane and a 3D volume. Write tiny programs that fight in memory, in your browser.">
+  <meta property="og:url" content="https://zorewars.blackstag.workers.dev/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="ZoreWars: Core War, plus Z">
+  <meta name="twitter:description" content="A new programming game built on Core War that adds a third dimension. Free and open source.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='3' fill='%230b1020'/><rect x='3' y='3' width='4' height='4' fill='%2322d3ee'/><rect x='9' y='9' width='4' height='4' fill='%23f472b6'/><rect x='9' y='3' width='4' height='4' fill='%23334155'/><rect x='3' y='9' width='4' height='4' fill='%23334155'/></svg>">
+  <link rel="sitemap" type="application/xml" href="sitemap.xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="web/style.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://zorewars.blackstag.workers.dev/#site",
+        "name": "ZoreWars",
+        "url": "https://zorewars.blackstag.workers.dev/",
+        "inLanguage": "en"
+      },
+      {
+        "@type": ["VideoGame", "SoftwareApplication"],
+        "name": "ZoreWars",
+        "url": "https://zorewars.blackstag.workers.dev/",
+        "description": "A programming game built on Core War that adds Z: programs written in Redcode, JavaScript, Python or C++ battle on the classic memory ring, a 2D plane or a 3D volume.",
+        "applicationCategory": "GameApplication",
+        "genre": ["Programming game", "Strategy", "3D"],
+        "gamePlatform": "Web browser",
+        "operatingSystem": "Any",
+        "programmingLanguage": ["Redcode", "JavaScript", "Python", "C++"],
+        "license": "https://www.apache.org/licenses/LICENSE-2.0",
+        "codeRepository": "https://github.com/bstag/zorewars",
+        "isBasedOn": {
+          "@type": "CreativeWork",
+          "name": "Core War",
+          "author": [{ "@type": "Person", "name": "A. K. Dewdney" }, { "@type": "Person", "name": "D. G. Jones" }],
+          "sameAs": "https://en.wikipedia.org/wiki/Core_War"
+        },
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          { "@type": "Question", "name": "What does the Z in ZoreWars mean?", "acceptedAnswer": { "@type": "Answer", "text": "Z is the third axis. Core War is played on a one-dimensional ring of memory; ZoreWars keeps that ring and adds a 2D plane and a 3D volume, where every address is a vector, every process has a heading, and a TRN instruction turns it along any axis." } },
+          { "@type": "Question", "name": "What is Core War?", "acceptedAnswer": { "@type": "Answer", "text": "Core War is a programming game introduced by A. K. Dewdney in Scientific American in May 1984. Two or more programs, called warriors, share a circular memory array and take turns executing one instruction each. A warrior wins when every opposing process has died." } },
+          { "@type": "Question", "name": "Is ZoreWars compatible with pMARS and the public hills?", "acceptedAnswer": { "@type": "Answer", "text": "On the classic ring, yes. ZoreWars follows ICWS'94 Redcode, and its ring mode is checked against pMARS. The --rules option reproduces the settings of the 94nop, '88, limited-process and 94x hills, so a ring warrior developed here can be submitted to them unchanged. The plane and volume are ZoreWars' own extension." } },
+          { "@type": "Question", "name": "Do I need to learn Redcode?", "acceptedAnswer": { "@type": "Answer", "text": "No. You can write warriors in Redcode, or write a JavaScript, Python or C++ program that generates Redcode. Every generator compiles to the same instructions, so you can switch at any time." } },
+          { "@type": "Question", "name": "Can AI agents play ZoreWars?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. The command-line tool returns JSON for checks, battles, tournaments and post-mortems that explain why a round was lost, and includes tools to tune and evolve warriors." } },
+          { "@type": "Question", "name": "Is ZoreWars free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. The code is Apache-2.0, the documentation CC BY 4.0, and warriors written for ZoreWars are CC0. Original warriors from the Core War archives keep their authors' rights and are loaded from the archives on demand." } }
+        ]
+      }
+    ]
+  }
+  </script>
+  <style>
+    .land { max-width: 1180px; margin: 0 auto; padding: 0 20px 40px; }
+    .land section { padding: 56px 0 8px; }
+    .land h2 { font: 700 26px/1.25 var(--sans); letter-spacing: -0.01em; margin: 0 0 8px; }
+    .land h3 { font-size: 16px; margin: 0 0 6px; text-transform: none; letter-spacing: 0; color: var(--text); }
+    .land p { color: #cbd5e1; font-size: 15px; line-height: 1.7; }
+    .land .sub { color: var(--text-2); max-width: 720px; margin: 0 0 24px; }
+    .eyebrow { font: 600 11px/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin: 0 0 10px; }
+
+    .hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 40px; align-items: center; padding-top: 56px !important; }
+    .hero h1 { font: 700 46px/1.08 var(--sans); letter-spacing: -0.02em; margin: 0 0 16px; }
+    .hero h1 em { font-style: normal; color: var(--accent); }
+    .hero .lead { font-size: 18px; color: var(--text-2); margin: 0 0 24px; max-width: 560px; }
+    .cta { display: flex; gap: 10px; flex-wrap: wrap; }
+    .cta .btn { padding: 11px 20px; font-size: 15px; font-weight: 600; text-decoration: none; border-radius: 9px; }
+    .hero .facts { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 28px; font-size: 13px; color: var(--muted); }
+    .hero .facts b { display: block; font: 700 20px/1.2 var(--mono); color: var(--text); }
+    .core-demo { border: 1px solid var(--line); border-radius: 14px; background: var(--panel); padding: 14px; }
+    .core-demo canvas { display: block; width: 100%; height: auto; border-radius: 8px; background: var(--core-empty); }
+    .core-demo figcaption { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--text-2); margin-top: 10px; }
+    .core-demo figcaption i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; vertical-align: 0; }
+
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .card { border: 1px solid var(--line); border-radius: 12px; background: var(--panel); padding: 18px 18px 14px; }
+    .card p { font-size: 14px; margin: 0 0 6px; color: var(--text-2); line-height: 1.6; }
+    .card a.more { font-size: 13px; text-decoration: none; }
+    .card .tag { font: 600 11px/1 var(--mono); color: var(--accent-2); letter-spacing: 0.08em; text-transform: uppercase; display: block; margin-bottom: 8px; }
+
+    .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+    pre.code { font: 13px/1.65 var(--mono); background: #060a14; border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; overflow-x: auto; color: #cbd5e1; margin: 0; }
+    .cmt { color: #5b6b8c; } .kw { color: #22d3ee; } .lbl { color: #f472b6; }
+
+    .timeline { list-style: none; margin: 0; padding: 0; border-left: 2px solid var(--line-2); }
+    .timeline li { position: relative; padding: 0 0 18px 22px; }
+    .timeline li::before { content: ""; position: absolute; left: -7px; top: 6px; width: 12px; height: 12px; border-radius: 50%; background: var(--bg); border: 2px solid var(--accent); }
+    .timeline time { font: 600 13px var(--mono); color: var(--accent); }
+    .timeline p { margin: 2px 0 0; font-size: 14px; }
+
+    .dir { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .dir .card h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 10px; }
+    .dir ul { list-style: none; margin: 0; padding: 0; }
+    .dir li { padding: 7px 0; border-top: 1px solid var(--line); font-size: 14px; color: var(--text-2); line-height: 1.5; }
+    .dir li:first-child { border-top: 0; padding-top: 0; }
+    .dir li a { font-weight: 600; text-decoration: none; }
+
+    .faq details { border-bottom: 1px solid var(--line); padding: 14px 0; }
+    .faq summary { cursor: pointer; font-weight: 600; font-size: 15px; }
+    .faq details p { margin: 8px 0 0; }
+
+    .note { font-size: 13px; color: var(--muted) !important; }
+    @media (max-width: 900px) {
+      .hero, .split { grid-template-columns: minmax(0, 1fr); }
+      .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .hero h1 { font-size: 36px; }
+    }
+    @media (max-width: 620px) {
+      .land { padding: 0 16px 32px; }
+      .grid, .dir { grid-template-columns: minmax(0, 1fr); }
+      .hero h1 { font-size: 30px; }
+      .land section { padding-top: 40px; }
+    }
+  </style>
 </head>
 <body>
-  <p>Opening the <a href="web/">ZoreWars arena</a>…</p>
+  <header class="topbar">
+    <a class="brand" href="./" aria-label="ZoreWars home">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span class="brand-name">ZORE<b>WARS</b></span>
+    </a>
+    <button class="icon-btn menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false" aria-controls="siteNav"><svg class="icon" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <nav class="nav" id="siteNav">
+      <a href="web/">Arena</a>
+      <a href="web/docs.html">Learn</a>
+      <a href="web/warriors.html">Warriors</a>
+      <a href="web/history.html">History</a>
+      <a href="https://github.com/bstag/zorewars">GitHub</a>
+    </nav>
+  </header>
+
+  <main class="land">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">A new game built on Core War</p>
+        <h1>Core War, <em>plus Z.</em></h1>
+        <p class="lead">For forty years, Core War warriors have fought along a single ring of memory. ZoreWars keeps that ring, fully compatible, and adds the axes it never had: a 2D plane and a 3D volume where addresses are vectors and code can turn and travel through the layers. Write warriors in Redcode, JavaScript, Python or C++, right in your browser.</p>
+        <div class="cta">
+          <a class="btn primary" href="web/?load=volume/backdraft.js,volume/volumesilk.js">Play in 3D</a>
+          <a class="btn" href="web/">Classic arena</a>
+          <a class="btn ghost" href="#z">What the Z adds</a>
+        </div>
+        <div class="facts">
+          <span><b>3</b>battlefields: ring, plane, volume</span>
+          <span><b>27</b>plane and 3D warriors</span>
+          <span><b>98</b>library warriors</span>
+          <span><b>4</b>languages</span>
+        </div>
+      </div>
+      <figure class="core-demo">
+        <canvas id="core" width="560" height="480" role="img" aria-label="Animation: a 20 by 12 by 6 volume, drawn as six stacked layers. A bomber drops bombs along a 3D stride while Lift, an imp, climbs up through the layers."></canvas>
+        <figcaption>
+          <span><i style="background:var(--accent)"></i>Bomber: stride <code>[3,5,1]</code></span>
+          <span><i style="background:var(--accent-2)"></i>Lift: <code>TRN $[0,0,1]</code>, then climbs</span>
+        </figcaption>
+      </figure>
+    </section>
+
+    <section id="z" aria-labelledby="z-h">
+      <p class="eyebrow">What the Z adds</p>
+      <h2 id="z-h">One ring, then a plane, then a volume</h2>
+      <p class="sub">Every battlefield runs the same instruction set. Only the shape of memory changes, and with it, which strategies win.</p>
+      <div class="grid">
+        <div class="card"><span class="tag">1D · the ring</span><h3>Classic Core War</h3><p>8,000 cells in a loop, ICWS'94 Redcode, checked against pMARS. Warriors you write here can go straight to the public hills.</p><a class="more" href="web/">Classic arena →</a></div>
+        <div class="card"><span class="tag">2D · the plane</span><h3>Memory wraps both ways</h3><p>A 100×80 torus where <code>[0,1]</code> means one row down. No fixed stride covers it, so stones and scanners need new tricks.</p><a class="more" href="web/?load=plane/plaid.js,plane/planesilk.js">Play on the plane →</a></div>
+        <div class="card"><span class="tag">3D · the volume</span><h3>Code that climbs</h3><p>40×20×10 and other volumes, drawn live in 3D. Processes have a heading, and <code>TRN</code> turns them along any axis.</p><a class="more" href="web/?load=volume/backdraft.js,volume/volumesilk.js">Play in 3D →</a></div>
+      </div>
+      <div class="split" style="margin-top:28px">
+        <div>
+          <h3>Every number is a point</h3>
+          <p>A plain number is still a step along the row, so <code>JMP -1</code> and most classic code still work. Write <code>[x,y,z]</code> for a vector, and arithmetic works per axis, each wrapping on its own. Every process carries a heading (+x to start), and its next instruction is one step along it.</p>
+          <p>Lift, on the right, is an imp that travels through depth instead of along a row: it puts a copy of itself one layer in, turns to face +z, and climbs forever. The 3D library has 19 warriors built on ideas like this: replicators that fill diagonals, scanners that check every cell, backward clears and P-space switchers.</p>
+          <p class="note">The plane and volume are ZoreWars' own extension, not part of any ICWS standard. They're experimental and still changing. <a href="web/docs.html#volume">Read the rules</a>.</p>
+        </div>
+        <pre class="code" aria-label="Lift in Redcode"><span class="cmt">;name Lift</span>
+<span class="cmt">;strategy An imp that climbs through the layers.</span>
+        <span class="kw">ORG</span>     go
+<span class="lbl">go</span>      <span class="kw">MOV.I</span>   imp, $[1,0,1]  <span class="cmt">; a copy, one layer in</span>
+        <span class="kw">TRN</span>     $[0,0,1]       <span class="cmt">; face +z: the next</span>
+                               <span class="cmt">; step is that copy</span>
+<span class="lbl">imp</span>     <span class="kw">MOV.I</span>   $0, $[0,0,1]   <span class="cmt">; copy myself one</span>
+                               <span class="cmt">; layer in, forever</span></pre>
+      </div>
+    </section>
+
+    <section id="what" aria-labelledby="what-h">
+      <p class="eyebrow">Built on Core War</p>
+      <h2 id="what-h">Where it starts: programs that fight inside memory</h2>
+      <div class="split">
+        <div>
+          <p>A. K. Dewdney introduced Core War in his <em>Computer Recreations</em> column in <a href="https://www.scientificamerican.com/article/computer-recreations-1984-05/">Scientific American, May 1984</a>, based on a game he devised with D. G. Jones. Programs are written in an assembly language called Redcode and loaded into a shared ring of memory, the <em>core</em>. Every address is relative, every cell can be read or overwritten, and a process dies when it executes data.</p>
+          <p>The International Core War Society published Redcode standards in 1986, 1988 and 1994. Since the early 1990s, players have competed on online <em>hills</em>, where each new warrior has to beat the standing champions. Most of what is known about the game was worked out there, in newsletters and in the <a href="https://groups.google.com/g/rec.games.corewar">rec.games.corewar</a> newsgroup.</p>
+          <p>ZoreWars keeps those rules exactly on the ring (ICWS'94, checked against pMARS), then adds the plane and the volume, a visual arena, generator languages, explanations for every library warrior, and tooling for automated play.</p>
+        </div>
+        <pre class="code" aria-label="Dwarf in Redcode"><span class="cmt">;name Dwarf</span>
+<span class="cmt">;strategy Bomb every 4th cell. 4 divides 8000,</span>
+<span class="cmt">;strategy so the bombs never land on Dwarf.</span>
+        <span class="kw">ORG</span>     loop
+<span class="lbl">loop</span>    <span class="kw">ADD.AB</span>  #4, bomb
+        <span class="kw">MOV.I</span>   bomb, @bomb
+        <span class="kw">JMP</span>     loop
+<span class="lbl">bomb</span>    <span class="kw">DAT.F</span>   #0, #0</pre>
+      </div>
+    </section>
+
+    <section id="features" aria-labelledby="features-h">
+      <p class="eyebrow">What you get</p>
+      <h2 id="features-h">Everything from your first Imp to a hill entry</h2>
+      <p class="sub">The arena runs entirely in your browser. Nothing to install, nothing to sign up for.</p>
+      <div class="grid">
+        <div class="card"><span class="tag">Arena</span><h3>Watch it live, in 3D</h3><p>Every write and every process, on the ring, the plane or a volume you can turn and zoom, with step-through, replay and a post-mortem that names the killing blow.</p><a class="more" href="web/">Open the arena →</a></div>
+        <div class="card"><span class="tag">Languages</span><h3>Redcode or a generator</h3><p>Write Redcode directly, or a JavaScript, Python or C++ program that emits it. Convert any warrior into a readable generator.</p><a class="more" href="web/docs.html#generators">How generators work →</a></div>
+        <div class="card"><span class="tag">Library</span><h3>98 warriors, explained</h3><p>Classic stones, papers, scanners, imp rings, vampires and P-space switchers, plus plane and 3D warriors, each explained line by line.</p><a class="more" href="web/warriors.html">Warrior encyclopedia →</a></div>
+        <div class="card"><span class="tag">Classics</span><h3>Fight the originals</h3><p>Load famous warriors straight from the public archives and fight them with our version of the same idea. Nothing is copied into the project.</p><a class="more" href="web/warriors.html#history">Hall of Fame →</a></div>
+        <div class="card"><span class="tag">Hills</span><h3>Tournament rules</h3><p><code>--rules 94nop|88|lp|94x</code> reproduces each hill's settings, and a push-off predicts where your entry would place on the Koenigstuhl hills.</p><a class="more" href="web/docs.html#rules">Rules &amp; scoring →</a></div>
+        <div class="card"><span class="tag">Agents</span><h3>Built for AI agents</h3><p>A CLI with JSON output: check, battle, tournament, hill, tune and evolve (add <code>--torus</code> for 3D), with loss diagnosis that explains why a round was lost.</p><a class="more" href="web/docs.html#cli">CLI &amp; AI agents →</a></div>
+      </div>
+    </section>
+
+    <section id="lessons" aria-labelledby="lessons-h">
+      <p class="eyebrow">What the history teaches</p>
+      <h2 id="lessons-h">Lessons from forty years of warriors</h2>
+      <p class="sub">Before adding a dimension, we studied the one we had. We read original posts, source files and newsletters to find out how each family actually improved. The short version: the big advances were rarely a new instruction. They were better cooperation between the parts of a warrior, and that is what we look for in 3D too.</p>
+      <div class="grid">
+        <div class="card"><span class="tag">Stones</span><h3>From a stride to a lifecycle</h3><p>Dwarf drops bombs. Later stones such as Torch add a boot, decoys, a clear and a gate, each tuned with the others.</p><a class="more" href="web/history.html#stones">Read more →</a></div>
+        <div class="card"><span class="tag">Scanners</span><h3>Buy information, then use it</h3><p>Quickscans spend their opening on many probes. Q², Q³ and compact Q³ show that decoding a hit is half the design.</p><a class="more" href="web/history.html#scanners">Read more →</a></div>
+        <div class="card"><span class="tag">Clears</span><h3>The handoff is the innovation</h3><p>Where a clear starts, what it spares and when it takes over from the attack decide more matches than the clear loop itself.</p><a class="more" href="web/history.html#clears">Read more →</a></div>
+        <div class="card"><span class="tag">Papers</span><h3>Replication is scheduling</h3><p>From MICE to Silk and TimeScape, papers got stronger by controlling which processes copy and when.</p><a class="more" href="web/history.html#papers">Read more →</a></div>
+        <div class="card"><span class="tag">Imps</span><h3>Arithmetic, not tuning</h3><p>An imp ring's step follows from the core size and its number of points. Launch order and timing make or break it.</p><a class="more" href="web/history.html#imps">Read more →</a></div>
+        <div class="card"><span class="tag">P-space</span><h3>A portfolio, not an attack</h3><p>Switchers such as Fire and Ice choose between whole warriors from round to round. That is a different problem from writing one.</p><a class="more" href="web/history.html#pspace">Read more →</a></div>
+      </div>
+    </section>
+
+    <section id="timeline" aria-labelledby="timeline-h">
+      <div class="split">
+        <div>
+          <p class="eyebrow">Milestones</p>
+          <h2 id="timeline-h">Where it all came from</h2>
+          <p>Dates here come from original posts, newsletter issues and author's source comments. An appearance in a newsletter shows a warrior existed by that date, not when it was invented. The <a href="web/history.html#milestones">history page</a> links each entry to its primary source.</p>
+          <p class="note">Corrections are welcome: <a href="https://github.com/bstag/zorewars/issues">open an issue</a> with a source.</p>
+        </div>
+        <ol class="timeline">
+          <li><time datetime="1984-05">May 1984</time><p>Dewdney's column introduces Core War and Redcode.</p></li>
+          <li><time>1986–1990</time><p>MICE (replication), then Stone and Scissors from the 1990 tournament.</p></li>
+          <li><time datetime="1992-10-14">Oct 1992</time><p>Anders Ivner explains imp spirals and why they force ties.</p></li>
+          <li><time datetime="1994-08-10">Aug 1994</time><p>Silk Warrior 1.3: replication as process scheduling.</p></li>
+          <li><time datetime="1995-08">1995</time><p>pMARS adds P-space; warriors start to remember previous rounds.</p></li>
+          <li><time datetime="1996-07-08">1996–1999</time><p>Q², then Q³: compact quickscan decoding in <em>Core Warrior</em>.</p></li>
+          <li><time>Today</time><p>Hill leaders such as Arvon still credit and refine those components.</p></li>
+          <li><time datetime="2026">2026</time><p>ZoreWars adds Z: the plane and the volume.</p></li>
+        </ol>
+      </div>
+    </section>
+
+    <section id="community" aria-labelledby="community-h">
+      <p class="eyebrow">The Core War community</p>
+      <h2 id="community-h">Where things live</h2>
+      <p class="sub">ZoreWars stands on decades of work by other people. These are the original homes of the game's knowledge, warriors and competitions. Go there for the real thing.</p>
+      <div class="dir">
+        <div class="card">
+          <h3>Learn and reference</h3>
+          <ul>
+            <li><a href="https://corewar.co.uk/">corewar.co.uk</a>: John Metcalf's site, with the <a href="https://corewar.co.uk/history.htm">history of Core War</a>, <a href="https://corewar.co.uk/guides.htm">strategy guides</a> and articles on individual warriors.</li>
+            <li><a href="https://corewar.co.uk/standards/icws94.htm">ICWS'94 draft standard</a>: the Redcode specification that ZoreWars follows.</li>
+            <li><a href="https://corewars.org/docs/">corewars.org documentation</a>: tutorials and Redcode references.</li>
+            <li><a href="https://en.wikipedia.org/wiki/Core_War">Core War on Wikipedia</a>: an overview with further references.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Compete</h3>
+          <ul>
+            <li><a href="http://www.koth.org/">KotH.org</a>: King of the Hill, the long-running email tournament hills.</li>
+            <li><a href="https://sal.discontinuity.info/">SAL hills</a>: more standing hills with public rankings.</li>
+            <li><a href="https://asdflkj.net/COREWAR/koenigstuhl.html">Koenigstuhl</a>: infinite hills that keep every warrior ever submitted, with sources. ZoreWars' <code>--hill koenigstuhl:</code> option plays against them.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Archives</h3>
+          <ul>
+            <li><a href="https://gallium.inria.fr/~doligez/corewar/">Planar's Core War archive</a>: thousands of historical warriors and posts, indexed by date and type.</li>
+            <li><a href="https://www.corewar.info/">corewar.info</a>: home of the <em>Core Warrior</em> and <em>'94 Warrior</em> newsletter archives.</li>
+            <li><a href="https://github.com/n1LS/redcode-warriors">n1LS/redcode-warriors</a>: a collection of 567 Redcode warriors on GitHub.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Tools and discussion</h3>
+          <ul>
+            <li><a href="https://corewar.sourceforge.net/">pMARS</a>: the reference simulator used by the hills. ZoreWars checks its results against it (no pMARS code is included).</li>
+            <li><a href="https://groups.google.com/g/rec.games.corewar">rec.games.corewar</a>: the newsgroup where much of the game's strategy was first posted.</li>
+            <li><a href="https://github.com/SakanaAI/drq">Digital Red Queen</a> (Sakana AI and MIT): the research that inspired our <code>evolve</code> command.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" class="faq" aria-labelledby="faq-h">
+      <p class="eyebrow">Questions</p>
+      <h2 id="faq-h">Frequently asked</h2>
+      <details><summary>What does the Z in ZoreWars mean?</summary><p>Z is the third axis. Core War is played on a one-dimensional ring; ZoreWars keeps that ring and adds a 2D plane and a 3D volume. Addresses become vectors such as <code>[0,0,1]</code>, every process has a heading, and <code>TRN</code> turns it along any axis. A plane one row high is exactly the classic ring, and the tests check that battles there match round for round.</p></details>
+      <details><summary>Is ZoreWars compatible with pMARS and the public hills?</summary><p>On the ring, yes. ZoreWars follows ICWS'94 Redcode, and its ring mode is checked against pMARS. <code>--rules 94nop</code>, <code>88</code>, <code>lp</code> and <code>94x</code> reproduce the hills' settings, so a warrior developed here can be submitted unchanged. The plane and volume modes are our own experimental extension and have no hill.</p></details>
+      <details><summary>Do I need to learn Redcode?</summary><p>No. You can write a JavaScript, Python or C++ program that generates Redcode instead. All of them compile to the same instructions, and the arena can convert any warrior into a readable generator. Start with the <a href="web/docs.html#first">first warriors tutorial</a>.</p></details>
+      <details><summary>Can AI agents play?</summary><p>Yes. <code>node cli/zorewars.js</code> returns JSON for checks, battles, tournaments and per-round post-mortems, and includes <code>hill</code>, <code>tune</code> and <code>evolve</code>. The repository's <a href="https://github.com/bstag/zorewars/blob/main/AGENTS.md">AGENTS.md</a> describes the loop.</p></details>
+      <details><summary>Where do the classic warriors come from?</summary><p>From the public archives listed above. They are fetched when you use them, kept only in your browser, always assembled as Redcode and never run as code, and they keep their authors' credit and rights.</p></details>
+      <details><summary>Is it free?</summary><p>Yes. Code is <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache-2.0</a>, documentation <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>, and warriors written for ZoreWars are <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a>.</p></details>
+    </section>
+  </main>
+
+  <footer class="site-footer">ZoreWars · <a href="https://github.com/bstag/zorewars">source on GitHub</a> · code <a href="https://www.apache.org/licenses/LICENSE-2.0">Apache-2.0</a> · text <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a> · warriors written for ZoreWars <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a> · Core War was created by A. K. Dewdney and D. G. Jones</footer>
+  <script type="module" src="web/nav.js"></script>
+  <script>
+    // Hero animation: a 20x12x6 volume drawn as six stacked layers. A bomber
+    // adds the vector [3,5,1] to its pointer and drops a DAT each loop (three
+    // instructions), wrapping per axis. Lift copies itself one layer up and
+    // climbs there; it only dies if a bomb lands between the copy and the
+    // step. A fixed stride repeats after 60 cells here, which is why 3D
+    // stones need more than one loop.
+    (() => {
+      const canvas = document.getElementById('core');
+      const ctx = canvas.getContext('2d');
+      const X = 20, Y = 12, Z = 6;
+      const DX = 13, DY = 6.5, LAYER = 52;
+      const OX = canvas.width / 2 - (X - Y) * DX / 2;
+      const OY = canvas.height - (X + Y) * DY - 4;
+      const color = { empty: 'rgba(148,163,184,0.10)', bomber: '#22d3ee', imp: '#f472b6', bomb: '#0e7490' };
+      const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const wrap = (v, n) => ((v % n) + n) % n;
+      const idx = (x, y, z) => wrap(z, Z) * X * Y + wrap(y, Y) * X + wrap(x, X);
+      const xyz = (i) => [i % X, Math.floor(i / X) % Y, Math.floor(i / (X * Y))];
+      const add = (i, [a, b, c]) => { const [x, y, z] = xyz(i); return idx(x + a, y + b, z + c); };
+      const rnd = (n) => Math.floor(Math.random() * n);
+      let cells, base, ptr, pc, imp, turns;
+      const reset = () => {
+        cells = new Array(X * Y * Z).fill('empty');
+        base = idx(rnd(X), rnd(Y), rnd(Z));
+        for (let k = 0; k < 4; k++) cells[add(base, [k, 0, 0])] = 'bomber';
+        do imp = idx(rnd(X), rnd(Y), rnd(Z)); while (cells[imp] !== 'empty');
+        cells[imp] = 'imp';
+        ptr = [0, 0, 0]; pc = 0; turns = 0;
+      };
+      const diamond = (cx, cy, fill) => {
+        ctx.fillStyle = fill;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy - DY + 1); ctx.lineTo(cx + DX - 1.5, cy); ctx.lineTo(cx, cy + DY - 1); ctx.lineTo(cx - DX + 1.5, cy);
+        ctx.fill();
+      };
+      const draw = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let z = 0; z < Z; z++) {
+          for (let y = 0; y < Y; y++) {
+            for (let x = 0; x < X; x++) {
+              diamond(OX + (x - y) * DX, OY + (x + y) * DY - z * LAYER, color[cells[idx(x, y, z)]]);
+            }
+          }
+        }
+      };
+      const step = () => {
+        // Bomber: ADD, MOV, JMP. It dies if its own code was overwritten.
+        if (pc >= 0) {
+          if (cells[add(base, [pc, 0, 0])] !== 'bomber') pc = -1;
+          else if (pc === 0) { ptr = [(ptr[0] + 3) % X, (ptr[1] + 5) % Y, (ptr[2] + 1) % Z]; pc = 1; }
+          else if (pc === 1) { const t = add(add(base, [3, 0, 0]), ptr); if (cells[t] !== 'bomber') cells[t] = 'bomb'; pc = 2; }
+          else pc = 0;
+        }
+        // Lift: copy myself one layer up, then step there.
+        if (imp >= 0) {
+          if (cells[imp] !== 'imp') imp = -1;
+          else { const next = add(imp, [0, 0, 1]); cells[next] = 'imp'; imp = next; }
+        }
+        turns++;
+      };
+      reset(); draw();
+      if (reduce) { for (let i = 0; i < 200; i++) step(); draw(); return; }
+      let last = 0;
+      const tick = (t) => {
+        if (t - last > 60) { step(); draw(); last = t; }
+        if (pc < 0 || imp < 0 || turns > 400) setTimeout(() => { reset(); requestAnimationFrame(tick); }, 1500);
+        else requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    })();
+  </script>
 </body>
 </html>
