@@ -1,6 +1,7 @@
 ;name Blocks 94x
 ;author ZoreWars
 ;strategy {"OPENING":1,"RELOCATE":1,"BACKWARD":0,"PHASE":1,"WAIT":128,"STEP":997,"HOP":4096,"STUN":64}
+;assert CORESIZE==55440
 payloadSize EQU (payloadEnd-payload)
 payloadEnd EQU (clearKill+1)
 ORG opening
@@ -34,4 +35,4 @@ clearPtr DAT.F #0, #0
 remaining DAT.F #0, #0
 clearStun SPL.B 0, #0
 clearKill DAT.F #0, #0
-END opening
+END

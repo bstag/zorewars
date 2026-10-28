@@ -72,7 +72,11 @@ export async function evolveBlocks({ pool, opponents, settings, rules = '94x', l
     const x = admit(recipe, 'initial', [], 0); if (x && !population.some(v => v.id === x.id)) population.push(x);
   }
   if (!population.length) throw new Error('No initial recipe passed the gates');
-  const baseline = population[0];
+  // Validation keeps the baseline unless a finalist beats it, so it must be the
+  // best starting recipe on the base field, not whichever family came first.
+  const starting = new Set(population.map(x => x.id));
+  const measure = objective === 'points' ? 'score' : 'smooth';
+  let baseline = null;
   for (let attempts = 0; population.length < populationSize && attempts < populationSize * 20; attempts++) {
     const x = admit(mutate(pick(population)), 'initial-mutation', [], 0);
     if (x && !population.some(v => v.id === x.id)) population.push(x);
@@ -80,6 +84,7 @@ export async function evolveBlocks({ pool, opponents, settings, rules = '94x', l
   for (let generation = 1; generation <= generations; generation++) {
     // No stale scores: same placements and identical ancestor list for everyone.
     population = await Promise.all(population.map(x => score(x, generation)));
+    if (!baseline) baseline = population.filter(x => starting.has(x.id)).reduce((a, b) => (b[measure] > a[measure] ? b : a));
     const children = [], seen = new Set(population.map(x => x.id));
     for (let attempts = 0; children.length < offspring && attempts < offspring * 20; attempts++) {
       const a = lexicase(population, random), parents = [a.id];

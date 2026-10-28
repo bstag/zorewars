@@ -8,7 +8,7 @@ function emitCompass(P) {
     if (!Number.isSafeInteger(P[key]) || P[key] < lo || P[key] > hi) throw new Error(`Invalid ${key}`);
   }
   const lines = [';name Compass', ';author ZoreWars', ';strategy Comparison scan, explicit clear phases, independent boot/decoy layout',
-    `;recipe ${JSON.stringify(P)}`, `ORG ${P.BOOT ? 'boot' : 'scan'}`];
+    `;recipe ${JSON.stringify(P)}`, ';assert CORESIZE==55440', `ORG ${P.BOOT ? 'boot' : 'scan'}`];
   const labels = {}, sections = []; let pc = 0;
   const ins = (label, op, a, b = '0') => { if (label) labels[label] = pc; lines.push(`${label} ${op} ${a}, ${b}`); pc++; };
   const section = (id, fn) => { const start = pc; fn(); sections.push({ id, start, length: pc - start }); };
@@ -52,7 +52,7 @@ function emitCompass(P) {
     ins('copyTo', 'DAT.F', '#0', `#(probe+${P.HOP}+${size}-copyTo)`);
     ins('copyCount', 'DAT.F', '#0', `#${size}`);
   });
-  lines.push(`END ${P.BOOT ? 'boot' : 'scan'}`);
+  lines.push('END');
   return { source: lines.join('\n') + '\n', labels, sections, payloadLength: size, protectedSpan: span, P: { ...P } };
 }
 if (CORESIZE!==55440 || SIZEY!==1 || SIZEZ!==1) throw new Error('Compass requires the 94x ring');

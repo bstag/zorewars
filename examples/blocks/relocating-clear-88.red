@@ -1,6 +1,7 @@
 ;name Blocks 88
 ;author ZoreWars
 ;strategy {"OPENING":1,"RELOCATE":1,"BACKWARD":0,"PHASE":1,"WAIT":128,"STEP":997,"HOP":4096,"STUN":64}
+;assert CORESIZE==8000
 payloadSize EQU (payloadEnd-payload)
 payloadEnd EQU (clearKill+1)
 ; block opening-state

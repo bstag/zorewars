@@ -72,6 +72,18 @@ test('recipe GA is repeatable, rescores against Red Queen and records gated loca
   await assert.rejects(() => evolveBlocks({ pool, opponents, settings: { ...settings, maxCycles: 100 }, generations: 1 }), /settings/);
 });
 
+test('validation baseline is the best starting recipe, whatever the family order', async () => {
+  const settings = RULESETS['94x'], opponents = [{ name: 'test', group: 'test', w: compile('MOV.I 0, 1', 'redcode', settings) }];
+  // Longer warriors win: Compass's default (44 instructions) beats the clear's (26).
+  const pool = { async match(task) { const wins = task.a.instructions.length > 30 ? task.settings.rounds : 0;
+    return { w: wins, t: 0, l: task.settings.rounds - wins, smooth: 3 * wins }; } };
+  const run = families => evolveBlocks({ pool, opponents, settings, families, populationSize: 2, offspring: 1, generations: 1, rounds: 1, seed: 3 });
+  for (const families of [['clear', 'compass'], ['compass', 'clear']]) {
+    const r = await run(families);
+    assert.equal(r.baseline.recipe.family, 'compass'); assert.equal(r.baseline.operator, 'initial');
+  }
+});
+
 test('CLI rejects incompatible block flags before starting an experiment', () => {
   for (const args of [['--scratch'], ['--algorithm', 'map-elites'], ['--rules', '88', '--families', 'compass'], ['--cycles', '100']]) {
     const result = spawnSync(process.execPath, ['cli/zorewars.js', 'evolve', '--representation', 'blocks', ...args], { encoding: 'utf8' });

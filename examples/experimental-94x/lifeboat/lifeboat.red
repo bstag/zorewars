@@ -44,4 +44,4 @@ clearPtr DAT.F #0, #0
 remaining DAT.F #0, #0
 stunBomb SPL.B #0, #0
 killBomb DAT.F #0, #0
-END boot
+END

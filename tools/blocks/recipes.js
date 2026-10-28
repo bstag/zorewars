@@ -22,7 +22,7 @@ export function emitRecipe(P, { rules = '94x', length = 50 } = {}) {
   // In '88, forward movement needs an explicit ADD. This is a separate
   // implementation, not removal of modifiers from postincrement code.
   const op = (opcode, mod) => old ? opcode : `${opcode}.${mod}`;
-  const lines = [`;name Blocks ${rules}`, ';author ZoreWars', `;strategy ${JSON.stringify(P)}`];
+  const lines = [`;name Blocks ${rules}`, ';author ZoreWars', `;strategy ${JSON.stringify(P)}`, `;assert CORESIZE==${settings.coreSize}`];
   const sections = [];
   let pc = 0;
   function section(id, emit) {
@@ -84,7 +84,8 @@ export function emitRecipe(P, { rules = '94x', length = 50 } = {}) {
     ins('clearStun', 'SPL', 'B', '0', '#0');
     ins('clearKill', 'DAT', 'F', '#0', '#0');
   });
-  lines.push(`END ${bare ? 'payload' : 'opening'}`);
+  // '88 has no ORG, so END names the entry; elsewhere ORG does and END stays bare.
+  lines.push(old ? `END ${bare ? 'payload' : 'opening'}` : 'END');
   if (pc > length) throw new Error(`Recipe needs ${pc} instructions; budget is ${length}`);
   return { source: lines.join('\n') + '\n', settings, sections, payloadStart, payloadLength: pc - payloadStart, P: { ...P }, rules };
 }
@@ -96,7 +97,7 @@ export function verifyRecipe(built) {
   if (!w?.ok) throw new Error('Recipe did not assemble');
   const norm = x => (x % settings.coreSize + settings.coreSize) % settings.coreSize;
   const address = label => {
-    const changed = built.source.replace(/^ORG .*$/m, `ORG ${label}`).replace(/^END .*$/m, `END ${label}`);
+    const changed = built.source.replace(/^ORG .*$/m, `ORG ${label}`).replace(/^END\b.*$/m, `END ${label}`);
     const c = compile(changed, 'redcode', settings);
     if (!c.ok) throw new Error(`Missing entry ${label}`);
     return c.start;

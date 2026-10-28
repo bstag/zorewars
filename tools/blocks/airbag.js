@@ -56,7 +56,7 @@ export function emitAirbag(P) {
   emit('remaining','DAT.F','#0','#0');
   emit('stunBomb','SPL.B','#0','#0');
   emit('killBomb','DAT.F','#0','#0');
-  lines.push(`END ${P.BOOT?'boot':'launch'}`);
+  lines.push('END');
   return lines.join('\n')+'\n';
 }
 
@@ -65,7 +65,7 @@ export function verifyAirbag(built, { faults = ['guard','unwatched'] } = {}) {
   if (!w?.ok || settings.coreSize!==55440 || settings.maxCycles!==500000) throw new Error('Full 94x settings required');
   const norm = x => (x%settings.coreSize+settings.coreSize)%settings.coreSize;
   const entry = label => {
-    const c=compile(source.replace(/^ORG .*$/m,`ORG ${label}`).replace(/^END .*$/m,`END ${label}`),'redcode',settings);
+    const c=compile(source.replace(/^ORG .*$/m,`ORG ${label}`).replace(/^END\b.*$/m,`END ${label}`),'redcode',settings);
     if(!c.ok) throw new Error(`Missing label ${label}`);
     return c.start;
   };

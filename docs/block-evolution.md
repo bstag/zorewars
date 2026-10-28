@@ -2,7 +2,7 @@
 
 The main CLI now accepts `--representation blocks`. This opt-in path evolves
 verified recipes instead of individual instructions. The existing instruction
-evolver and its defaults remain available. This work is on `codex/molting-94x`.
+evolver and its defaults remain available.
 
 ```sh
 node cli/zorewars.js evolve --representation blocks --rules 94x --length 50 --families clear,lifeboat,compass --population 12 --batch 12 --generations 6 --local-steps 4 --validate --threads 4 --out evolved/blocks-run-1
@@ -126,7 +126,9 @@ champion joins the next generation's opponents. `--king` can initialize that
 history. `--local-steps` tries legal ±1 numeric changes and gates them too.
 
 `--validate` uses fresh paired placements against the base field and retains
-the starting baseline unless a finalist exceeds the existing noise margin.
+the starting baseline unless a finalist exceeds the existing noise margin. The
+baseline is the starting recipe (a family default or a seed) that scored best
+on the base field in generation 1, so family order does not change it.
 Training/ancestor scores are not evidence of general improvement. `--classics`
 reports champion performance separately, without using those results to select.
 

@@ -53,7 +53,7 @@ function emitAirbag(P) {
   emit('remaining','DAT.F','#0','#0');
   emit('stunBomb','SPL.B','#0','#0');
   emit('killBomb','DAT.F','#0','#0');
-  lines.push(`END ${P.BOOT?'boot':'launch'}`);
+  lines.push('END');
   return lines.join('\n')+'\n';
 }
 if (CORESIZE!==55440 || SIZEY!==1 || SIZEZ!==1) throw new Error('Lifeboat requires the 94x ring');

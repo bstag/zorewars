@@ -2,6 +2,7 @@
 ;author ZoreWars
 ;strategy Comparison scan, explicit clear phases, independent boot/decoy layout
 ;recipe {"BOOT":1,"HOP":18000,"STEP":997,"GAP":7,"START":512,"SCANS":64,"PHASE":1,"STUN":32,"DECOYS":12,"DECOY":1}
+;assert CORESIZE==55440
 ORG boot
 probe DAT.F #512, #519
 clock DAT.F #0, #64
@@ -47,4 +48,4 @@ boot MOV.I <copyFrom, <copyTo
 copyFrom DAT.F #0, #(probe+26-copyFrom)
 copyTo DAT.F #0, #(probe+18000+26-copyTo)
 copyCount DAT.F #0, #26
-END boot
+END
