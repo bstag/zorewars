@@ -2,7 +2,7 @@
 
 Worktree branch: `evolution-capabilities`, based on `ca3fa2b`.
 
-This stage adds optional epsilon-lexicase selection, CVT outcome niches, and
+This stage adds optional [epsilon-lexicase](references.md#epsilon-lexicase) selection, [CVT](references.md#cvt-map-elites) outcome niches, and
 numeric refinement using the existing mutation operators. Standalone
 generator parameter tuning and the architecture-specific '88 grids remain
 available. Search and finalist validation now share objective scoring,

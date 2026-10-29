@@ -25,7 +25,7 @@ A browser-based programming game inspired by **Core War** (1984). Players write 
 - **Avatars**: the battle as creatures in an arena. Each warrior's body is built from its own code, one part per instruction. Hits fly from the instruction that wrote them to the part they hit. A part is smashed, webbed, chipped or turned into the attacker's kind of part depending on what was written, and a captured warrior turns into its captor. Drawn in 3D with WebGL (three.js, loaded only when the view opens), with a flat canvas fallback. **Map** stands them on the live core: each avatar over where its processes are, with hits landing on the real cells.
 - **3D (experimental)**: a 40×20×10 or 80×10×10 volume or a 20×20×20 cube, shown live in 3D in the arena (drag to turn it, pinch or wheel to zoom, or let it spin). Code can travel along any axis.
 - **The plane (experimental)**: the first step towards a 3D battlefield. The core can be a torus plane (100×80 or 125×64) where addresses are vectors such as `[0,1]`. Code flows along rows, and fixed strides can't cover the plane, so the strategies that win change. Classic battles are unaffected, and a plane one row high is proven identical to the ring. See [design/3d-battlefield.md](design/3d-battlefield.md).
-- **Developer tools**: `zorewars hill` (benchmark with loss diagnosis), `species` (behaviour map), `tune` (constant search), `evolve` (seeded MAP-Elites or a population genetic algorithm with Red Queen opponents), and `train` (separate validated versions for each ruleset). See [warrior training](docs/warrior-training.md) for the library strategy map, search controls and validation workflow. MAP-Elites follows [Digital Red Queen](https://github.com/SakanaAI/drq).
+- **Developer tools**: `zorewars hill` (benchmark with loss diagnosis), `species` (behaviour map), `tune` (constant search), `evolve` (seeded [MAP-Elites](docs/references.md#map-elites) or a population genetic algorithm with [Red Queen](docs/references.md#red-queen) opponents), and `train` (separate validated versions for each ruleset). See [warrior training](docs/warrior-training.md) for the library strategy map, search controls and validation workflow. MAP-Elites follows [Digital Red Queen](https://github.com/SakanaAI/drq).
 
 **Play it:** [zorewar.app](https://zorewar.app) (full version on Cloudflare) · [bstag.github.io/zorewars](https://bstag.github.io/zorewars/) (static mirror on GitHub Pages: everything except importing originals by URL)
 
@@ -100,6 +100,10 @@ As a further check, a round robin of those 34 originals ranks the modern hill ch
 | JavaScript (`.js`) | yes | yes |
 | Python (`.py`) | yes, through Pyodide (about 10 MB, downloaded on first use) | yes, with local `python` |
 | C++ (`.cpp`) | no | yes, with `g++` or `clang++` |
+
+## Credits
+
+The evolver and push-off are built from published methods (MAP-Elites, CVT-MAP-Elites, lexicase and epsilon-lexicase selection, Digital Red Queen, AlphaStar's league, Astolfi's diversity hills and the SD-score). [docs/references.md](docs/references.md) lists each with its authors and a link. Core War's own history is credited on the [history page](https://zorewar.app/web/history).
 
 ## License
 

@@ -226,10 +226,10 @@ unreliable. No prototype is silently added to the standard benchmark.
 
 The original search already used mutation and crossover. Both algorithms now
 share seeded genetics, a solo survival filter, strict compilation of exported
-code, duplicate evaluation caching, loss-driven mutation and Red Queen
-opponents:
+code, duplicate evaluation caching, loss-driven mutation and
+[Red Queen](references.md#red-queen) opponents (sources for every method: [references](references.md)):
 
-- **MAP-Elites** keeps the strongest program in each process-count × executed
+- **[MAP-Elites](references.md#map-elites)** keeps the strongest program in each process-count × executed
   coverage niche. Tori also distinguish how many axes the writes occupy.
   Parents are sampled uniformly across occupied niches. This protects unusual
   strategies when a clear or paper dominates average fitness.
@@ -242,14 +242,15 @@ opponents:
 
 The following options extend those searches without changing their defaults:
 
-- `--selection lexicase` selects parents using shuffled per-opponent cases.
-  Each case keeps candidates within epsilon of its best score. The default
+- `--selection lexicase` selects parents using shuffled per-opponent cases
+  ([lexicase selection](references.md#lexicase)). Each case keeps candidates
+  within epsilon of its best score ([epsilon-lexicase](references.md#epsilon-lexicase)). The default
   `--epsilon auto` uses that case's median absolute deviation; a nonnegative
   number gives a fixed tolerance in points/smooth-score units. In GA mode,
   survival also uses lexicase without replacement after keeping the overall
   elite, so scalar truncation does not immediately discard specialists.
 - `--descriptor outcomes` replaces MAP-Elites' solo-species cells with a
-  CVT archive of win and tie rates against the fixed starting field, including
+  [CVT](references.md#cvt-map-elites) archive of win and tie rates against the fixed starting field, including
   partners for push-off. Loss rate is implicit. `--archive-size` caps its
   cells (default 64). Seeded centroids and probe identities stay fixed; every
   generation remeasures outcomes on its common placements and reassigns the
@@ -291,9 +292,9 @@ champions, when both exist. `--ties` discounts ties against champions. With
 `--objective smooth`, a loss receives a fractional reward for survival. The
 `evolve` default remains smooth; `train` defaults to points.
 
-`evolve --objective pushoff` scores each candidate by its place in a Core War
-Tournament Weekend push-off against the opponents (average points times
-SD-score diversity, the median of the eight points readings), so a warrior
+`evolve --objective pushoff` scores each candidate by its place in a [Core War
+Tournament Weekend push-off](references.md#tournament-weekend) against the opponents (average points times
+[SD-score](references.md#sd-score) diversity, the median of the eight points readings), so a warrior
 that wins in its own way beats a stronger copy of what the field already
 plays. `--partner a.red,b.red` enters our other entries beside each
 candidate; their places count half against it, so it isn't bred to push

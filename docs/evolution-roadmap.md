@@ -41,7 +41,8 @@ the rewritten field than against the originals.
 
 ## 2. A league instead of a single Red Queen
 
-Three populations, as in AlphaStar's league:
+Three populations, as in AlphaStar's league
+([Vinyals et al., Nature 2019](references.md#league)):
 
 - main warriors play the whole field;
 - exploiters are scored only on beating the current main warriors;

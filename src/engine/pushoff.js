@@ -3,9 +3,11 @@
 // remaining warrior is scored by its average score times its diversity, and
 // the lowest is pushed off. Diversity is the distance to the most similar
 // other warrior, comparing how each scores against the field (Achille
-// Astolfi, "A Numeric Approach to Diversity Hills"), with the SD-score
-// (Ismael, "The Standard Deviation Score", Journal of Big Data 12:58, 2025)
-// in place of Astolfi's Euclidean distance.
+// Astolfi, "A Numeric Approach to Diversity Hills",
+// https://corewar.co.uk/astolfi/diversity.htm), with the SD-score (Osama
+// Ismael, "The Standard Deviation Score", Journal of Big Data 12:58, 2025,
+// https://doi.org/10.1186/s40537-025-01091-z) in place of Astolfi's
+// Euclidean distance. Sources for every method: docs/references.md.
 //
 // The announcement leaves details open, so each is an option (defaults first):
 //   features  'points': one number per opponent, points per round (3 a win, 1 a tie)
