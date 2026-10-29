@@ -40,7 +40,7 @@ Developer tools (use every CPU core):
   zorewars species [warrior...]                      where warriors sit on the behaviour map
                                                      (processes x cells executed); none = the library
   zorewars tune <warrior.js> [--candidates 40] [--seeds 3] [--write]
-  zorewars refine <warrior.red> [--iterations 3] [--variants 4] [--turns 20] [--budget 5] [--effort high] [--model id] [--out refined/x.red]
+  zorewars refine <warrior.red> [--iterations 3] [--variants 4] [--turns 20] [--budget 5] [--objective points|pushoff] [--partner b.red] [--effort high] [--model id] [--out refined/x.red]
                                                      search the warrior's // SPACE for better constants
   zorewars evolve [warrior...] [--generations 6] [--king w.js] [--genome 40] [--scratch] [--ties 0.5] [--league] [--race 2] [--out evolved]
                                                      breed warriors with MAP-Elites or a population GA

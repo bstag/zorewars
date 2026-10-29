@@ -64,3 +64,23 @@ test('refine stops once its budget is spent', async () => {
     assert.match(r.log.at(-1).error, /budget of \$5.00 spent/);
   } finally { pool.close(); }
 });
+
+test('with objective pushoff, refine ranks rewrites by push-off place beside a partner', async () => {
+  const pool = createPool(2);
+  try {
+    let seen;
+    const propose = async ({ system, prompt, tools }) => {
+      seen = { system, prompt, score: await tools.score({ redcode: dwarf }) };
+      return { variants: [{ idea: 'a dwarf', redcode: dwarf }] };
+    };
+    const partner = strip(compile(';name Partner\nSPL 0\nMOV.I 0, 1', 'redcode', settings));
+    const r = await refine({ pool, source: weak, field, settings, propose, iterations: 1, rounds: 4, checkRounds: 4, seeds: 3,
+      fieldRounds: 4, objective: 'pushoff', partners: [partner] });
+    assert.equal(r.objective, 'pushoff');
+    assert.match(seen.system, /iterative push-off/);
+    assert.match(seen.prompt, /Push-off place: place \d+ of 4 \(partner \d+\)/);
+    assert.match(seen.score, /^Push-off place \d+ of 4/);
+    assert.match(r.log[0].variants[0].text, /^place \d+ of 4/);
+    await assert.rejects(refine({ pool, source: weak, field, settings, propose, partners: [partner] }), /partners need objective pushoff/);
+  } finally { pool.close(); }
+});

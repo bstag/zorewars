@@ -14,6 +14,11 @@
 //      on fresh seeds, opponent by opponent (paired, as tune does). Only a
 //      gain larger than its noise margin replaces the current version.
 //
+// With objective 'pushoff' the target is the tournament's place, not points:
+// every candidate is ranked in a diversity push-off against the field (beside
+// `partners`, our other entries), and the check compares places seed by seed.
+// A rewrite that wins more by becoming a clone of the hill loses there.
+//
 // The model sees our warrior's code and the opponents' names, never the
 // opponents' code, so nothing of anyone else's program can end up in ours.
 // `propose` is injectable, so tests (and other models) need no network.
@@ -21,6 +26,7 @@
 import { compile, runMatch, formatPostMortem, measureSpecies } from '../src/engine/index.js';
 import { evaluate } from './hill.js';
 import { pairedGain } from './tune.js';
+import { createObjective } from './objective.js';
 
 export const DEFAULT_MODEL = 'claude-opus-5-5';
 
@@ -38,7 +44,7 @@ export function costOf(usage, model) {
     + (usage.cache_read_input_tokens ?? 0) * p.cacheRead + (usage.output_tokens ?? 0) * p.output) / 1e6;
 }
 
-function systemPrompt(settings, maxLength, turns) {
+function systemPrompt(settings, maxLength, turns, pushoff) {
   const dialect = settings.dialect === '88'
     ? "ICWS'88 Redcode: DAT MOV ADD SUB JMP JMZ JMN DJN CMP SPL SLT only, modes # $ @ <, no modifiers, no ORG (use END label)."
     : "ICWS'94 Redcode with modifiers (.A .B .AB .BA .F .X .I), modes # $ @ * < { > }, ORG and END.";
@@ -47,6 +53,7 @@ function systemPrompt(settings, maxLength, turns) {
     `Battlefield: core size ${settings.coreSize}, at most ${maxLength} instructions per warrior, ${settings.maxProcesses} processes, ${settings.maxCycles} cycles per round, minimum distance ${settings.minDistance}${settings.pSpace === false ? ', no P-space' : ''}.`,
     `Language: ${dialect} Labels are case-insensitive, so never name a label after an opcode (dat, spl, mov...).`,
     'Scoring: win 3, tie 1, loss 0 per round; the score is the average over a field of strong opponents.',
+    ...(pushoff ? ['The target is the tournament place, not points. Entries are ranked by an iterative push-off: each warrior\'s average points are multiplied by how different its results are from its nearest neighbour\'s, and the lowest is pushed off, again and again. A warrior that wins the way many hill warriors do (a textbook scanner, paper or imp spiral) places low even with more points; one that wins in its own way places high. `score` reports the place: aim for a better place.'] : []),
     'You will see the warrior, its results per opponent, and post-mortems of rounds it lost. Diagnose why it loses, then write improved versions.',
     'Test your drafts before you submit them: `check` compiles a draft and runs it alone (a warrior that dies alone kills itself), `battle` plays one opponent and shows a post-mortem of a lost round, `score` plays the whole field. Fix what the tests show.',
     `You have about ${turns} turns in all, so spend them on the ideas that test well. Finish by calling \`submit\` once with your versions.`,
@@ -55,7 +62,7 @@ function systemPrompt(settings, maxLength, turns) {
   ].join('\n');
 }
 
-function userPrompt({ source, rows, mortems, history, variants }) {
+function userPrompt({ source, rows, mortems, history, variants, place }) {
   const table = rows.map((r) => `  ${r.name.padEnd(28)} won ${r.w}, lost ${r.l}, tied ${r.t}  (${r.pts.toFixed(2)} points/round)`).join('\n');
   const tried = history.length
     ? history.map((h) => `- ${h.idea} -> ${h.outcome}`).join('\n')
@@ -63,6 +70,7 @@ function userPrompt({ source, rows, mortems, history, variants }) {
   return [
     'Current warrior:', '```redcode', source.trim(), '```', '',
     'Results per opponent:', table, '',
+    ...(place ? [`Push-off place: ${place}.`, ''] : []),
     ...mortems.flatMap((m) => [`Post-mortem of a round lost to ${m.name} (losses here: ${m.symptoms}):`, '```', m.text.trim(), '```', '']),
     'Already tried in earlier iterations (avoid repeating failures):', tried, '',
     `Test drafts with the tools, then submit ${variants} improved versions.`,
@@ -117,7 +125,7 @@ export async function claudeProposer({ model = DEFAULT_MODEL, effort = 'high', t
   } catch {
     throw new Error('refine needs the Anthropic SDK: npm install @anthropic-ai/sdk');
   }
-  const client = new Anthropic();
+  const client = new Anthropic({ maxRetries: 5 });   // long runs: ride out dropped connections
   // budget: dollars this call may spend. Near it, tool results ask the model to
   // submit; at it, the call stops.
   return async ({ system, prompt, tools, budget = Infinity }) => {
@@ -159,22 +167,44 @@ export async function claudeProposer({ model = DEFAULT_MODEL, effort = 'high', t
 export async function refine({ pool, source, field, settings, entrySettings = settings, propose,
   iterations = 3, variants = 4, rounds = 20, checkRounds = 30, seeds = 3, worst = 3, seed = 1,
   model = DEFAULT_MODEL, turns = 20, budget = Infinity,   // budget: estimated dollars for the whole run
+  objective = 'points', partners = [], fieldRounds = 50,  // 'pushoff': rank by tournament place beside `partners`
   onProgress = () => {} }) {
+  if (!['points', 'pushoff'].includes(objective)) throw new Error('objective must be points or pushoff');
+  if (partners.length && objective !== 'pushoff') throw new Error('partners need objective pushoff');
   const maxLength = entrySettings.maxLength;
   const build = (src) => compile(src, 'redcode', entrySettings);
   let current = { source, w: build(source), idea: 'starting warrior' };
   if (!current.w.ok) throw new Error(`the starting warrior does not compile: ${current.w.errors[0].message}`);
-  const system = systemPrompt(entrySettings, maxLength, turns);
+  const pushoff = objective === 'pushoff';
+  const system = systemPrompt(entrySettings, maxLength, turns, pushoff);
+  onProgress(pushoff ? 'playing the field\'s own round robin for the push-off' : 'starting');
+  const target = pushoff ? await createObjective({ pool, opponents: field, partners, settings, objective, rounds, fieldRounds, seed }) : null;
+  // fit: higher is better. Points per round, or minus the better entry's
+  // push-off place (ours or a partner's: the pair is judged by its best
+  // entry), with the pair's total place and then points as tie-breaks. So a
+  // rewrite can't gain by pushing a stronger partner down.
+  const judge = async (w, s, n = rounds) => {
+    if (!target) { const r = await evaluate(pool, w, field, { rounds: n, seed: s, settings }); return { fit: r.score, text: `${r.score.toFixed(2)} points/round` }; }
+    const a = await target.assess(w, { seed: s, rounds: n });
+    const of = target.field.length + 1;
+    const fit = -Math.min(...a.places) - a.places.reduce((t, p) => t + p, 0) / 100 + a.score / 1000;
+    return { fit, places: a.places, text: `place ${a.places[0]} of ${of}${a.places.length > 1 ? ` (partner ${a.places.slice(1).join(', ')})` : ''}, ${a.score.toFixed(2)} points/round` };
+  };
   const cost = () => costOf(usage, model) ?? 0;
   const history = [], log = [];
   const usage = { input_tokens: 0, cache_creation_input_tokens: 0, cache_read_input_tokens: 0, output_tokens: 0 };
   const seedList = Array.from({ length: Math.max(1, seeds) }, (_, i) => seed * 7919 + 5003 + i * 1000);
   // Points per opponent and seed: the samples paired comparisons are made of.
+  // With the push-off, one sample per seed: the fit from that seed's ranking.
   const samples = async (w, s) => {
     const out = [];
-    for (const k of s) out.push(...(await evaluate(pool, w, field, { rounds: checkRounds, seed: k, settings })).rows.map((r) => r.pts));
+    for (const k of s) {
+      if (target) out.push((await judge(w, k, checkRounds)).fit);
+      else out.push(...(await evaluate(pool, w, field, { rounds: checkRounds, seed: k, settings })).rows.map((r) => r.pts));
+    }
     return out;
   };
+  const unit = pushoff ? 'places' : 'points/round';
   // A post-mortem of the first round `w` lost to field[i] (our code only), or null.
   const lostRound = (w, i, s) => {
     const m = runMatch([w, field[i].w], { ...settings, rounds: Math.min(rounds, 12) }, { seed: s, report: true });
@@ -193,6 +223,7 @@ export async function refine({ pool, source, field, settings, entrySettings = se
     const screenSeed = seed + it * 101, toolSeed = screenSeed + 50021;
     onProgress(`iteration ${it}: playing the field`);
     const base = await evaluate(pool, current.w, field, { rounds, seed: screenSeed, settings, diagnose: true });
+    const baseFit = await judge(current.w, screenSeed);
     const losers = base.rows.map((r, i) => ({ ...r, i })).sort((a, b) => a.pts - b.pts).slice(0, worst).filter((r) => r.l > 0);
     const mortems = [];
     for (const r of losers) {
@@ -225,13 +256,14 @@ export async function refine({ pool, source, field, settings, entrySettings = se
         calls.score++;
         const w = draft(redcode);
         const r = await evaluate(pool, w, field, { rounds, seed: toolSeed, settings });
-        return `${r.score.toFixed(2)} points/round over ${field.length} opponents:\n${r.rows.map((x) => `  ${x.name}: ${x.pts.toFixed(2)}`).join('\n')}`;
+        const head = target ? `Push-off ${(await judge(w, toolSeed)).text}. ` : '';
+        return `${head}${r.score.toFixed(2)} points/round over ${field.length} opponents:\n${r.rows.map((x) => `  ${x.name}: ${x.pts.toFixed(2)}`).join('\n')}`;
       },
     };
     onProgress(`iteration ${it}: the model is writing and testing`);
     let proposal;
     try {
-      proposal = await propose({ system, prompt: userPrompt({ source: current.source, rows: base.rows, mortems, history, variants }), tools, budget: budget - cost() });
+      proposal = await propose({ system, prompt: userPrompt({ source: current.source, rows: base.rows, mortems, history, variants, place: target && baseFit.text }), tools, budget: budget - cost() });
     } catch (e) {
       for (const k in usage) usage[k] += e.usage?.[k] ?? 0;
       log.push({ iteration: it, error: e.message, calls });
@@ -243,30 +275,30 @@ export async function refine({ pool, source, field, settings, entrySettings = se
     for (const v of proposal.variants.slice(0, variants)) {
       let w;
       try { w = draft(v.redcode); } catch (e) { history.push({ idea: v.idea, outcome: e.message }); continue; }
-      const r = await evaluate(pool, w, field, { rounds, seed: screenSeed, settings });
-      tried.push({ ...v, w, screen: r.score });
+      const j = await judge(w, screenSeed);
+      tried.push({ ...v, w, screen: j.fit, text: j.text });
     }
     tried.sort((a, b) => b.screen - a.screen);
-    const entry = { iteration: it, score: base.score, worst: losers.map((r) => r.name), calls, turns: proposal.turns,
-      variants: tried.map((t) => ({ idea: t.idea, screen: t.screen, redcode: t.redcode })) };
+    const entry = { iteration: it, score: base.score, fit: baseFit.fit, text: baseFit.text, worst: losers.map((r) => r.name), calls, turns: proposal.turns,
+      variants: tried.map((t) => ({ idea: t.idea, screen: t.screen, text: t.text, redcode: t.redcode })) };
     // Check the screen's best (if it beat the current version there) on fresh seeds.
     const top = tried[0];
-    if (top && top.screen > base.score) {
+    if (top && top.screen > baseFit.fit) {
       onProgress(`iteration ${it}: checking the best rewrite on fresh seeds`);
       const keys = seedList.map((k) => k + it);
       const [a, b] = [await samples(top.w, keys), await samples(current.w, keys)];
       const { gain, margin } = pairedGain(a, b);
       entry.check = { idea: top.idea, gain, margin };
       if (gain - margin > 0) {
-        history.push({ idea: top.idea, outcome: `kept: +${gain.toFixed(2)} points/round (margin ${margin.toFixed(2)})` });
+        history.push({ idea: top.idea, outcome: `kept: +${gain.toFixed(2)} ${unit} (margin ${margin.toFixed(2)})` });
         current = { source: top.redcode, w: top.w, idea: top.idea };
         entry.kept = true;
-      } else history.push({ idea: top.idea, outcome: `best on the screen, but ${gain >= 0 ? '+' : ''}${gain.toFixed(2)} on fresh seeds is within the noise (margin ${margin.toFixed(2)})` });
+      } else history.push({ idea: top.idea, outcome: `best on the screen, but ${gain >= 0 ? '+' : ''}${gain.toFixed(2)} ${unit} on fresh seeds is within the noise (margin ${margin.toFixed(2)})` });
     }
     for (const t of tried.slice(entry.check ? 1 : 0)) {
-      history.push({ idea: t.idea, outcome: `screen ${t.screen.toFixed(2)} vs current ${base.score.toFixed(2)}` });
+      history.push({ idea: t.idea, outcome: `screen: ${t.text} vs current ${baseFit.text}` });
     }
     log.push(entry);
   }
-  return { source: current.source, improved: current.source !== source, idea: current.idea, log, history, usage, cost: costOf(usage, model) };
+  return { source: current.source, improved: current.source !== source, idea: current.idea, objective, log, history, usage, cost: costOf(usage, model) };
 }

@@ -168,8 +168,19 @@ export async function cmdRefine(args, h) {
     return n;
   };
   const iterations = integer('iterations', 3), variants = integer('variants', 4), rounds = integer('rounds', 20);
-  const checkRounds = integer('check-rounds', 30), seeds = integer('seeds', 3), seed = integer('seed', 1);
   const effort = args.flags.effort ?? 'high';
+  const objective = args.flags.objective ?? 'points';
+  if (!['points', 'pushoff'].includes(objective)) h.usage('--objective takes points or pushoff');
+  // The push-off ranks against a hill: by default the Koenigstuhl hill of the --rules set.
+  const KOENIGSTUHL_HILLS = { '94nop': '94nop', 88: '88', lp: 'lp', '94x': '94x' };
+  if (objective === 'pushoff' && !args.flags.hill) {
+    const hill = KOENIGSTUHL_HILLS[args.flags.rules];
+    if (!hill) h.usage('--objective pushoff needs --hill, or --rules 94nop|88|lp|94x to use that Koenigstuhl hill');
+    args.flags.hill = `koenigstuhl:${hill}`;
+    args.flags.top ??= '30';
+  }
+  // A push-off check has one sample per seed, so it needs more seeds than a points check.
+  const checkRounds = integer('check-rounds', 30), seeds = integer('seeds', objective === 'pushoff' ? 6 : 3), seed = integer('seed', 1);
   const turns = integer('turns', 20);
   const budget = Number(args.flags.budget ?? 5);
   if (!Number.isFinite(budget) || budget <= 0) h.usage('--budget takes a number of dollars');
@@ -179,6 +190,9 @@ export async function cmdRefine(args, h) {
   const [w] = await h.loadAll([file], settings, json);
   const entrySettings = { ...settings };
   const field = await opponents(h, settings, args.flags, [w.name, path.basename(file)]);
+  // --partner b.red: our other entry, ranked beside each candidate (--objective pushoff).
+  const partners = args.flags.partner ? await h.loadAll(h.expandRefs(String(args.flags.partner).split(',')), entrySettings, json) : [];
+  if (partners.length && objective !== 'pushoff') h.usage('--partner needs --objective pushoff');
   if (args.flags.hill) Object.assign(settings, hillSettingsFor(settings));
   const out = args.flags.out ?? path.join('refined', path.basename(file));
   // The API key may live in a .env file beside the project (never committed).
@@ -187,6 +201,7 @@ export async function cmdRefine(args, h) {
   const pool = await battlePool(args.flags, h);
   try {
     const r = await refine({ pool, source, field, settings, entrySettings, propose, iterations, variants, rounds, checkRounds, seeds, seed, model, turns, budget,
+      objective, partners: partners.map(strip), fieldRounds: integer('field-rounds', 50),
       onProgress: (t) => progress(json, t) });
     done(json);
     fs.mkdirSync(path.dirname(out) || '.', { recursive: true });
@@ -197,9 +212,9 @@ export async function cmdRefine(args, h) {
 `);
     for (const e of r.log) {
       if (e.error) { console.log(`iteration ${e.iteration}: stopped: ${e.error}`); continue; }
-      console.log(`iteration ${e.iteration}: current ${e.score.toFixed(2)} pts/round, worst against ${e.worst.join(', ') || 'nobody'}; the model took ${e.turns} turns (${e.calls.check} checks, ${e.calls.battle} battles, ${e.calls.score} field scores)`);
-      for (const v of e.variants) console.log(`  ${v.screen.toFixed(2)}  ${v.idea}`);
-      if (e.check) console.log(`  fresh seeds: ${e.check.gain >= 0 ? '+' : ''}${e.check.gain.toFixed(3)} ± ${e.check.margin.toFixed(3)} -> ${e.kept ? 'kept' : 'within the noise, not kept'}`);
+      console.log(`iteration ${e.iteration}: current ${e.text}, worst against ${e.worst.join(', ') || 'nobody'}; the model took ${e.turns} turns (${e.calls.check} checks, ${e.calls.battle} battles, ${e.calls.score} field scores)`);
+      for (const v of e.variants) console.log(`  ${v.text}  ${v.idea}`);
+      if (e.check) console.log(`  fresh seeds: ${e.check.gain >= 0 ? '+' : ''}${e.check.gain.toFixed(3)} ± ${e.check.margin.toFixed(3)} ${r.objective === 'pushoff' ? 'places' : 'pts/round'} -> ${e.kept ? 'kept' : 'within the noise, not kept'}`);
     }
     console.log(`
 ${r.improved ? `Improved (${r.idea})` : 'No rewrite beat the starting warrior by more than the noise'} -> ${out}`);
