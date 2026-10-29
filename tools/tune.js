@@ -38,6 +38,15 @@ function sample(space) {
 // an improvement if its mean gain is more than Z standard errors above zero.
 const Z = 2.5;   // a little stricter than 2, because several finalists are compared
 
+// Mean of paired differences (same opponent, same seed) and its margin: a
+// candidate is a real improvement if gain - margin > 0.
+export function pairedGain(samples, base, z = Z) {
+  const d = samples.map((x, k) => x - base[k]);
+  const m = d.reduce((s, x) => s + x, 0) / d.length;
+  const sd = Math.sqrt(d.reduce((s, x) => s + (x - m) ** 2, 0) / Math.max(1, d.length - 1));
+  return { gain: m, margin: (z * sd) / Math.sqrt(d.length) };
+}
+
 export async function tune({ pool, source, field, settings, candidates = 40, screenRounds = 10, checkRounds = 20, seeds = 3, finalists = 6, onProgress = () => {} }) {
   const { space, current } = parseTunable(source);
   const build = (P) => compile(withConstants(source, P), 'javascript', settings);
@@ -70,12 +79,8 @@ export async function tune({ pool, source, field, settings, candidates = 40, scr
   const base = results.find((r) => r.current);
   const baseSamples = base.samples;
   for (const r of results) {
-    const d = r.samples.map((x, k) => x - baseSamples[k]);
-    const m = d.reduce((s, x) => s + x, 0) / d.length;
-    const sd = Math.sqrt(d.reduce((s, x) => s + (x - m) ** 2, 0) / Math.max(1, d.length - 1));
-    r.gain = m;
-    r.margin = (Z * sd) / Math.sqrt(d.length);   // gain ± margin
-    r.significant = !r.current && m - r.margin > 0;
+    Object.assign(r, pairedGain(r.samples, baseSamples));   // gain ± margin
+    r.significant = !r.current && r.gain - r.margin > 0;
     delete r.samples;
   }
   results.sort((a, b) => b.smooth - a.smooth);

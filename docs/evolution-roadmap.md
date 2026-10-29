@@ -78,11 +78,36 @@ candidate with its post-mortem (`battle --report`: killing blow, causes of
 death, trace) and propose a targeted change, checked by the same push-off.
 Slower per candidate, better aimed, and the output is still our own code.
 
+Built as `refine` (see AGENTS.md): the model sees the warrior, its results
+per opponent and post-mortems of its worst losses (opponents' names only,
+never their code), proposes a few rewrites, and each is screened and then
+checked on fresh seeds against the current version.
+
+First results, starting from a small evolved stone against Koenigstuhl
+94nop warriors cut to 50 instructions: with its testing tools the model
+turned it into a oneshot scoring twice the points (+0.66 per round on fresh
+seeds); without them, its drafts didn't compile or killed themselves. Opus
+found a kept gain where Sonnet, at a third of the cost, didn't. But in a
+push-off the oneshot placed below the stone: the hill is full of oneshots,
+so raw points are the wrong target here. Next: score rewrites by push-off
+place.
+
 ## 6. Racing evaluation
 
 Give every candidate a few rounds, drop the bottom half, double the rounds
 for the rest, and repeat. On the same compute this tests many more
 candidates, and finalists get enough rounds to reduce validation noise.
+
+Built as `evolve --race N`: a child that beats its cell's elite on the
+screen must beat it again with doubled rounds, N times, on common seeds,
+before it takes the cell; champions are picked from the top four elites
+with one more doubling.
+
+Measured on the same field (2 generations, 2 seeds), re-playing every
+replacement with 64 rounds on fresh seeds: without racing 58-61% of the
+children that replaced an elite were really better; with `--eval-rounds 3
+--race 2` 94-100% were, for about the same battle rounds, and the champions
+were stronger.
 
 ## 7. In-round adaptation without P-space
 

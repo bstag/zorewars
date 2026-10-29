@@ -9,6 +9,7 @@ import path from 'node:path';
 import { measureSpecies, speciesAxes } from '../src/engine/index.js';
 import { createPool, libraryOpponents, classicOpponents, evaluate, strip } from '../tools/hill.js';
 import { tune } from '../tools/tune.js';
+import { refine, claudeProposer, DEFAULT_MODEL } from '../tools/refine.js';
 import { evolve } from '../tools/evolve.js';
 import { trainingProfiles, validateCandidates } from '../tools/training.js';
 import { roleOf, toRedcode } from '../tools/genes.js';
@@ -153,6 +154,59 @@ export async function cmdTune(args, h) {
   } finally { pool.close(); }
 }
 
+// refine: a language model reads the warrior's post-mortems and proposes
+// rewrites; one is kept only if it beats the current version on fresh seeds.
+export async function cmdRefine(args, h) {
+  if (args._.length !== 1) h.usage('refine needs exactly one Redcode warrior');
+  const file = args._[0];
+  if (!/\.(red|rc)$/i.test(file) || !fs.existsSync(file)) h.usage('refine works on a Redcode file (convert a generator first with: zorewars compile <file>)');
+  const settings = h.settingsFrom(args.flags);
+  const json = !!args.flags.json;
+  const integer = (key, fallback) => {
+    const n = Number(args.flags[key] ?? fallback);
+    if (!Number.isInteger(n) || n < 1) h.usage(`--${key} must be a positive integer`);
+    return n;
+  };
+  const iterations = integer('iterations', 3), variants = integer('variants', 4), rounds = integer('rounds', 20);
+  const checkRounds = integer('check-rounds', 30), seeds = integer('seeds', 3), seed = integer('seed', 1);
+  const effort = args.flags.effort ?? 'high';
+  const turns = integer('turns', 20);
+  const budget = Number(args.flags.budget ?? 5);
+  if (!Number.isFinite(budget) || budget <= 0) h.usage('--budget takes a number of dollars');
+  const model = args.flags.model ?? DEFAULT_MODEL;
+  if (!['low', 'medium', 'high', 'xhigh', 'max'].includes(effort)) h.usage('--effort takes low, medium, high, xhigh or max');
+  const source = fs.readFileSync(file, 'utf8');
+  const [w] = await h.loadAll([file], settings, json);
+  const entrySettings = { ...settings };
+  const field = await opponents(h, settings, args.flags, [w.name, path.basename(file)]);
+  if (args.flags.hill) Object.assign(settings, hillSettingsFor(settings));
+  const out = args.flags.out ?? path.join('refined', path.basename(file));
+  // The API key may live in a .env file beside the project (never committed).
+  if (typeof process.loadEnvFile === 'function' && fs.existsSync('.env')) process.loadEnvFile('.env');
+  const propose = await claudeProposer({ model, effort, turns });
+  const pool = await battlePool(args.flags, h);
+  try {
+    const r = await refine({ pool, source, field, settings, entrySettings, propose, iterations, variants, rounds, checkRounds, seeds, seed, model, turns, budget,
+      onProgress: (t) => progress(json, t) });
+    done(json);
+    fs.mkdirSync(path.dirname(out) || '.', { recursive: true });
+    fs.writeFileSync(out, r.source);
+    fs.writeFileSync(out.replace(/\.(red|rc)$/i, '') + '.refine.json', JSON.stringify(r, null, 1));
+    if (json) { console.log(JSON.stringify({ ok: true, out, ...r, source: undefined }, null, 2)); return; }
+    console.log(`Refined ${w.name} against ${field.length} opponents: ${iterations} iterations of ${variants} rewrites each.
+`);
+    for (const e of r.log) {
+      if (e.error) { console.log(`iteration ${e.iteration}: stopped: ${e.error}`); continue; }
+      console.log(`iteration ${e.iteration}: current ${e.score.toFixed(2)} pts/round, worst against ${e.worst.join(', ') || 'nobody'}; the model took ${e.turns} turns (${e.calls.check} checks, ${e.calls.battle} battles, ${e.calls.score} field scores)`);
+      for (const v of e.variants) console.log(`  ${v.screen.toFixed(2)}  ${v.idea}`);
+      if (e.check) console.log(`  fresh seeds: ${e.check.gain >= 0 ? '+' : ''}${e.check.gain.toFixed(3)} ± ${e.check.margin.toFixed(3)} -> ${e.kept ? 'kept' : 'within the noise, not kept'}`);
+    }
+    console.log(`
+${r.improved ? `Improved (${r.idea})` : 'No rewrite beat the starting warrior by more than the noise'} -> ${out}`);
+    console.log(`Model tokens${r.cost !== null ? ` (about $${r.cost.toFixed(2)} of a $${budget.toFixed(2)} budget)` : ''}: ${r.usage.input_tokens} in, ${r.usage.cache_read_input_tokens} read from the cache, ${r.usage.cache_creation_input_tokens} written to it, ${r.usage.output_tokens} out.`);
+  } finally { pool.close(); }
+}
+
 export async function cmdEvolve(args, h, { quiet = false } = {}) {
   if (args.flags.representation === 'blocks') {
     const { cmdEvolveBlocks } = await import('./block-devtools.js');
@@ -226,6 +280,10 @@ export async function cmdEvolve(args, h, { quiet = false } = {}) {
   const exploitWin = Number(args.flags['exploit-win'] ?? 2);
   if (!Number.isFinite(exploitWin)) h.usage('--exploit-win takes a number of points per round');
   const exploitAge = integer('exploit-age', 6);
+  // --race N: a child that beats its cell's elite must win again N times with doubled rounds.
+  const race = integer('race', 0, 0);
+  if (race > 6) h.usage('--race takes 0 to 6');
+  if (race && (algorithm !== 'map-elites' || descriptor !== 'species')) h.usage('--race needs --algorithm map-elites with species niches');
   const maxLength = Math.min(settings.maxLength, integer('genome', 40));
   const entrySettings = { ...settings };
   if (hill) Object.assign(settings, hillSettingsFor(settings));   // genomes keep the entry limit above
@@ -238,7 +296,7 @@ export async function cmdEvolve(args, h, { quiet = false } = {}) {
     const r = await evolve({
       pool, sources, opponents: field, heldOut, settings, entrySettings, rounds: generations, batches, batchSize,
       maxLength, kings, scratch, seed, algorithm, objective, evalRounds, populationSize, tieValue, partners, fieldRounds,
-      selection, epsilon, descriptor, archiveSize, localSteps, league, exploitWin, exploitAge,
+      selection, epsilon, descriptor, archiveSize, localSteps, league, exploitWin, exploitAge, race,
       onLog: (t) => progress(json, t),
       onRound: (rec) => {
         done(json);
@@ -282,6 +340,8 @@ export async function cmdEvolve(args, h, { quiet = false } = {}) {
     r.execution = pool.stats ? structuredClone(pool.stats) : { backend: 'cpu', threads: pool.size };
     fs.writeFileSync(path.join(out, 'evolve.json'), JSON.stringify(r, null, 1));
     if (quiet) return r;
+    if (!json && race) console.log(`
+Racing: ${r.stats.raced} children raced past the screen, ${r.stats.promoted} took a cell; ${r.stats.battleRounds} battle rounds in all.`);
     if (json) { console.log(JSON.stringify({ ok: true, out, config: r.config, execution: r.execution, stats: r.stats, validation: r.validation, champions: r.champions.map(({ w, ...c }) => c), archive: r.archive, operators: r.operators }, null, 2)); return r; }
     console.log(`\nFinal archive: ${r.archive.length} ${descriptor} niches, best first`);
     h.printTable(r.archive.slice(0, 12).map((x) => ({ Cell: x.cell, Usually: x.species.hint, Processes: x.species.processes, 'Cells run': x.species.coverage, Length: x.g.code.length, Fitness: x.fit.toFixed(2) })));

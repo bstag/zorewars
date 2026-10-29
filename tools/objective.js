@@ -15,9 +15,9 @@ export async function createObjective({ pool, opponents, settings, objective = '
     : null;
   return {
     field,
-    async assess(w, { seed: matchSeed = seed, diagnose = false } = {}) {
+    async assess(w, { seed: matchSeed = seed, diagnose = false, rounds: played = rounds } = {}) {
       const a = await evaluate(pool, w, base ? [...field, { name: 'self', group: 'self', w: strip(w) }] : field,
-        { rounds, seed: matchSeed, settings, diagnose });
+        { rounds: played, seed: matchSeed, settings, diagnose });
       if (!base) return { ...a, fit: objective === 'smooth' ? a.smooth : a.score };
       const n = field.length + 1;
       const scores = Array.from({ length: n }, (_, i) => i ? [0, ...base.scores[i - 1]] : new Array(n).fill(0));

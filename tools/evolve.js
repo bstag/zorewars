@@ -30,6 +30,12 @@
 //   main warriors' rivals, so weaknesses are found and patched in-house
 //   instead of by overfitting a fixed set of kings. With objective pushoff
 //   the main fitness is the push-off value plus points against the rivals.
+// - Racing (optional): every candidate is screened with evalRounds rounds. A
+//   child that beats its cell's elite there must beat it again with twice
+//   the rounds, and again, `race` times, both on the same fresh seeds, before
+//   it takes the cell; most children fail the screen, so the extra rounds go
+//   to the few that matter. The round's champion is then picked from the top
+//   few elites with one more doubling.
 
 import { createHash } from 'node:crypto';
 import { compile, DEFAULT_SETTINGS, measureSpecies, mulberry32 } from '../src/engine/index.js';
@@ -54,6 +60,8 @@ export async function evolve({
   league = false,      // also breed exploiters and league exploiters (see above)
   exploitWin = 2,      // an exploiter champion this fit (points per round vs the main champion) has done its job: restart
   exploitAge: exploitAge_ = 6,      // ...and so has one that has bred this many generations without it
+  race = 0,            // racing: how many times a would-be elite must win again with doubled rounds
+  onPlace = () => {},  // called with (child, displaced elite or null) whenever a child takes a cell
   onLog = () => {}, onRound = () => {},
 }) {
   settings = { ...DEFAULT_SETTINGS, ...settings };
@@ -68,6 +76,8 @@ export async function evolve({
   if (!['species', 'outcomes'].includes(descriptor)) throw new Error('descriptor must be species or outcomes');
   if (descriptor === 'outcomes' && (algorithm !== 'map-elites' || !opponents.length || scratch)) throw new Error('outcome niches need map-elites with a fixed opponent field, not scratch');
   if (!Number.isInteger(localSteps) || localSteps < 0) throw new Error('localSteps must be a nonnegative integer');
+  if (!Number.isInteger(race) || race < 0 || race > 6) throw new Error('race must be an integer from 0 to 6');
+  if (race && (algorithm !== 'map-elites' || descriptor !== 'species')) throw new Error('racing needs map-elites with species niches');
   if (!['smooth', 'points', 'pushoff'].includes(objective)) throw new Error('objective must be smooth, points or pushoff');
   if (objective === 'pushoff' && !opponents.length) throw new Error('objective pushoff needs opponents (a field to rank in)');
   if (!Number.isFinite(tieValue) || tieValue < 0 || tieValue > 1) throw new Error('tieValue must be from 0 to 1');
@@ -88,7 +98,7 @@ export async function evolve({
   const champions = kings.map((w) => ({ round: 0, name: w.name, g: genomeOf(w), w: strip(w) }));
   const coreSize = settings.coreSize;
   const measured = new Map(), assessed = new Map(), lineage = new Map();
-  const stats = { evaluated: 0, cacheHits: 0, rejected: 0, matches: 0, battleRounds: 0, localTried: 0, localImproved: 0 };
+  const stats = { evaluated: 0, cacheHits: 0, rejected: 0, matches: 0, battleRounds: 0, localTried: 0, localImproved: 0, raced: 0, promoted: 0 };
   const runner = pool;
   // Retain live backend getters (auto can fall back mid-run) and accelerated
   // solo checks while counting battle work through the same execution pool.
@@ -117,14 +127,16 @@ export async function evolve({
   const EXPLOIT = { key: 'exploit', field: false, rivals: () => champions.slice(-1) };
   const LEAGUE = { key: 'league', field: false, rivals: () => [...champions, ...exploiters, ...leagueExploiters] };
 
-  async function assess(input, round, origin = { operator: 'seed', parents: [] }, pop = MAIN) {
+  // `level` is a racing level: evalRounds x 2^level rounds on that level's own
+  // seeds, the same for every candidate in the round, so same-level fits compare.
+  async function assess(input, round, origin = { operator: 'seed', parents: [] }, pop = MAIN, level = 0) {
     let g = clone(input);
     if (!fits(g, maxLength)) return null;
     if (settings.dialect === '88') g.code.forEach(legal88);   // every child stays ICWS'88
     g = genomeOf(toWarrior(g, 'Evolved', coreSize));
     const id = genomeId(g);
     if (!lineage.has(id)) lineage.set(id, { id, generation: round, ...origin });
-    const key = `${pop.key}:${id}`;
+    const key = `${pop.key}:${level}:${id}`;
     if (assessed.has(key)) { stats.cacheHits++; return assessed.get(key); }
     if (!measured.has(id)) {
       // Compile what will actually be exported. This also enforces P-space,
@@ -138,20 +150,21 @@ export async function evolve({
       const m = await measured.get(id);
       if (!m) { stats.rejected++; assessed.set(key, null); return null; }
       const { w, species } = m;
-      const matchSeed = (seed + round * 1000) % 2147483646 + 1;
-      const a = pop.field && target.field.length ? await target.assess(w, { seed: matchSeed, diagnose: true }) : null;
+      const matchSeed = (seed + round * 1000 + level * 104729) % 2147483646 + 1;
+      const n = evalRounds * 2 ** level;
+      const a = pop.field && target.field.length ? await target.assess(w, { seed: matchSeed, diagnose: true, rounds: n }) : null;
       let fit = a?.fit ?? 0;
       const rows = a ? a.rows.slice(0, target.field.length).map((r) => ({ ...r, value: r[rowMetric] })) : [];
       const sym = a ? { ...a.symptoms } : {};
       const rivals = pop.rivals();
       if (rivals.length && (objective !== 'pushoff' || league || !a)) {
-        const c = await evaluate(pool, w, rivals.map((x) => ({ name: x.name, group: 'champion', w: x.w })), { rounds: evalRounds, seed: matchSeed, settings, diagnose: true });
-        const vsChamps = c.rows.reduce((s, r) => s + r[rowMetric] - ((1 - tieValue) * r.t) / evalRounds, 0) / c.rows.length;
+        const c = await evaluate(pool, w, rivals.map((x) => ({ name: x.name, group: 'champion', w: x.w })), { rounds: n, seed: matchSeed, settings, diagnose: true });
+        const vsChamps = c.rows.reduce((s, r) => s + r[rowMetric] - ((1 - tieValue) * r.t) / n, 0) / c.rows.length;
         fit = !a ? vsChamps : objective === 'pushoff' ? a.fit + vsChamps : (a[metric] + vsChamps) / 2;
-        rows.push(...c.rows.map((r) => ({ ...r, value: r[rowMetric] - ((1 - tieValue) * r.t) / evalRounds })));
+        rows.push(...c.rows.map((r) => ({ ...r, value: r[rowMetric] - ((1 - tieValue) * r.t) / n })));
         for (const k in c.symptoms) sym[k] = (sym[k] ?? 0) + c.symptoms[k];
       }
-      const result = { id, g, fit, sym, species, cases: rows.map((r) => r.value), rows,
+      const result = { id, g, fit, level, sym, species, cases: rows.map((r) => r.value), rows,
         ...(outcomes ? { descriptor: outcomes.describe(a.rows.slice(0, target.field.length)) } : {}),
         ...(a?.places ? { places: a.places } : {}) };
       stats.evaluated++;
@@ -167,12 +180,23 @@ export async function evolve({
     for (const { g, origin } of items) results.push(await assess(g, round, origin, pop));
     return results;
   };
-  const place = (archive, x) => {
+  const place = async (archive, x, round, pop) => {
     if (!x) return false;
     const key = algorithm === 'ga' ? x.id : cellOf(x);
-    const cur = archive.get(key);
-    if (cur && cur.fit >= x.fit) return false;
+    let cur = archive.get(key);
+    if (cur && race) {
+      // Racing: the screen and each doubling compare child and elite on the same seeds.
+      if (cur.id === x.id) return false;
+      for (let level = 0; level <= race; level++) {
+        const [c, e] = await Promise.all([assess(x.g, round, undefined, pop, level), assess(cur.g, round, undefined, pop, level)]);
+        if (!c || (e && e.fit >= c.fit)) return false;
+        if (level === 1) stats.raced++;
+        x = c; cur = e ?? cur;
+      }
+      stats.promoted++;
+    } else if (cur && cur.fit >= x.fit) return false;
     archive.set(key, x);
+    onPlace(x, cur ?? null);
     return true;
   };
 
@@ -210,7 +234,7 @@ export async function evolve({
     let archive = new Map();
     const seeds = await assessBatch(prev.map((g, i) => ({ g, origin: { operator: 'seed', parents: [],
       ...(round === 1 && pop === MAIN && i < startingSources.length ? { source: startingSources[i].name } : {}) } })), round, pop);
-    for (const [i, x] of seeds.entries()) { place(archive, x); onSeed(i, x); }
+    for (const [i, x] of seeds.entries()) { await place(archive, x, round, pop); onSeed(i, x); }
     const prune = () => {
       if (algorithm === 'ga') {
         const all = [...archive.values()];
@@ -241,14 +265,16 @@ export async function evolve({
       // Apply results and mutation credit in birth order, never finish order.
       for (const [i, k] of kids.entries()) {
         let x = evaluated[i];
-        chooser.record(k.op, !!x && x.fit > k.parent.fit);
-        if (place(archive, x)) placed++;
+        // Credit compares screening fits: the parent may hold its cell at a higher racing level.
+        const parentFit = race ? (await assess(k.parent.g, round, undefined, pop))?.fit ?? k.parent.fit : k.parent.fit;
+        chooser.record(k.op, !!x && x.fit > parentFit);
+        if (await place(archive, x, round, pop)) placed++;
         // Bounded memetic refinement: only fitter children get extra numeric
         // searches. All trials use this generation's common opponents/seeds.
-        if (x && x.fit > k.parent.fit) for (let step = 0; step < localSteps; step++) {
+        if (x && x.fit > parentFit) for (let step = 0; step < localSteps; step++) {
           stats.localTried++;
           const tuned = await assess((geo ? ops.axis : ops.retune)(x.g), round, { operator: 'local-retune', parents: [x.id] }, pop);
-          if (place(archive, tuned)) placed++;
+          if (await place(archive, tuned, round, pop)) placed++;
           if (tuned && tuned.fit > x.fit) { x = tuned; stats.localImproved++; }
         }
       }
@@ -257,14 +283,18 @@ export async function evolve({
     }
     return { archive, placed };
   }
-  const bestOf = (archive) => {
-    const best = [...archive.values()].sort((a, b) => b.fit - a.fit)[0];
-    if (!best) throw new Error('nothing survived: every candidate killed itself');
-    return best;
+  const FINALISTS = 4;
+  const bestOf = async (archive, round, pop) => {
+    const ranked = [...archive.values()].sort((a, b) => b.fit - a.fit);
+    if (!ranked.length) throw new Error('nothing survived: every candidate killed itself');
+    if (!race) return ranked[0];
+    // Racing: the top elites play off with one more doubling of rounds.
+    const finals = await Promise.all(ranked.slice(0, FINALISTS).map((x) => assess(x.g, round, undefined, pop, race + 1)));
+    return finals.filter(Boolean).sort((a, b) => b.fit - a.fit)[0] ?? ranked[0];
   };
   // A league side population's champion: kept as a rival, not exported as a Red Queen.
-  const sideChampion = (archive, round, label) => {
-    const best = bestOf(archive);
+  const sideChampion = async (archive, round, label, pop) => {
+    const best = await bestOf(archive, round, pop);
     return { round, name: `${label} ${round}`, id: best.id, g: best.g, fit: best.fit, species: best.species,
       w: strip(toWarrior(best.g, `${label} ${round}`, coreSize)) };
   };
@@ -280,7 +310,7 @@ export async function evolve({
     ({ archive, placed } = await breed(MAIN, prev, round, (i, x) => {
       if (round === 1 && i < originalCount && x && (!baseline || x.fit > baseline.fit)) baseline = x;
     }));
-    const best = bestOf(archive);
+    const best = await bestOf(archive, round, MAIN);
     const name = algorithm === 'ga' ? `Genetic ${round}` : `Red Queen ${round}`;
     const w = toWarrior(best.g, name, coreSize);
     const held = heldOut.length ? await evaluate(pool, w, heldOut, { rounds: 20, seed: 1001, settings }) : null;
@@ -297,13 +327,13 @@ export async function evolve({
       // or the line grows old, the next generation starts from the gene pool.
       const fresh = !exploitArchive;
       ({ archive: exploitArchive } = await breed(EXPLOIT, fresh ? start : [...exploitArchive.values()].map((x) => x.g), round));
-      const ex = sideChampion(exploitArchive, round, 'Exploiter');
+      const ex = await sideChampion(exploitArchive, round, 'Exploiter', EXPLOIT);
       exploiters.push(ex);
       exploitAge = fresh ? 1 : exploitAge + 1;
       ex.restart = ex.fit >= exploitWin || exploitAge >= exploitAge_;
       if (ex.restart) exploitArchive = null;
       ({ archive: leagueArchive } = await breed(LEAGUE, leagueArchive ? [...leagueArchive.values()].map((x) => x.g) : start, round));
-      const lx = sideChampion(leagueArchive, round, 'League exploiter');
+      const lx = await sideChampion(leagueArchive, round, 'League exploiter', LEAGUE);
       leagueExploiters.push(lx);
       rec.exploiter = ex; rec.leagueExploiter = lx;
     }
@@ -316,7 +346,7 @@ export async function evolve({
   return {
     config: { seed, algorithm, objective, selection, epsilon, descriptor, archiveSize, localSteps, fieldRounds,
       rounds, batches, batchSize, evalRounds, maxLength, populationSize, tieValue, scratch, settings, entrySettings,
-      ...(league ? { league, exploitWin, exploitAge: exploitAge_ } : {}) },
+      ...(league ? { league, exploitWin, exploitAge: exploitAge_ } : {}), ...(race ? { race } : {}) },
     ...(outcomes ? { probes: target.field.map(({ w, ...o }) => o), centroids: outcomes.centers } : {}),
     baseline, stats, lineage: [...lineage.values()], champions, history,
     ...(league ? { exploiters, leagueExploiters } : {}),

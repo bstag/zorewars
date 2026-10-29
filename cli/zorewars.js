@@ -40,8 +40,9 @@ Developer tools (use every CPU core):
   zorewars species [warrior...]                      where warriors sit on the behaviour map
                                                      (processes x cells executed); none = the library
   zorewars tune <warrior.js> [--candidates 40] [--seeds 3] [--write]
+  zorewars refine <warrior.red> [--iterations 3] [--variants 4] [--turns 20] [--budget 5] [--effort high] [--model id] [--out refined/x.red]
                                                      search the warrior's // SPACE for better constants
-  zorewars evolve [warrior...] [--generations 6] [--king w.js] [--genome 40] [--scratch] [--ties 0.5] [--league] [--out evolved]
+  zorewars evolve [warrior...] [--generations 6] [--king w.js] [--genome 40] [--scratch] [--ties 0.5] [--league] [--race 2] [--out evolved]
                                                      breed warriors with MAP-Elites or a population GA
   zorewars train [warrior...] [--profiles 94nop,88,lp,94x|all] [--algorithm ga|map-elites] [--out evolved/training]
                                                      train and validate a separate warrior per profile
@@ -95,6 +96,8 @@ Options:
   --field-rounds N   evolve --objective pushoff: rounds a pair for the field's round robin (50)
   --population N     ga: maximum surviving population (default: --batch)
   --eval-rounds N    evolution screening rounds per opponent (default 6)
+  --race N           evolve: a child that beats its cell's elite must beat it again N times,
+                     doubling the rounds each time (default 0); champions get one more doubling
   --validate         evolve: compare finalists to the starting baseline on fresh placements (always on for train)
   --check-rounds N   validation rounds per opponent and seed (default 30)
   --seeds N          validation placement seeds (default 3, at least 2)
@@ -544,6 +547,7 @@ switch (cmd) {
   case 'hill': { const [m, h] = await devtools(); await m.cmdHill(args, h); break; }
   case 'species': { const [m, h] = await devtools(); await m.cmdSpecies(args, h); break; }
   case 'tune': { const [m, h] = await devtools(); await m.cmdTune(args, h); break; }
+  case 'refine': { const [m, h] = await devtools(); await m.cmdRefine(args, h); break; }
   case 'evolve': { const [m, h] = await devtools(); await m.cmdEvolve(args, h); break; }
   case 'train': { const [m, h] = await devtools(); await m.cmdTrain(args, h); break; }
   case 'pushoff': { const [m, h] = await devtools(); await m.cmdPushoff(args, h); break; }
