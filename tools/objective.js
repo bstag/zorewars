@@ -4,7 +4,7 @@ import { evaluate, strip } from './hill.js';
 import { roundRobin, medianPlaces } from './pushoff.js';
 
 export async function createObjective({ pool, opponents, settings, objective = 'points',
-  partners = [], rounds = 6, fieldRounds = 50, seed = 1,
+  partners = [], rounds = 6, fieldRounds = 50, seed = 1, readings,
 }) {
   if (!['points', 'smooth', 'pushoff'].includes(objective)) throw new Error('objective must be smooth, points or pushoff');
   if (partners.length && objective !== 'pushoff') throw new Error('partners need objective pushoff');
@@ -31,7 +31,7 @@ export async function createObjective({ pool, opponents, settings, objective = '
         scores[k + 1][0] = (3 * flip.w + flip.t) / r.rounds;
       });
       const places = medianPlaces(scores, results, ['candidate', ...field.map((x) => x.name)],
-        [0, ...partners.map((_, k) => k + 1)]);
+        [0, ...partners.map((_, k) => k + 1)], readings);
       return { ...a, places, fit: -(places[0] + places.slice(1).reduce((s, p) => s + p, 0) / 2) + a.score / 100 };
     },
   };

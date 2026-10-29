@@ -328,7 +328,8 @@ round robin for each fresh seed, reused by every finalist; candidates are
 entered separately, never against the other finalists. For each seed it
 compares the paired candidate-minus-baseline objective values. Reports retain
 ordinary points and smooth scores alongside `objectiveValue`; push-off also
-records the candidate and partner median places for each seed.
+records the candidate and partner places for each seed (under the SD-score
+hill rule `pushoff --rule official` uses, the default).
 The noise margin is 2.5 standard errors of those seed-level gains. An evolved
 candidate replaces the baseline only when its mean gain exceeds that margin.
 The same opponent field is used, so this tests new placements, **not**

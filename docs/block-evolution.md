@@ -242,7 +242,7 @@ scratch, torus and MAP-Elites are rejected rather than ignored.
 
 ### Ranking by push-off place
 
-`--objective pushoff` (with `--hill`) scores each recipe by its median place in
+`--objective pushoff` (with `--hill`) scores each recipe by its place in
 an iterative diversity push-off against the hill, as instruction evolution does:
 the field plays one round robin up front, each candidate is placed in it, and a
 recipe that wins in its own way ranks above a stronger clone. `--partner a.red`

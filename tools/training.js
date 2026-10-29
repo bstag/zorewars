@@ -26,7 +26,7 @@ export function trainingProfiles(spec = '94nop,88,lp,94x') {
 
 export async function validateCandidates({ pool, baseline, candidates, field, settings,
   seed = 1, seeds = 3, rounds = 30, finalists = 6, onProgress = () => {},
-  objective = 'points', partners = [], fieldRounds = 50,
+  objective = 'points', partners = [], fieldRounds = 50, readings,
 }) {
   if (!baseline) throw new Error('validation needs a surviving starting warrior');
   if (!field.length) throw new Error('validation needs opponents');
@@ -46,7 +46,7 @@ export async function validateCandidates({ pool, baseline, candidates, field, se
   // reused by every finalist; search's noisy matrix is never validation data.
   const targets = [];
   for (const matchSeed of seedList) targets.push(await createObjective({ pool, opponents: field, settings,
-    objective, partners, rounds, fieldRounds, seed: matchSeed }));
+    objective, partners, rounds, fieldRounds, seed: matchSeed, readings }));
   const results = [];
   for (const [i, candidate] of checked.entries()) {
     const runs = [];

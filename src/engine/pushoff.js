@@ -23,6 +23,10 @@
 //                         diversity stays meaningful down to the last few
 //             'current':  over the warriors still in, as on Astolfi's hill
 // The average is always over the other warriors still in.
+//
+// rule: 'official' replaces all of these with the tournament runner's own
+// script (sdScoreHill below); the options above are the readings we used
+// before it was published.
 
 const FEATURES = {
   points: (r) => [(3 * r.w + r.t) / r.rounds],
@@ -35,7 +39,9 @@ const FEATURES = {
 // results[i][i] a self-fight. Returns the warriors in final order (first =
 // winner), each with the average, diversity and score it had when it was
 // pushed off (or at the end).
-export function pushOff(scores, names, { results = null, features = 'points', metric = 'sd', self = false, field = 'original' } = {}) {
+export function pushOff(scores, names, { rule = null, results = null, features = 'points', metric = 'sd', self = false, field = 'original' } = {}) {
+  if (rule === 'official') return sdScoreHill(scores, names);
+  if (rule) throw new Error(`unknown rule '${rule}'`);
   const n = scores.length;
   const feat = FEATURES[features];
   if (!feat) throw new Error(`unknown features '${features}'`);
@@ -130,5 +136,40 @@ export function pushOff(scores, names, { results = null, features = 'points', me
       break;
     }
   }
+  return out.map((r, k) => ({ rank: k + 1, ...r }));
+}
+
+// The push-off as the tournament runner's script computes it: an infinite
+// SD-score hill over the current field. Each warrior's row is its score
+// against every warrior still in, with 0 against itself; the diagonal zero
+// stays in, both in each column's standard deviation and in the distance.
+// Distance is the sum over columns of |difference| / that column's standard
+// deviation; diversity is the distance to the nearest other warrior, and the
+// lowest diversity times average score is pushed off (on a tie, the one
+// listed later). A column with zero spread is skipped (the script would
+// divide 0 by 0 there).
+export function sdScoreHill(scores, names) {
+  const live = names.map((_, i) => i);
+  const at = (i, j) => (i === j ? 0 : scores[i][j]);
+  const out = [];
+  while (live.length > 1) {
+    const sd = live.map((j) => {
+      const mean = live.reduce((t, i) => t + at(i, j), 0) / live.length;
+      return Math.sqrt(live.reduce((t, i) => t + (at(i, j) - mean) ** 2, 0) / live.length);
+    });
+    const dist = (i, k) => live.reduce((t, j, c) => (sd[c] > 0 ? t + Math.abs(at(i, j) - at(k, j)) / sd[c] : t), 0);
+    const stats = live.map((i) => {
+      let div = Infinity;
+      for (const k of live) if (k !== i) div = Math.min(div, dist(i, k));
+      const avg = live.reduce((t, j) => t + at(i, j), 0) / (live.length - 1);
+      return { index: i, name: names[i], avg, div, score: avg * div };
+    });
+    let worst = 0;
+    for (let c = 1; c < stats.length; c++) if (stats[c].score <= stats[worst].score) worst = c;
+    out.unshift(stats[worst]);
+    live.splice(worst, 1);
+    if (live.length === 1) out.unshift(stats.find((x) => x.index === live[0]));
+  }
+  if (live.length === 1 && !out.length) out.push({ index: 0, name: names[0], avg: 0, div: 0, score: 0 });
   return out.map((r, k) => ({ rank: k + 1, ...r }));
 }

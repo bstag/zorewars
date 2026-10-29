@@ -50,10 +50,13 @@ export async function roundRobin(pool, warriors, { rounds = 50, seed = 1, settin
 export const POINTS_READINGS = ['sd', 'eq6'].flatMap((metric) => [false, true].flatMap((self) =>
   ['original', 'current'].map((field) => ({ features: 'points', metric, self, field }))));
 
-// Median place of each of `entries` (indices) over those readings.
-export function medianPlaces(scores, results, names, entries) {
+// The tournament runner's own rule: one reading, so no median is needed.
+export const OFFICIAL_READINGS = [{ rule: 'official' }];
+
+// Median place of each of `entries` (indices) over `readings`.
+export function medianPlaces(scores, results, names, entries, readings = OFFICIAL_READINGS) {
   const per = entries.map(() => []);
-  for (const v of POINTS_READINGS) {
+  for (const v of readings) {
     const r = pushOff(scores, names, { ...v, results });
     entries.forEach((e, k) => per[k].push(r.find((x) => x.index === e).rank));
   }

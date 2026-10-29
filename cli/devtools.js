@@ -361,8 +361,11 @@ export async function cmdPushoff(args, h) {
   const { compile } = await import('../src/engine/index.js');
   const json = !!args.flags.json;
   const settings = h.settingsFrom(args.flags);
-  // How the push-off reads the announcement (see src/engine/pushoff.js).
-  const variant = { features: args.flags.features ?? 'points', metric: args.flags.metric ?? 'sd', self: !!args.flags.self, field: args.flags.field ?? 'original' };
+  // The runner's rule by default; --rule announcement takes the older readings
+  // of the announcement (see src/engine/pushoff.js).
+  const rule = args.flags.rule ?? 'official';
+  if (!['official', 'announcement'].includes(rule)) h.usage('pushoff --rule official|announcement');
+  const variant = rule === 'official' ? { rule } : { features: args.flags.features ?? 'points', metric: args.flags.metric ?? 'sd', self: !!args.flags.self, field: args.flags.field ?? 'original' };
   const show = (all, scores, results) => {
     const ranked = pushOff(scores, all.map((x) => x.name), { ...variant, results }).map((r) => ({ ...r, entry: all[r.index].entry }));
     if (json) { console.log(JSON.stringify({ ok: true, variant, ranking: ranked.map(({ index, ...r }) => r) }, null, 2)); return; }
@@ -377,7 +380,7 @@ export async function cmdPushoff(args, h) {
     show(saved.warriors, saved.scores, saved.results);
     return;
   }
-  if (!args._.length || !args.flags.hill) h.usage('pushoff <entry...> --hill koenigstuhl:94nop|88|lp|94x (or a folder) [--rules NAME] [--length 50] [--top 50] [--rounds 50] [--features points|wlt|wl] [--metric sd|eq6|euclid] [--self] [--field original|current] [--save file] | pushoff --load file');
+  if (!args._.length || !args.flags.hill) h.usage('pushoff <entry...> --hill koenigstuhl:94nop|88|lp|94x (or a folder) [--rules NAME] [--length 50] [--top 50] [--rounds 50] [--rule official|announcement] [--features points|wlt|wl] [--metric sd|eq6|euclid] [--self] [--field original|current] [--save file] | pushoff --load file');
   const entries = await h.loadAll(h.expandRefs(args._), settings, json);
   const hillSettings = hillSettingsFor(settings);
   const top = Math.max(2, parseInt(args.flags.top ?? '50', 10));

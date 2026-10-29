@@ -49,7 +49,9 @@ export async function cmdEvolveBlocks(args, h, { quiet, battlePool, hillOpponent
   if (f.hill) Object.assign(settings, hillSettingsFor(settings));
   // --partner a.red,b.red: our other entries, ranked beside each candidate.
   const partners = f.partner ? await h.loadAll(h.expandRefs(String(f.partner).split(',')), entrySettings, !!f.json) : [];
-  const kings = f.king ? await h.loadAll(h.expandRefs(String(f.king).split(',')), entrySettings, !!f.json) : [];
+  // Kings are only opponents here (blocks take no Redcode genes), so hill
+  // warriors longer than the entry limit can start the Red Queen too.
+  const kings = f.king ? await h.loadAll(h.expandRefs(String(f.king).split(',')), hillSettingsFor({ ...RULESETS[rules] }), !!f.json) : [];
   const heldOut = f.classics ? await classicOpponents(settings) : [];
   const out = path.resolve(f.out ?? 'evolved/blocks');
   if (fs.existsSync(out) && fs.readdirSync(out).length) h.usage('Use an empty output directory to preserve experiment history');

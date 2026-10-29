@@ -9,6 +9,7 @@ import { createPool, libraryOpponents, strip } from '../tools/hill.js';
 import { evolve } from '../tools/evolve.js';
 import { crossover, genomeOf, randomGenome, toRedcode } from '../tools/genes.js';
 import { trainingProfiles, validateCandidates } from '../tools/training.js';
+import { POINTS_READINGS } from '../tools/pushoff.js';
 
 const settings = { ...DEFAULT_SETTINGS, coreSize: 80, maxLength: 10, minDistance: 10, maxCycles: 1000, maxProcesses: 16, pSpace: false };
 const imp = compile('MOV.I 0, 1', 'redcode', settings);
@@ -226,7 +227,9 @@ test('push-off validation promotes a lower-point specialist and replays a shared
     const n = task.settings.rounds;
     return { w: win ? n : 0, l: lose ? n : 0, t: !win && !lose ? n : 0, smooth: n };
   } };
-  const r = await validateCandidates({ pool, settings, objective: 'pushoff', seed: 41, seeds: 3, rounds: 10,
+  // The announcement's readings, where a clone of the partner is at distance 0;
+  // under the runner's rule the diagonal zero keeps clones apart in a field this small.
+  const r = await validateCandidates({ pool, settings, objective: 'pushoff', seed: 41, seeds: 3, rounds: 10, readings: POINTS_READINGS,
     baseline: { g: genomeOf(warrior(0)) }, candidates: [{ g: genomeOf(warrior(1)) }], partners: [warrior(2)],
     field: [3, 4].map((kind) => ({ name: `Probe ${kind}`, group: 'test', w: strip(warrior(kind)) })) });
   assert.equal(r.objective, 'pushoff');
