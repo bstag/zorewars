@@ -41,7 +41,7 @@ Developer tools (use every CPU core):
                                                      (processes x cells executed); none = the library
   zorewars tune <warrior.js> [--candidates 40] [--seeds 3] [--write]
                                                      search the warrior's // SPACE for better constants
-  zorewars evolve [warrior...] [--generations 6] [--king w.js] [--genome 40] [--scratch] [--ties 0.5] [--out evolved]
+  zorewars evolve [warrior...] [--generations 6] [--king w.js] [--genome 40] [--scratch] [--ties 0.5] [--league] [--out evolved]
                                                      breed warriors with MAP-Elites or a population GA
   zorewars train [warrior...] [--profiles 94nop,88,lp,94x|all] [--algorithm ga|map-elites] [--out evolved/training]
                                                      train and validate a separate warrior per profile
@@ -120,7 +120,7 @@ function parseArgs(argv) {
     const a = argv[i];
     if (a.startsWith('--')) {
       const key = a.slice(2);
-      if (['json', 'help', 'report', 'classics', 'write', 'scratch', 'self', 'validate'].includes(key)) args.flags[key] = true;
+      if (['json', 'help', 'report', 'classics', 'write', 'scratch', 'self', 'validate', 'league'].includes(key)) args.flags[key] = true;
       else args.flags[key] = argv[++i];
     } else if (a === '-h') args.flags.help = true;
     else if (/^-[A-Za-z]$/.test(a) && PMARS_FLAGS[a[1]]) args.flags[PMARS_FLAGS[a[1]]] = argv[++i];

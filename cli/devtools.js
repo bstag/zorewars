@@ -219,6 +219,13 @@ export async function cmdEvolve(args, h, { quiet = false } = {}) {
   const partners = args.flags.partner ? await h.loadAll(h.expandRefs(String(args.flags.partner).split(',')), settings, json) : [];
   if (partners.length && objective !== 'pushoff') h.usage('--partner needs --objective pushoff');
   const fieldRounds = integer('field-rounds', 50);
+  // --league: breed exploiters (beat the latest champion) and league
+  // exploiters (beat the whole league) beside the main warriors.
+  const league = !!args.flags.league;
+  if (league && (scratch || descriptor !== 'species')) h.usage('--league needs the gene pool and species niches: not with --scratch or --descriptor outcomes');
+  const exploitWin = Number(args.flags['exploit-win'] ?? 2);
+  if (!Number.isFinite(exploitWin)) h.usage('--exploit-win takes a number of points per round');
+  const exploitAge = integer('exploit-age', 6);
   const maxLength = Math.min(settings.maxLength, integer('genome', 40));
   const entrySettings = { ...settings };
   if (hill) Object.assign(settings, hillSettingsFor(settings));   // genomes keep the entry limit above
@@ -231,18 +238,22 @@ export async function cmdEvolve(args, h, { quiet = false } = {}) {
     const r = await evolve({
       pool, sources, opponents: field, heldOut, settings, entrySettings, rounds: generations, batches, batchSize,
       maxLength, kings, scratch, seed, algorithm, objective, evalRounds, populationSize, tieValue, partners, fieldRounds,
-      selection, epsilon, descriptor, archiveSize, localSteps,
+      selection, epsilon, descriptor, archiveSize, localSteps, league, exploitWin, exploitAge,
       onLog: (t) => progress(json, t),
       onRound: (rec) => {
         done(json);
         const c = rec.champion;
         const file = path.join(out, `redqueen-${rec.round}.red`);
         fs.writeFileSync(file, toRedcode(c.g, { name: c.name, coreSize: settings.coreSize, geo, dialect: settings.dialect, strategy: `Champion of Red Queen generation ${rec.round} (zorewars evolve): ${c.species.hint}, ${c.species.processes} processes, ${c.species.coverage} cells.` }));
+        for (const [x, prefix, what] of [[rec.exploiter, 'exploiter', 'exploiter: beats the champion before it'], [rec.leagueExploiter, 'league', 'league exploiter: beats the league']]) {
+          if (x) fs.writeFileSync(path.join(out, `${prefix}-${rec.round}.red`), toRedcode(x.g, { name: x.name, coreSize: settings.coreSize, geo, dialect: settings.dialect, strategy: `Generation ${rec.round} ${what} (zorewars evolve --league): ${x.species.hint}.` }));
+        }
         if (json) return;
         const vs = c.vsAncestors ? ` | vs ancestors ${(c.vsAncestors.reduce((s, x) => s + x.pts, 0) / c.vsAncestors.length).toFixed(2)} pts/round` : '';
         const held = c.heldOut ? ` | held-out ${scratch ? 'library' : 'classics'} ${c.heldOut.score.toFixed(2)}` : '';
         const fitText = c.places ? `push-off place ${c.places[0]}${c.places.length > 1 ? ` (partners ${c.places.slice(1).join(', ')})` : ''}` : `fitness ${c.fit.toFixed(2)}`;
-        console.log(`generation ${rec.round}: ${rec.cells} ${algorithm === 'ga' ? 'population members' : `${descriptor} cells`} (${rec.placed} archive updates) | champion ${fitText}, ${c.species.hint}, ${c.g.code.length} instructions${vs}${held}  -> ${file}`);
+        const side = rec.exploiter ? ` | exploiter ${rec.exploiter.fit.toFixed(2)}${rec.exploiter.restart ? ' (restarts)' : ''}, league exploiter ${rec.leagueExploiter.fit.toFixed(2)}` : '';
+        console.log(`generation ${rec.round}: ${rec.cells} ${algorithm === 'ga' ? 'population members' : `${descriptor} cells`} (${rec.placed} archive updates) | champion ${fitText}, ${c.species.hint}, ${c.g.code.length} instructions${vs}${held}${side}  -> ${file}`);
       },
     });
     for (const x of r.archive) {

@@ -28,6 +28,17 @@ Compare each cut-down version with its original against the same field, to
 see what the quickscan and the padding are worth. Hill warriors remain
 opponents only, never genes.
 
+First result (29 hill warriors, each rewritten without its quickscan,
+without its empty spacing, and without both; 2 seeds x 50 rounds): against
+the originals they average 1.33 points per round, 1.24 without the
+quickscan, 1.31 without the spacing and 1.24 without both. The quickscan is
+worth about 0.09; the spacing about 0.02, within noise (identical code
+differed by up to 0.05), though a few warriors lose 0.07-0.2 without it.
+Empty cells can't fool a scanner, which looks for non-empty ones; what
+spacing does is keep components apart. Every rewrite fit 50 instructions
+(9 to 50). Small evolved warriors placed one or two places higher against
+the rewritten field than against the originals.
+
 ## 2. A league instead of a single Red Queen
 
 Three populations, as in AlphaStar's league:
@@ -39,6 +50,11 @@ Three populations, as in AlphaStar's league:
 Main warriors train against the exploiters as well as the field, so their
 weaknesses are found before a real opponent finds them, without the
 overfitting of a fixed set of kings.
+
+Built as `evolve --league` (see AGENTS.md): main warriors must beat the
+field and the latest ten exploiters of each kind; exploiters start over from
+the gene pool once one beats the main champion by `--exploit-win` points per
+round or after `--exploit-age` generations.
 
 ## 3. Evolve a pair as one genome
 
