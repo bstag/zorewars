@@ -1,0 +1,238 @@
+// The behaviour gate for trees (docs/block-algebra.md): run the warrior alone
+// and watch every block do what its contract says. Two shapes are checked:
+// a chain (openings, then a clear) and bodies (one, or several side by side),
+// either one booted or with decoys. Other shapes are refused until their
+// checks exist, so evolution can't admit code nobody has watched.
+// Passing means the warrior behaves when alone; it says nothing about how it fights.
+import { compile, VM } from '../../src/engine/index.js';
+import { leaves } from './leaves.js';
+import { link } from './link.js';
+
+const isLeaf = (node) => Object.hasOwn(leaves, node.id);
+const parOrder = (kids) => [...kids].sort((a, b) => (leaves[a.id]?.layout === 'last') - (leaves[b.id]?.layout === 'last'));
+
+// The running part of a tree, and the boot around it, if any.
+function unwrap(root) {
+  let node = root, boot = null;
+  if (node.id === 'image') node = node.kids[0];
+  if (node.id === 'boot') { boot = node; node = node.kids[0]; }
+  return { main: node, boot };
+}
+
+export function shapeOf(root) {
+  const { main } = unwrap(root);
+  const last = main.id === 'seq' ? main.kids.at(-1) : main;
+  const fin = last.id === 'relocate' ? last.kids[0] : last;
+  const openings = main.id === 'seq' ? main.kids.slice(0, -1) : [];
+  if (isLeaf(fin) && leaves[fin.id].kind === 'finisher' && (main === fin || (openings.length === 1 && isLeaf(openings[0]) && leaves[openings[0].id].kind === 'opening'))) return 'chain';
+  if ((isLeaf(main) && leaves[main.id].kind === 'body') || (main.id === 'par' && main.kids.every((k) => isLeaf(k) && leaves[k.id].kind === 'body'))) return 'bodies';
+  return 'unchecked';
+}
+
+export function gate(built) {
+  const shape = shapeOf(built.root);
+  if (shape === 'chain') return checkChain(built);
+  if (shape === 'bodies') return checkBodiesTree(built);
+  throw new Error('No gate for this shape yet');
+}
+
+const sameIns = (core) => {
+  const norm = (x) => ((x % core) + core) % core;
+  return (a, b) => ['op', 'mod', 'aMode', 'bMode'].every((k) => a[k] === b[k]) && norm(a.a) === norm(b.a) && norm(a.b) === norm(b.b);
+};
+
+function checkChain(built) {
+  const { w, settings, root, labels, spans, total } = built;
+  const core = settings.coreSize, norm = (x) => ((x % core) + core) % core, same = sameIns(core);
+  const { main, boot } = unwrap(root);
+  const members = main.id === 'seq' ? main.kids : [main];
+  const last = members.at(-1), relocated = last.id === 'relocate' ? last : null;
+  const fin = relocated ? relocated.kids[0] : last, F = leaves[fin.id], P = fin.P;
+  const opening = members.length > 1 ? members.at(-2) : null;
+  const at = (node, local) => labels[node.ns + local];
+  const counted = F.protects === 'self';
+  const fin0 = spans[fin.ns].start, finLen = spans[fin.ns].size, runnable = fin0 + finLen;
+  const span = boot ? spans[main.ns].size : total;
+  const [protStart, protLen] = counted ? [fin0, finLen] : [spans[main.ns].start, span];
+  // Fields each block may change while the clear runs.
+  const mutable = {};
+  const collect = (node) => {
+    if (isLeaf(node)) for (const [label, fields] of leaves[node.id].mutable ?? []) mutable[at(node, label)] = fields;
+    for (const k of node.kids ?? []) collect(k);
+  };
+  collect(counted ? fin : main);
+  const stunPc = at(fin, F.writers.stun), killPc = at(fin, F.writers.kill);
+  const expectedStuns = !P.PHASE ? 0 : P.PHASE === 2 ? core - (counted ? finLen : span) : P.STUN;
+  const timed = opening && (opening.id === 'opening-bomber' || opening.id === 'opening-bscan');
+  const probeIdx = opening ? at(opening, 'probe') : null;
+  const expectedAttacks = opening?.id === 'opening-bomber' ? leaves['opening-bomber'].expectedAttacks(opening.P, settings) : null;
+  const hop = boot ? boot.P.HOP : 0;
+
+  function run(base, { inject = [], untilEntry = false } = {}) {
+    const vm = new VM(settings); vm.load([w], { positions: [base] });
+    for (const [a, ins] of inject) vm.poke(a, ins);
+    const dest = norm(base + hop);
+    const finAt = relocated ? norm(dest + probeIdx + relocated.P.HOP) : norm(dest + fin0);
+    const addr = (i) => norm(finAt - fin0 + i);
+    const protAddr = counted ? finAt : norm(dest + protStart);
+    const inProtected = (c) => norm(c - protAddr) < protLen;
+    const intact = () => {
+      for (let i = 0; i < protLen; i++) {
+        const k = protStart + i, x = w.instructions[k], cell = { ...vm.peek(protAddr + i) };
+        for (const f of mutable[k] ?? []) cell[f] = x[f];
+        if (!same(x, cell)) return false;
+      }
+      return true;
+    };
+    let attacks = 0;
+    const attackAt = opening && at(opening, 'attackWrite') !== undefined ? norm(dest + at(opening, 'attackWrite')) : -1;
+    while (!vm.done && vm.processes(0)[0] !== finAt && vm.cycle < settings.maxCycles) {
+      if (vm.step()?.pc === attackAt) attacks++;
+    }
+    if (vm.processes(0)[0] !== finAt) throw new Error('The finisher was never entered');
+    if (!intact()) throw new Error('The finisher did not arrive intact');
+    if (timed && vm.peek(dest + at(opening, 'clock')).b !== 0) throw new Error('The opening left before its timer ran out');
+    const probeB = probeIdx === null ? null : vm.peek(dest + probeIdx).b;
+    const arrivedAt = vm.cycle;
+    if (untilEntry) return { vm, dest, probeB, attacks };
+    if (expectedAttacks !== null && attacks !== expectedAttacks) throw new Error('The bomber missed its expected bombs');
+
+    // The first clear write and the stun-to-DAT transition.
+    const ptrAt = counted ? addr(at(fin, F.pointer)) : norm(dest + probeIdx);
+    const expectedFirst = counted ? norm(P.BACKWARD ? finAt - 1 : finAt + finLen) : norm(dest + probeIdx + (probeB >= span ? probeB : span));
+    let stuns = 0, firstWrite = null, firstDat = null;
+    while (!vm.done && firstDat === null && vm.cycle < settings.maxCycles) {
+      const pc = vm.processes(0)[0], writing = pc === addr(stunPc) || pc === addr(killPc);
+      const target = writing ? norm(ptrAt + vm.peek(ptrAt).b + (counted && P.BACKWARD ? -1 : 0)) : null;
+      vm.step();
+      if (!writing) continue;
+      const stun = pc === addr(stunPc);
+      if (inProtected(target) || vm.writerPc[target] !== pc || vm.peek(target).op !== (stun ? 'SPL' : 'DAT')) throw new Error('A clear write broke its contract');
+      if (firstWrite === null && (firstWrite = target) !== expectedFirst) throw new Error('The clear did not start where its contract says');
+      if (stun) stuns++; else firstDat = target;
+    }
+    if (firstDat === null || stuns !== expectedStuns) throw new Error('Incorrect stun phase');
+    vm.run();
+    if (!vm.warriors[0].alive || vm.cycle !== settings.maxCycles || vm.warriors[0].peak !== 1) throw new Error('Solo/process contract failed');
+    if (!intact()) throw new Error('The clear damaged protected code');
+    for (let c = 0; c < core; c++) if (!inProtected(c) && vm.writeCycle[c] < arrivedAt) throw new Error('The clear left cells untouched');
+    return { base, arrivedAt, attacks, firstWrite, stunWrites: stuns, survives: true };
+  }
+
+  const observations = [];
+  const bases = [0, core - 7];
+  const moves = relocated ?? boot;
+  if (moves) bases.push(norm(core - moves.P.HOP - Math.ceil(runnable / 2)));   // the copy wraps the end of core
+  for (const base of bases) observations.push(run(base));
+
+  // Scanners must react to what they find.
+  const marker = { op: 'DAT', mod: 'F', aMode: '#', a: 1, bMode: '#', b: 123 };
+  const inImage = (c) => norm(c) < total;
+  if (opening?.id === 'opening-bscan') {
+    const dest = norm(hop), a = norm(dest + settings.maxLength + opening.P.STEP);
+    if (!inImage(a)) {
+      const r = run(0, { inject: [[a, marker]], untilEntry: true });
+      if (r.attacks < 1 || r.vm.peek(a).op !== 'SPL') throw new Error('The B-scan ignored what it found');
+      observations.push({ scenario: 'bscan-hit', at: a, attacks: r.attacks });
+    }
+  }
+  if (opening?.id === 'opening-cmpscan') {
+    const Q = opening.P, dest = norm(hop);
+    for (let k = 1; k <= Q.SCANS; k++) {
+      const a = norm(Q.START + k * Q.SSTEP), b = norm(Q.START + Q.GAP + k * Q.SSTEP);
+      if (inImage(dest + a) || inImage(dest + b)) break;                     // earlier probes would see our own image
+      if (a < span || b < span) continue;                                    // the guard skips these
+      const hit = run(0, { inject: [[dest + a, marker]], untilEntry: true });
+      if (hit.probeB !== a) throw new Error('The comparison scan handed on the wrong cell');
+      const even = run(0, { inject: [[dest + a, marker], [dest + b, marker]], untilEntry: true });
+      if (even.probeB === a) throw new Error('The comparison scan stopped on an equal pair');
+      observations.push({ scenario: 'cmpscan-hit', probe: k, handedOn: a });
+      break;
+    }
+  }
+  return { ok: true, shape: 'chain', scope: 'openings then a clear; three load positions; full solo rounds; scanner hits', observations };
+}
+
+// Bodies: each one alone first (when there are several), then all together.
+function checkBodiesTree(built) {
+  const { root, settings } = built;
+  const { main } = unwrap(root);
+  const observations = [];
+  if (main.id === 'par') for (const kid of main.kids) {
+    const alone = link({ id: kid.id, P: kid.P }, settings);
+    const w = compile(alone.source, 'redcode', settings);
+    if (!w.ok) throw new Error(JSON.stringify(w.errors));
+    observations.push({ alone: kid.id, ...checkBodies({ ...alone, w, settings }).observations[0] });
+  }
+  observations.push(...checkBodies(built).observations);
+  return { ok: true, shape: 'bodies', scope: 'each body alone, then together; two load positions; full solo rounds (20,000 cycles with paper)', observations };
+}
+
+function checkBodies({ w, settings, root, labels, spans }) {
+  if (!w?.ok) throw new Error('Bodies did not assemble');
+  const core = settings.coreSize, norm = (x) => ((x % core) + core) % core, same = sameIns(core);
+  const { main, boot } = unwrap(root);
+  const parts = main.id === 'par' ? parOrder(main.kids) : [main];
+  const alone = parts.length === 1, checkpoint = 1000, hop = boot ? boot.P.HOP : 0;
+  const L = (node, local) => labels[node.ns + local];
+  // Paper fills the process table; simulating it to the cycle limit costs minutes
+  // on 94x. By this horizon it has spread over hundreds of copies.
+  const horizon = parts.some((p) => p.id === 'paper') ? Math.min(settings.maxCycles, 20000) : settings.maxCycles;
+  const observations = [];
+  for (const base of [0, core - 7]) {
+    const vm = new VM(settings); vm.load([w], { positions: [base] });
+    const dest = norm(base + hop);
+    const at = (node, local) => norm(dest + L(node, local));
+    const inImage = (c) => norm(c - base) < w.instructions.length || norm(c - dest) < w.instructions.length;
+    const fangs = parts.map(() => 0), stoneCells = parts.map(() => new Set());
+    const paperCode = parts.map((p) => (p.id === 'paper' ? w.instructions.slice(L(p, 'pSilk') + 1, L(p, 'pSilk') + 5) : []));
+    while (!vm.done && vm.cycle < horizon) {
+      const pc = vm.processes(0)[0];
+      // A fang must aim at the pit while the vampire's step is intact; a stone's bomb must land.
+      const pending = parts.map((p) => {
+        if (p.id === 'vampire' && pc === at(p, 'vMov') && same(vm.peek(at(p, 'vStep')), w.instructions[L(p, 'vStep')])) return norm(at(p, 'vFang') + vm.peek(at(p, 'vFang')).b);
+        if (p.id === 'stone' && pc === at(p, 'tMov')) return norm(at(p, 'tBomb') + vm.peek(at(p, 'tBomb')).b);
+        return null;
+      });
+      vm.step();
+      parts.forEach((p, i) => {
+        const t = pending[i];
+        if (t === null) return;
+        if (p.id === 'stone') { stoneCells[i].add(t); return; }
+        if (inImage(t)) return;
+        const fang = vm.peek(t);
+        if (fang.op !== 'JMP' || norm(t + fang.a) !== at(p, 'vPit')) throw new Error('A fang does not lead to the pit');
+        fangs[i]++;
+      });
+      if (vm.cycle === checkpoint) {
+        // Every body must still be running: a process in its code (or, for moving bodies, in a copy of it).
+        const running = vm.processes(0).map((q) => vm.peek(q));
+        const healthy = parts.map((p, i) => {
+          if (p.id === 'spiral') return running.some((x) => same(x, w.instructions[L(p, 'iImp')]));
+          if (p.id === 'paper') return running.some((x) => paperCode[i].some((y) => same(x, y)));
+          const { start, size } = spans[p.ns];
+          return vm.processes(0).some((q) => norm(q - dest - start) < size);
+        });
+        if (healthy.includes(false)) throw new Error(`A body stopped running: ${parts.filter((_, i) => !healthy[i]).map((p) => p.id).join(', ')}`);
+      }
+    }
+    if (!vm.warriors[0].alive || vm.cycle !== horizon) throw new Error('The warrior did not survive alone');
+    const result = { base, processes: vm.processes(0).length, peak: vm.warriors[0].peak };
+    if (alone) {
+      const p = parts[0];
+      if ((p.id === 'stone' || p.id === 'vampire') && vm.warriors[0].peak !== 1) throw new Error('A one-process body split');
+      if (p.id === 'stone' && stoneCells[0].size < 100) throw new Error('The stone bombs too few cells');
+      if (p.id === 'vampire' && fangs[0] < 100) throw new Error('The vampire drops too few fangs');
+      if (p.id === 'spiral' && vm.processes(0).length !== 2 ** p.P.SK - 1) throw new Error('The spiral lost processes on its own');
+      if (p.id === 'paper') {
+        let copies = 0;
+        for (let c = 0; c < core; c++) if (!inImage(c) && paperCode[0].every((x, i) => same(x, vm.peek(c + i)))) copies++;
+        if (copies < 3) throw new Error('The paper made too few copies');
+        result.copies = copies;
+      }
+      Object.assign(result, { fangs: fangs[0], stoneCells: stoneCells[0].size });
+    }
+    observations.push(result);
+  }
+  return { observations };
+}
