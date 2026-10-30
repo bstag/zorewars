@@ -27,7 +27,7 @@ const ours = (api, local) => api.same(api.vm.peek(api.at(local)), api.code(local
 // meets its own clear. It moves alone: whatever else the warrior holds is
 // left behind at the first leap.
 const leap = {
-  id: 'leap', kind: 'body', exit: 'never', processes: 1, writes: 'core', roams: true,
+  id: 'leap', kind: 'body', exit: 'never', processes: 1, writes: 'core', roams: true, moves: true,
   purpose: 'Anti-clear: watches a sentinel SENT cells below and above the warrior; when a clear\'s front writes one, copies itself HOP cells the other way (behind the front) and runs there; meanwhile clears the core one cell per lap.',
   params: { SENT: [16, 200], HOP: [200, 20000] }, entry: 'first', loop: 'loop',
   provides: { datBomb: 'kill' },

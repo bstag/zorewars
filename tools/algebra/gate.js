@@ -8,7 +8,8 @@
 // Passing means the warrior behaves when alone; it says nothing about how it fights.
 import { compile, VM } from '../../src/engine/index.js';
 import { leaves } from './leaves.js';
-import { link, iface, entryOf } from './link.js';
+import { link, iface, entryOf, switchChoice } from './link.js';
+import { makeGeometry } from '../../src/engine/geometry.js';
 
 const isLeaf = (node) => Object.hasOwn(leaves, node.id);
 const parOrder = (kids) => [...kids].sort((a, b) => (leaves[a.id]?.layout === 'last') - (leaves[b.id]?.layout === 'last'));
@@ -249,25 +250,33 @@ function checkBodies({ w, settings, root, labels, spans }) {
 
 // Where each block runs: one entry per copy, as an offset from the load address,
 // with what the gate expects of it.
-function instances(root, labels, spans) {
+function instances(root, labels, spans, settings) {
   const out = [];
+  const geo = makeGeometry(settings);
+  const vec = (x, y = 0, z = 0) => (geo ? geo.encode(x, y, z) : x);
+  const plus = (a, b) => (geo ? geo.add(a, b) : a + b);
   const walk = (node, shifts, flags) => {
     if (isLeaf(node)) { for (const shift of shifts) out.push({ node, shift, ...flags }); return; }
     const k = node.kids;
     switch (node.id) {
-      case 'boot': walk(k[0], shifts.map((s) => s + node.P.HOP), flags); if (k[1]) walk(k[1], shifts, flags); break;
+      case 'boot': walk(k[0], shifts.map((s) => plus(s, vec(node.P.HOP, node.P.HOPY, node.P.HOPZ))), flags); if (k[1]) walk(k[1], shifts, flags); break;
       case 'relocate': {
         const probe = labels[node.probeLabel];
         walk(k[0], shifts.map((s) => s + probe + node.P.HOP - spans[k[0].ns].start), flags);
         break;
       }
-      case 'apart': walk(k[0], shifts, flags); walk(k[1], shifts.map((s) => s + node.P.D), flags); break;
-      case 'copies': walk(k[0], shifts.flatMap((s) => Array.from({ length: node.P.N }, (_, i) => s + i * node.P.D)), flags); break;
+      case 'apart': walk(k[0], shifts, flags); walk(k[1], shifts.map((s) => plus(s, vec(node.P.D, node.P.DY, node.P.DZ))), flags); break;
+      case 'copies': walk(k[0], shifts.flatMap((s) => Array.from({ length: node.P.N }, (_, i) => plus(s, vec(i * node.P.D, i * node.P.DY, i * node.P.DZ)))), flags); break;
       case 'trigger':
         walk(k[0], shifts, { ...flags, mayStop: true });
         walk(k[1], shifts, { ...flags, ...(node.P.MODE ? { optional: true, triggered: node.ns } : {}) });
         break;
       case 'switch': k.forEach((kid, i) => walk(kid, shifts, { ...flags, optional: true, branch: `${node.ns}:${i}` })); break;
+      case 'classify':
+        walk(k[0], shifts, { ...flags, mayStop: true });
+        walk(k[1], shifts, { ...flags, optional: true, branch: `${node.ns}:1` });
+        walk(k[2], shifts, { ...flags, optional: true, branch: `${node.ns}:2` });
+        break;
       default: for (const kid of k) walk(kid, shifts, flags);
     }
   };
@@ -286,10 +295,23 @@ function scenarios(root, labels, settings) {
       out.push({ name: `trigger ${node.P.MODE === 1 ? 'marker' : 'damage'} hit`, at: 200, poke: labels[target], expect: node.ns });
     }
     if (node.id === 'switch') {
-      const ps = (result, choice) => { const p = VM.freshPSpace(settings); p[0] = result; p[node.P.CELL] = choice; return p; };
-      out.push({ name: 'switch: first round', pspace: ps(-1, 0), branch: `${node.ns}:0` });
-      out.push({ name: 'switch: won last round', pspace: ps(1, 1), branch: `${node.ns}:1` });
-      out.push({ name: 'switch: lost last round', pspace: ps(0, 0), branch: `${node.ns}:1` });
+      // Every kind of history, against the model of the emitted code.
+      const n = node.kids.length, { POLICY, CELL } = node.P;
+      for (const [result, choice, losses] of [[-1, 0, 0], [1, 1, 0], [0, 0, 0], [0, 0, 1], [0, n - 1, 1], [1, n - 1, 1], [2, 1, 0]]) {
+        const p = VM.freshPSpace(settings); p[0] = result; p[CELL] = choice; p[CELL + 1] = losses;
+        const pick = switchChoice(POLICY, n, result, choice, losses);
+        out.push({ name: `switch: result ${result}, choice ${choice}, losses ${losses}`, pspace: p, branch: `${node.ns}:${pick}` });
+      }
+    }
+    if (node.id === 'classify') {
+      const zero = { op: 'DAT', mod: 'F', aMode: '#', a: 0, bMode: '#', b: 0 };
+      const code = { op: 'MOV', mod: 'I', aMode: '$', a: 0, bMode: '$', b: 1 };
+      out.push({ name: 'classify: hit by a zero DAT', at: 200, poke: labels[node.ns + 'mark'], ins: zero, branch: `${node.ns}:1` });
+      out.push({ name: 'classify: hit by copied code', at: 200, poke: labels[node.ns + 'mark'], ins: code, branch: `${node.ns}:2` });
+    }
+    if (node.id === 'restart') {
+      const loop = labels[node.kids[0].ns + leaves[node.kids[0].id].loop];
+      out.push({ name: 'restart: loop damaged', at: 200, poke: loop, restored: loop });
     }
     for (const k of node.kids ?? []) walk(k);
   };
@@ -300,46 +322,76 @@ function scenarios(root, labels, settings) {
 function checkGeneric(built) {
   const { w, settings, root, labels, spans, total } = built;
   const core = settings.coreSize, norm = (x) => ((x % core) + core) % core, same = sameIns(core);
-  const all = instances(root, labels, spans).filter((x) => leaves[x.node.id].kind !== 'data');
+  const all = instances(root, labels, spans, settings).filter((x) => leaves[x.node.id].kind !== 'data');
+  // Address arithmetic: plain numbers mod the core on the ring; through the geometry on a torus,
+  // where code runs along a row. `rel(c, from)` is how many cells along the row c is from `from`
+  // (or a large number when it isn't on that row).
+  const geo = makeGeometry(settings);
+  const add = geo ? (a, b) => geo.add(norm(a), norm(b)) : (a, b) => norm(a + b);
+  const rel = geo ? (c, from) => {
+    const [x, y, z] = geo.decode(geo.sub(norm(c), norm(from)));
+    return y || z ? core : ((x % settings.sizeX) + settings.sizeX) % settings.sizeX;
+  } : (c, from) => norm(c - from);
   const shifts = [...new Set([0, ...all.map((x) => x.shift)])];
   const limit = iface(root, settings);
+  const caps = limit.provides;
   const horizon = limit.grows ? Math.min(settings.maxCycles, 20000) : settings.maxCycles;
   const alone = all.length === 1;
   const maxShift = Math.max(...shifts.map(norm));
-  const bases = [0, core - 7, ...(maxShift ? [norm(core - maxShift - Math.ceil(total / 2))] : [])];
+  const bases = geo ? [0, geo.encode(geo.X - 7, Math.floor(geo.Y / 2), 0), geo.encode(-3, geo.Y - 1, (geo.Z || 1) - 1)]
+    : [0, core - 7, ...(maxShift ? [norm(core - maxShift - Math.ceil(total / 2))] : [])];
   const observations = [];
 
   function run(base, scenario) {
     const vm = new VM(settings);
     vm.load([w], { positions: [base], ...(scenario.pspace ? { pspaces: [scenario.pspace] } : {}) });
+    const watchedBy = new Map();
     const watched = all.map((x) => {
-      const def = leaves[x.node.id], at = (local, k = 0) => norm(base + x.shift + labels[x.node.ns + local] + k);
+      const def = leaves[x.node.id], home = add(base, x.shift), at = (local, k = 0) => add(home, labels[x.node.ns + local] + k);
       const { start, size } = spans[x.node.ns];
       // Another copy of a planted block sees its own name, so only the planted one checks the reaction.
-      const name = scenario.plant && scenario.plant !== x.node.ns && scenario.id === x.node.id ? `${scenario.name} (another copy)` : scenario.name;
+      // Copies under `copies` share a namespace: only the first of them is the planted one.
+      const planted = scenario.plant && all.findIndex((y) => y.node.ns === scenario.plant) === all.indexOf(x);
+      const name = scenario.plant && !planted && scenario.id === x.node.id ? `${scenario.name} (another copy)` : scenario.name;
       const api = {
         vm, P: x.node.P, settings, core, norm, same, at, scenario: name,
         total, maxLength: settings.maxLength, mayStop: !!x.mayStop,
-        self: { start: norm(base + x.shift + start), size },      // this copy's own cells
+        self: { start: add(home, start), size },                  // this copy's own cells
         image: { start: norm(base), size: total },                 // the whole warrior as loaded
+        // A fresh round against a real opponent (Redcode text or a compiled warrior), loaded `offset` cells away.
+        duel: (opponent, { offset = Math.floor(core / 2), cycles = settings.maxCycles } = {}) => {
+          const them = typeof opponent === 'string' ? compile(opponent, 'redcode', { ...settings, maxLength: Math.max(settings.maxLength, 100) }) : opponent;
+          if (!them.ok) throw new Error(`duel opponent does not compile: ${them.errors?.[0]?.message}`);
+          const d = new VM(settings); d.load([w, them], { positions: [base, add(base, offset)] });
+          while (!d.done && d.cycle < cycles) d.step();
+          return { vm: d, cycles: d.cycle, ours: d.warriors[0].alive, theirs: d.warriors[1].alive };
+        },
         alone: alone && scenario.name === 'alone',          // alone, and nothing planted
         code: (local, k = 0) => w.instructions[labels[x.node.ns + local] + k],
-        entry: () => norm(base + x.shift + labels[entryOf(x.node)]),
-        inImage: (c) => shifts.some((s) => norm(c - base - s) < total),
-        inSelf: (c) => norm(c - base - x.shift - start) < size,
+        entry: () => add(home, labels[entryOf(x.node)]),
+        inImage: (c) => shifts.some((s) => rel(c, add(base, s)) < total),
+        inSelf: (c) => rel(c, add(home, start)) < size,
+        add, rel, geo,                                              // address arithmetic that works on a torus too
+        // Every live process is inside this copy's own code: it's the only block still running.
+        sole: () => vm.processes(0).every((q) => rel(q, add(home, start)) < size),
+        entered: () => watchedBy.get(x)?.entered ?? false,          // has this copy run yet (a switch may never pick it)
+        // The address of a capability another block provides (as seen from this block's tree).
+        ref: (cap) => { const l = caps.get(cap); return l === undefined ? null : add(base, labels[l]); },
       };
-      return { x, def, api, hooks: def.watch?.(api) ?? {}, entryAt: api.entry(), entered: false, enteredAt: null, checked: false };
+      const v = { x, def, api, hooks: def.watch?.(api) ?? {}, entryAt: api.entry(), entered: false, enteredAt: null, checked: false };
+      watchedBy.set(x, v);
+      return v;
     });
     // Plants: [address, instruction] before the run, or [address, instruction, cycle] at that cycle.
     const later = [];
     if (scenario.plant) {
-      const v = watched.find((u) => u.x.node.ns === scenario.plant);
+      const v = watched.find((u) => u.x.node.ns === scenario.plant);       // the first copy
       for (const [addr, ins, cycle] of v.def.plant(v.api)) if (cycle) later.push([cycle, norm(addr), ins]); else vm.poke(norm(addr), ins);
     }
     const byEntry = new Map();
     for (const v of watched) byEntry.set(v.entryAt, [...(byEntry.get(v.entryAt) ?? []), v]);
     while (!vm.done && vm.cycle < horizon) {
-      if (scenario.poke !== undefined && vm.cycle === scenario.at) vm.poke(norm(base + scenario.poke), { op: 'DAT', mod: 'F', aMode: '#', a: 9, bMode: '#', b: 9 });
+      if (scenario.poke !== undefined && vm.cycle === scenario.at) vm.poke(add(base, scenario.poke), scenario.ins ?? { op: 'DAT', mod: 'F', aMode: '#', a: 9, bMode: '#', b: 9 });
       for (const [cycle, addr, ins] of later) if (vm.cycle === cycle) vm.poke(addr, ins);
       const pc = vm.processes(0)[0];
       for (const v of byEntry.get(pc) ?? []) if (!v.entered) { v.entered = true; v.enteredAt = vm.cycle; }
@@ -357,13 +409,14 @@ function checkGeneric(built) {
       }
     }
     if (!vm.warriors[0].alive || vm.cycle !== horizon) throw new Error(`The warrior did not survive alone (${scenario.name})`);
+    if (scenario.restored !== undefined && !same(vm.peek(add(base, scenario.restored)), w.instructions[scenario.restored])) throw new Error('restart: the damaged loop was not restored');
     if (!limit.grows && vm.warriors[0].peak > limit.processes) throw new Error(`More processes than the blocks declare (${vm.warriors[0].peak} > ${limit.processes})`);
     for (const v of watched) {
       const { x } = v;
       const required = scenario.branch ? (x.branch ? x.branch === scenario.branch : !x.optional)
         : scenario.expect ? !x.optional || x.triggered === scenario.expect : !x.optional;
       if (required && !v.entered) throw new Error(`${x.node.id} was never entered (${scenario.name})`);
-      if (scenario.branch && x.branch && x.branch !== scenario.branch && v.entered) throw new Error(`switch ran the wrong branch (${scenario.name})`);
+      if (scenario.branch && x.branch && x.branch !== scenario.branch && v.entered) throw new Error(`ran the wrong branch (${scenario.name})`);
       v.hooks.final?.();
     }
     return { base, scenario: scenario.name, cycles: vm.cycle, peak: vm.warriors[0].peak };

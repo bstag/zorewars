@@ -17,9 +17,11 @@ function sampleParam([lo, hi], random, near) {
   }
   return lo + Math.floor(random() * (hi - lo + 1));
 }
+const YZ = ['HOPY', 'HOPZ', 'DY', 'DZ'];
+let onTorus = false;                         // set by randomTree/mutate/crossover from the settings
 const sampleParams = (id, random) => {
   const def = definition(id);
-  return Object.fromEntries(Object.entries(def.params).map(([k, r]) => [k, sampleParam(r, random, def.defaults[k])]));
+  return Object.fromEntries(Object.entries(def.params).map(([k, r]) => [k, YZ.includes(k) && !onTorus ? 0 : sampleParam(r, random, def.defaults[k])]));
 };
 const leaf = (id, random) => ({ id, P: sampleParams(id, random) });
 
@@ -47,7 +49,12 @@ function randomShape(settings, random) {
   }
   if (r < 0.37) return wrap({ id: 'apart', P: sampleParams('apart', random), kids: [body(), body()] }, settings, random);
   if (r < 0.45) return wrap({ id: 'copies', P: sampleParams('copies', random), kids: [body()] }, settings, random);
-  if (r < 0.52 && settings.pSpace) return wrap({ id: 'switch', P: sampleParams('switch', random), kids: [body(), body()] }, settings, random);
+  if (r < 0.52 && settings.pSpace) return wrap({ id: 'switch', P: sampleParams('switch', random), kids: Array.from({ length: 2 + Math.floor(random() * 3) }, body) }, settings, random);
+  if (r < 0.58) {                                // a looped block, restarted when hit, or sent one way or another by what hit it
+    const looped = kinds.body.filter((id) => leaves[id].loop);
+    const a = leaf(pick(looped, random), random);
+    return wrap(random() < 0.5 ? { id: 'restart', P: {}, kids: [a] } : { id: 'classify', P: {}, kids: [a, body(), body()] }, settings, random);
+  }
   const n = random() < 0.4 ? 1 : random() < 0.8 ? 2 : 3;
   const bodies = Array.from({ length: n }, body);
   return wrap(n > 1 ? { id: 'par', kids: bodies } : bodies[0], settings, random);
@@ -59,6 +66,7 @@ function wrap(main, settings, random) {
 }
 
 export function randomTree(settings, random, tries = 500) {
+  onTorus = settings.topology === 'torus';
   for (let i = 0; i < tries; i++) {
     const t = randomShape(settings, random);
     if (fits(t, settings)) return t;
@@ -92,10 +100,11 @@ function assemble({ main, boot, decoys }) {
 }
 
 export const MUTATIONS = ['tune', 'swap', 'boot', 'decoys', 'relocate', 'member', 'opening', 'wrap', 'unwrap'];
-const WRAPPERS = ['trigger', 'apart', 'copies', 'switch'];
+const WRAPPERS = ['trigger', 'apart', 'copies', 'switch', 'restart', 'classify'];
 
 // One mutation that keeps the tree legal; returns { tree, op } or null.
 export function mutate(tree, settings, random, tries = 60) {
+  onTorus = settings.topology === 'torus';
   for (let i = 0; i < tries; i++) {
     const op = pick(MUTATIONS, random);
     const t = mutation(op, tree, random);
@@ -112,6 +121,7 @@ function mutation(op, tree, random) {
       if (!tunable.length) return null;
       const { node } = pick(tunable, random), def = definition(node.id);
       const key = pick(Object.keys(def.params), random);
+      if (YZ.includes(key) && !onTorus) return null;
       node.P = { ...def.defaults, ...node.P, [key]: sampleParam(def.params[key], random, node.P?.[key]) };
       return box.root;
     }
@@ -153,7 +163,9 @@ function mutation(op, tree, random) {
     }
     case 'wrap': {                               // put the running part inside a new combinator
       const p = parts(tree), w = pick(WRAPPERS, random), body = () => leaf(pick(kinds.body, random), random);
-      if (w === 'copies') p.main = { id: w, P: sampleParams(w, random), kids: [p.main] };
+      if (w === 'copies' || w === 'restart') p.main = { id: w, P: sampleParams(w, random), kids: [p.main] };
+      else if (w === 'classify') p.main = { id: w, P: {}, kids: [p.main, body(), body()] };
+      else if (w === 'switch' && random() < 0.4) p.main = { id: w, P: sampleParams(w, random), kids: [p.main, body(), body()] };
       else if (w === 'trigger') p.main = { id: w, P: sampleParams(w, random), kids: [p.main, random() < 0.5 ? body() : leaf(pick(kinds.finisher, random), random)] };
       else p.main = { id: w, P: sampleParams(w, random), kids: random() < 0.5 ? [p.main, body()] : [body(), p.main] };
       return assemble(p);
@@ -177,6 +189,7 @@ function mutation(op, tree, random) {
 
 // Swap a subtree of a for one of the same kind from b; returns a legal child or null.
 export function crossover(a, b, settings, random, tries = 20) {
+  onTorus = settings.topology === 'torus';
   const donors = slots(b).all;
   for (let i = 0; i < tries; i++) {
     const { box, all } = slots(a);

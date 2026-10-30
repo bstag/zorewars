@@ -38,12 +38,15 @@ object:
 | `exit` | `next` (control leaves at its end; openings), `never`, or `data` |
 | `link` | Openings: `jump` if control leaves through a link jump the linker adds after it, `fall` if it falls straight into the next block |
 | `processes` | How many it runs at most: a number or `(P) => number`; `grows: true` if it fills the process table (papers) |
-| `writes` | `sparse`, or `core` for a clear (a clear can't share the core with partners) |
+| `writes` | `sparse`, or `core` for a clear (a clear can't share the core with partners); or `(P) => ...` when a parameter decides |
 | `roams`, `layout` | `roams: true` if it runs outside its image (imps, copies); `layout: 'last'` if it writes just ahead of itself and must be laid out last (a spiral) |
 | `loop` | Local label of a cell it runs on every pass of its main loop. `trigger` needs one: it rewrites that cell to hand over |
+| `attacks` | `'all'` if it attacks every non-empty cell but its own (and not its partners'): `par`, `apart` and `copies` refuse it partners |
+| `moves` | `true` if it copies itself elsewhere and leaves its old code (leap, bomb-dodger): `trigger`, `restart` and `classify` refuse it, since their watcher would lose it |
 | `entryFirst` | `false` if `entry` isn't its first cell, so a launcher falling into it needs a jump |
 | `relocatable`, `protects` | Finishers: whether `relocate` may move it; whether its clear spares `self` or the whole `image` |
 | `dialects` | `'94'` if it needs ICWS'94; otherwise it must also write '88 code when `ctx.old` |
+| `topologies` | Where it can run: `['ring']` (the default), `['torus']`, or both. On a torus, code runs along a row and plain numbers are x-steps, so a ring block's steps never leave its row. Torus blocks write vectors (`ctx.vec(x, y, z)` gives `[x,y,z]` operand text) and use `TRN` |
 | `needs`, `provides` | Capabilities: `provides` maps a capability to the local label that holds it (`{ probe: 'probe' }`), or is `(P) => map`. Known ones: `probe` (an opening's pointer; B = the last cell it touched), `datBomb`, `splBomb` (bomb cells to copy). New ones are fine: name them clearly |
 | `mutable` | `[[label, ['a', 'b']], ...]` or `(P) => list`: fields that change while it runs, so the gate doesn't count them as damage |
 | `mismatches(P, settings)` | Reasons it can't be built on these settings: `[]` when it can |
@@ -67,6 +70,7 @@ object:
 - `ctx.mark(name)` labels the next instruction without adding one.
 - `ctx.ref(cap)` is the label of a capability another block provides.
 - `ctx.next` is the label to jump to when an opening hands on.
+- `ctx.torus` (true on a torus), `ctx.geo` (the geometry: `X`, `Y`, `Z`, `encode`, `decode`, `add`), `ctx.vec(x, y, z)` (vector operand text);
 - `ctx.P`, `ctx.old`, `ctx.core`, `ctx.settings`; `ctx.pc()` is the index of the
   next instruction; `ctx.total` is the whole warrior's size and `ctx.span` the
   size of what's protected (both 0 in the measuring pass, real in the second;
@@ -88,8 +92,18 @@ message when the block breaks its contract. `api` has:
 - `self` (`{ start, size }`: this copy's cells), `image` (the whole warrior as loaded), `total`, `maxLength`, `mayStop` (inside a trigger's first member)
 - `code(local, k = 0)`: the compiled instruction at that label (+ k), to compare against
 - `entry()`, `inSelf(c)`, `inImage(c)`, `norm(x)`, `same(a, b)` (instructions equal mod core)
+- `add(a, b)` and `rel(c, from)` (cells along the row from `from` to `c`): address arithmetic
+  that works on a torus as well as the ring; on a torus use them instead of `norm(a + b)`. `geo` is the geometry (null on the ring)
+- `sole()`: every live process is inside this copy's code (it's the only block still
+  running, e.g. a clear after its opening has handed on); `ref(cap)`: the address of a
+  capability another block provides; `entered()`: whether this copy has run yet (under
+  a `switch`, the branch not taken never does)
 - `alone`: true when this block is the whole warrior and nothing is planted; check
   quantities (cells bombed, copies made) only then
+- `duel(opponent, { offset, cycles })`: a fresh round of this warrior against a real
+  opponent (Redcode text or a compiled warrior) loaded `offset` cells away; returns
+  `{ vm, cycles, ours, theirs }` (who is still alive). Use it to test a reaction with
+  a real enemy instead of poking the core
 - `scenario`: the run's name; with `plant`, it is `'<id>: planted target'` for the planted copy and `'<id>: planted target (another copy)'` for any other copy of the same block
 
 The gate itself checks, for every tree: it survives alone to the cycle limit
@@ -120,7 +134,9 @@ under a minute. `node scripts/algebra.js catalog` regenerates the catalog.
 | `trigger(a, b)` | A watcher beside `a`; when it fires it rewrites `a`'s `loop` to jump to `b` | MODE 0: after TIME laps; 1: when its marker is damaged; 2: when `a`'s loop is damaged (a watchdog, which starts `b` itself) |
 | `apart(a, b)` | Copies `b` D cells away and runs it there beside `a` | Neither clears the core; the copy must not overlap |
 | `copies(x)` | N copies of `x`, D cells apart, all running | As `apart` |
-| `switch(a, b)` | Reads P-space: keeps its last choice after a win or tie, flips it after a loss | Only where the rules have P-space (the 94x hill) |
+| `switch(a, b, ...)` | Reads P-space and jumps to one of 2–4 members. POLICY 0: move to the next after a loss; 1: only after two losses in a row; 2: every round | Only where the rules have P-space (the 94x hill). The gate tries every kind of history against a model of the code |
+| `restart(x)` | Backs `x` up at the start; a watcher compares `x`'s `loop` with its original and, when it's damaged, copies the backup back and starts `x` again | `x` has a `loop` and doesn't roam |
+| `classify(a, b, c)` | Runs `a` beside a marker; when the marker is hit, a cell with both fields zero (a clear's or stone's DAT) hands over to `b`, anything else (copied code, a scanner's bomb) to `c` | `a` has a `loop`; '94 only |
 
 ## Linker
 
@@ -158,10 +174,18 @@ rewards shapes it hasn't seen.
    `boot`; the generic gate; 28 more blocks (scanners, stones and bombers,
    clears, papers, imps and gates, capture, sensors and repair); named recipes
    (Compass, one-shot, distributed stones, stone/imp, a watchdog).
-3. Next: the evolution loop over trees, with an archive keyed by behaviour
+3. Done: 19 more blocks (bomb-dodger, airbag stone, fang gate; Blur-style
+   and mirror scanners, a decoding quickscan, an outward clear; a relaunching
+   paper and an imp feeder; '88 versions of the scan-then-clear blocks), the
+   `restart` and `classify` combinators, n-way switches with three P-space
+   policies, and a `duel` helper.
+4. Done: torus and volume support (vector hops, per-axis copy loops,
+   geometry-aware checks) and six torus blocks (vector stone, TRN row sweeper,
+   plane clear, volume paper, torus scanner, column imp).
+5. Next: the evolution loop over trees, with an archive keyed by behaviour
    and by tree shape.
-4. Torus and volume blocks (TRN), once the linker lays code out on a plane.
-5. Not built: `fang-backtrack` (a fang can't record where it ran), a
-   `duel` helper so checks can run a real opponent.
+6. Not built: `fang-backtrack` (a fang can't record where it ran), `ring-paper`
+   (no different from Mice with a fixed step), `parboot` (a warrior runs one
+   instruction a turn however many processes copy, so it isn't faster).
 
 All blocks are written here. Hill warriors are studied, never copied.

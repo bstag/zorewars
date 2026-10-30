@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { compile, mulberry32 } from '../src/engine/index.js';
 import { recipeSettings } from '../tools/blocks/recipes.js';
 import { emitCombo, buildCombo, comboDefaults, comboMismatches } from '../tools/blocks/combo.js';
-import { buildTree, comboToTree, link, treeMismatches, randomTree, mutate, crossover, fits, id, shape, leaves, recipes } from '../tools/algebra/index.js';
+import { buildTree, comboToTree, link, treeMismatches, randomTree, mutate, crossover, fits, id, shape, leaves, recipes, switchChoice, treeSettings } from '../tools/algebra/index.js';
 
 const code = (source, settings) => {
   const w = compile(source, 'redcode', settings);
@@ -104,14 +104,81 @@ test('combinators beyond combo: triggers, spacing, copies, a P-space switch, a f
   }
   const scenarios = (tree, rules) => buildTree(tree, { rules }).verification.observations.map((o) => o.scenario);
   assert.ok(scenarios(cases[1][1], '88').includes('trigger marker hit'));
-  assert.ok(scenarios(cases[5][1], '94x-hill').includes('switch: lost last round'));
+  assert.ok(scenarios(cases[5][1], '94x-hill').includes('switch: result 0, choice 0, losses 0'));
   // The gate catches a hand-over to a stone that lands on its own code.
   assert.throws(() => buildTree({ id: 'trigger', P: { MODE: 2, TIME: 1 }, kids: [{ id: 'vampire', P: { VSTEP: 7 } }, stone(4)] }, { rules: '94nop' }), /did not survive/);
   const s94 = recipeSettings('94nop');
   assert.ok(treeMismatches({ id: 'switch', kids: [stone(4), spiral] }, s94).some((m) => /needs P-space/.test(m)));
   assert.ok(treeMismatches({ id: 'trigger', kids: [spiral, stone(4)] }, s94).some((m) => /no loop/.test(m)));
-  assert.ok(treeMismatches({ id: 'copies', P: { N: 2, D: 100 }, kids: [stone(4)] }, s94).some((m) => /D must be/.test(m)));
+  assert.ok(treeMismatches({ id: 'copies', P: { N: 2, D: 100 }, kids: [stone(4)] }, s94).some((m) => /on top of each other/.test(m)));
   assert.ok(treeMismatches({ id: 'copies', P: { N: 2, D: 7950 }, kids: [stone(4)] }, s94).some((m) => /on top of each other/.test(m)));
+});
+
+test('more combinators: n-way P-space switches, restart, in-round classify', () => {
+  const ms = (STEP = 3044) => ({ id: 'mod-stone', P: { STEP, BOMBS: 1, GUARD: 1 } });
+  const paper = { id: 'paper', P: { PSTEP: 1777, PDELTA: 1013 } };
+  for (const POLICY of [0, 1, 2]) {
+    const built = buildTree({ id: 'switch', P: { CELL: 30, POLICY }, kids: [ms(), paper, ms(2000)] }, { rules: '94x-hill' });
+    assert.ok(built.verification.observations.filter((o) => /^switch: result/.test(o.scenario)).length >= 7, `policy ${POLICY}`);
+  }
+  assert.equal(switchChoice(1, 2, 0, 0, 0), 0);          // one loss: keep
+  assert.equal(switchChoice(1, 2, 0, 0, 1), 1);          // the second loss in a row: move on
+  assert.equal(switchChoice(2, 3, 1, 2, 0), 0);          // rotate even after a win
+  assert.equal(switchChoice(2, 3, -1, 2, 0), 2);         // but not on the first round
+  for (const rules of ['88', '94nop']) {
+    const built = buildTree({ id: 'restart', kids: [ms()] }, { rules });
+    assert.ok(built.verification.observations.some((o) => o.scenario === 'restart: loop damaged'), rules);
+  }
+  const classify = buildTree({ id: 'classify', kids: [ms(), paper, { id: 'finisher-counted' }] }, { rules: '94nop' });
+  assert.deepEqual(classify.verification.observations.filter((o) => /^classify/.test(o.scenario)).map((o) => o.scenario),
+    ['classify: hit by a zero DAT', 'classify: hit by copied code']);
+  const s94 = recipeSettings('94nop');
+  assert.ok(treeMismatches({ id: 'restart', kids: [{ id: 'spiral' }] }, s94).some((m) => /no loop/.test(m)));
+  assert.ok(treeMismatches({ id: 'classify', kids: [ms(), paper, ms(2000)] }, recipeSettings('88')).some((m) => /needs ICWS'94/.test(m)));
+});
+
+test('a block can duel a real opponent from its checks', () => {
+  let result;
+  leaves['test-duel'] = { ...leaves.stone, id: 'test-duel', file: 'test', watch: (api) => ({ final: () => { if (api.alone) result = api.duel('MOV 0, 1', { offset: 4000, cycles: 2000 }); } }) };
+  try {
+    buildTree({ id: 'test-duel', P: { TSTEP: 4, TBOMB: 0 } }, { rules: '94nop' });
+    assert.equal(result.ours, true);
+    assert.equal(result.cycles, 2000);
+  } finally { delete leaves['test-duel']; }
+});
+
+test('trees build on a torus: vector hops, geometry-aware checks, ring blocks refused', () => {
+  leaves['test-vstone'] = {
+    id: 'test-vstone', kind: 'body', exit: 'never', processes: 1, writes: 'sparse', topologies: ['torus'], file: 'test',
+    purpose: 'a vector stone (test only)', params: { SX: [1, 50], SY: [1, 50] }, defaults: { SX: 3, SY: 7 }, entry: 'loop', loop: 'loop',
+    emit(ctx) {
+      ctx.ins('loop', 'ADD', 'AB', `#${ctx.vec(ctx.P.SX, ctx.P.SY)}`, ctx.L('ptr'));
+      ctx.ins('mov', 'MOV', 'I', ctx.L('bomb'), `@${ctx.L('ptr')}`);
+      ctx.ins('', 'JMP', 'B', ctx.L('loop'));
+      ctx.ins('ptr', 'DAT', 'F', '#0', `#${ctx.vec(0, 1)}`);
+      ctx.ins('bomb', 'DAT', 'F', '#0', '#0');
+    },
+    watch(api) {
+      const rows = new Set();
+      return {
+        before: (pc) => (pc === api.at('mov') ? api.add(api.at('ptr'), api.vm.peek(api.at('ptr')).b) : null),
+        after: (t) => { if (t === null) return; if (api.inSelf(t)) throw new Error('bombed itself'); rows.add(api.geo.decode(t)[1]); },
+        final: () => { if (api.alone && rows.size < 20) throw new Error(`bombs stayed in ${rows.size} rows`); },
+      };
+    },
+  };
+  try {
+    const t = { id: 'test-vstone', P: { SX: 3, SY: 7 } };
+    for (const tree of [t, { id: 'boot', P: { HOP: 10, HOPY: 40 }, kids: [t] }, { id: 'apart', P: { D: 0, DY: 40 }, kids: [t, { id: 'test-vstone', P: { SX: 7, SY: 3 } }] }]) {
+      assert.equal(buildTree(tree, { rules: '94nop', torus: '100x80' }).verification.ok, true, shape(tree));
+    }
+    assert.match(link({ id: 'boot', P: { HOP: 10, HOPY: 40 }, kids: [t] }, treeSettings('94nop', 50, '100x80')).source, /\[b1loop\+10,40,0\]/);
+    // A long hop with an unrolled boot: the jump must land on the copy's row, not carry into the next.
+    assert.equal(buildTree({ id: 'boot', P: { HOP: 6365, HOPY: 183, UNROLL: 3 }, kids: [t] }, { rules: '94nop', torus: '100x80' }).verification.ok, true);
+    assert.throws(() => buildTree({ id: 'stone' }, { rules: '94nop', torus: '100x80' }), /written for the ring/);
+    assert.throws(() => buildTree(t, { rules: '94nop' }), /written for the torus/);
+    assert.ok(treeMismatches({ id: 'boot', P: { HOP: 3000, HOPY: 5 }, kids: [{ id: 'stone' }] }, recipeSettings('94nop')).some((m) => /only mean something on a torus/.test(m)));
+  } finally { delete leaves['test-vstone']; }
 });
 
 test('every named recipe builds and passes the gate on its rule sets', () => {
