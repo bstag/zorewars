@@ -103,10 +103,11 @@ export const MUTATIONS = ['tune', 'swap', 'boot', 'decoys', 'relocate', 'member'
 const WRAPPERS = ['trigger', 'apart', 'copies', 'switch', 'restart', 'classify', 'parboot'];
 
 // One mutation that keeps the tree legal; returns { tree, op } or null.
-export function mutate(tree, settings, random, tries = 60) {
+// `ops` limits the mutations tried (['tune'] only changes numbers).
+export function mutate(tree, settings, random, tries = 60, ops = MUTATIONS) {
   onTorus = settings.topology === 'torus';
   for (let i = 0; i < tries; i++) {
-    const op = pick(MUTATIONS, random);
+    const op = pick(ops, random);
     const t = mutation(op, tree, random);
     if (t && fits(t, settings) && id(t) !== id(tree)) return { tree: t, op };
   }

@@ -160,6 +160,14 @@ alone; it says nothing about how well it fights.
 
 ## Evolution
 
+`tools/algebra/evolve.js` (`evolve --representation tree`) breeds trees
+against a hill and judges them as a hill does: average points against every
+warrior on it. Only trees that pass the gate are scored. The archive keeps the
+best tree per niche (behaviour species and top-level shape), racing confirms a
+child with doubled rounds on common seeds before it takes a niche, and
+`placeOnHill` reports where a tree would rank among the hill's warriors.
+Tune mode keeps a tree's shape and only changes its numbers.
+
 A genome is a tree. Mutations: tune a parameter, swap a block for another of
 the same kind, wrap or unwrap a `boot`, `relocate` or decoys, add or drop a
 `par` member, swap same-kind subtrees between parents. Phase 2 adds the
