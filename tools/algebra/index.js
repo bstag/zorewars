@@ -10,6 +10,7 @@ export { leaves, modInverse } from './leaves.js';
 export { combinators, definition, iface, link, shape, treeMismatches } from './link.js';
 export { gate, shapeOf } from './gate.js';
 export { comboToTree } from './combo-tree.js';
+export { recipes } from './recipes.js';
 export * from './genome.js';
 
 export function buildTree(tree, { rules = '94x', length = 50, name } = {}) {

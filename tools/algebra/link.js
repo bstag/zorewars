@@ -6,8 +6,17 @@ export const combinators = {
   seq: { kids: [2, 8], purpose: 'Members run one after another; each hands control to the next.' },
   par: { kids: [2, 4], purpose: 'Members launched side by side with SPL.' },
   relocate: { kids: [1, 1], params: { HOP: [256, 54000] }, defaults: { HOP: 4096 }, purpose: 'Copies its member to probe + HOP and runs it there.' },
-  boot: { kids: [1, 2], params: { HOP: [256, 54000] }, defaults: { HOP: 4096 }, purpose: 'Copies its first member to + HOP and runs the copy; the second (data) stays behind.' },
+  boot: { kids: [1, 2], params: { HOP: [256, 54000], UNROLL: [1, 4] }, defaults: { HOP: 4096, UNROLL: 1 },
+    purpose: 'Copies its first member to + HOP (UNROLL cells per loop) and runs the copy; the second (data) stays behind.' },
   image: { kids: [2, 4], purpose: 'Members laid out in order; the first runs, the rest are data.' },
+  trigger: { kids: [2, 2], params: { MODE: [0, 2], TIME: [1, 4096] }, defaults: { MODE: 0, TIME: 2000 },
+    purpose: 'Runs its first member (a block with a loop) with a watcher beside it; when the watcher fires it rewrites the loop to jump to the second member. MODE 0: after TIME laps of the watcher; 1: when its marker is damaged; 2: when the first member\'s loop is damaged (a watchdog).' },
+  apart: { kids: [2, 2], params: { D: [256, 54000] }, defaults: { D: 4000 },
+    purpose: 'Copies its second member D cells away and runs it there beside the first, so one hit can\'t find both.' },
+  copies: { kids: [1, 1], params: { N: [2, 4], D: [256, 54000] }, defaults: { N: 2, D: 2667 },
+    purpose: 'Runs N copies of its member, D cells apart.' },
+  switch: { kids: [2, 2], params: { CELL: [1, 500] }, defaults: { CELL: 17 },
+    purpose: 'Chooses a member by P-space: keeps the last choice after a win or tie, flips it after a loss (the 94x hill only).' },
 };
 for (const [id, c] of Object.entries(combinators)) { c.id = id; c.combinator = true; c.params ??= {}; c.defaults ??= {}; }
 
@@ -29,7 +38,7 @@ export function annotate(tree) {
 export function entryOf(node) {
   if (isLeaf(node)) return node.ns + leaves[node.id].entry;
   if (node.id === 'seq' || node.id === 'image') return entryOf(node.kids[0]);
-  return node.ns + { par: 'split', relocate: 'transition', boot: 'boot' }[node.id];
+  return node.ns + { par: 'split', relocate: 'transition', boot: 'boot', trigger: 'start', apart: 'start', copies: 'start', switch: 'start' }[node.id];
 }
 
 // par lays out members that write ahead of themselves (a spiral's imps) last.
@@ -74,11 +83,13 @@ export function iface(node, settings) {
       break;
     case 'par':
       parts.forEach((p, i) => { if (p.exit !== 'never') out.mismatches.push(`par: ${kids[i].id} must run forever`); });
+      if (kids.filter((k) => leaves[k.id]?.layout === 'last').length > 1) out.mismatches.push('par: only one member may write just ahead of itself (each must be laid out last)');
       if (out.writes === 'core') out.mismatches.push('par: a clear erases its partners, so a clear runs alone');
       out.processes = parts.reduce((n, p) => n + p.processes, 0);
       break;
     case 'relocate':
       if (parts[0] && !parts[0].relocatable) out.mismatches.push(`relocate: ${kids[0].id} reads state in the image, so it cannot be relocated`);
+      if (leaves[kids[0]?.id]?.entryFirst === false) out.mismatches.push(`relocate: ${kids[0].id} doesn't start at its first cell`);
       if (landsOnSelf()) out.mismatches.push('HOP lands on the warrior itself');
       out.processes = parts[0]?.processes ?? 0;
       out.needs.add('probe');
@@ -92,6 +103,33 @@ export function iface(node, settings) {
       out.processes = parts[0]?.processes ?? 0;
       break;
     }
+    case 'trigger': {
+      const a = kids[0], A = leaves[a?.id];
+      if (!A?.loop) out.mismatches.push(`trigger: ${a?.id} has no loop for the watcher to rewrite`);
+      parts.forEach((p, i) => { if (p.exit !== 'never') out.mismatches.push(`trigger: ${kids[i].id} must run forever`); });
+      if ((parts[0]?.processes ?? 0) > 1 && leaves[kids[1]?.id]?.kind === 'finisher') out.mismatches.push(`trigger: ${kids[1].id} is a one-process clear; it can't take over ${kids[0].id}'s processes`);
+      // After a watchdog fires, a's redirected process and the watcher may both enter b.
+      out.processes = Math.max((parts[0]?.processes ?? 0) + 1, (parts[1]?.processes ?? 0) * (node.P.MODE === 2 ? 2 : 1));
+      break;
+    }
+    case 'apart':
+    case 'copies': {
+      parts.forEach((p, i) => { if (p.exit !== 'never') out.mismatches.push(`${node.id}: ${kids[i].id} must run forever`); });
+      if (out.writes === 'core') out.mismatches.push(`${node.id}: a clear erases the other copies, so a clear runs alone`);
+      const n = node.id === 'copies' ? node.P.N : 1;
+      out.processes = node.id === 'copies' ? n * (parts[0]?.processes ?? 0) : parts.reduce((t, p) => t + p.processes, 0);
+      // Every copy needs room: no two may overlap, nor the original image.
+      const at = Array.from({ length: n + 1 - (node.id === 'copies' ? 1 : 0) }, (_, i) => (i * node.P.D) % core).sort((x, y) => x - y);
+      const gaps = at.map((x, i) => ((i + 1 < at.length ? at[i + 1] : at[0] + core) - x));
+      if (Math.min(...gaps) < 256) out.mismatches.push(`${node.id}: D puts copies on top of each other or of the warrior`);
+      break;
+    }
+    case 'switch':
+      if (!settings.pSpace) out.mismatches.push('switch needs P-space (the 94x hill)');
+      if (old) out.mismatches.push("switch needs ICWS'94 (LDP and STP)");
+      parts.forEach((p, i) => { if (p.exit !== 'never') out.mismatches.push(`switch: ${kids[i].id} must run forever`); });
+      out.processes = Math.max(0, ...parts.map((p) => p.processes));
+      break;
     case 'image':
       if (parts[0] && parts[0].exit !== 'never') out.mismatches.push('image: its first member must run forever');
       parts.slice(1).forEach((p, i) => { if (p.exit !== 'data') out.mismatches.push(`image: ${kids[i + 1].id} is laid out after the code, so it must be data`); });
@@ -99,6 +137,7 @@ export function iface(node, settings) {
       break;
   }
   if (node.id === 'image' || node.id === 'boot') out.exit = parts[0]?.exit ?? 'never';
+  if (['trigger', 'apart', 'copies', 'switch'].includes(node.id) && !out.mismatches.length) out.exit = 'never';
   return out;
 }
 
@@ -162,12 +201,20 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
           case 'seq': {
             const scope = new Map(iface(node, settings).provides);
             scopes.push(scope);
+            const before = kids.map((_, i) => {
+              const m = new Map();
+              for (const k of kids.slice(0, i)) for (const [c, l] of iface(k, settings).provides) m.set(c, l);
+              return m;
+            });
             for (const leaf of stateLeaves(node)) emitState(leaf, env);
             kids.forEach((kid, i) => {
               const last = i === kids.length - 1;
-              const linkCell = !last && iface(kid, settings).link === 'jump' && kids[i + 1].id !== 'relocate';
+              const k = iface(kid, settings), into = leaves[kids[i + 1]?.id];
+              const linkCell = !last && kids[i + 1].id !== 'relocate' && (k.link === 'jump' || into?.entryFirst === false);
               const next = last ? env.next : linkCell ? node.ns + `link${i}` : entryOf(kids[i + 1]);
+              scopes.push(before[i]);
               emit(kid, { ...env, next });
+              scopes.pop();
               if (linkCell) { labels[node.ns + `link${i}`] = pc; lines.push(`${node.ns}link${i} ${op('JMP', 'B')} ${entryOf(kids[i + 1])}, 0`); pc++; }
             });
             scopes.pop();
@@ -186,6 +233,7 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
             ctx.ins(null, 'DJN', 'B', L('transition'), L('copyCount'));
             ctx.ins(null, 'JMP', 'B', `@${L('copyTarget')}`);
             ctx.ins('copySource', 'DAT', 'F', '#0', `#${kid.start + kid.size - pc}`);
+            node.probeLabel = ctx.ref('probe');
             ctx.ins('copyTarget', 'DAT', 'F', '#0', `#(${ctx.ref('probe')}+${P.HOP}+${kid.size}-${L('copyTarget')})`);
             ctx.ins('copyCount', 'DAT', 'F', '#0', `#${kid.size}`);
             emit(kids[0], env);
@@ -195,12 +243,86 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
             const main = spanOf(kids[0]);
             emit(kids[0], { ...env, span: main.size });
             if (kids[1]) emit(kids[1], env);
-            ctx.ins('boot', 'MOV', 'I', `<${L('copyFrom')}`, `<${L('copyTo')}`);
+            for (let i = 0; i < P.UNROLL; i++) ctx.ins(i ? '' : 'boot', 'MOV', 'I', `<${L('copyFrom')}`, `<${L('copyTo')}`);
             ctx.ins('', 'DJN', 'B', L('boot'), L('copyCount'));
             ctx.ins('', 'JMP', 'B', `${entryOf(kids[0])}+${P.HOP}`);
             ctx.ins('copyFrom', 'DAT', 'F', '#0', `#${main.start + main.size - pc}`);
             ctx.ins('copyTo', 'DAT', 'F', '#0', `#${main.start + P.HOP + main.size - pc}`);
-            ctx.ins('copyCount', 'DAT', 'F', '#0', `#${main.size}`);
+            ctx.ins('copyCount', 'DAT', 'F', '#0', `#${Math.ceil(main.size / P.UNROLL)}`);
+            break;
+          }
+          case 'trigger': {
+            // start: [copy a's loop for the watchdog], split off the watcher, run a.
+            const [a, b] = kids, loop = a.ns + leaves[a.id].loop, bEntry = entryOf(b);
+            if (P.MODE === 2) ctx.ins('start', 'MOV', 'I', loop, L('ref'));
+            ctx.ins(P.MODE === 2 ? '' : 'start', 'SPL', 'B', L('watch'));
+            ctx.ins('', 'JMP', 'B', entryOf(a));
+            emit(a, env);
+            emit(b, env);
+            if (P.MODE === 0) {
+              ctx.ins('watch', 'DJN', 'B', L('watch'), L('count'));
+              ctx.ins('', 'MOV', 'I', L('jump'), loop);
+              ctx.ins('', 'DAT', 'F', '#0', '#0');
+              ctx.ins('count', 'DAT', 'F', '#0', `#${P.TIME}`);
+            } else {
+              const [x, y] = P.MODE === 1 ? [L('mark'), L('ref')] : [loop, L('ref')];
+              ctx.ins('watch', old ? 'CMP' : 'SEQ', 'I', x, y);
+              ctx.ins('', 'JMP', 'B', L('fire'));
+              ctx.ins('', 'JMP', 'B', L('watch'));
+              ctx.ins('fire', 'MOV', 'I', L('jump'), loop);
+              // A marker hit leaves a running: its next lap takes it to b. Damage may
+              // have killed it, so the watchdog starts b itself.
+              if (P.MODE === 1) ctx.ins('', 'DAT', 'F', '#0', '#0'); else ctx.ins('', 'JMP', 'B', bEntry);
+              if (P.MODE === 1) ctx.ins('mark', 'DAT', 'F', '#0', '#1');
+              ctx.ins('ref', 'DAT', 'F', '#0', '#1');
+            }
+            // Copied over a's loop, so its offset is from there to b.
+            ctx.ins('jump', 'JMP', 'B', `${bEntry}-${loop}`);
+            break;
+          }
+          case 'apart': {
+            const [a, b] = kids, bs = spanOf(b);
+            ctx.ins('start', 'MOV', 'I', `<${L('src')}`, `<${L('dst')}`);
+            ctx.ins('', 'DJN', 'B', L('start'), L('count'));
+            ctx.ins('', 'SPL', 'B', `${entryOf(b)}+${P.D}`);
+            ctx.ins('', 'JMP', 'B', entryOf(a));
+            ctx.ins('src', 'DAT', 'F', '#0', `#${bs.start + bs.size - pc}`);
+            ctx.ins('dst', 'DAT', 'F', '#0', `#${bs.start + P.D + bs.size - pc}`);
+            ctx.ins('count', 'DAT', 'F', '#0', `#${bs.size}`);
+            emit(a, env);
+            emit(b, env);
+            break;
+          }
+          case 'copies': {
+            const x = spanOf(kids[0]);
+            for (let k = 1; k < P.N; k++) {
+              ctx.ins(k === 1 ? 'start' : '', 'MOV', 'I', `<${L('src' + k)}`, `<${L('dst' + k)}`);
+              ctx.ins('', 'DJN', 'B', `-1`, L('count' + k));
+            }
+            for (let k = 1; k < P.N; k++) ctx.ins('', 'SPL', 'B', `${entryOf(kids[0])}+${k * P.D}`);
+            ctx.ins('', 'JMP', 'B', entryOf(kids[0]));
+            for (let k = 1; k < P.N; k++) {
+              ctx.ins('src' + k, 'DAT', 'F', '#0', `#${x.start + x.size - pc}`);
+              ctx.ins('dst' + k, 'DAT', 'F', '#0', `#${x.start + k * P.D + x.size - pc}`);
+              ctx.ins('count' + k, 'DAT', 'F', '#0', `#${x.size}`);
+            }
+            emit(kids[0], env);
+            break;
+          }
+          case 'switch': {
+            const [a, b] = kids;
+            ctx.ins('start', 'LDP', 'AB', '#0', L('result'));
+            ctx.ins('', 'LDP', 'AB', `#${P.CELL}`, L('choice'));
+            ctx.ins('', 'JMN', 'B', L('keep'), L('result'));
+            ctx.ins('', 'ADD', 'AB', '#1', L('choice'));
+            ctx.ins('', 'MOD', 'AB', '#2', L('choice'));
+            ctx.ins('keep', 'STP', 'B', L('choice'), `#${P.CELL}`);
+            ctx.ins('', 'JMZ', 'B', entryOf(a), L('choice'));
+            ctx.ins('', 'JMP', 'B', entryOf(b));
+            ctx.ins('result', 'DAT', 'F', '#0', '#0');
+            ctx.ins('choice', 'DAT', 'F', '#0', '#0');
+            emit(a, env);
+            emit(b, env);
             break;
           }
           case 'image':

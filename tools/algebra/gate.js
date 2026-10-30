@@ -1,12 +1,14 @@
 // The behaviour gate for trees (docs/block-algebra.md): run the warrior alone
-// and watch every block do what its contract says. Two shapes are checked:
-// a chain (openings, then a clear) and bodies (one, or several side by side),
-// either one booted or with decoys. Other shapes are refused until their
-// checks exist, so evolution can't admit code nobody has watched.
+// and watch every block do what its contract says. The shapes combo can make
+// (a chain of an opening and a clear; bodies side by side) keep combo's exact
+// checks. Every other tree goes through the generic gate: each copy of each
+// block is watched with that block's own checks, every block must be entered,
+// bodies must still be running at the end, and combinators' scenarios (a
+// planted marker, a P-space history) must get the reaction they promise.
 // Passing means the warrior behaves when alone; it says nothing about how it fights.
 import { compile, VM } from '../../src/engine/index.js';
 import { leaves } from './leaves.js';
-import { link } from './link.js';
+import { link, iface, entryOf } from './link.js';
 
 const isLeaf = (node) => Object.hasOwn(leaves, node.id);
 const parOrder = (kids) => [...kids].sort((a, b) => (leaves[a.id]?.layout === 'last') - (leaves[b.id]?.layout === 'last'));
@@ -24,16 +26,18 @@ export function shapeOf(root) {
   const last = main.id === 'seq' ? main.kids.at(-1) : main;
   const fin = last.id === 'relocate' ? last.kids[0] : last;
   const openings = main.id === 'seq' ? main.kids.slice(0, -1) : [];
-  if (isLeaf(fin) && leaves[fin.id].kind === 'finisher' && (main === fin || (openings.length === 1 && isLeaf(openings[0]) && leaves[openings[0].id].kind === 'opening'))) return 'chain';
-  if ((isLeaf(main) && leaves[main.id].kind === 'body') || (main.id === 'par' && main.kids.every((k) => isLeaf(k) && leaves[k.id].kind === 'body'))) return 'bodies';
-  return 'unchecked';
+  const core = (n) => isLeaf(n) && leaves[n.id].file === 'core.js';
+  if (core(fin) && leaves[fin.id].kind === 'finisher' && (main === fin || (openings.length === 1 && core(openings[0]) && leaves[openings[0].id].kind === 'opening'))) return 'chain';
+  const coreBody = (n) => core(n) && leaves[n.id].kind === 'body';
+  if (coreBody(main) || (main.id === 'par' && main.kids.every(coreBody))) return 'bodies';
+  return 'generic';
 }
 
 export function gate(built) {
   const shape = shapeOf(built.root);
   if (shape === 'chain') return checkChain(built);
   if (shape === 'bodies') return checkBodiesTree(built);
-  throw new Error('No gate for this shape yet');
+  return checkGeneric(built);
 }
 
 const sameIns = (core) => {
@@ -57,7 +61,10 @@ function checkChain(built) {
   // Fields each block may change while the clear runs.
   const mutable = {};
   const collect = (node) => {
-    if (isLeaf(node)) for (const [label, fields] of leaves[node.id].mutable ?? []) mutable[at(node, label)] = fields;
+    if (isLeaf(node)) {
+      const m = leaves[node.id].mutable;
+      for (const [label, fields] of (typeof m === 'function' ? m(node.P) : m) ?? []) mutable[at(node, label)] = fields;
+    }
     for (const k of node.kids ?? []) collect(k);
   };
   collect(counted ? fin : main);
@@ -235,4 +242,134 @@ function checkBodies({ w, settings, root, labels, spans }) {
     observations.push(result);
   }
   return { observations };
+}
+
+// ---------------------------------------------------------------------------
+// The generic gate.
+
+// Where each block runs: one entry per copy, as an offset from the load address,
+// with what the gate expects of it.
+function instances(root, labels, spans) {
+  const out = [];
+  const walk = (node, shifts, flags) => {
+    if (isLeaf(node)) { for (const shift of shifts) out.push({ node, shift, ...flags }); return; }
+    const k = node.kids;
+    switch (node.id) {
+      case 'boot': walk(k[0], shifts.map((s) => s + node.P.HOP), flags); if (k[1]) walk(k[1], shifts, flags); break;
+      case 'relocate': {
+        const probe = labels[node.probeLabel];
+        walk(k[0], shifts.map((s) => s + probe + node.P.HOP - spans[k[0].ns].start), flags);
+        break;
+      }
+      case 'apart': walk(k[0], shifts, flags); walk(k[1], shifts.map((s) => s + node.P.D), flags); break;
+      case 'copies': walk(k[0], shifts.flatMap((s) => Array.from({ length: node.P.N }, (_, i) => s + i * node.P.D)), flags); break;
+      case 'trigger':
+        walk(k[0], shifts, { ...flags, mayStop: true });
+        walk(k[1], shifts, { ...flags, ...(node.P.MODE ? { optional: true, triggered: node.ns } : {}) });
+        break;
+      case 'switch': k.forEach((kid, i) => walk(kid, shifts, { ...flags, optional: true, branch: `${node.ns}:${i}` })); break;
+      default: for (const kid of k) walk(kid, shifts, flags);
+    }
+  };
+  walk(root, [0], {});
+  return out;
+}
+
+// What the combinators and blocks promise, as runs with something planted.
+function scenarios(root, labels, settings) {
+  const out = [{ name: 'alone' }];
+  const walk = (node) => {
+    // A block that reacts to an opponent (a scanner) plants one and checks its reaction in watch.final.
+    if (isLeaf(node) && leaves[node.id].plant) out.push({ name: `${node.id}: planted target`, plant: node.ns, id: node.id });
+    if (node.id === 'trigger' && node.P.MODE) {
+      const target = node.P.MODE === 1 ? node.ns + 'mark' : node.kids[0].ns + leaves[node.kids[0].id].loop;
+      out.push({ name: `trigger ${node.P.MODE === 1 ? 'marker' : 'damage'} hit`, at: 200, poke: labels[target], expect: node.ns });
+    }
+    if (node.id === 'switch') {
+      const ps = (result, choice) => { const p = VM.freshPSpace(settings); p[0] = result; p[node.P.CELL] = choice; return p; };
+      out.push({ name: 'switch: first round', pspace: ps(-1, 0), branch: `${node.ns}:0` });
+      out.push({ name: 'switch: won last round', pspace: ps(1, 1), branch: `${node.ns}:1` });
+      out.push({ name: 'switch: lost last round', pspace: ps(0, 0), branch: `${node.ns}:1` });
+    }
+    for (const k of node.kids ?? []) walk(k);
+  };
+  walk(root);
+  return out;
+}
+
+function checkGeneric(built) {
+  const { w, settings, root, labels, spans, total } = built;
+  const core = settings.coreSize, norm = (x) => ((x % core) + core) % core, same = sameIns(core);
+  const all = instances(root, labels, spans).filter((x) => leaves[x.node.id].kind !== 'data');
+  const shifts = [...new Set([0, ...all.map((x) => x.shift)])];
+  const limit = iface(root, settings);
+  const horizon = limit.grows ? Math.min(settings.maxCycles, 20000) : settings.maxCycles;
+  const alone = all.length === 1;
+  const maxShift = Math.max(...shifts.map(norm));
+  const bases = [0, core - 7, ...(maxShift ? [norm(core - maxShift - Math.ceil(total / 2))] : [])];
+  const observations = [];
+
+  function run(base, scenario) {
+    const vm = new VM(settings);
+    vm.load([w], { positions: [base], ...(scenario.pspace ? { pspaces: [scenario.pspace] } : {}) });
+    const watched = all.map((x) => {
+      const def = leaves[x.node.id], at = (local, k = 0) => norm(base + x.shift + labels[x.node.ns + local] + k);
+      const { start, size } = spans[x.node.ns];
+      // Another copy of a planted block sees its own name, so only the planted one checks the reaction.
+      const name = scenario.plant && scenario.plant !== x.node.ns && scenario.id === x.node.id ? `${scenario.name} (another copy)` : scenario.name;
+      const api = {
+        vm, P: x.node.P, settings, core, norm, same, at, scenario: name,
+        total, maxLength: settings.maxLength, mayStop: !!x.mayStop,
+        self: { start: norm(base + x.shift + start), size },      // this copy's own cells
+        image: { start: norm(base), size: total },                 // the whole warrior as loaded
+        alone: alone && scenario.name === 'alone',          // alone, and nothing planted
+        code: (local, k = 0) => w.instructions[labels[x.node.ns + local] + k],
+        entry: () => norm(base + x.shift + labels[entryOf(x.node)]),
+        inImage: (c) => shifts.some((s) => norm(c - base - s) < total),
+        inSelf: (c) => norm(c - base - x.shift - start) < size,
+      };
+      return { x, def, api, hooks: def.watch?.(api) ?? {}, entryAt: api.entry(), entered: false, enteredAt: null, checked: false };
+    });
+    // Plants: [address, instruction] before the run, or [address, instruction, cycle] at that cycle.
+    const later = [];
+    if (scenario.plant) {
+      const v = watched.find((u) => u.x.node.ns === scenario.plant);
+      for (const [addr, ins, cycle] of v.def.plant(v.api)) if (cycle) later.push([cycle, norm(addr), ins]); else vm.poke(norm(addr), ins);
+    }
+    const byEntry = new Map();
+    for (const v of watched) byEntry.set(v.entryAt, [...(byEntry.get(v.entryAt) ?? []), v]);
+    while (!vm.done && vm.cycle < horizon) {
+      if (scenario.poke !== undefined && vm.cycle === scenario.at) vm.poke(norm(base + scenario.poke), { op: 'DAT', mod: 'F', aMode: '#', a: 9, bMode: '#', b: 9 });
+      for (const [cycle, addr, ins] of later) if (vm.cycle === cycle) vm.poke(addr, ins);
+      const pc = vm.processes(0)[0];
+      for (const v of byEntry.get(pc) ?? []) if (!v.entered) { v.entered = true; v.enteredAt = vm.cycle; }
+      const tokens = watched.map((v) => v.hooks.before?.(pc) ?? null);
+      vm.step();
+      watched.forEach((v, i) => v.hooks.after?.(tokens[i]));
+      // A block that runs forever must still be running 1,000 cycles after it was entered.
+      for (const v of watched) {
+        if (v.checked || !v.entered || vm.cycle !== v.enteredAt + 1000) continue;
+        v.checked = true;
+        if (v.def.exit === 'never' && !v.x.mayStop) {
+          const running = v.def.running ? v.def.running(v.api) : vm.processes(0).some((q) => v.api.inSelf(q));
+          if (!running) throw new Error(`${v.x.node.id} stopped running (${scenario.name})`);
+        }
+      }
+    }
+    if (!vm.warriors[0].alive || vm.cycle !== horizon) throw new Error(`The warrior did not survive alone (${scenario.name})`);
+    if (!limit.grows && vm.warriors[0].peak > limit.processes) throw new Error(`More processes than the blocks declare (${vm.warriors[0].peak} > ${limit.processes})`);
+    for (const v of watched) {
+      const { x } = v;
+      const required = scenario.branch ? (x.branch ? x.branch === scenario.branch : !x.optional)
+        : scenario.expect ? !x.optional || x.triggered === scenario.expect : !x.optional;
+      if (required && !v.entered) throw new Error(`${x.node.id} was never entered (${scenario.name})`);
+      if (scenario.branch && x.branch && x.branch !== scenario.branch && v.entered) throw new Error(`switch ran the wrong branch (${scenario.name})`);
+      v.hooks.final?.();
+    }
+    return { base, scenario: scenario.name, cycles: vm.cycle, peak: vm.warriors[0].peak };
+  }
+  for (const scenario of scenarios(root, labels, settings)) {
+    for (const base of scenario.name === 'alone' ? bases : [0]) observations.push(run(base, scenario));
+  }
+  return { ok: true, shape: 'generic', scope: 'every copy of every block watched with its own checks; three load positions; full solo rounds; combinator scenarios', observations };
 }

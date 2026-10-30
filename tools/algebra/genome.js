@@ -37,8 +37,19 @@ function randomShape(settings, random) {
     else main = { id: 'seq', kids: [opening, leaves[fin.id].relocatable && random() < 0.3 ? { id: 'relocate', P: sampleParams('relocate', random), kids: [fin] } : fin] };
     return wrap(main, settings, random);
   }
+  const body = () => leaf(pick(kinds.body, random), random);
+  const runner = () => (random() < 0.7 ? body() : leaf(pick(kinds.finisher, random), random));
+  const r = random();
+  if (r < 0.12) return wrap({ id: 'seq', kids: [leaf(pick(kinds.opening, random), random), body()] }, settings, random);
+  if (r < 0.27) {                                // a looped block that becomes something else
+    const looped = kinds.body.filter((id) => leaves[id].loop);
+    if (looped.length) return wrap({ id: 'trigger', P: sampleParams('trigger', random), kids: [leaf(pick(looped, random), random), runner()] }, settings, random);
+  }
+  if (r < 0.37) return wrap({ id: 'apart', P: sampleParams('apart', random), kids: [body(), body()] }, settings, random);
+  if (r < 0.45) return wrap({ id: 'copies', P: sampleParams('copies', random), kids: [body()] }, settings, random);
+  if (r < 0.52 && settings.pSpace) return wrap({ id: 'switch', P: sampleParams('switch', random), kids: [body(), body()] }, settings, random);
   const n = random() < 0.4 ? 1 : random() < 0.8 ? 2 : 3;
-  const bodies = Array.from({ length: n }, () => leaf(pick(kinds.body, random), random));
+  const bodies = Array.from({ length: n }, body);
   return wrap(n > 1 ? { id: 'par', kids: bodies } : bodies[0], settings, random);
 }
 function wrap(main, settings, random) {
@@ -80,7 +91,8 @@ function assemble({ main, boot, decoys }) {
   return decoys ? { id: 'image', kids: [main, decoys] } : main;
 }
 
-export const MUTATIONS = ['tune', 'swap', 'boot', 'decoys', 'relocate', 'member', 'opening'];
+export const MUTATIONS = ['tune', 'swap', 'boot', 'decoys', 'relocate', 'member', 'opening', 'wrap', 'unwrap'];
+const WRAPPERS = ['trigger', 'apart', 'copies', 'switch'];
 
 // One mutation that keeps the tree legal; returns { tree, op } or null.
 export function mutate(tree, settings, random, tries = 60) {
@@ -137,6 +149,19 @@ function mutation(op, tree, random) {
         else kids.splice(Math.floor(random() * kids.length), 1);
         p.main = kids.length > 1 ? { id: 'par', kids } : kids[0];
       } else return null;
+      return assemble(p);
+    }
+    case 'wrap': {                               // put the running part inside a new combinator
+      const p = parts(tree), w = pick(WRAPPERS, random), body = () => leaf(pick(kinds.body, random), random);
+      if (w === 'copies') p.main = { id: w, P: sampleParams(w, random), kids: [p.main] };
+      else if (w === 'trigger') p.main = { id: w, P: sampleParams(w, random), kids: [p.main, random() < 0.5 ? body() : leaf(pick(kinds.finisher, random), random)] };
+      else p.main = { id: w, P: sampleParams(w, random), kids: random() < 0.5 ? [p.main, body()] : [body(), p.main] };
+      return assemble(p);
+    }
+    case 'unwrap': {                             // keep one member of a combinator
+      const p = parts(tree);
+      if (!WRAPPERS.includes(p.main.id) && p.main.id !== 'par') return null;
+      p.main = pick(p.main.kids, random);
       return assemble(p);
     }
     case 'opening': {                            // a bare clear gains an opening, or loses an empty one

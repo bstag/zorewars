@@ -23,31 +23,104 @@ module.
 
 ## Blocks
 
-A block module exports:
+Each file in `tools/algebra/blocks/` exports a block, or an array of them, as
+its default; `tools/algebra/leaves.js` loads them all (files starting with `_`
+are skipped). `core.js` holds the blocks ported from `combo`. A block is an
+object:
 
 | Field | Meaning |
 |---|---|
-| `id`, `kind` | Name, and what it is: `opening` (runs, then hands on), `finisher` (runs forever), `body` (a whole strategy, runs forever), `data` (never executed: decoys) |
-| `params`, `defaults` | Its own parameters only, each an integer range |
-| `iface(P, settings)` | Its contract: processes, how it exits (`next`: control leaves at its end; `never`), whether its code moves (`roams`: copies or imps outside the image), what it writes (`sparse` or `core`: a clear), which capabilities it `provides` and `needs` (a probe pointer, a DAT bomb cell, an SPL bomb cell), and the reasons it can't run on these settings |
-| `state(ctx)`, `emit(ctx)` | Its state cells and its code, written with local labels (`ctx.L`) and references to other blocks' capabilities (`ctx.ref`) |
-| `checks` | What it must be seen doing when the gate runs it: a stone bombs 100 cells, a spiral keeps its processes, a paper makes copies, a clear covers the core and leaves the protected image intact |
+| `id` | Unique, kebab-case (`opening-quickscan`, `spl-stone`) |
+| `kind` | `opening` (runs, then hands on), `finisher` (a clear: runs forever), `body` (a whole strategy: runs forever), `data` (never run: decoys) |
+| `purpose` | One sentence: what it does |
+| `params`, `defaults` | Its own parameters only: `{ NAME: [lo, hi] }` integer ranges, and values that work. Ranges must suit both the 8,000 and the 55,440 cores; refuse bad combinations in `mismatches` |
+| `entry` | Local label of the first instruction it runs |
+| `exit` | `next` (control leaves at its end; openings), `never`, or `data` |
+| `link` | Openings: `jump` if control leaves through a link jump the linker adds after it, `fall` if it falls straight into the next block |
+| `processes` | How many it runs at most: a number or `(P) => number`; `grows: true` if it fills the process table (papers) |
+| `writes` | `sparse`, or `core` for a clear (a clear can't share the core with partners) |
+| `roams`, `layout` | `roams: true` if it runs outside its image (imps, copies); `layout: 'last'` if it writes just ahead of itself and must be laid out last (a spiral) |
+| `loop` | Local label of a cell it runs on every pass of its main loop. `trigger` needs one: it rewrites that cell to hand over |
+| `entryFirst` | `false` if `entry` isn't its first cell, so a launcher falling into it needs a jump |
+| `relocatable`, `protects` | Finishers: whether `relocate` may move it; whether its clear spares `self` or the whole `image` |
+| `dialects` | `'94'` if it needs ICWS'94; otherwise it must also write '88 code when `ctx.old` |
+| `needs`, `provides` | Capabilities: `provides` maps a capability to the local label that holds it (`{ probe: 'probe' }`), or is `(P) => map`. Known ones: `probe` (an opening's pointer; B = the last cell it touched), `datBomb`, `splBomb` (bomb cells to copy). New ones are fine: name them clearly |
+| `mutable` | `[[label, ['a', 'b']], ...]` or `(P) => list`: fields that change while it runs, so the gate doesn't count them as damage |
+| `mismatches(P, settings)` | Reasons it can't be built on these settings: `[]` when it can |
+| `state(ctx)` | State cells a `seq` lays out before all code (optional) |
+| `emit(ctx)` | Its code |
+| `watch(api)` | Its behaviour checks (below) |
+| `running(api)` | Whether it is still running; default: a process is inside its own code. Moving bodies need their own |
+| `plant(api)` | For blocks that react to an opponent: `[[address, instruction], ...]` to poke before the run, or `[address, instruction, cycle]` to poke at that cycle (after the block has set itself up), so `watch` can check the reaction |
 
-The linker gives every block its own label namespace, so two copies of one
-block can sit in one warrior.
+### Writing code: `ctx`
+
+`emit` and `state` get `ctx`:
+
+- `ctx.ins(label, opcode, modifier, a, b = '0')` adds one instruction. `label`
+  is local (or `''`/`null`); operands are strings. In '88 the modifier is
+  dropped, so write '88 code when `ctx.old`: only `DAT MOV ADD SUB JMP JMZ JMN
+  DJN CMP SPL SLT`, modes `# $ @ <`, `CMP` for `SEQ`, and no immediate A on
+  `SPL` or the jumps (`zorewars check --rules 88` and `pmars -8` refuse it).
+- `ctx.L(name)` is the namespaced label of a local name: use it in operands
+  (`ctx.L('loop')`, `` `@${ctx.L('ptr')}` ``, `` `${ctx.L('a')}-${ctx.L('b')}` ``).
+- `ctx.mark(name)` labels the next instruction without adding one.
+- `ctx.ref(cap)` is the label of a capability another block provides.
+- `ctx.next` is the label to jump to when an opening hands on.
+- `ctx.P`, `ctx.old`, `ctx.core`, `ctx.settings`; `ctx.pc()` is the index of the
+  next instruction; `ctx.total` is the whole warrior's size and `ctx.span` the
+  size of what's protected (both 0 in the measuring pass, real in the second;
+  sizes must not depend on them).
+
+Write the code yourself. Hill warriors and published originals may be studied
+for ideas, never copied.
+
+### Checking behaviour: `watch(api)`
+
+`watch(api)` returns hooks for one running copy of the block:
+`{ before(pc) → token, after(token), final() }`. `before` is called before
+every step with the program counter about to run, `after` with what `before`
+returned, and `final` at the end of each run. Throw an `Error` with a clear
+message when the block breaks its contract. `api` has:
+
+- `vm` (peek, writeCycle, writerPc, processes(0), warriors[0]), `P`, `settings`, `core`
+- `at(local, k = 0)`: the address of a local label (+ k) in this running copy, wrapped
+- `self` (`{ start, size }`: this copy's cells), `image` (the whole warrior as loaded), `total`, `maxLength`, `mayStop` (inside a trigger's first member)
+- `code(local, k = 0)`: the compiled instruction at that label (+ k), to compare against
+- `entry()`, `inSelf(c)`, `inImage(c)`, `norm(x)`, `same(a, b)` (instructions equal mod core)
+- `alone`: true when this block is the whole warrior and nothing is planted; check
+  quantities (cells bombed, copies made) only then
+- `scenario`: the run's name; with `plant`, it is `'<id>: planted target'` for the planted copy and `'<id>: planted target (another copy)'` for any other copy of the same block
+
+The gate itself checks, for every tree: it survives alone to the cycle limit
+from three load positions; it never runs more processes than the blocks
+declare (unless one `grows`); every block is entered; every block that runs
+forever is still running 1,000 cycles after it was entered. Combinators add
+scenarios: a trigger's marker or loop is damaged and its second member must
+take over; a switch is shown each P-space history and must take the right branch.
+
+### Testing a block
+
+Each group of blocks gets `test/algebra-<group>.test.js`: every block builds
+with `buildTree` and passes the gate with its defaults on every rule set it
+supports ('88, 94nop, lp, 94x), alone and in at least one combination (`par`,
+`seq`, `trigger`, `apart`); a scanner's planted target is found; and at least
+one broken setting is refused by `mismatches` or the gate. Keep a test file
+under a minute. `node scripts/algebra.js catalog` regenerates the catalog.
 
 ## Combinators
 
 | Combinator | Lays out | Contract |
 |---|---|---|
 | `seq(a, b, ...)` | All members' state cells, then each member's code; each hands control to the next | Every member but the last exits `next`; the last runs forever. A member's `needs` are met by another member's `provides` |
-| `par(a, b, ...)` | `SPL` launchers, then the members (any that write ahead of themselves, like a spiral, last) | Members run forever, don't clear the core, and fit the process limit together |
+| `par(a, b, ...)` | `SPL` launchers, then the members (any with `layout: 'last'` last) | Members run forever, don't clear the core, and fit the process limit together |
 | `relocate(x)` | Copies `x` to probe + HOP and jumps there | `x` must be relocatable |
-| `boot(x, stay)` | `x`, then `stay` (left behind), then code that copies `x` to + HOP and starts the copy | One relocation per warrior |
+| `boot(x, stay)` | `x`, then `stay` (left behind), then code that copies `x` to + HOP, UNROLL cells a loop, and starts the copy | One relocation per warrior |
 | `image(a, b, ...)` | Members in order; the first one runs | The rest are `data` |
-
-Phase 2 adds `trigger(a, b)` (switch on a timer or a damaged marker) and
-`switch(a, b)` (choose by P-space, where the rules have it).
+| `trigger(a, b)` | A watcher beside `a`; when it fires it rewrites `a`'s `loop` to jump to `b` | MODE 0: after TIME laps; 1: when its marker is damaged; 2: when `a`'s loop is damaged (a watchdog, which starts `b` itself) |
+| `apart(a, b)` | Copies `b` D cells away and runs it there beside `a` | Neither clears the core; the copy must not overlap |
+| `copies(x)` | N copies of `x`, D cells apart, all running | As `apart` |
+| `switch(a, b)` | Reads P-space: keeps its last choice after a win or tie, flips it after a loss | Only where the rules have P-space (the 94x hill) |
 
 ## Linker
 
@@ -58,15 +131,12 @@ and the blocks choose '88 or '94 code from `ctx.old`.
 
 ## Gate
 
-1. The contract: every block's `iface` accepts the settings; combinators'
-   rules hold; every `need` is provided.
+1. The contract: every block's `mismatches` accept the settings; combinators'
+   rules hold; every `need` is provided; the processes fit.
 2. It assembles and fits the length limit.
-3. It runs alone from several load positions, including one where a copy
-   wraps the end of the core, to the cycle limit (20,000 cycles with a paper,
-   which fills the process table), and survives.
-4. Every block's checks hold. A `par` member is first gated on its own, then
-   every member must still be running at cycle 1,000. A `seq` must reach its
-   last member, intact. Scanners are shown a planted target and must react.
+3. The shapes `combo` can make keep `combo`'s exact checks: a chain (an opening,
+   then a clear) and bodies side by side.
+4. Every other tree goes through the generic gate described above.
 
 Passing the gate means the warrior does what its blocks claim when it runs
 alone; it says nothing about how well it fights.
@@ -82,13 +152,16 @@ rewards shapes it hasn't seen.
 
 ## Phases
 
-1. This contract, the linker, the gate and the tree genome, with `combo`'s
-   blocks ported as leaves.
-2. Triggers, the evolution loop and the shape archive.
-3. Hill staples: quickscan, one-shot, Mice-style paper, imp ring, decrement
-   gate, airbag stone, distributed stones.
-4. Control and defence: P-space switch, marker trigger, anti-clear leap,
-   watchdog; Lifeboat and Compass as trees.
-5. Torus and volume blocks (TRN).
+1. Done: this contract, the linker, the gate and the tree genome, with
+   `combo`'s blocks ported as leaves.
+2. Done: the combinators `trigger`, `apart`, `copies`, `switch` and a fast
+   `boot`; the generic gate; 28 more blocks (scanners, stones and bombers,
+   clears, papers, imps and gates, capture, sensors and repair); named recipes
+   (Compass, one-shot, distributed stones, stone/imp, a watchdog).
+3. Next: the evolution loop over trees, with an archive keyed by behaviour
+   and by tree shape.
+4. Torus and volume blocks (TRN), once the linker lays code out on a plane.
+5. Not built: `fang-backtrack` (a fang can't record where it ran), a
+   `duel` helper so checks can run a real opponent.
 
 All blocks are written here. Hill warriors are studied, never copied.

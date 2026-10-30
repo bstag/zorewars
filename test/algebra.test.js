@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { compile, mulberry32 } from '../src/engine/index.js';
 import { recipeSettings } from '../tools/blocks/recipes.js';
 import { emitCombo, buildCombo, comboDefaults, comboMismatches } from '../tools/blocks/combo.js';
-import { buildTree, comboToTree, link, treeMismatches, randomTree, mutate, crossover, fits, id, shape, leaves } from '../tools/algebra/index.js';
+import { buildTree, comboToTree, link, treeMismatches, randomTree, mutate, crossover, fits, id, shape, leaves, recipes } from '../tools/algebra/index.js';
 
 const code = (source, settings) => {
   const w = compile(source, 'redcode', settings);
@@ -74,14 +74,50 @@ test('trees combo cannot make: more bodies, two of one body, booted bodies', () 
     ['94nop', { id: 'par', kids: [stone(4), stone(8)] }],
     ['94nop', { id: 'par', kids: [stone(4), { id: 'spiral', P: { SN: 7, SK: 3 } }, { id: 'vampire', P: { VSTEP: 7 } }] }],
     ['88', { id: 'boot', P: { HOP: 3000 }, kids: [{ id: 'spiral', P: { SN: 13, SK: 4 } }, { id: 'decoys', P: { DECOYS: 6, DECOY: 0 } }] }],
-    ['94nop', { id: 'par', kids: [{ id: 'spiral', P: { SN: 7, SK: 3 } }, { id: 'spiral', P: { SN: 9, SK: 4 } }] }],
   ];
+  // Two blocks that each write just ahead of themselves can't both be laid out last.
+  assert.ok(treeMismatches({ id: 'par', kids: [{ id: 'spiral', P: { SN: 7, SK: 3 } }, { id: 'spiral', P: { SN: 9, SK: 4 } }] }, recipeSettings('94nop'))
+    .some((m) => /only one member may write just ahead/.test(m)));
   for (const [rules, tree] of cases) {
     const built = buildTree(tree, { rules });
     assert.equal(built.verification.ok, true, shape(tree));
     assert.equal(built.shape, shape(tree));
   }
-  assert.throws(() => buildTree({ id: 'seq', kids: [{ id: 'opening-bomber' }, stone(4)] }, { rules: '94nop' }), /No gate for this shape yet/);
+});
+
+test('combinators beyond combo: triggers, spacing, copies, a P-space switch, a fast boot', () => {
+  const stone = (TSTEP) => ({ id: 'stone', P: { TSTEP, TBOMB: 0 } });
+  const spiral = { id: 'spiral', P: { SN: 7, SK: 3 } };
+  const cases = [
+    ['94nop', { id: 'trigger', P: { MODE: 0, TIME: 2000 }, kids: [stone(4), { id: 'finisher-counted' }] }],      // stone, then a clear
+    ['88', { id: 'trigger', P: { MODE: 1, TIME: 1 }, kids: [stone(4), spiral] }],                                // a spiral when the marker is hit
+    ['94nop', { id: 'trigger', P: { MODE: 2, TIME: 1 }, kids: [{ id: 'vampire', P: { VSTEP: 7 } }, stone(16)] }], // a watchdog
+    ['94nop', { id: 'apart', P: { D: 4000 }, kids: [stone(4), spiral] }],
+    ['94nop', { id: 'copies', P: { N: 3, D: 2667 }, kids: [stone(4)] }],
+    ['94x-hill', { id: 'switch', P: { CELL: 17 }, kids: [stone(4), { id: 'paper', P: { PSTEP: 1777, PDELTA: 1013 } }] }],
+    ['94nop', { id: 'boot', P: { HOP: 3000, UNROLL: 3 }, kids: [spiral] }],
+    ['94nop', { id: 'seq', kids: [{ id: 'opening-bomber', P: { WAIT: 50, STEP: 997 } }, stone(4)] }],        // a bomber that becomes a stone
+  ];
+  for (const [rules, tree] of cases) {
+    const built = buildTree(tree, { rules });
+    assert.equal(built.verification.ok, true, shape(tree));
+  }
+  const scenarios = (tree, rules) => buildTree(tree, { rules }).verification.observations.map((o) => o.scenario);
+  assert.ok(scenarios(cases[1][1], '88').includes('trigger marker hit'));
+  assert.ok(scenarios(cases[5][1], '94x-hill').includes('switch: lost last round'));
+  // The gate catches a hand-over to a stone that lands on its own code.
+  assert.throws(() => buildTree({ id: 'trigger', P: { MODE: 2, TIME: 1 }, kids: [{ id: 'vampire', P: { VSTEP: 7 } }, stone(4)] }, { rules: '94nop' }), /did not survive/);
+  const s94 = recipeSettings('94nop');
+  assert.ok(treeMismatches({ id: 'switch', kids: [stone(4), spiral] }, s94).some((m) => /needs P-space/.test(m)));
+  assert.ok(treeMismatches({ id: 'trigger', kids: [spiral, stone(4)] }, s94).some((m) => /no loop/.test(m)));
+  assert.ok(treeMismatches({ id: 'copies', P: { N: 2, D: 100 }, kids: [stone(4)] }, s94).some((m) => /D must be/.test(m)));
+  assert.ok(treeMismatches({ id: 'copies', P: { N: 2, D: 7950 }, kids: [stone(4)] }, s94).some((m) => /on top of each other/.test(m)));
+});
+
+test('every named recipe builds and passes the gate on its rule sets', () => {
+  for (const [name, r] of Object.entries(recipes)) for (const rules of r.rules) {
+    assert.equal(buildTree(r.tree(rules), { rules }).verification.ok, true, `${name} on ${rules}`);
+  }
 });
 
 test('the genome only makes trees that fit, and is seeded', () => {
