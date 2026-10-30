@@ -272,6 +272,13 @@ function instances(root, labels, spans, settings) {
         walk(k[1], shifts, { ...flags, ...(node.P.MODE ? { optional: true, triggered: node.ns } : {}) });
         break;
       case 'switch': k.forEach((kid, i) => walk(kid, shifts, { ...flags, optional: true, branch: `${node.ns}:${i}` })); break;
+      case 'parboot': {
+        const { HOP, HOPY, HOPZ, STAY, REACT, HOP2, HOP2Y, HOP2Z } = node.P;
+        walk(k[0], shifts.map((s) => plus(s, vec(HOP, HOPY, HOPZ))), REACT ? { ...flags, mayStop: true } : flags);   // the copy (a REACT scenario hits it)
+        if (STAY) walk(k[0], shifts, flags);                                  // the original, still running
+        if (REACT) walk(k[0], shifts.map((s) => plus(s, vec(HOP2, HOP2Y, HOP2Z))), { ...flags, optional: true, triggered: `${node.ns}:react` });
+        break;
+      }
       case 'classify':
         walk(k[0], shifts, { ...flags, mayStop: true });
         walk(k[1], shifts, { ...flags, optional: true, branch: `${node.ns}:1` });
@@ -287,6 +294,8 @@ function instances(root, labels, spans, settings) {
 // What the combinators and blocks promise, as runs with something planted.
 function scenarios(root, labels, settings) {
   const out = [{ name: 'alone' }];
+  const geo = makeGeometry(settings);
+  const offset = (x, y, z, k) => (geo ? geo.add(geo.encode(x, y, z), k) : x + k);   // a hop, then k cells along the row
   const walk = (node) => {
     // A block that reacts to an opponent (a scanner) plants one and checks its reaction in watch.final.
     if (isLeaf(node) && leaves[node.id].plant) out.push({ name: `${node.id}: planted target`, plant: node.ns, id: node.id });
@@ -308,6 +317,15 @@ function scenarios(root, labels, settings) {
       const code = { op: 'MOV', mod: 'I', aMode: '$', a: 0, bMode: '$', b: 1 };
       out.push({ name: 'classify: hit by a zero DAT', at: 200, poke: labels[node.ns + 'mark'], ins: zero, branch: `${node.ns}:1` });
       out.push({ name: 'classify: hit by copied code', at: 200, poke: labels[node.ns + 'mark'], ins: code, branch: `${node.ns}:2` });
+    }
+    if (node.id === 'parboot') {
+      const P = node.P, x = node.kids[0];
+      // A bomb on the first copy loop before it starts: the other loops must still make the copy.
+      if (P.K > 1) out.push({ name: 'parboot: a copy loop bombed', at: 1, poke: labels[node.ns + 'loop1'] });
+      if (P.REACT) {
+        const hit = offset(P.HOP, P.HOPY, P.HOPZ, labels[x.ns + leaves[x.id].loop]);
+        out.push({ name: 'parboot: the copy was hit', at: 3000, poke: hit, expect: `${node.ns}:react`, ...(P.REACT === 2 ? { carpet: { at: hit, n: P.CARPET } } : {}) });
+      }
     }
     if (node.id === 'restart') {
       const loop = labels[node.kids[0].ns + leaves[node.kids[0].id].loop];
@@ -384,6 +402,7 @@ function checkGeneric(built) {
     });
     // Plants: [address, instruction] before the run, or [address, instruction, cycle] at that cycle.
     const later = [];
+    let stunned = 0;
     if (scenario.plant) {
       const v = watched.find((u) => u.x.node.ns === scenario.plant);       // the first copy
       for (const [addr, ins, cycle] of v.def.plant(v.api)) if (cycle) later.push([cycle, norm(addr), ins]); else vm.poke(norm(addr), ins);
@@ -393,6 +412,12 @@ function checkGeneric(built) {
     while (!vm.done && vm.cycle < horizon) {
       if (scenario.poke !== undefined && vm.cycle === scenario.at) vm.poke(add(base, scenario.poke), scenario.ins ?? { op: 'DAT', mod: 'F', aMode: '#', a: 9, bMode: '#', b: 9 });
       for (const [cycle, addr, ins] of later) if (vm.cycle === cycle) vm.poke(addr, ins);
+      // 1,000 cycles after a hit, the cells either side of it must have been stunned (along the
+      // core, as the carpet's pointer moves). Counted then, before other bombs land there.
+      if (scenario.carpet && vm.cycle === scenario.at + 1000) {
+        const at = add(base, scenario.carpet.at), n = scenario.carpet.n;
+        for (let k = -n; k <= n; k++) if (vm.peek(norm(at + k)).op === 'SPL') stunned++;
+      }
       const pc = vm.processes(0)[0];
       for (const v of byEntry.get(pc) ?? []) if (!v.entered) { v.entered = true; v.enteredAt = vm.cycle; }
       const tokens = watched.map((v) => v.hooks.before?.(pc) ?? null);
@@ -410,6 +435,7 @@ function checkGeneric(built) {
     }
     if (!vm.warriors[0].alive || vm.cycle !== horizon) throw new Error(`The warrior did not survive alone (${scenario.name})`);
     if (scenario.restored !== undefined && !same(vm.peek(add(base, scenario.restored)), w.instructions[scenario.restored])) throw new Error('restart: the damaged loop was not restored');
+    if (scenario.carpet && stunned < scenario.carpet.n) throw new Error(`parboot: only ${stunned} cells around the hit were stunned`);
     if (!limit.grows && vm.warriors[0].peak > limit.processes) throw new Error(`More processes than the blocks declare (${vm.warriors[0].peak} > ${limit.processes})`);
     for (const v of watched) {
       const { x } = v;

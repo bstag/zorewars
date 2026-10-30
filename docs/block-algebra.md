@@ -135,6 +135,7 @@ under a minute. `node scripts/algebra.js catalog` regenerates the catalog.
 | `apart(a, b)` | Copies `b` D cells away and runs it there beside `a` | Neither clears the core; the copy must not overlap |
 | `copies(x)` | N copies of `x`, D cells apart, all running | As `apart` |
 | `switch(a, b, ...)` | Reads P-space and jumps to one of 2–4 members. POLICY 0: move to the next after a loss; 1: only after two losses in a row; 2: every round | Only where the rules have P-space (the 94x hill). The gate tries every kind of history against a model of the code |
+| `parboot(x)` | K independent copy loops each copying `x` to + HOP; the first to finish starts the copy (one atomic DJN), so a bomb on one loop doesn't stop it. STAY 1 keeps a process on the original. REACT: the losing loops watch the copy's `loop`; when it's hit they make a new copy at + HOP2 (1), first stunning CARPET cells either side of the hit (2) | REACT needs K ≥ 2 and an `x` with a `loop`; the hops must clear the warrior and each other. The gate bombs a copy loop mid-copy, and hits the running copy |
 | `restart(x)` | Backs `x` up at the start; a watcher compares `x`'s `loop` with its original and, when it's damaged, copies the backup back and starts `x` again | `x` has a `loop` and doesn't roam |
 | `classify(a, b, c)` | Runs `a` beside a marker; when the marker is hit, a cell with both fields zero (a clear's or stone's DAT) hands over to `b`, anything else (copied code, a scanner's bomb) to `c` | `a` has a `loop`; '94 only |
 
@@ -186,6 +187,8 @@ rewards shapes it hasn't seen.
    and by tree shape.
 6. Not built: `fang-backtrack` (a fang can't record where it ran), `ring-paper`
    (no different from Mice with a fixed step), `parboot` (a warrior runs one
-   instruction a turn however many processes copy, so it isn't faster).
+   instruction a turn however many processes copy, so it isn't faster). Built
+   instead as `parboot` for survival: independent loops, a stay-behind original,
+   and watchers that re-copy or counter-attack when the copy is hit.
 
 All blocks are written here. Hill warriors are studied, never copied.

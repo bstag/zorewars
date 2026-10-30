@@ -137,6 +137,31 @@ test('more combinators: n-way P-space switches, restart, in-round classify', () 
   assert.ok(treeMismatches({ id: 'classify', kids: [ms(), paper, ms(2000)] }, recipeSettings('88')).some((m) => /needs ICWS'94/.test(m)));
 });
 
+test('parboot: independent copy loops, a stay-behind original, watchers that re-copy or attack back', () => {
+  const ms = (STEP = 3044) => ({ id: 'mod-stone', P: { STEP, BOMBS: 1, GUARD: 1 } });
+  const pb = (P, kid = ms()) => ({ id: 'parboot', P: { K: 2, HOP: 2000, STAY: 0, REACT: 0, HOP2: 5000, CARPET: 8, ...P }, kids: [kid] });
+  const scenarios = (tree, rules = '94nop') => buildTree(tree, { rules }).verification.observations.map((o) => o.scenario);
+  // A bomb on one copy loop before it runs: the others still make the copy, and it starts once.
+  for (const [rules, K] of [['94nop', 2], ['94nop', 4], ['88', 3]]) assert.ok(scenarios(pb({ K }), rules).includes('parboot: a copy loop bombed'), `${rules} K=${K}`);
+  assert.ok(scenarios(pb({ K: 3 }, { id: 'spiral', P: { SN: 7, SK: 3 } })).includes('alone'));
+  // STAY: the original keeps running beside the copy.
+  assert.equal(buildTree(pb({ STAY: 1 }), { rules: '94nop' }).verification.ok, true);
+  // REACT: when the copy is hit, a new copy starts at HOP2 (2: after stunning the cells around the hit).
+  for (const REACT of [1, 2]) assert.ok(scenarios(pb({ REACT })).includes('parboot: the copy was hit'), `REACT ${REACT}`);
+  assert.ok(scenarios(pb({ REACT: 2, HOP: 20000, HOP2: 40000 }), '94x').includes('parboot: the copy was hit'));
+  // The gate catches a copy whose stone bombs the watchers left in the original (this step and hop don't fit).
+  assert.throws(() => buildTree(pb({ REACT: 2, HOP: 4000, HOP2: 2000 }), { rules: '94nop' }), /did not survive/);
+  // On a torus: hops to other rows; the attack-back carpet is checked soon after the hit.
+  for (const P of [{ K: 3 }, { STAY: 1 }, { REACT: 2, HOP2Y: 55 }]) {
+    const tree = { id: 'parboot', P: { K: 2, HOP: 0, HOPY: 30, STAY: 0, REACT: 0, HOP2: 0, HOP2Y: 0, CARPET: 8, ...P }, kids: [{ id: 'vector-stone' }] };
+    assert.equal(buildTree(tree, { rules: '94nop', torus: '100x80' }).verification.ok, true, JSON.stringify(P));
+  }
+  const s94 = recipeSettings('94nop');
+  assert.ok(treeMismatches(pb({ K: 1, REACT: 1 }), s94).some((m) => /REACT needs K of 2/.test(m)));
+  assert.ok(treeMismatches(pb({ REACT: 1 }, { id: 'spiral' }), s94).some((m) => /no loop/.test(m)));
+  assert.ok(treeMismatches(pb({ REACT: 1, HOP2: 2100 }), s94).some((m) => /land on the first/.test(m)));
+});
+
 test('a block can duel a real opponent from its checks', () => {
   let result;
   leaves['test-duel'] = { ...leaves.stone, id: 'test-duel', file: 'test', watch: (api) => ({ final: () => { if (api.alone) result = api.duel('MOV 0, 1', { offset: 4000, cycles: 2000 }); } }) };

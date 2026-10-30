@@ -17,7 +17,7 @@ function sampleParam([lo, hi], random, near) {
   }
   return lo + Math.floor(random() * (hi - lo + 1));
 }
-const YZ = ['HOPY', 'HOPZ', 'DY', 'DZ'];
+const YZ = ['HOPY', 'HOPZ', 'DY', 'DZ', 'HOP2Y', 'HOP2Z'];
 let onTorus = false;                         // set by randomTree/mutate/crossover from the settings
 const sampleParams = (id, random) => {
   const def = definition(id);
@@ -100,7 +100,7 @@ function assemble({ main, boot, decoys }) {
 }
 
 export const MUTATIONS = ['tune', 'swap', 'boot', 'decoys', 'relocate', 'member', 'opening', 'wrap', 'unwrap'];
-const WRAPPERS = ['trigger', 'apart', 'copies', 'switch', 'restart', 'classify'];
+const WRAPPERS = ['trigger', 'apart', 'copies', 'switch', 'restart', 'classify', 'parboot'];
 
 // One mutation that keeps the tree legal; returns { tree, op } or null.
 export function mutate(tree, settings, random, tries = 60) {
@@ -163,7 +163,7 @@ function mutation(op, tree, random) {
     }
     case 'wrap': {                               // put the running part inside a new combinator
       const p = parts(tree), w = pick(WRAPPERS, random), body = () => leaf(pick(kinds.body, random), random);
-      if (w === 'copies' || w === 'restart') p.main = { id: w, P: sampleParams(w, random), kids: [p.main] };
+      if (w === 'copies' || w === 'restart' || w === 'parboot') p.main = { id: w, P: sampleParams(w, random), kids: [p.main] };
       else if (w === 'classify') p.main = { id: w, P: {}, kids: [p.main, body(), body()] };
       else if (w === 'switch' && random() < 0.4) p.main = { id: w, P: sampleParams(w, random), kids: [p.main, body(), body()] };
       else if (w === 'trigger') p.main = { id: w, P: sampleParams(w, random), kids: [p.main, random() < 0.5 ? body() : leaf(pick(kinds.finisher, random), random)] };

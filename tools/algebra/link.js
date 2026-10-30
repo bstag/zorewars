@@ -19,6 +19,10 @@ export const combinators = {
   switch: { kids: [2, 4], params: { CELL: [1, 500], POLICY: [0, 2] }, defaults: { CELL: 17, POLICY: 0 },
     purpose: 'Chooses one of its members by P-space (the 94x hill only). POLICY 0: keep the choice after a win or tie, move to the next after a loss; 1: move on only after two losses in a row; 2: move on every round.' },
   restart: { kids: [1, 1], purpose: 'Keeps a pristine copy of its member (a block with a loop) and a watcher; when the loop is damaged, copies the member back and starts it again.' },
+  parboot: { kids: [1, 1],
+    params: { K: [1, 4], HOP: [0, 54000], HOPY: [0, 200], HOPZ: [0, 200], STAY: [0, 1], REACT: [0, 2], HOP2: [0, 54000], HOP2Y: [0, 200], HOP2Z: [0, 200], CARPET: [1, 20] },
+    defaults: { K: 2, HOP: 4000, HOPY: 0, HOPZ: 0, STAY: 0, REACT: 0, HOP2: 2000, HOP2Y: 0, HOP2Z: 0, CARPET: 8 },
+    purpose: 'A boot by K independent copy loops, each copying its member to + HOP, so a bomb on one loop doesn\'t stop the copy; the first loop to finish starts the copy. STAY 1 keeps a process running the original too. REACT: the other loops stay on as watchers of the copy\'s loop; when it is hit they make a new copy at + HOP2 (1), first stunning CARPET cells either side of the hit (2).' },
   classify: { kids: [3, 3], params: {}, purpose: 'Runs its first member (a block with a loop) beside a marker. When the marker is hit, it looks at what hit it: a cell with both fields zero (a clear\'s or a stone\'s DAT) hands over to the second member; anything else (copied code, a scanner\'s bomb) to the third.' },
 };
 
@@ -50,7 +54,7 @@ export function annotate(tree) {
 export function entryOf(node) {
   if (isLeaf(node)) return node.ns + leaves[node.id].entry;
   if (node.id === 'seq' || node.id === 'image') return entryOf(node.kids[0]);
-  return node.ns + { par: 'split', relocate: 'transition', boot: 'boot', trigger: 'start', apart: 'start', copies: 'start', switch: 'start', restart: 'start', classify: 'start' }[node.id];
+  return node.ns + { par: 'split', relocate: 'transition', boot: 'boot', trigger: 'start', apart: 'start', copies: 'start', switch: 'start', restart: 'start', classify: 'start', parboot: 'start' }[node.id];
 }
 
 // par lays out members that write ahead of themselves (a spiral's imps) last.
@@ -87,12 +91,12 @@ export function iface(node, settings) {
   for (const p of parts) { for (const [c, l] of p.provides) if (!out.provides.has(c)) out.provides.set(c, l); for (const c of p.needs) out.needs.add(c); }
   const torus = settings.topology === 'torus';
   // On the ring a hop must clear the warrior; on a torus, a hop with a y or z part changes row.
-  const landsOnSelf = () => {
-    if (!torus) return node.P.HOP % core < 256;
-    const w = node.P.HOP % settings.sizeX;
-    return !(node.P.HOPY || node.P.HOPZ) && (w < settings.maxLength || settings.sizeX - w < settings.maxLength);
+  const landsOnSelf = (x = node.P.HOP, y = node.P.HOPY, z = node.P.HOPZ) => {
+    if (!torus) return x % core < 256 || core - (x % core) < 256;
+    const w = x % settings.sizeX;
+    return !(y || z) && (w < settings.maxLength || settings.sizeX - w < settings.maxLength);
   };
-  if (!torus && (node.P?.HOPY || node.P?.HOPZ || node.P?.DY || node.P?.DZ)) out.mismatches.push(`${node.id}: y and z parts only mean something on a torus`);
+  if (!torus && (node.P?.HOPY || node.P?.HOPZ || node.P?.DY || node.P?.DZ || node.P?.HOP2Y || node.P?.HOP2Z)) out.mismatches.push(`${node.id}: y and z parts only mean something on a torus`);
   switch (node.id) {
     case 'seq':
       parts.forEach((p, i) => {
@@ -174,6 +178,22 @@ export function iface(node, settings) {
       out.processes = 2 * (parts[0]?.processes ?? 0) + 1;     // a restart may join a process that survived
       break;
     }
+    case 'parboot': {
+      const x = kids[0], X = leaves[x?.id], P = node.P;
+      if (parts[0] && parts[0].exit !== 'never') out.mismatches.push(`parboot: ${x.id} must run forever`);
+      if (landsOnSelf()) out.mismatches.push('HOP lands on the warrior itself');
+      if (P.REACT) {
+        if (P.K < 2) out.mismatches.push('parboot: REACT needs K of 2 or more (the loops that lose the race watch the copy)');
+        if (!X?.loop) out.mismatches.push(`parboot: ${x?.id} has no loop for the watchers to check`);
+        if (X?.moves) out.mismatches.push(`parboot: ${x.id} moves itself away, so the watchers would lose it`);
+        if (landsOnSelf(P.HOP2, P.HOP2Y, P.HOP2Z)) out.mismatches.push('HOP2 lands on the warrior itself');
+        if (!torus && Math.min((P.HOP2 - P.HOP + 2 * core) % core, (P.HOP - P.HOP2 + 2 * core) % core) < 256) out.mismatches.push('parboot: the new copy would land on the first');
+        if (torus && P.HOP2Y === P.HOPY && P.HOP2Z === P.HOPZ && Math.abs((P.HOP2 - P.HOP) % settings.sizeX) < settings.maxLength) out.mismatches.push('parboot: the new copy would land on the first');
+      }
+      // The copy, the original (STAY), the new copy (REACT), and every loop's process until it stops.
+      out.processes = (parts[0]?.processes ?? 0) * (1 + P.STAY + (P.REACT ? 1 : 0)) + P.K;
+      break;
+    }
     case 'classify': {
       const a = kids[0], A = leaves[a?.id];
       if (!A?.loop) out.mismatches.push(`classify: ${a?.id} has no loop for the watcher to rewrite`);
@@ -190,7 +210,7 @@ export function iface(node, settings) {
       break;
   }
   if (node.id === 'image' || node.id === 'boot') out.exit = parts[0]?.exit ?? 'never';
-  if (['trigger', 'apart', 'copies', 'switch', 'restart', 'classify'].includes(node.id) && !out.mismatches.length) out.exit = 'never';
+  if (['trigger', 'apart', 'copies', 'switch', 'restart', 'classify', 'parboot'].includes(node.id) && !out.mismatches.length) out.exit = 'never';
   return out;
 }
 
@@ -439,6 +459,55 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
             ctx.ins('home', 'DAT', 'F', '#0', `#${xs.start + xs.size - pc}`);
             ctx.ins('again', 'DAT', 'F', '#0', `#${xs.size}`);
             for (let i = 0; i < xs.size; i++) ctx.ins(i ? '' : 'spare', 'DAT', 'F', '#0', '#0');
+            break;
+          }
+          case 'parboot': {
+            const x = kids[0], xs = spanOf(x), entry = entryOf(x), cmp = old ? 'CMP' : 'SEQ';
+            const loop = P.REACT ? x.ns + leaves[x.id].loop : null;
+            if (P.REACT) ctx.ins('start', 'MOV', 'I', loop, L('ref'));         // note the loop as it is now
+            for (let i = 2; i <= P.K; i++) ctx.ins(i === 2 && !P.REACT ? 'start' : '', 'SPL', 'B', L('loop' + i));
+            if (P.STAY) ctx.ins(P.K < 2 && !P.REACT ? 'start' : '', 'SPL', 'B', entry);   // a process stays on the original
+            if (P.K < 2 && !P.REACT && !P.STAY) ctx.mark('start');
+            // K independent copy loops, each copying all of x to + HOP.
+            for (let i = 1; i <= P.K; i++) {
+              copyLoop(ctx, 'loop' + i, 'src' + i, 'dst' + i, 'cnt' + i);
+              ctx.ins('', 'JMP', 'B', L('join'));
+            }
+            // The first loop to get here starts the copy; DJN decides atomically.
+            ctx.ins('join', 'DJN', 'B', L('lose'), L('flag'));
+            ctx.ins('', 'JMP', 'B', hopFrom(entry, P.HOP, P.HOPY, P.HOPZ));
+            if (!P.REACT) ctx.ins('lose', 'DAT', 'F', '#0', '#0');
+            else {
+              // The losers watch the copy's loop; the first to see it hit reacts.
+              ctx.ins('lose', cmp, 'I', hopFrom(loop, P.HOP, P.HOPY, P.HOPZ), L('ref'));
+              ctx.ins('', 'JMP', 'B', L('fire'));
+              ctx.ins('', 'JMP', 'B', L('lose'));
+              ctx.ins('fire', 'DJN', 'B', L('quit'), L('flag2'));
+              if (P.REACT === 2) {                                            // stun CARPET cells either side of the hit
+                ctx.ins('carpet', 'MOV', 'I', L('stun'), `<${L('cpt')}`);
+                ctx.ins('', 'DJN', 'B', L('carpet'), L('ccnt'));
+              }
+              copyLoop(ctx, 'again', 'src0', 'dst0', 'cnt0');                 // a new copy from the original
+              ctx.ins('', 'JMP', 'B', hopFrom(entry, P.HOP2, P.HOP2Y, P.HOP2Z));
+              ctx.ins('quit', 'DAT', 'F', '#0', '#0');
+              ctx.ins('ref', 'DAT', 'F', '#0', '#0');
+              ctx.ins('flag2', 'DAT', 'F', '#0', '#1');
+              if (P.REACT === 2) {
+                ctx.ins('cpt', 'DAT', 'F', '#0', `#${hopFrom(loop, P.HOP + P.CARPET + 1, P.HOPY, P.HOPZ)}`);
+                ctx.ins('ccnt', 'DAT', 'F', '#0', `#${2 * P.CARPET + 1}`);
+                ctx.ins('stun', 'SPL', 'B', '0', '0');
+              }
+              ctx.ins('src0', 'DAT', 'F', '#0', `#${xs.start + xs.size - pc}`);
+              ctx.ins('dst0', 'DAT', 'F', '#0', `#${hop(xs.start + P.HOP2 + xs.size - pc, P.HOP2Y, P.HOP2Z)}`);
+              ctx.ins('cnt0', 'DAT', 'F', '#0', `#${xs.size}`);
+            }
+            ctx.ins('flag', 'DAT', 'F', '#0', '#1');
+            for (let i = 1; i <= P.K; i++) {
+              ctx.ins('src' + i, 'DAT', 'F', '#0', `#${xs.start + xs.size - pc}`);
+              ctx.ins('dst' + i, 'DAT', 'F', '#0', `#${hop(xs.start + P.HOP + xs.size - pc, P.HOPY, P.HOPZ)}`);
+              ctx.ins('cnt' + i, 'DAT', 'F', '#0', `#${xs.size}`);
+            }
+            emit(x, env);
             break;
           }
           case 'classify': {
