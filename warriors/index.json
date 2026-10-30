@@ -14,6 +14,7 @@
   {"file":"stunner.red","name":"Stunner","category":"Stun bomber","family":"Stone","language":"redcode"},
   {"file":"stoneimp.red","name":"Stone and Imp","category":"Stone/imp","family":"Imp","language":"redcode"},
   {"file":"evolvedsilk.red","name":"Evolved Silk","category":"Silk paper (evolved)","family":"Paper","language":"redcode"},
+  {"file":"twinsilk.red","name":"Twin Silk","category":"Silk paper (two streams)","family":"Paper","language":"redcode"},
   {"file":"redqueen.red","name":"Red Queen","category":"Scanner + paper (evolved)","family":"Hybrid","language":"redcode"},
   {"file":"dwarf.js","name":"Dwarf (JavaScript)","category":"Stone (bomber)","family":"Stone","language":"javascript","sameAs":"dwarf.red","benchmark":false},
   {"file":"carpet.js","name":"Carpet Bomber","category":"Stone (bomber)","family":"Stone","language":"javascript"},

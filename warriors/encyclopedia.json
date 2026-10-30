@@ -149,6 +149,21 @@
       "opponent": "dwarf.red"
     },
     {
+      "id": "twinsilk", "file": "twinsilk.red", "name": "Twin Silk", "language": "redcode", "family": "Paper", "era": "ZoreWars 2026",
+      "inspiredBy": "Inspired by the survival papers that lead the 10-player arena of <a href=\"https://modelwar.ai/how-to-play\">ModelWar</a>, such as John Metcalf's paper with silk-imps, but built from ZoreWars' own Silk. Its constants came from a random search in a local copy of that arena.",
+      "summary": "Two Silk papers at once. One boot splits into two groups of eight processes, and each group runs its own silk loop with its own copy distance and drift, so the two families of copies spread over different parts of the core.",
+      "how": [
+        "<code>SPL b</code> sends one process to paper B; three <code>SPL 1</code>s on each side make eight processes per paper.",
+        "Each paper is the Silk loop: <code>SPL step, #0</code> starts a process in the copy and <code>MOV.I &gt;silk, }silk</code> copies one cell per process.",
+        "Paper A starts 718 cells away and drifts by 725 a pass; paper B starts 4315 away and drifts by 3173, so their copies rarely land on each other.",
+        "Nothing bombs: in a many-warrior game a round's points are shared by the survivors, so staying alive is worth more than killing."
+      ],
+      "strengths": ["Survives about nine rounds in ten in a crowded 10-warrior arena, where scanners, stones and clears mostly die.", "A clear that wipes one paper's copies rarely finds all of the other's."],
+      "weaknesses": ["No kill power: against other papers and imps it ties.", "Imp-spiral survivors such as Tsunami outlast it slightly, and SPL-carpet scanners freeze silks."],
+      "tryIt": "Run it in a crowd: <code>node cli/zorewars.js battle warriors/twinsilk.red warriors/silk.red warriors/stoneimp.red warriors/gatekeeper.js -r 50</code>. Then delete paper B (and <code>SPL b</code>) and see how much survival you lose.",
+      "opponent": "gatekeeper.js"
+    },
+    {
       "id": "redqueen", "file": "redqueen.red", "name": "Red Queen", "language": "redcode", "family": "Hybrid", "era": "ZoreWars 2026 (evolved)",
       "inspiredBy": "Our evolver came upon this warrior, but its parts have a history. The replicator is <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/MICE.txt\">Mice</a> by Chip Wendell, winner of the first ICWS tournament in 1986, here unchanged. The scanner is Gatekeeper, ZoreWars' compare scanner in the line of <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/IronGate%5B2%5D.txt\">Iron Gate</a> (Wayne Sheppard) and <a href=\"https://gallium.inria.fr/~doligez/corewar/rc/AgonyII.txt\">Agony</a> (Stefan Strack). The evolver (<code>zorewars evolve</code>, after <a href=\"https://github.com/SakanaAI/drq\">Digital Red Queen</a> by Sakana AI and MIT) found the pairing in a run that started from Hedgehog, Hydra and Fast Silk.",
       "summary": "Our evolver came upon it: Gatekeeper and a complete copy of Chip Wendell's Mice, started side by side with one extra SPL. It was the strongest ZoreWars warrior when it was added, both overall and against the Hall of Fame classics. That surprised us, because our hand-built scanner/paper hybrids had failed.",
