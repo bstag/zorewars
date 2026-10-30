@@ -183,12 +183,19 @@ rewards shapes it hasn't seen.
 4. Done: torus and volume support (vector hops, per-axis copy loops,
    geometry-aware checks) and six torus blocks (vector stone, TRN row sweeper,
    plane clear, volume paper, torus scanner, column imp).
-5. Next: the evolution loop over trees, with an archive keyed by behaviour
+5. Done: `parboot` (redundant copy loops, a stay-behind original, watchers
+   that re-copy or counter-attack when the copy is hit).
+6. Done: the hill gaps found by surveying our warriors, the Hall of Fame and
+   the hill leaders: probe-burst, lattice quickscan and decoy maker; the
+   modern multi-process hill stone (DJN stream, remote bomb, self-bomb to
+   clear), scanning vampire, elf, multi-process clear; pair-wipe and carpet
+   scanners with '88 versions; bombing Mice, '88 silk, anti-imp silk, dual
+   launchers; vector silk, backward clear, multi-process plane clear, torus
+   leap. The wave boot is the `waveboot` recipe (parboot of a par).
+7. Next: the evolution loop over trees, with an archive keyed by behaviour
    and by tree shape.
-6. Not built: `fang-backtrack` (a fang can't record where it ran), `ring-paper`
-   (no different from Mice with a fixed step), `parboot` (a warrior runs one
-   instruction a turn however many processes copy, so it isn't faster). Built
-   instead as `parboot` for survival: independent loops, a stay-behind original,
-   and watchers that re-copy or counter-attack when the copy is hit.
+8. Not built: `fang-backtrack` (a fang can't record where it ran), `ring-paper`
+   (no different from Mice with a fixed step), a scheduled-airbag block (its
+   fall-through-on-loss claim couldn't be verified without a counter).
 
 All blocks are written here. Hill warriors are studied, never copied.

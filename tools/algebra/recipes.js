@@ -48,6 +48,12 @@ export const recipes = {
     purpose: 'A vampire with a watchdog: if its loop is hit, a stone takes over (in the spirit of Lifeboat).',
     tree: () => ({ id: 'trigger', P: { MODE: 2, TIME: 1 }, kids: [{ id: 'vampire', P: { VSTEP: 7 } }, stone(16)] }),
   },
+  waveboot: {
+    rules: ['88', '94nop'],
+    purpose: 'A redundant process wave boots a stone and an imp spiral together and splits between them (parboot of a par): a bomb on one copy loop cannot stop the boot.',
+    tree: () => ({ id: 'parboot', P: { K: 2, HOP: 3000, HOPY: 0, HOPZ: 0, STAY: 0, REACT: 0, HOP2: 2000, HOP2Y: 0, HOP2Z: 0, CARPET: 8 },
+      kids: [{ id: 'par', kids: [{ id: 'mod-stone', P: { STEP: 2936, BOMBS: 1, GUARD: 1 } }, { id: 'spiral', P: { SN: 7, SK: 3 } }] }] }),
+  },
   'spread-stone-spiral': {
     rules: ['94nop'],
     purpose: 'A stone, with an imp spiral started 4000 cells away from it.',
