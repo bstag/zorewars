@@ -123,7 +123,7 @@ function parseArgs(argv) {
     const a = argv[i];
     if (a.startsWith('--')) {
       const key = a.slice(2);
-      if (['json', 'help', 'report', 'classics', 'write', 'scratch', 'self', 'validate', 'league'].includes(key)) args.flags[key] = true;
+      if (['json', 'help', 'report', 'classics', 'write', 'scratch', 'self', 'validate', 'league', 'tune'].includes(key)) args.flags[key] = true;
       else args.flags[key] = argv[++i];
     } else if (a === '-h') args.flags.help = true;
     else if (/^-[A-Za-z]$/.test(a) && PMARS_FLAGS[a[1]]) args.flags[PMARS_FLAGS[a[1]]] = argv[++i];

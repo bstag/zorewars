@@ -420,6 +420,8 @@ async function cmdEvolveTrees(args, h, { quiet = false } = {}) {
   if (!(ties >= 0 && ties <= 1)) h.usage('--ties must be between 0 and 1');
   const aim = f.aim === undefined ? true : !['0', 'false', 'no', 'off'].includes(String(f.aim));
   const aimTries = integer('aim-tries', 6), aimExplore = Number(f['aim-explore'] ?? 0.3);
+  const lexicase = f.select ? f.select === 'lexicase' : true;   // --select lexicase|tournament
+  const lexEpsilon = Number(f['lex-epsilon'] ?? 0.1);
   // Starting trees: --start a.json[,b.json] (a tree or an array of trees), else the recipes for these rules.
   const starts = [];
   for (const file of f.start ? String(f.start).split(',') : []) starts.push(...[].concat(JSON.parse(fs.readFileSync(file, 'utf8'))));
@@ -428,15 +430,15 @@ async function cmdEvolveTrees(args, h, { quiet = false } = {}) {
   if (f.ladder && !f.hill) h.usage('--ladder needs --hill');
   const out = f.out ?? path.join('evolved', 'trees');
   fs.mkdirSync(out, { recursive: true });
-  if (f.ladder) return climbHill(args, h, { settings, rules, length, torus, starts, batch, rounds, race, seed, archiveSize, ties, aim, aimTries, aimExplore, integer, out, json });
+  if (f.ladder) return climbHill(args, h, { settings, rules, length, torus, starts, batch, rounds, race, seed, archiveSize, ties, aim, aimTries, aimExplore, lexicase, lexEpsilon, integer, out, json });
   const field = f.hill ? await hillOpponents(String(f.hill), settings, { ...f, top: f.top ?? '30' }) : libraryOpponents(settings);
   if (!field.length) h.usage('no opponents compiled for this battlefield');
   const pool = await battlePool(f, h);
   const counters = await counterTable(f, out);
   try {
     await tagField(field, settings, json);
-    if (!json) console.log(`Evolving block trees on ${rules}${torus ? ` (torus ${torus})` : ''}, up to ${settings.maxLength} instructions, against ${field.length} ${f.hill ? 'hill' : 'library'} warriors: ${generations} generations of ${batch}${f.tune ? ', numbers only' : ''}, ${rounds} rounds on the screen, racing ${race}${ties !== 1 ? `, ties worth ${ties}` : ''}${aim ? ', mutations aimed by the counter table' : ''}.\n`);
-    const r = await evolveTrees({ pool, field, rules, length, torus, starts, generations, batch, rounds, race, seed, archiveSize, ties, counters: counters.table, aim, aimTries, aimExplore,
+    if (!json) console.log(`Evolving block trees on ${rules}${torus ? ` (torus ${torus})` : ''}, up to ${settings.maxLength} instructions, against ${field.length} ${f.hill ? 'hill' : 'library'} warriors: ${generations} generations of ${batch}${f.tune ? ', numbers only' : ''}, ${rounds} rounds on the screen, racing ${race}${ties !== 1 ? `, ties worth ${ties}` : ''}${aim && !f.tune ? ', mutations aimed by the counter table' : ''}.\n`);
+    const r = await evolveTrees({ pool, field, rules, length, torus, starts, generations, batch, rounds, race, seed, archiveSize, ties, counters: counters.table, aim, aimTries, aimExplore, lexicase, lexEpsilon,
       ops: f.tune ? ['tune'] : undefined,
       onLog: (t) => { done(json); if (!json) console.log(t); },
       onGeneration: (rec) => {
@@ -484,6 +486,7 @@ async function climbHill(args, h, o) {
   const hill = await hillOpponents(String(f.hill), settings, { ...f, top: f.top ?? '100000' });
   if (hill.length < 2) h.usage('no opponents compiled for this battlefield');
   const rung = integer('ladder', 10), sample = integer('sample', 20, 0), cap = integer('cap', 10), fromRung = integer('from-rung', 1);
+  const clearPlace = integer('clear-place', 2), clearMargin = Number(f['clear-margin'] ?? 0.05), clearRounds = integer('clear-rounds', 30);
   // Resuming: --from-rung N --champions a.json,b.json (earlier champions, oldest first).
   const previous = (f.champions ? String(f.champions).split(',') : []).map((file) => {
     const tree = JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -494,11 +497,12 @@ async function climbHill(args, h, o) {
   await tagField(hill, settings, json);
   const source = (tree) => buildTree(tree, { rules: o.rules, length: o.length, torus: o.torus }).source;
   try {
-    if (!json) console.log(`Climbing ${f.hill} (${hill.length} warriors) from the bottom, ${rung} at a time: on each rung trees evolve against it, ${sample} cleared warriors and the latest champions, for up to ${cap} generations of ${o.batch}; a rung is cleared when the champion would rank first on it.\n`);
+    if (!json) console.log(`Climbing ${f.hill} (${hill.length} warriors) from the bottom, ${rung} at a time: on each rung trees evolve against it, ${sample} cleared warriors and the latest champions, for up to ${cap} generations of ${o.batch}${o.lexicase ? ', lexicase selection' : ''}; a rung is cleared when a champion ranks in the top ${clearPlace} or within ${clearMargin} of the leader (${clearRounds} rounds).\n`);
     if (!json && fromRung > 1) console.log(`Resuming at rung ${fromRung} with ${previous.length} earlier champions.
 `);
     const r = await climbTrees({ pool, hill, rung, sample, cap, fromRung, previous, rules: o.rules, length: o.length, torus: o.torus, starts: o.starts, seed: o.seed,
       batch: o.batch, rounds: o.rounds, race: o.race, archiveSize: o.archiveSize, ties: o.ties, counters: counters.table, aim: o.aim, aimTries: o.aimTries, aimExplore: o.aimExplore,
+      lexicase: o.lexicase, lexEpsilon: o.lexEpsilon, clearPlace, clearMargin, clearRounds,
       onGeneration: () => counters.save(),
       onLog: (t) => { done(json); if (!json) console.log(t); },
       onRung: (entry) => {

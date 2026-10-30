@@ -35,7 +35,7 @@ export async function evolveTrees({
   pool, field, rules = '94nop', length = 100, torus = null, starts = [],
   generations = 10, batch = 30, rounds = 10, race = 2, seed = 1, ops = MUTATIONS, ties = 1,
   archiveSize = 48, crossRate = 0.25, randomRate = 0.1, onLog = () => {}, onGeneration = () => {}, stop = null,
-  counters = null, aim = true, aimTries = 6, aimExplore = 0.3,
+  counters = null, aim = true, aimTries = 6, aimExplore = 0.3, lexicase = false, lexEpsilon = 0.1,
 }) {
   // The field may change by generation (a function of it), as the ladder's does.
   const fieldAt = typeof field === 'function' ? field : () => field;
@@ -130,6 +130,27 @@ export async function evolveTrees({
     return best;
   }
 
+  // Parent selection. Tournament picks by average fitness, which lets the
+  // highest-tying design (a paper) crowd out everything. Lexicase instead keeps,
+  // opponent by opponent in a shuffled order, the candidates that are best (within
+  // lexEpsilon) against that opponent, until one is left: a warrior that is best
+  // against some opponents survives even if its average is low, so attackers that
+  // beat scanners or clears stay in the gene pool beside the papers.
+  function selectParent(pool3, gen) {
+    if (!lexicase) return [pick(pool3), pick(pool3), pick(pool3)].sort((a, b) => b.fit - a.fit)[0];
+    const cands = pool3.map((e) => ({ e, pts: rowsOf(e.tree, gen, 0)?.rows.map((r) => r.pts) })).filter((c) => c.pts);
+    if (cands.length <= 1) return cands[0]?.e ?? pick(pool3);
+    const order = [...cands[0].pts.keys()];
+    for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+    let alive = cands;
+    for (const o of order) {
+      const best = Math.max(...alive.map((c) => c.pts[o]));
+      alive = alive.filter((c) => c.pts[o] >= best - lexEpsilon);
+      if (alive.length === 1) break;
+    }
+    return pick(alive).e;
+  }
+
   const history = [];
   for (let gen = 1; gen <= generations; gen++) {
     // Elites are judged again on this generation's seeds, so fits compare.
@@ -139,7 +160,7 @@ export async function evolveTrees({
     let placed = 0;
     for (let k = 0; k < batch; k++) {
       const pool3 = [...archive.values()];
-      const parent = [pick(pool3), pick(pool3), pick(pool3)].sort((a, b) => b.fit - a.fit)[0];
+      const parent = selectParent(pool3, gen);
       let child = null, mutated = false;
       const r = random();
       if (r < randomRate && ops === MUTATIONS) { try { child = randomTree(settings, random); } catch { child = null; } }
@@ -198,7 +219,8 @@ export async function placeOnHill({ pool, field, w, settings, rounds = 50, seed 
 // `previous`, the earlier champions in order ({ shape, tree, w }); the last of
 // them is the champion, and they all play as Red Queen opponents.
 export async function climbTrees({
-  pool, hill, rung = 10, sample = 20, champions = 3, cap = 10, clearRounds = 20, fromRung = 1, previous = [],
+  pool, hill, rung = 10, sample = 20, champions = 3, cap = 10, clearRounds = 30, fromRung = 1, previous = [],
+  clearPlace = 2, clearMargin = 0.05,
   rules = '94nop', length = 100, torus = null, starts = [], seed = 1, onLog = () => {}, onRung = () => {}, ...evolve
 }) {
   const settings = treeSettings(rules, length, torus);
@@ -207,9 +229,13 @@ export async function climbTrees({
   const below = rungs.slice(0, fromRung - 1).flatMap((r) => r.field), record = [];
   const past = previous.map((c, i) => ({ name: `champion ${i + 1}`, group: 'champion', w: c.w }));
   let champ = previous.at(-1) ?? null, carry = starts, generations = 0;
-  // Cleared: the warrior would rank first among the rung's warriors by score.
+  // Cleared: the warrior ranks within `clearPlace` among the rung's warriors, or
+  // within `clearMargin` of the leader. Ranks are noisy on a tightly packed rung,
+  // so insisting on a clean 1st stalls the climb on luck; "top-2, or all but a
+  // hair behind the leader" tracks real competitiveness without that.
   const rank = (w, r) => placeOnHill({ pool, field: r.field, w, settings, rounds: clearRounds, cache: (r.cache ??= {}) });
-  const cleared = async (w, r) => (await rank(w, r)).place === 1;
+  const passes = (p) => { const lead = p.table.find((x) => !x.ours); return p.place <= clearPlace || (lead && lead.score - p.score <= clearMargin); };
+  const cleared = async (w, r) => passes(await rank(w, r));
   const ordinal = (n) => `${n}${[, 'st', 'nd', 'rd'][n % 100 >> 3 ^ 1 && n % 10] || 'th'}`;
   for (const [k, r] of rungs.entries()) {
     if (k + 1 < fromRung) continue;
@@ -234,7 +260,7 @@ export async function climbTrees({
         generations++;
         const p = await rank(w, r), lead = p.table.find((x) => !x.ours);
         rec.rung = { place: p.place, of: p.of, score: p.score, leader: lead.name, leaderScore: lead.score };
-        if (p.place === 1) { winner = { tree: rec.champion.tree, shape: rec.champion.shape, w }; return true; }
+        if (passes(p)) { winner = { tree: rec.champion.tree, shape: rec.champion.shape, w }; return true; }
         onLog(`${label}: generation ${rec.gen} on the rung: ${ordinal(p.place)} of ${p.of} (${p.score.toFixed(2)}; leader ${lead.name} ${lead.score.toFixed(2)})`);
         return false;
       } });

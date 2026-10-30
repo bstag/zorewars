@@ -61,6 +61,27 @@ test('climbTrees climbs from the bottom rung and records each one', async () => 
   } finally { pool.close(); }
 });
 
+test('lexicase selection runs and keeps the run seeded', async () => {
+  const pool = createPool(2);
+  try {
+    const run = () => evolveTrees({ pool, field, starts: [stone, paper], generations: 2, batch: 5, rounds: 2, race: 0, seed: 8, lexicase: true });
+    const a = await run(), b = await run();
+    assert.ok(a.archive.length >= 1);
+    assert.deepEqual(a.archive.map((e) => [e.shape, e.fit]), b.archive.map((e) => [e.shape, e.fit]));
+  } finally { pool.close(); }
+});
+
+test('a relaxed clear rule passes a close second place', async () => {
+  const pool = createPool(2);
+  try {
+    const hill = libraryOpponents(settings).slice(0, 6);
+    // clearPlace 2 lets a champion that is 2nd clear; a tiny clearMargin would too.
+    const r = await climbTrees({ pool, hill, rung: 3, sample: 2, cap: 2, clearRounds: 6, clearPlace: 2, clearMargin: 0.1, starts: [stone, paper], batch: 4, rounds: 2, race: 0, seed: 6 });
+    assert.ok(r.rungs.length >= 1);
+    assert.ok(r.rungs.some((x) => x.cleared || x.skipped));
+  } finally { pool.close(); }
+});
+
 test('a climb resumes from a rung with earlier champions', async () => {
   const pool = createPool(2);
   try {
