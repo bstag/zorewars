@@ -3,7 +3,7 @@
 ;strategy Decoy Shot plus a P-space switch: keep a score per clear setting and play the one that is ahead.
         ORG 20
         DAT.F   #1, #11
-        SPL.B   #8419, $13
+        SPL.B   #-11700, $13
         MOV.I   *-2, >-4
         MOV.I   *-3, >-5
         DJN.F   $-2, }-3

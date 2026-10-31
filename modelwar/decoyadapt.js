@@ -8,7 +8,7 @@ name("Decoy Adapter");
 author("ZoreWars");
 strategy("Decoy Shot plus a P-space switch: keep a score per clear setting and play the one that is ahead.");
 
-const P = {"ALT":5000,"DECOY":4000,"PERIOD":11,"STEP":10091,"DEC":8419};
+const P = {"ALT":5000,"DECOY":4000,"PERIOD":11,"STEP":10091,"DEC":13500};
 // SPACE {"DECOY":[200,5000],"PERIOD":[5,23],"STEP":[2000,23000],"DEC":[1000,24000]}
 
 raw(`gate    equ clear-4`);
