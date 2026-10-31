@@ -529,7 +529,7 @@ function libraryRefs(settings) {
     .filter((e) => inLibraryFor(e, settings))
     .map(builtinRef);
 }
-const devtools = async () => [await import('./devtools.js'), { loadAll, settingsFrom, usage, printTable, expandRefs, libraryRefs }];
+const devtools = async (module = './devtools.js') => [await import(module), { loadAll, settingsFrom, usage, printTable, expandRefs, libraryRefs }];
 
 const args = parseArgs(process.argv.slice(2));
 const cmd = args._.shift();
@@ -548,8 +548,8 @@ switch (cmd) {
   case 'species': { const [m, h] = await devtools(); await m.cmdSpecies(args, h); break; }
   case 'tune': { const [m, h] = await devtools(); await m.cmdTune(args, h); break; }
   case 'refine': { const [m, h] = await devtools(); await m.cmdRefine(args, h); break; }
-  case 'evolve': { const [m, h] = await devtools(); await m.cmdEvolve(args, h); break; }
-  case 'train': { const [m, h] = await devtools(); await m.cmdTrain(args, h); break; }
+  case 'evolve': { const [m, h] = await devtools('./evolution.js'); await m.cmdEvolve(args, h); break; }
+  case 'train': { const [m, h] = await devtools('./evolution.js'); await m.cmdTrain(args, h); break; }
   case 'pushoff': { const [m, h] = await devtools(); await m.cmdPushoff(args, h); break; }
   default: usage(`unknown command '${cmd}'`);
 }

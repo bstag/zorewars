@@ -40,7 +40,7 @@ await new Promise((resolve, reject) => {
 });
 const search = JSON.parse(fs.readFileSync(path.join(out, 'search/evolve.json'), 'utf8'));
 const report = { schemaVersion: 1, seed, settings, entryLength: 50, command: [process.execPath, ...args],
-  sourceHashes: Object.fromEntries(['tools/block-evolve.js', 'tools/blocks/registry.js', 'tools/blocks/compass.js', 'cli/block-devtools.js'].map(file => [file, hash(fs.readFileSync(path.join(root, file), 'utf8'))])),
+  sourceHashes: Object.fromEntries(['tools/evolution/blocks.js', 'tools/evolution/execution.js', 'tools/blocks/registry.js', 'tools/blocks/compass.js', 'cli/block-devtools.js'].map(file => [file, hash(fs.readFileSync(path.join(root, file), 'utf8'))])),
   field: field.map(({ w, ...x }) => ({ ...x, codeHash: hash(JSON.stringify(w.instructions)) })),
   comparison: comparison.map(({ w, ...x }) => ({ ...x, codeHash: hash(JSON.stringify(w.instructions)) })),
   search: { config: search.config, stats: search.stats, history: search.history, execution: search.execution, validation: search.validation },

@@ -62,7 +62,8 @@ node cli/zorewars.js train --profiles 94nop,88,lp,94x --seed 4242
 | `src/engine/` | The VM, assembler, JS generator and match runner. Shared by the browser and Node. |
 | `web/` | The arena (`index.html`, `app.js`, `arena.js`) and the tutorial (`docs.html`). |
 | `cli/zorewars.js` | Command-line battles, tournaments, compiler, and the static server with its archive proxy. |
-| `cli/devtools.js`, `tools/` | Developer tools: the parallel benchmark (`hill.js`, `worker.js`), tuner (`tune.js`), evolver (`evolve.js`, `genes.js`). |
+| `cli/devtools.js`, `tools/` | Developer tools: parallel benchmarks (`hill.js`, `worker.js`), tuning (`tune.js`), refinement and push-off scoring. |
+| `cli/evolution.js`, `cli/tree-evolution.js`, `tools/evolution/` | Evolution commands and searches: instructions, block recipes, generator parameters and algebra trees. See the [module map](tools/evolution/README.md). |
 | `cli/remote.js` | Fetches warriors from the public archives (allow-listed hosts for the proxy; Redcode only). |
 | `warriors/` | Built-in warriors and `index.json`, the library manifest. |
 | `lang/python/zorewars.py` | Python generator library. |

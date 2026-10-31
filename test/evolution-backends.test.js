@@ -45,6 +45,16 @@ test('evolution counters preserve accelerated solo checks and concurrent birth s
   } finally { cpu.close(); }
 });
 
+test('match-only backends fall back to engine solo measurements', async () => {
+  const cpu = createPool(1);
+  const matchOnly = { match: task => cpu.match(task) };
+  try {
+    const options = { sources, opponents, settings, rounds: 2, batches: 1, batchSize: 4,
+      evalRounds: 2, maxLength: 8, seed: 991 };
+    assert.deepEqual(await evolve({ ...options, pool: matchOnly }), await evolve({ ...options, pool: cpu }));
+  } finally { cpu.close(); }
+});
+
 test('evolution observes a live GPU-to-CPU fallback without changing seeded results', async () => {
   const cpu = createPool(1), fallbackCpu = createPool(1);
   let failures = 0;

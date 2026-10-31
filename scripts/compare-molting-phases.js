@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 import { compile, RULESETS, measureSpecies } from '../src/engine/index.js';
 import { createPool, libraryOpponents, evaluate } from '../tools/hill.js';
 import { parseTunable } from '../tools/tune.js';
-import { genomeId } from '../tools/evolve.js';
+import { genomeId } from '../tools/evolution/identity.js';
 import { genomeOf } from '../tools/genes.js';
 import { buildMolting, clearControl } from '../tools/molting-generator.js';
 

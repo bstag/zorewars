@@ -7,7 +7,7 @@ import { createHash } from 'node:crypto';
 import { RULESETS, measureSpecies } from '../src/engine/index.js';
 import { createPool, libraryOpponents, evaluate } from '../tools/hill.js';
 import { parseTunable } from '../tools/tune.js';
-import { genomeId } from '../tools/evolve.js';
+import { genomeId } from '../tools/evolution/identity.js';
 import { genomeOf } from '../tools/genes.js';
 import { validateCandidates } from '../tools/training.js';
 import { evolveParameters } from '../tools/parameter-evolve.js';

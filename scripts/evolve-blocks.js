@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { measureSpecies, mulberry32 } from '../src/engine/index.js';
 import { buildRecipe, recipeDefaults, recipeSpace, recipeSettings, recipeGenerator } from '../tools/blocks/recipes.js';
 import { hash } from '../tools/blocks/inventory.js';
-import { evolveParameters } from '../tools/parameter-evolve.js';
+import { evolveParameters } from '../tools/evolution/parameters.js';
 import { createPool, libraryOpponents, evaluate } from '../tools/hill.js';
 import { tune } from '../tools/tune.js';
 
@@ -43,7 +43,7 @@ const field = select(rules === '88' ? ['dwarf.red', 'scanner.red', 'vampire.red'
 const comparison = select(rules === '88' ? ['gemini.red', 'impring.red'] : ['seeker.red', 'oneshot.red']);
 if (field.length < 2 || !comparison.length) throw new Error('Too few surviving opponents for this profile');
 const report = { schemaVersion: 1, rules, settings, seed, schedule, backend: 'CPU', excluded,
-  implementation: { recipes: hash(fs.readFileSync(path.join(root, 'tools/blocks/recipes.js'), 'utf8')), evolution: hash(fs.readFileSync(path.join(root, 'tools/parameter-evolve.js'), 'utf8')) },
+  implementation: { recipes: hash(fs.readFileSync(path.join(root, 'tools/blocks/recipes.js'), 'utf8')), evolution: hash(fs.readFileSync(path.join(root, 'tools/evolution/parameters.js'), 'utf8')) },
   field: field.map(({w, ...x}) => ({ ...x, codeHash: hash(JSON.stringify(w.instructions)) })), comparison: comparison.map(({w, ...x}) => ({ ...x, codeHash: hash(JSON.stringify(w.instructions)) })),
   limitations: 'Small local panels and exploratory noise guards; comparison opponents are reused from earlier research. No claim of public hill strength. Ordinary tuner candidates are compilation-screened; finalists are behavior-checked again here.',
 };

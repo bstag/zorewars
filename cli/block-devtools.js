@@ -3,10 +3,10 @@ import path from 'node:path';
 import { RULESETS } from '../src/engine/index.js';
 import { libraryOpponents, classicOpponents, evaluate } from '../tools/hill.js';
 import { recipeFamilies } from '../tools/blocks/registry.js';
-import { evolveBlocks } from '../tools/block-evolve.js';
+import { evolveBlocks } from '../tools/evolution/blocks.js';
 import { validateCandidates } from '../tools/training.js';
 import { genomeOf } from '../tools/genes.js';
-import { genomeId } from '../tools/evolve.js';
+import { genomeId } from '../tools/evolution/identity.js';
 
 export async function cmdEvolveBlocks(args, h, { quiet, battlePool, hillOpponents, hillSettingsFor }) {
   const f = args.flags;

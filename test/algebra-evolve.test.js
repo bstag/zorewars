@@ -29,7 +29,7 @@ test('tune mode only changes numbers', async () => {
     const r = await evolveTrees({ pool, field, starts: [paper], generations: 2, batch: 4, rounds: 2, race: 0, seed: 5, ops: ['tune'], randomRate: 0 });
     // Without random trees or crossover, every niche keeps the starting shape.
     const starting = shape(paper);
-    const shapes = r.archive.map((e) => e.shape).filter((s) => s.startsWith('par('));
+    const shapes = r.archive.map((e) => e.shape);
     assert.ok(shapes.length > 0 && shapes.every((s) => s === starting), JSON.stringify(shapes));
   } finally { pool.close(); }
 });

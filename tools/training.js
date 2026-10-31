@@ -2,7 +2,7 @@
 // are never used as evidence that an exported version improved its baseline.
 import { RULESETS } from '../src/engine/index.js';
 import { createObjective } from './objective.js';
-import { genomeId } from './evolve.js';
+import { genomeId } from './evolution/identity.js';
 import { toWarrior } from './genes.js';
 
 export const TRAINING_PROFILES = Object.freeze({
