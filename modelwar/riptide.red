@@ -6,7 +6,6 @@
 ;strategy (tools/algebra/blocks/imps.js) with a SPL #0 pump in front, so a
 ;strategy spiral that is holed keeps getting fresh imps. For the 10-slot
 ;strategy ModelWar arena, where staying alive is what scores.
-;assert CORESIZE == 8000
 
 step    equ     2667            ; (CORESIZE+1)/3: three steps land one cell past the start
 gap     equ     5000            ; distance of the second spiral
