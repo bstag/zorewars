@@ -55,6 +55,8 @@ object:
 | `watch(api)` | Its behaviour checks (below) |
 | `running(api)` | Whether it is still running; default: a process is inside its own code. Moving bodies need their own |
 | `plant(api)` | For blocks that react to an opponent: `[[address, instruction], ...]` to poke before the run, or `[address, instruction, cycle]` to poke at that cycle (after the block has set itself up), so `watch` can check the reaction |
+| `claimsFreeB(P)`, `claimCell(P, L, k)` | Optional: data the block may keep in another block's free B-fields (below). `claimsFreeB` returns group sizes (each group stays in consecutive cells), or null to keep everything private; `claimCell` gives cell k's `{ label, value }`, the label the block addresses it by and the B-field text written there |
+| `linked(P, settings, at)` | Optional: reasons it can't be built, checked once the layout is known (`at(local)` is a label's address). For checks that depend on where the linker put things |
 
 ### Writing code: `ctx`
 
@@ -69,6 +71,8 @@ object:
   (`ctx.L('loop')`, `` `@${ctx.L('ptr')}` ``, `` `${ctx.L('a')}-${ctx.L('b')}` ``).
 - `ctx.mark(name)` labels the next instruction without adding one.
 - `ctx.ref(cap)` is the label of a capability another block provides.
+- `ctx.claimed` is the set of groups the linker placed in another block's free
+  B-fields (`claimsFreeB`): leave those cells out of `state`.
 - `ctx.next` is the label to jump to when an opening hands on.
 - `ctx.torus` (true on a torus), `ctx.geo` (the geometry: `X`, `Y`, `Z`, `encode`, `decode`, `add`), `ctx.vec(x, y, z)` (vector operand text);
 - `ctx.P`, `ctx.old`, `ctx.core`, `ctx.settings`; `ctx.pc()` is the index of the
@@ -92,11 +96,16 @@ message when the block breaks its contract. `api` has:
 - `self` (`{ start, size }`: this copy's cells), `image` (the whole warrior as loaded), `total`, `maxLength`, `mayStop` (inside a trigger's first member)
 - `code(local, k = 0)`: the compiled instruction at that label (+ k), to compare against
 - `entry()`, `inSelf(c)`, `inImage(c)`, `norm(x)`, `same(a, b)` (instructions equal mod core)
+- `inImage(c)`: the warrior as loaded plus each copy a combinator laid down (a boot's copy
+  holds only its member's cells, and counts once a process has run in it: before that
+  its cells are still to be written), minus a branch not taken; `inDead(c)`: cells that no
+  longer run (the original after a boot moved everything away, a branch not taken). An
+  opening may find dead cells and a burst may hit them; live ones never
 - `add(a, b)` and `rel(c, from)` (cells along the row from `from` to `c`): address arithmetic
   that works on a torus as well as the ring; on a torus use them instead of `norm(a + b)`. `geo` is the geometry (null on the ring)
 - `sole()`: every live process is inside this copy's code (it's the only block still
   running, e.g. a clear after its opening has handed on); `ref(cap)`: the address of a
-  capability another block provides; `entered()`: whether this copy has run yet (under
+  capability another block provides, in this copy's frame; `entered()`: whether this copy has run yet (under
   a `switch`, the branch not taken never does)
 - `alone`: true when this block is the whole warrior and nothing is planted; check
   quantities (cells bombed, copies made) only then
@@ -129,7 +138,7 @@ under a minute. `node scripts/algebra.js catalog` regenerates the catalog.
 | `seq(a, b, ...)` | All members' state cells, then each member's code; each hands control to the next | Every member but the last exits `next`; the last runs forever. A member's `needs` are met by another member's `provides` |
 | `par(a, b, ...)` | `SPL` launchers, then the members (any with `layout: 'last'` last) | Members run forever, don't clear the core, and fit the process limit together |
 | `relocate(x)` | Copies `x` to probe + HOP and jumps there | `x` must be relocatable |
-| `boot(x, stay)` | `x`, then `stay` (left behind), then code that copies `x` to + HOP, UNROLL cells a loop, and starts the copy | One relocation per warrior |
+| `boot(x, stay)` | `x`, then `stay` (left behind), then code that copies `x` to + HOP, UNROLL cells a loop, and starts the copy. WIPE 1: it starts the copy with SPL and the boot process erases the launch and the destination pointer before it dies | One relocation per warrior. WIPE adds one process for a few cycles |
 | `image(a, b, ...)` | Members in order; the first one runs | The rest are `data` |
 | `trigger(a, b)` | A watcher beside `a`; when it fires it rewrites `a`'s `loop` to jump to `b` | MODE 0: after TIME laps; 1: when its marker is damaged; 2: when `a`'s loop is damaged (a watchdog, which starts `b` itself) |
 | `apart(a, b)` | Copies `b` D cells away and runs it there beside `a` | Neither clears the core; the copy must not overlap |
@@ -137,6 +146,8 @@ under a minute. `node scripts/algebra.js catalog` regenerates the catalog.
 | `switch(a, b, ...)` | Reads P-space and jumps to one of 2–4 members. POLICY 0: move to the next after a loss; 1: only after two losses in a row; 2: every round | Only where the rules have P-space (the 94x hill). The gate tries every kind of history against a model of the code |
 | `parboot(x)` | K independent copy loops each copying `x` to + HOP; the first to finish starts the copy (one atomic DJN), so a bomb on one loop doesn't stop it. STAY 1 keeps a process on the original. REACT: the losing loops watch the copy's `loop`; when it's hit they make a new copy at + HOP2 (1), first stunning CARPET cells either side of the hit (2) | REACT needs K ≥ 2 and an `x` with a `loop`; the hops must clear the warrior and each other. The gate bombs a copy loop mid-copy, and hits the running copy |
 | `restart(x)` | Backs `x` up at the start; a watcher compares `x`'s `loop` with its original and, when it's damaged, copies the backup back and starts `x` again | `x` has a `loop` and doesn't roam |
+| `fork(opening, a, b)` | The opening runs; if its probe holds a hit, `a` runs, if it is still at the image boundary (nothing found), `b`. The gate runs the opening's planted target (must take `a`) and a run with nothing planted (must take `b`); once a branch is entered, the other is dead code that a body may attack. An empty cell separates `a` and `b` | the opening exits `next` and provides `probe`; `a` and `b` run forever. Bodies that treat the whole image as their own (some scanners) may wipe into themselves through the dead branch; the gate refuses those pairings |
+| `fanboot(a, b)` | A fan of SPLs (N of 2, 3, 4, 6, 8, 12 or 16 processes in lockstep), then copy lines `MOV <v, {v` that each copy N cells, `a` to + HOPA and `b` to + HOPB; each member's copy pointer is then run as its jump vector. SPLIT 0: `SPL` sends K·N processes into `a`, then `JMP` sends N into `b`; SPLIT 1: a `DJN #N` sends N-1 into `a` and the last one into `b`. A member whose entry isn't its first cell gets a `JMP` in front of it | Both members run forever and accept that many processes entering together (the gate decides: a silk with its own stages, a one-process stone and an imp launcher do; a backward silk tail doesn't); '94, ring only; the copies clear the warrior and each other; one relocation per warrior. The fan lines' B-fields are free (below) |
 | `classify(a, b, c)` | Runs `a` beside a marker; when the marker is hit, a cell with both fields zero (a clear's or stone's DAT) hands over to `b`, anything else (copied code, a scanner's bomb) to `c` | `a` has a `loop`; '94 only |
 
 ## Linker
@@ -145,6 +156,18 @@ Two passes: the first measures every block, the second emits with the sizes
 known (a guarded clear protects the whole image; a stone's first bomb lands
 past the end of the warrior). It writes `ORG` for '94 and `END entry` for '88,
 and the blocks choose '88 or '94 code from `ctx.old`.
+
+**Free B-fields.** Hill warriors keep tables in fields their other parts never
+read (Hullabaloo's quickscan table sits in its boot's SPLs). A block that
+offers such cells writes them with `ctx.free(run, i, label, opcode, modifier,
+a, b)`: when another block claimed cell i of that run, the linker puts that
+block's label on the instruction and its value in the B-field, otherwise `b`.
+Today `fanboot` offers its fan lines (run `fan`) and, with SPLIT 0 and K > 2,
+its extra `SPL *va` lines (`spk`). A block with `claimsFreeB` (the MUL
+quickscan with SHARE 1) gets whole groups from runs offered later in the same
+`seq`, which run after it; groups that don't fit stay in its own state cells.
+Its addresses must then be written as label arithmetic, and checks on where
+things land go in `linked`.
 
 ## Gate
 

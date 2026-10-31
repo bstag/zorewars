@@ -82,3 +82,61 @@ test('the watches catch a broken mechanism', () => {
   const lt = broken('opening-qscan-lattice', (l, o, m, a, b) => (l === 'dSecond' && o === 'MOV' ? [o, m, a.replace(/dpB$/, 'dpA'), b] : [o, m, a, b]));
   assert.throws(() => buildTree(seq(lt, guarded), { rules: '94nop', length: 100 }), /not the planted cell/, lt.id);
 });
+
+// opening-qscan-mul, cell by cell: plant a marker on each of the 4*UNITS cells
+// in turn and check the opening hands on exactly that cell, through the MUL.
+import { compile, VM } from '../src/engine/index.js';
+
+function mulHands(P, rules, cell) {
+  const settings = recipeSettings(rules, 100);
+  const built = buildTree(seq({ id: 'opening-qscan-mul', P }, { id: 'mod-stone' }), { rules, length: 100 });
+  const w = compile(built.source, 'redcode', settings);
+  const vm = new VM(settings);
+  vm.load([w], { positions: [0] });
+  if (cell !== null) vm.poke(cell, { op: 'DAT', mod: 'F', aMode: '#', a: 1, bMode: '#', b: 7 });
+  vm.run(40 + P.UNITS * 3);
+  return vm.peek(0).b;   // the probe is the first state cell
+}
+
+test('opening-qscan-mul decodes every cell it tests', () => {
+  const core = (rules) => recipeSettings(rules, 100).coreSize;
+  for (const [rules, P] of [['94nop', { QFAC: 349, GAP: 197, UNITS: 8 }], ['94nop', { QFAC: 1091, GAP: 197, UNITS: 10 }], ['94x', { QFAC: 349, GAP: 197, UNITS: 8 }]]) {
+    const c = core(rules), inv = [...Array(c).keys()].find((x) => (P.QFAC * x) % c === 1), dec = (1 + inv) % c;
+    const span = mulHands(P, rules, null);
+    for (let k = 0; k < P.UNITS; k++) {
+      const b = ((k + 1) * (1 + P.QFAC)) % c, a = (b + dec) % c;
+      for (const cell of [a, (a + P.GAP) % c, b, (b + P.GAP) % c]) assert.equal(mulHands(P, rules, cell), cell, `${rules} unit ${k} cell ${cell}`);
+    }
+    assert.ok(span > 0 && span <= 100, `${rules}: no hit should leave the boundary, got ${span}`);
+  }
+});
+
+test('opening-qscan-mul refuses a factor with no inverse and probes on itself', () => {
+  const s94 = recipeSettings('94nop'), sx = recipeSettings('94x');
+  const has = (P, settings, re) => assert.ok(treeMismatches(seq({ id: 'opening-qscan-mul', P }, stone), settings).some((m) => re.test(m)));
+  has({ QFAC: 350, GAP: 197, UNITS: 8 }, s94, /no inverse/);
+  has({ QFAC: 77, GAP: 197, UNITS: 8 }, sx, /no inverse/);      // 7 and 11 divide 55440
+  has({ QFAC: 349, GAP: 197, UNITS: 13 }, s94, /lands on or next to|same cell/);
+});
+
+test('opening-qscan-mul leads a burst and a finisher, and its watch catches a wrong pair choice', () => {
+  for (const rules of NEW) {
+    ok(seq({ id: 'opening-qscan-mul' }, guarded), rules, ['opening-qscan-mul']);
+    ok(seq({ id: 'opening-qscan-mul' }, { id: 'probe-burst' }, stone), rules, ['opening-qscan-mul', 'probe-burst']);
+    ok(seq({ id: 'opening-qscan-mul', P: { QFAC: 1091, GAP: 197, UNITS: 10 } }, { id: 'finisher-outward' }), rules, ['opening-qscan-mul']);
+  }
+  // Always take the first cell of the pair: the planted second cell is missed.
+  const mb = broken('opening-qscan-mul', (l, o, m, a, b) => (o === 'ADD' && m === 'AB' && a === '#197' ? [o, m, '#0', b] : [o, m, a, b]));
+  assert.throws(() => buildTree(seq(mb, guarded), { rules: '94nop', length: 100 }), /not the planted cell/, mb.id);
+});
+
+// Under a boot the copy's quickscan may find the abandoned original (a decoy):
+// the gate must judge the copy by its own cells and let a burst hit the dead
+// original, but never the live copy.
+test('booted quickscans and bursts pass the gate', () => {
+  for (const rules of NEW) {
+    for (const kids of [[{ id: 'opening-qscan-mul' }, stone], [{ id: 'opening-qscan-mul' }, { id: 'probe-burst' }, stone], [lattice, { id: 'probe-burst2' }, stone], [qdec, guarded]]) {
+      assert.equal(buildTree({ id: 'boot', kids: [seq(...kids)] }, { rules, length: 100 }).verification.ok, true, `boot(${kids.map((k) => k.id).join(',')}) on ${rules}`);
+    }
+  }
+});

@@ -129,7 +129,7 @@ test('more combinators: n-way P-space switches, restart, in-round classify', () 
     const built = buildTree({ id: 'restart', kids: [ms()] }, { rules });
     assert.ok(built.verification.observations.some((o) => o.scenario === 'restart: loop damaged'), rules);
   }
-  const classify = buildTree({ id: 'classify', kids: [ms(), paper, { id: 'finisher-counted' }] }, { rules: '94nop' });
+  const classify = buildTree({ id: 'classify', kids: [ms(), paper, { id: 'finisher-counted' }] }, { rules: '94nop', length: 100 });
   assert.deepEqual(classify.verification.observations.filter((o) => /^classify/.test(o.scenario)).map((o) => o.scenario),
     ['classify: hit by a zero DAT', 'classify: hit by copied code']);
   const s94 = recipeSettings('94nop');
