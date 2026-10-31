@@ -117,3 +117,28 @@ test('evolution can turn a par into a fanboot and give an opening a fork', async
   const forked = mutate({ id: 'seq', kids: [{ id: 'opening-qscan-mul' }, { id: 'silk-imps' }] }, s94, random, 60, ['fork']);
   assert.match(shape(forked.tree), /^fork\(opening-qscan-mul,/);
 });
+
+// copies and apart tell each member where its siblings are (ctx.siblings), and the scanner skips them.
+test('copied scanners see each other and leave each other alone', () => {
+  for (const rules of ['94nop', '88', '94x']) {
+    const settings = recipeSettings(rules, 100), core = settings.coreSize, D = rules === '94x' ? 20000 : 3000;
+    const built = buildTree({ id: 'copies', P: { N: 2, D }, kids: [{ id: 'scanner' }] }, { rules, length: 100 });
+    assert.equal(built.verification.ok, true, rules);
+    const sc = built.root.kids[0], { start, size } = built.spans[sc.ns], ptr = built.labels[sc.ns + 'ptr'], look = built.labels[sc.ns + 'sLook'];
+    const w = compile(built.source, 'redcode', settings), vm = new VM(settings);
+    vm.load([w], { positions: [0] });
+    const original = Array.from({ length: size }, (_, i) => JSON.stringify(vm.peek(start + i)));
+    let seen = 0;
+    for (let i = 0; i < 80000 && !vm.done; i++) {
+      const pc = vm.processes(0)[0];
+      if (pc === look) { const t = (ptr + vm.peek(ptr).b) % core; if (t >= start + D && t < start + D + size) seen++; }   // copy 0 looks at copy 1
+      vm.step();
+    }
+    assert.ok(seen > 0, `${rules}: the scan never reached the other copy`);
+    for (const shift of [0, D]) for (let i = 0; i < size; i++) {
+      const cell = { ...vm.peek(start + shift + i) }, orig = JSON.parse(original[i]);
+      if (['ptr', 'sTmp', 'empty'].some((l) => built.labels[sc.ns + l] === start + i)) continue;   // cells that change as it runs
+      assert.equal(JSON.stringify(cell), JSON.stringify(orig), `${rules}: copy at +${shift} damaged at ${i}`);
+    }
+  }
+});

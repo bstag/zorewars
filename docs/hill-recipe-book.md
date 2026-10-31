@@ -1064,7 +1064,12 @@ The gate learned three things on the way: a booted copy holds only its member's 
 - **The streams are safe, with limits.** `knight-pump-stream` aims its stream at a cell the stone's bombs keep resetting. It is safe while the stone runs; if the stone dies and the pump runs about 2,100 more passes, the stream reaches the pump.
 - **The anti-imp DAT:** in the clear's DAT pass, the bomb leaves a copy of itself that later passes copy, so the last bomb doesn't need to point at itself.
 
-Still open: `djn-vampire` should refuse a tree in which it isn't the last protected block (today only the gate catches it), which needs `linked` to see the protected span; and `apart`/`copies` could tell members where their siblings are.
+Both of those are now done:
+- **`linked` sees the protected span**, so `djn-vampire` is refused at link time wherever it isn't the last protected block.
+- **`copies` and `apart` tell each member where its siblings are** (`ctx.siblings`). The copies run the same code and can't tell which copy they are, so each avoids every window k·D away. The `scanBody` scanners skip those windows, which makes `copies(scanner)` and `apart(scanner, bscan-body)` legal.
+- **Composing plain scanners doesn't pay**, though: two copies of `scanner` score 0.153 and three 0.115, against 0.419 for one; `apart(scanner, bscan-body)` scores 0.264. Each copy gets a share of the cycles, so `twin-storm`'s 0.752 comes from its engines (SPL carpets, then a clear), not from there being two of them.
+
+Every gap the book listed now has a block.
 
 ## Reproducing the census
 

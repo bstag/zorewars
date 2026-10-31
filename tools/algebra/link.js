@@ -343,6 +343,7 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
       const L = (local) => node.ns + local;
       return {
         P: node.P, old, core, settings, L, next: env.next, span: env.span ?? total, total, claimed: node.claimed,
+        siblings: env.siblings ?? [],
         torus, geo: torus ? makeGeometry(settings) : null, vec: (x, y = 0, z = 0) => `[${x},${y},${z}]`,
         pc: () => pc,
         ref(cap) {
@@ -379,6 +380,7 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
       const start = pc;
       if (isLeaf(node)) {
         emitState(node, env);
+        node.span = env.span ?? total;               // what it protects, for its linked check
         leaves[node.id].emit(ctxFor(node, env));
       } else {
         const ctx = ctxFor(node, env), { L, P } = ctx, kids = node.kids;
@@ -477,8 +479,11 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
             ctx.ins('src', 'DAT', 'F', '#0', `#${bs.start + bs.size - pc}`);
             ctx.ins('dst', 'DAT', 'F', '#0', `#${hop(bs.start + P.D + bs.size - pc, P.DY, P.DZ)}`);
             ctx.ins('count', 'DAT', 'F', '#0', `#${bs.size}`);
-            emit(a, env);
-            emit(b, env);
+            // Each member learns where the other runs, in its own frame (ring only).
+            // The whole image, as the original holds it, D away either way.
+            const whole = env.span ?? total, near = (o) => (torus ? [] : [{ start: (o % core + core) % core, size: whole }]);
+            emit(a, { ...env, siblings: [...(env.siblings ?? []), ...near(P.D)] });
+            emit(b, { ...env, siblings: [...(env.siblings ?? []), ...near(-P.D)] });
             break;
           }
           case 'copies': {
@@ -493,7 +498,11 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
               ctx.ins('dst' + k, 'DAT', 'F', '#0', `#${hop(x.start + k * P.D + x.size - pc, k * P.DY, k * P.DZ)}`);
               ctx.ins('count' + k, 'DAT', 'F', '#0', `#${x.size}`);
             }
-            emit(kids[0], env);
+            // The copies run the same code and can't tell which one they are, so each
+            // avoids the others wherever they could be: k*D away, k = ±1 .. ±(N-1).
+            const sib = torus ? [] : [...new Set(Array.from({ length: 2 * (P.N - 1) }, (_, i) => ((i < P.N - 1 ? i + 1 : P.N - 1 - i - 1) * P.D % core + core) % core))]
+              .map((o) => ({ start: o, size: env.span ?? total }));   // the whole image: the original holds the copy loops too
+            emit(kids[0], { ...env, siblings: [...(env.siblings ?? []), ...sib] });
             break;
           }
           case 'fork': {
@@ -715,7 +724,7 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
   const misfits = [];
   const check = (node) => {
     const def = leaves[node.id];
-    if (def?.linked) misfits.push(...def.linked(node.P, settings, (l) => out.labels[node.ns + l]));
+    if (def?.linked) misfits.push(...def.linked(node.P, settings, (l) => out.labels[node.ns + l], { span: node.span }));
     for (const k of node.kids ?? []) check(k);
   };
   check(root);

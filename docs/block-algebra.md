@@ -56,7 +56,7 @@ object:
 | `running(api)` | Whether it is still running; default: a process is inside its own code. Moving bodies need their own |
 | `plant(api)` | For blocks that react to an opponent: `[[address, instruction], ...]` to poke before the run, or `[address, instruction, cycle]` to poke at that cycle (after the block has set itself up), so `watch` can check the reaction |
 | `claimsFreeB(P)`, `claimCell(P, L, k)` | Optional: data the block may keep in another block's free B-fields (below). `claimsFreeB` returns group sizes (each group stays in consecutive cells), or null to keep everything private; `claimCell` gives cell k's `{ label, value }`, the label the block addresses it by and the B-field text written there |
-| `linked(P, settings, at)` | Optional: reasons it can't be built, checked once the layout is known (`at(local)` is a label's address). For checks that depend on where the linker put things |
+| `linked(P, settings, at, { span })` | Optional: reasons it can't be built, checked once the layout is known (`at(local)` is a label's address, `span` the size of what it protects). For checks that depend on where the linker put things |
 
 ### Writing code: `ctx`
 
@@ -73,6 +73,11 @@ object:
 - `ctx.ref(cap)` is the label of a capability another block provides.
 - `ctx.claimed` is the set of groups the linker placed in another block's free
   B-fields (`claimsFreeB`): leave those cells out of `state`.
+- `ctx.siblings` lists other copies of the warrior that run beside this block
+  (under `copies` or `apart`), as `{ start, size }` windows in this block's own
+  frame (offsets from the image start, like `span`). A block that attacks what
+  it finds should skip them as it skips its own image; the scanners built on
+  `scanBody` (`scanner`, `bscan-body`) do. Empty on a torus.
 - `ctx.next` is the label to jump to when an opening hands on.
 - `ctx.torus` (true on a torus), `ctx.geo` (the geometry: `X`, `Y`, `Z`, `encode`, `decode`, `add`), `ctx.vec(x, y, z)` (vector operand text);
 - `ctx.P`, `ctx.old`, `ctx.core`, `ctx.settings`; `ctx.pc()` is the index of the
@@ -141,8 +146,8 @@ under a minute. `node scripts/algebra.js catalog` regenerates the catalog.
 | `boot(x, stay)` | `x`, then `stay` (left behind), then code that copies `x` to + HOP, UNROLL cells a loop, and starts the copy. WIPE 1: it starts the copy with SPL and the boot process erases the launch and the destination pointer before it dies | One relocation per warrior. WIPE adds one process for a few cycles |
 | `image(a, b, ...)` | Members in order; the first one runs | The rest are `data` |
 | `trigger(a, b)` | A watcher beside `a`; when it fires it rewrites `a`'s `loop` to jump to `b` | MODE 0: after TIME laps; 1: when its marker is damaged; 2: when `a`'s loop is damaged (a watchdog, which starts `b` itself) |
-| `apart(a, b)` | Copies `b` D cells away and runs it there beside `a` | Neither clears the core; the copy must not overlap |
-| `copies(x)` | N copies of `x`, D cells apart, all running | As `apart` |
+| `apart(a, b)` | Copies `b` D cells away and runs it there beside `a`; each learns where the other is (`ctx.siblings`) | Neither clears the core; the copy must not overlap |
+| `copies(x)` | N copies of `x`, D cells apart, all running; each learns every place another copy could be, k·D away (`ctx.siblings`) | As `apart` |
 | `switch(a, b, ...)` | Reads P-space and jumps to one of 2–4 members. POLICY 0: move to the next after a loss; 1: only after two losses in a row; 2: every round | Only where the rules have P-space (the 94x hill). The gate tries every kind of history against a model of the code |
 | `parboot(x)` | K independent copy loops each copying `x` to + HOP; the first to finish starts the copy (one atomic DJN), so a bomb on one loop doesn't stop it. STAY 1 keeps a process on the original. REACT: the losing loops watch the copy's `loop`; when it's hit they make a new copy at + HOP2 (1), first stunning CARPET cells either side of the hit (2) | REACT needs K ≥ 2 and an `x` with a `loop`; the hops must clear the warrior and each other. The gate bombs a copy loop mid-copy, and hits the running copy |
 | `restart(x)` | Backs `x` up at the start; a watcher compares `x`'s `loop` with its original and, when it's damaged, copies the backup back and starts `x` again | `x` has a `loop` and doesn't roam |

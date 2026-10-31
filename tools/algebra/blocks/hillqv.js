@@ -401,8 +401,8 @@ const airbagVampire = {
 // The throw lands at fang + A = pit - B. The pit is the block's last cell, so
 // the last cell of the protected span, and pit - B is inside the span exactly
 // when B < span: one SLT guards it. (The block must end what it protects, as a
-// body at the end of a seq or of a boot's member does; the gate refuses a tree
-// where the throws reach the warrior.) A pass is four cycles: a .25c scan and
+// body at the end of a seq or of a boot's member does; `linked` refuses any
+// other tree.) A pass is four cycles: a .25c scan and
 // a .25c bomber. A find outside the warrior is bitten with the fang; the pit
 // is a leaky DJN, and a prisoner there sends it into the SPL/DAT clear.
 
@@ -410,6 +410,7 @@ const djnScanCell = (api, k) => api.norm(api.at('vFang') + api.code('vFang').b +
 
 const djnVampire = {
   id: 'djn-vampire',
+  linked: (P, settings, at, { span }) => (at('vPit') === span - 1 ? [] : ['djn-vampire must be the last block of what it protects (its throws are guarded by the pit being the last protected cell)']),
   kind: 'body', exit: 'never', processes: 1, writes: 'core', roams: false, dialects: '94',
   purpose: 'Scanning vampire that also throws DJN.F bombs: each pass steps a dual-field fang (A + B on the pit), throws `djn.f $0, $1` at fang + A (one SLT guards it, since the pit is the last protected cell) and scans fang + B; a find outside the warrior is bitten, and a prisoner in the leaky DJN pit switches it to a SPL/DAT clear.',
   params: { STEP: [1, 27719] },

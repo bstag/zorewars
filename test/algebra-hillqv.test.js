@@ -171,3 +171,10 @@ test('the vampire watches catch a broken mechanism', () => {
   const eager = broken(DJN, (l, o, m, a, b) => (l === 'vCheck' ? ['JMN', m, a, b] : [o, m, a, b]));
   assert.throws(() => buildTree(eager, rules), /with no prisoner/);
 });
+
+test('djn-vampire is refused after linking unless it ends what it protects', () => {
+  for (const tree of [{ id: 'image', kids: [{ id: 'djn-vampire' }, { id: 'decoys' }] }, { id: 'fork', kids: [{ id: 'opening-qscan-mul' }, { id: 'djn-vampire' }, { id: 'silk-imps' }] }]) {
+    assert.throws(() => buildTree(tree, { rules: '94nop', length: 100 }), /must be the last block of what it protects/);
+  }
+  assert.equal(buildTree({ id: 'boot', P: { HOP: 3000 }, kids: [{ id: 'djn-vampire' }, { id: 'decoys' }] }, { rules: '94nop', length: 100 }).verification.ok, true);
+});
