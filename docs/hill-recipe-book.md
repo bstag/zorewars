@@ -1039,7 +1039,32 @@ The gate learned three things on the way: a booted copy holds only its member's 
   - The openings' exit check waits until no process is left in the opening, so the boot's wiping process doesn't look like a hand-on.
   - The burst's watch ignores an imp crawling over its abandoned code.
 
-Still open: Black Knight's `DJN.F` stream inside the pump stone (it would lap the core and decrement the pump's own cells), One Shot's anti-imp DAT, and evolution doesn't yet try `fanboot` or SHARE (no mutation turns a `par` into a `fanboot`).
+**Third round** (2026-10-31), the rest of the list. Same benchmark.
+
+| # | Block, combinator or tree | Tree | Before | After |
+|---|---|---|---:|---:|
+| 1 | `opening-qscan-mul45` (q^4.5) | qscan → burst2 → `mod-stone`, 50 rounds | 0.576 (`opening-qscan-mul`) | 0.550 |
+| 1 | `opening-qscan-qi` (two-factor q^i) | the same | 0.576 | 0.567 |
+| 12 | `fork` BY 1 (a body, or nothing / a lone cell) | fork(qscan-mul → `probe-verdict`, `finisher-overwrite`, `tail-silk`) | 0.904 (qscan-mul → `finisher-overwrite`) | 0.978 |
+| 12 | `fork` (hit or nothing) | fork(qscan-mul, `finisher-overwrite`, `silk-imps`) | 0.904; 0.859 (qscan-mul → `silk-imps`) | **1.026** |
+| 12 | | fork(qscan-mul, `finisher-overwrite`, `tail-silk`): recipe `hill-fork` | | **1.049** |
+| 13 | `airbag-vampire` (3 processes in one loop) | bare | 0.500 (`fang-vampire`) | 0.292 |
+| 13 | `djn-vampire` (Carmilla's `djn.f` throws) | bare | 0.500 | 0.416 |
+| 14 | `blur-carpet` (one moving carpet, mod-10 step) | bare | 0.343 (`blur-scanner`) | **0.524** |
+| 14 | `twin-storm` (two booted scanners) | bare | 0.343 | **0.752** |
+| 15 | `scanner-mul` (Russ Post's multiplied pointer) | bare | 0.419 (`scanner`) | 0.349 |
+| 15 | `carpet-stone` (step 17) | qscan-mul → stone | 0.381 (`mod-stone`) | **0.502** |
+| 15 | `stream-swarm`, `fed-stream-swarm` (Living Dead) | bare | 0.127 (`elf`) | **0.494**, **0.754** |
+| 9 | `knight-pump-stream` (Black Knight's `DJN.F` stream) | bare | 0.783 (`knight-pump`) | 0.783 |
+| 14 | `finisher-overwrite-antiimp` (One Shot's anti-imp DAT) | qscan-mul → clear | 0.904 (`finisher-overwrite`) | 0.928 |
+
+- **The best tree in the book** comes from the fork, which lost in the first round. Behind the MUL quickscan, a hit now goes to One Shot's clear, which starts from the found cell, and "nothing found" goes to a silk. Each body covers the other's weak matchups. It is the `hill-fork` recipe, and an evolution seed.
+- **Evolution can now reach the new parts.** The new mutations `fan` (a `par` of two bodies becomes a `fanboot`, and back) and `fork` (an opening's body gains a second body to choose between) join `tune`, which already reaches SHARE, WIPE and BY.
+- **`twin-storm` is a block, not `copies(scanner)`.** A copied scanner knows only its own image, so it finds its sibling and bombs it, and the gate rightly refuses that. Composing it would take `apart` and `copies` telling each member where its siblings are.
+- **The streams are safe, with limits.** `knight-pump-stream` aims its stream at a cell the stone's bombs keep resetting. It is safe while the stone runs; if the stone dies and the pump runs about 2,100 more passes, the stream reaches the pump.
+- **The anti-imp DAT:** in the clear's DAT pass, the bomb leaves a copy of itself that later passes copy, so the last bomb doesn't need to point at itself.
+
+Still open: `djn-vampire` should refuse a tree in which it isn't the last protected block (today only the gate catches it), which needs `linked` to see the protected span; and `apart`/`copies` could tell members where their siblings are.
 
 ## Reproducing the census
 

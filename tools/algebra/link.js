@@ -18,7 +18,8 @@ export const combinators = {
     purpose: 'Runs N copies of its member, D cells apart.' },
   switch: { kids: [2, 4], params: { CELL: [1, 500], POLICY: [0, 2] }, defaults: { CELL: 17, POLICY: 0 },
     purpose: 'Chooses one of its members by P-space (the 94x hill only). POLICY 0: keep the choice after a win or tie, move to the next after a loss; 1: move on only after two losses in a row; 2: move on every round.' },
-  fork: { kids: [3, 3], purpose: 'Runs its first member (an opening that provides a probe), then picks a body by what it found: the second member if the probe holds a hit, the third if it is still at the image boundary (nothing found).' },
+  fork: { kids: [3, 3], params: { BY: [0, 1] }, defaults: { BY: 0 },
+    purpose: 'Runs its first member (an opening that provides a probe), then picks a body by what it found. BY 0: the second member if the probe holds a hit, the third if it is still at the image boundary (nothing found). BY 1 (the opening must provide a verdict, as probe-verdict does): the second member if it found a body, the third if it found nothing or a lone cell (a bomb or decoy).' },
   restart: { kids: [1, 1], purpose: 'Keeps a pristine copy of its member (a block with a loop) and a watcher; when the loop is damaged, copies the member back and starts it again.' },
   parboot: { kids: [1, 1],
     params: { K: [1, 4], HOP: [0, 54000], HOPY: [0, 200], HOPZ: [0, 200], STAY: [0, 1], REACT: [0, 2], HOP2: [0, 54000], HOP2Y: [0, 200], HOP2Z: [0, 200], CARPET: [1, 20] },
@@ -113,8 +114,10 @@ export function iface(node, settings) {
     case 'seq':
       parts.forEach((p, i) => {
         if (i < parts.length - 1 && p.exit !== 'next') out.mismatches.push(`seq: ${kids[i].id} never hands on, so nothing after it runs`);
-        if (i === parts.length - 1 && p.exit !== 'never') out.mismatches.push(`seq: the last member (${kids[i].id}) must run forever`);
+        if (i === parts.length - 1 && p.exit !== 'never' && p.exit !== 'next') out.mismatches.push(`seq: the last member (${kids[i].id}) must run forever, or hand on`);
       });
+      // A seq of openings is an opening itself (a fork's first member); the warrior as a whole must still run forever.
+      if (parts.at(-1)?.exit === 'next') Object.assign(out, { exit: 'next', link: parts.at(-1).link });
       out.processes = Math.max(0, ...parts.map((p) => p.processes));
       for (const c of [...out.needs]) if (out.provides.has(c)) out.needs.delete(c);   // met inside the seq
       break;
@@ -179,6 +182,7 @@ export function iface(node, settings) {
       const [o, a, b] = parts;
       if (o && o.exit !== 'next') out.mismatches.push(`fork: ${kids[0].id} must hand on (an opening)`);
       if (o && !o.provides.has('probe')) out.mismatches.push(`fork: ${kids[0].id} provides no probe to decide by`);
+      if (node.P.BY && o && !o.provides.has('verdict')) out.mismatches.push(`fork: BY 1 needs a verdict, and ${kids[0].id} provides none (put probe-verdict after the opening)`);
       [a, b].forEach((p, i) => { if (p && p.exit !== 'never') out.mismatches.push(`fork: ${kids[i + 1].id} must run forever`); });
       out.processes = Math.max(0, ...parts.map((p) => p.processes));
       for (const c of [...out.needs]) if (out.provides.has(c)) out.needs.delete(c);   // the opening's probe meets the bodies' needs
@@ -495,10 +499,12 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
           case 'fork': {
             // The opening's probe B is the image boundary (span) when it found nothing.
             const opening = new Map(iface(kids[0], settings).provides);
-            for (const leaf of stateLeaves(node)) emitState(leaf, env);
+            // The opening's state first, so its probe is the image's first cell.
+            for (const leaf of [...(isLeaf(kids[0]) ? [kids[0]] : stateLeaves(kids[0])), ...stateLeaves(node)]) emitState(leaf, env);
             emit(kids[0], { ...env, next: L('pick') });
             const probe = opening.get('probe');
-            ctx.ins('pick', old ? 'CMP' : 'SEQ', 'AB', `#${env.span ?? total}`, probe);   // nothing found: skip
+            if (P.BY) ctx.ins('pick', 'SNE', 'AB', '#2', opening.get('verdict'));         // not a body: skip
+            else ctx.ins('pick', old ? 'CMP' : 'SEQ', 'AB', `#${env.span ?? total}`, probe);   // nothing found: skip
             ctx.ins('', 'JMP', 'B', entryOf(kids[1]));              // a hit
             ctx.ins('', 'JMP', 'B', entryOf(kids[2]));              // nothing found
             scopes.push(opening);

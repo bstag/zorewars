@@ -1,6 +1,7 @@
 // Named trees: well-known designs written as blocks and combinators, as
 // starting points for evolution and as examples. Each says which rule sets it
-// is meant for; test/algebra.test.js builds every one there.
+// is meant for (and `length`, the length limit it needs, when it isn't 50);
+// test/algebra.test.js builds every one there.
 
 const stone = (TSTEP = 4) => ({ id: 'stone', P: { TSTEP, TBOMB: 0 } });
 
@@ -53,6 +54,12 @@ export const recipes = {
     purpose: 'A redundant process wave boots a stone and an imp spiral together and splits between them (parboot of a par): a bomb on one copy loop cannot stop the boot.',
     tree: () => ({ id: 'parboot', P: { K: 2, HOP: 3000, HOPY: 0, HOPZ: 0, STAY: 0, REACT: 0, HOP2: 2000, HOP2Y: 0, HOP2Z: 0, CARPET: 8 },
       kids: [{ id: 'par', kids: [{ id: 'mod-stone', P: { STEP: 2936, BOMBS: 1, GUARD: 1 } }, { id: 'spiral', P: { SN: 7, SK: 3 } }] }] }),
+  },
+  'hill-fork': {
+    rules: ['94nop', '94x'],
+    length: 100,                                 // the 94nop hill's length limit
+    purpose: 'A MUL quickscan picks the body (docs/hill-recipe-book.md): a hit gets the One Shot pointer-overwrite clear from the found cell, nothing found gets a silk paper with a backward tail. 1.05 points a round against the 94nop top 50.',
+    tree: () => ({ id: 'fork', kids: [{ id: 'opening-qscan-mul' }, { id: 'finisher-overwrite' }, { id: 'tail-silk' }] }),
   },
   'spread-stone-spiral': {
     rules: ['94nop'],

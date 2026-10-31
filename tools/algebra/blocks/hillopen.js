@@ -389,7 +389,7 @@ const qscanMul = {
     const seesSelf = placedCells(api.P, api.core, d).some((c) => api.inImage(api.at('probe') + c));
     const exit = onExit(api, (b) => {
       if (planted && b !== want && !api.inImage(api.at('probe') + b)) throw new Error(`The MUL quickscan handed on ${b}, not the planted cell ${want}`);
-      if (api.scenario === 'alone' && !seesSelf && !atBoundary(api, b)) throw new Error('The MUL quickscan found nothing but did not hand on the image boundary');
+      if (api.scenario === 'alone' && !seesSelf && !atBoundary(api, b)) throw new Error(`The MUL quickscan found nothing but did not hand on the image boundary (handed on ${b}, image ${api.total})`);
     });
     return { before: exit.before, final: () => { if (planted && !exit.exited()) throw new Error('The MUL quickscan never handed on'); } };
   },

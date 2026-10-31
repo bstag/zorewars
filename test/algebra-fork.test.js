@@ -48,3 +48,31 @@ test('fork refuses an opening without a probe and bodies that stop', () => {
   has(fork(stone, guarded, stone), /must hand on|provides no probe/);
   has(fork(mul, mul, stone), /must run forever/);
 });
+
+// BY 1: the opening chain ends in probe-verdict; a body takes a, a lone cell or nothing takes b.
+test('fork BY 1 tells a body from a lone cell', () => {
+  const settings = recipeSettings('94nop', 100);
+  const opening = { id: 'seq', kids: [mul, { id: 'probe-verdict' }] };
+  const built = buildTree({ id: 'fork', P: { BY: 1 }, kids: [opening, guarded, stone] }, { rules: '94nop', length: 100 });
+  assert.equal(built.verification.ok, true);
+  assert.equal(built.labels[built.root.kids[0].kids[0].ns + 'probe'], 0);      // the probe is still the first cell
+  const w = compile(built.source, 'redcode', settings);
+  const pick = Object.keys(built.labels).find((l) => l.endsWith('pick'));
+  const marker = { op: 'DAT', mod: 'F', aMode: '#', a: 1, bMode: '#', b: 7 };
+  const ran = (cells) => {
+    const vm = new VM(settings);
+    vm.load([w], { positions: [0] });
+    for (const c of cells) vm.poke(c, marker);
+    for (let i = 0; i < 600; i++) {
+      const pc = vm.processes(0)[0];
+      if (pc === built.labels[pick] + 1 || pc === built.labels[pick] + 2) return pc - built.labels[pick];
+      vm.step();
+    }
+    return null;
+  };
+  const hit = (1 + 349) * 3 % 8000;
+  assert.equal(ran([]), 2);
+  assert.equal(ran([hit]), 2);              // a lone cell: probably a bomb
+  assert.equal(ran([hit, hit + 1]), 1);     // a body
+  assert.ok(treeMismatches({ id: 'fork', P: { BY: 1 }, kids: [mul, guarded, stone] }, settings).some((m) => /needs a verdict/.test(m)));
+});

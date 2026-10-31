@@ -36,7 +36,7 @@ if (command === 'build') {
 } else if (command === 'recipe') {
   const r = recipes[args[0]];
   if (!r) { console.error(`recipes: ${Object.keys(recipes).join(', ')}`); process.exit(2); }
-  report(buildTree(r.tree(rules), { rules, length, name: args[0] }));
+  report(buildTree(r.tree(rules), { rules, length: Number(flags.length ?? r.length ?? 50), name: args[0] }));
 } else if (command === 'catalog') {
   const range = (p) => Object.entries(p).map(([k, [lo, hi]]) => `${k} ${lo}–${hi}`).join(', ') || 'none';
   const val = (v) => (typeof v === 'function' ? 'depends on parameters' : v ?? '');

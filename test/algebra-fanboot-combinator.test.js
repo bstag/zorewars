@@ -105,3 +105,15 @@ test('a shared quickscan table lives in the fan lines and still decodes every un
   // Where the placed table puts a probe on the warrior itself, the build is refused after linking.
   assert.throws(() => buildTree({ id: 'seq', kids: [{ id: 'opening-qscan-mul', P: { SHARE: 1 } }, { id: 'probe-burst2' }, fb({ id: 'mod-stone' }, { id: 'silk-imps' }, { K: 4 })] }, { rules: '94nop', length: 100 }), /lands on or next to the warrior/);
 });
+
+test('evolution can turn a par into a fanboot and give an opening a fork', async () => {
+  const { mutate, shape } = await import('../tools/algebra/genome.js');
+  let seed = 7;
+  const random = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const par = { id: 'seq', kids: [{ id: 'opening-qscan-mul' }, { id: 'par', kids: [{ id: 'mod-stone' }, { id: 'silk-imps' }] }] };
+  const fanned = mutate(par, s94, random, 60, ['fan']);
+  assert.equal(shape(fanned.tree), 'seq(opening-qscan-mul,fanboot(mod-stone,silk-imps))');
+  assert.equal(shape(mutate(fanned.tree, s94, random, 60, ['fan']).tree), shape(par));
+  const forked = mutate({ id: 'seq', kids: [{ id: 'opening-qscan-mul' }, { id: 'silk-imps' }] }, s94, random, 60, ['fork']);
+  assert.match(shape(forked.tree), /^fork\(opening-qscan-mul,/);
+});
