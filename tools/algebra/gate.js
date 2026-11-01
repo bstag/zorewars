@@ -121,7 +121,7 @@ function checkChain(built) {
     }
     if (firstDat === null || stuns !== expectedStuns) throw new Error('Incorrect stun phase');
     vm.run();
-    if (!vm.warriors[0].alive || vm.cycle !== settings.maxCycles || vm.warriors[0].peak !== 1 + (boot?.P.WIPE ?? 0)) throw new Error('Solo/process contract failed');
+    if (!vm.warriors[0].alive || vm.cycle !== settings.maxCycles || vm.warriors[0].peak !== 1 + (boot && (boot.P.WIPE || boot.P.EARLY) ? 1 : 0)) throw new Error('Solo/process contract failed');
     if (!intact()) throw new Error('The clear damaged protected code');
     for (let c = 0; c < core; c++) if (!inProtected(c) && vm.writeCycle[c] < arrivedAt) throw new Error('The clear left cells untouched');
     return { base, arrivedAt, attacks, firstWrite, stunWrites: stuns, survives: true };
@@ -228,7 +228,7 @@ function checkBodies({ w, settings, root, labels, spans }) {
     const result = { base, processes: vm.processes(0).length, peak: vm.warriors[0].peak };
     if (alone) {
       const p = parts[0];
-      if ((p.id === 'stone' || p.id === 'vampire') && vm.warriors[0].peak !== 1 + (boot?.P.WIPE ?? 0)) throw new Error('A one-process body split');
+      if ((p.id === 'stone' || p.id === 'vampire') && vm.warriors[0].peak !== 1 + (boot && (boot.P.WIPE || boot.P.EARLY) ? 1 : 0)) throw new Error('A one-process body split');
       if (p.id === 'stone' && stoneCells[0].size < 100) throw new Error('The stone bombs too few cells');
       if (p.id === 'vampire' && fangs[0] < 100) throw new Error('The vampire drops too few fangs');
       if (p.id === 'spiral' && vm.processes(0).length !== 2 ** p.P.SK - 1) throw new Error('The spiral lost processes on its own');

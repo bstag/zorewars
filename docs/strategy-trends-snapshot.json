@@ -1,0 +1,1123 @@
+{
+  "retrievedAt": "2026-10-30T13:26:19.654Z",
+  "ranking": "published recursive",
+  "hills": [
+    {
+      "id": "94nop",
+      "url": "https://asdflkj.net/COREWAR/94/hill32_rec.html",
+      "entries": [
+        {
+          "rank": 1,
+          "name": "Arvon",
+          "author": "Stefan Kammann & Forge-AI",
+          "score": 161.444,
+          "style": "94",
+          "url": "https://asdflkj.net/COREWAR/94/HILL32/arvon.red",
+          "file": "imported/strategy-trends/94nop-1.red",
+          "notes": [
+            ";name Arvon",
+            ";author Stefan Kammann & Forge-AI",
+            ";strategy paper/stone: lattice quickscanner (decode structure after Azathoth",
+            ";strategy by John Metcalf, lattice re-parameterized via a data-driven",
+            ";strategy coverage model) -> self-metering parallel boot -> silk paper + stone",
+            ";strategy body evolved from my pst_v3/v4 line (Azathoth patterns, own constants)",
+            "org     qscan",
+            ";---------------<< lattice quickscanner: qdec = 1 + qfac^-1 mod 8000 >>--------;",
+            "qscan   sne     qptr+qdec*qe, qptr+qdec*qe+qe",
+            ";---------------<< stone: bidirectional (runs at sboot-6..sboot-1) >>----------;",
+            ";---------------<< paper: 3 silk streams (runs at pboot-6..pboot-1) >>---------;"
+          ],
+          "classification": "Quickscan; parallel paper/stone"
+        },
+        {
+          "rank": 2,
+          "name": "Azathoth",
+          "author": "John Metcalf",
+          "score": 160.017,
+          "style": "94",
+          "url": "https://asdflkj.net/COREWAR/94/HILL32/azathoth.red",
+          "file": "imported/strategy-trends/94nop-2.red",
+          "notes": [
+            ";name Azathoth",
+            ";author John Metcalf",
+            ";strategy paper/stone, sleeping chaos",
+            "        org    qscan",
+            "        mov    <stone-1, {s",
+            "p       djn.f  pboot,    }paper+6",
+            "stone   mov    bomb,       @ptr",
+            "hit     sub.x  #sstep*2,   @stone",
+            "paper   spl    pstep,      {x",
+            "        mov    }x,         }paper",
+            "        mov    }x+3,       }paper",
+            "x       mov    {x+3,       }paper",
+            "qscan   sne    qptr+qdec*qe, qptr+qdec*qe+qe"
+          ],
+          "classification": "Quickscan; parallel paper/stone"
+        },
+        {
+          "rank": 3,
+          "name": "pst_v4",
+          "author": "Stefan Kammann & Forge-AI",
+          "score": 159.897,
+          "style": "94",
+          "url": "https://asdflkj.net/COREWAR/94/HILL32/pst_v4.red",
+          "file": "imported/strategy-trends/94nop-3.red",
+          "notes": [
+            ";name pst_v4",
+            ";author Stefan Kammann & Forge-AI",
+            ";strategy paper/stone: q^i -> self-metering parallel boot -> silk paper + stone",
+            ";strategy based on Azathoth by John Metcalf (launcher/stone/paper patterns)",
+            ";strategy and Eternal Exile by inversed (quickscanner); scan constants",
+            ";strategy re-derived from a data-driven coverage model, rest retuned",
+            "org     qscan",
+            ";---------------<< mini q^i quickscanner (aus clrsrc, hill-getuned) >>---------;",
+            "qscan   sne     X + qxa                         , X + qxb",
+            "; Jeder kopiert 1 Paper- und 1 Stone-Zelle; die Kopierzeiger sind die A-Felder",
+            "; Jeder Prozess spawnt 3 Stone-Prozesse und betritt dann selbst das Paper.",
+            ";---------------<< Stone: bidirektional (laeuft bei sboot-6..sboot-1) >>-------;",
+            ";---------------<< Paper: 3 Silk-Streams (laeuft bei pboot-6..pboot-1) >>------;"
+          ],
+          "classification": "Quickscan; parallel paper/stone"
+        },
+        {
+          "rank": 4,
+          "name": "King Cobra",
+          "author": "inversed",
+          "score": 156.57,
+          "style": "94",
+          "url": "https://asdflkj.net/COREWAR/94/HILL32/kingcobra.red",
+          "file": "imported/strategy-trends/94nop-4.red",
+          "notes": [
+            ";name King Cobra",
+            ";author inversed",
+            ";strategy Oneshot with bomb detection and imp failsafe",
+            "; Scanner, clear",
+            "; Quickscan",
+            "org     qscan",
+            "        ; Quickscan",
+            "qscan   sne       q0+qa0            ,     q0+qb0",
+            "        ; Quickscan attack"
+          ],
+          "classification": "Quickscan; oneshot with bomb detection and imp fallback"
+        },
+        {
+          "rank": 5,
+          "name": "The Collective",
+          "author": "Roy van Rijn",
+          "score": 156.538,
+          "style": "94",
+          "url": "https://asdflkj.net/COREWAR/94/HILL32/thecollective.red",
+          "file": "imported/strategy-trends/94nop-5.red",
+          "notes": [
+            ";name The Collective",
+            ";author Roy van Rijn",
+            ";strategy qscan > boot > LP paper",
+            ";strategy Based on Borg, with extra indirect bombing"
+          ],
+          "classification": "Quickscan; booted bombing LP-style paper"
+        },
+        {
+          "rank": 6,
+          "name": "Tolypeutes",
+          "author": "Roy van Rijn",
+          "score": 156.315,
+          "style": "94",
+          "url": "https://asdflkj.net/COREWAR/94/HILL32/tolypeutes.red",
+          "file": "imported/strategy-trends/94nop-6.red",
+          "notes": [
+            ";name Tolypeutes",
+            ";author Roy van Rijn ",
+            ";strategy submitted on 22/02/2022 🎂 ",
+            ";strategy stone/imp ",
+            ";strategy uses new qscan with 34 scan locations in 27 lines ",
+            ";strategy all scan locations spaced >100 apart ",
+            ";strategy based on Armadillo ",
+            "; qscan positions (sorted): ",
+            "wGo mov.i imp , iOff + iAway - 3 ",
+            "iBoot mov.i imp - 1 , {iPtr ",
+            "spl #imp + iGap , {-2667-1 ",
+            "djn.f imp + iGap - 5336 , <2768 ",
+            "imp mov.i #1 , 2667 "
+          ],
+          "classification": "Quickscan; stone/imp"
+        },
+        {
+          "rank": 7,
+          "name": "Kaitain",
+          "author": "Stefan Kammann & Forge-AI",
+          "score": 156.27,
+          "style": "94",
+          "url": "https://asdflkj.net/COREWAR/94/HILL32/kaitain.red",
+          "file": "imported/strategy-trends/94nop-7.red",
+          "notes": [
+            ";name Kaitain",
+            ";author Stefan Kammann & Forge-AI",
+            ";strategy oneshot with lattice quickscanner: lattice q^i (own decode line,",
+            ";strategy see Arvon) -> oneshot scan -> spl/dat clear with imp failsafe",
+            ";strategy oneshot/clear/boot based on King Cobra by inversed,",
+            ";strategy q-decode structure after Azathoth by John Metcalf",
+            "; lattice quickscanner (Arvon line): qdec = 1 + qfac^-1 mod CORESIZE",
+            "org     qscan",
+            "qscan   sne     qptr+qdec*qe, qptr+qdec*qe+qe"
+          ],
+          "classification": "Quickscan; oneshot and SPL/DAT clear with imp fallback"
+        },
+        {
+          "rank": 8,
+          "name": "Hullab3loo",
+          "author": "Roy van Rijn",
+          "score": 156.129,
+          "style": "94",
+          "url": "https://asdflkj.net/COREWAR/94/HILL32/hullabaloo3.red",
+          "file": "imported/strategy-trends/94nop-8.red",
+          "notes": [
+            ";name Hullab3loo",
+            ";author Roy van Rijn"
+          ],
+          "classification": "Quickscan; paper/stone"
+        },
+        {
+          "rank": 9,
+          "name": "Forgotten Lore II",
+          "author": "David Moore",
+          "score": 154.72,
+          "style": "94",
+          "url": "https://asdflkj.net/COREWAR/94/HILL32/lore2.red",
+          "file": "imported/strategy-trends/94nop-9.red",
+          "notes": [
+            ";name Forgotten Lore II",
+            ";author David Moore",
+            ";strategy Scanning vamp which multitasks between two forms of attack.",
+            ";strategy First, DJNs are delivered throughout the core in an effort",
+            ";strategy to immobilize typical stones and core clears.",
+            ";strategy Second, scan for anything nonzero and drop a JMP on it.",
+            ";strategy The JMP points to a trap.",
+            ";strategy Next, we wipe the core with SPLs, starting with the trap.",
+            ";strategy Finally, the SPL clear is converted to a DAT clear.",
+            ";strategy Version II strategy: Instead of using pspace to switch",
+            ";strategy between a vamp and a 1-shot SPL/DAT clear, combine them into",
+            ";strategy the same warrior. Rather than jumping to the SPL clear",
+            ";strategy as soon as something is scanned, wait until we�ve actually",
+            ";strategy captured a process.",
+            "; This core clear can often beat 3 point imps (3 * 2667) without the",
+            "; The gate stops imps of the form MOV.I #1143, *0.",
+            "; If an imp of the form MOV.I #2, 1143 reaches the gate, the core clear"
+          ],
+          "classification": "Scanning vampire, DJN attack, capture-triggered clear"
+        },
+        {
+          "rank": 10,
+          "name": "Excalibur",
+          "author": "inversed",
+          "score": 154.277,
+          "style": "94",
+          "url": "https://asdflkj.net/COREWAR/94/HILL32/excalibur.red",
+          "file": "imported/strategy-trends/94nop-10.red",
+          "notes": [
+            ";name Excalibur",
+            ";author inversed",
+            ";strategy Completely reworked Agony II",
+            "        ;; Scanner"
+          ],
+          "classification": "Pair scanner, decoy/boot, stun wipe and clear"
+        }
+      ],
+      "top50": {
+        "url": "https://asdflkj.net/COREWAR/94/TOP50/hill32.html",
+        "entries": [
+          {
+            "rank": 1,
+            "name": "Kaitain",
+            "score": 145.489,
+            "url": "https://asdflkj.net/COREWAR/94/TOP50/HILL32/kaitain.red"
+          },
+          {
+            "rank": 2,
+            "name": "King Cobra",
+            "score": 145.104,
+            "url": "https://asdflkj.net/COREWAR/94/TOP50/HILL32/kingcobra.red"
+          },
+          {
+            "rank": 3,
+            "name": "The Collective",
+            "score": 144.275,
+            "url": "https://asdflkj.net/COREWAR/94/TOP50/HILL32/thecollective.red"
+          },
+          {
+            "rank": 4,
+            "name": "Borg",
+            "score": 142.084,
+            "url": "https://asdflkj.net/COREWAR/94/TOP50/HILL32/borg.red",
+            "file": "imported/strategy-trends/94nop-top50-4.red",
+            "notes": [
+              ";name Borg",
+              ";author John Metcalf",
+              ";strategy qscan -> hybrid replicator",
+              "paper   mov    #length,  #9",
+              "copy    mov    <paper,   <dest",
+              "        jmn    copy,     paper",
+              "        spl    >paper,   >4000"
+            ]
+          },
+          {
+            "rank": 5,
+            "name": "Twin Storms",
+            "score": 142.007,
+            "url": "https://asdflkj.net/COREWAR/94/TOP50/HILL32/twinstorms.red",
+            "file": "imported/strategy-trends/94nop-top50-5.red",
+            "notes": [
+              ";name Twin Storms",
+              ";author inversed ",
+              ";strategy Double Origin of Storms ",
+              ";strategy Variant 5a s9 ",
+              "; Scanner ",
+              "        ; Scanner "
+            ]
+          },
+          {
+            "rank": 6,
+            "name": "Arvon",
+            "score": 139.384,
+            "url": "https://asdflkj.net/COREWAR/94/TOP50/HILL32/arvon.red"
+          },
+          {
+            "rank": 7,
+            "name": "Ghost Murmur",
+            "score": 138.537,
+            "url": "https://asdflkj.net/COREWAR/94/TOP50/HILL32/ghostmurmur.red",
+            "file": "imported/strategy-trends/94nop-top50-7.red",
+            "notes": [
+              ";name Ghost Murmur",
+              ";author John Metcalf",
+              ";strategy scanner"
+            ]
+          },
+          {
+            "rank": 8,
+            "name": "Tolypeutes",
+            "score": 138.37,
+            "url": "https://asdflkj.net/COREWAR/94/TOP50/HILL32/tolypeutes.red"
+          },
+          {
+            "rank": 9,
+            "name": "Escaped Experiment",
+            "score": 138.056,
+            "url": "https://asdflkj.net/COREWAR/94/TOP50/HILL32/excapedExperiment.red",
+            "error": "https://asdflkj.net/COREWAR/94/TOP50/HILL32/excapedExperiment.red: HTTP 404"
+          },
+          {
+            "rank": 10,
+            "name": "Azathoth",
+            "score": 137.606,
+            "url": "https://asdflkj.net/COREWAR/94/TOP50/HILL32/azathoth.red"
+          }
+        ]
+      }
+    },
+    {
+      "id": "88",
+      "url": "https://asdflkj.net/COREWAR/88/hill32_rec.html",
+      "entries": [
+        {
+          "rank": 1,
+          "name": "Lithobolia C yvfp",
+          "author": "Steve Gunnell",
+          "score": 171.784,
+          "style": "88",
+          "url": "https://asdflkj.net/COREWAR/88/HILL32/lithoboliaC-yvfp.red",
+          "file": "imported/strategy-trends/88-1.red",
+          "notes": [
+            ";name Lithobolia C yvfp",
+            ";author Steve Gunnell",
+            ";strategy Stone throwing devil to you :p",
+            ";strategy Launch many simple stones and a paper.",
+            ";strategy Stole a qscan from John.",
+            "; qscan - 36 scans in 48 instructions",
+            "qscan\tcmp\tqdist+qc, qfirst+qc",
+            "PAPER1\tequ\t2302",
+            "PAPER2\tequ\t2949",
+            "PAPER3\tequ\t4368",
+            "\tspl\tpaper\t,<MARK*7",
+            "A\tspl\t0\t,<qscan",
+            "D\tdjn\tA\t,<qscan",
+            "paper\tspl\t1\t,<MARK*8",
+            "\tspl\t@0\t,PAPER1",
+            "\tspl\t@0\t,PAPER2",
+            "IMPN\tequ\t2667",
+            "\tspl\t@0\t,PAPER3",
+            "\tadd\t#IMPN\t,1",
+            "\tjmp\t@0\t,imp-IMPN*6",
+            "imp\tmov\t0\t,IMPN",
+            "      end     qscan"
+          ],
+          "classification": "Quickscan; distributed stones plus paper/imps"
+        },
+        {
+          "rank": 2,
+          "name": "Talisman",
+          "author": "John Metcalf",
+          "score": 170.387,
+          "style": "88",
+          "url": "https://asdflkj.net/COREWAR/88/HILL32/talisman.red",
+          "file": "imported/strategy-trends/88-2.red",
+          "notes": [
+            ";name Talisman",
+            ";author John Metcalf",
+            ";strategy qscan -> stone/imp",
+            "; qscan - 36 scans in 48 instructions",
+            "qscan   cmp qdist+qc,      qfirst+qc",
+            "warr    mov imp,           ldist+idist+2",
+            "        mov imp,           <warr",
+            "        mov imp,           <warr",
+            "        mov <stone-1,      <sboot",
+            "stone   mov stone+bdist-1, <hit+time*step",
+            "hit     mov stone+bdist-1, @stone",
+            "        djn stone,         <2438",
+            "imp     mov 0,             istep",
+            "        end qscan"
+          ],
+          "classification": "Quickscan; stone/imp"
+        },
+        {
+          "rank": 3,
+          "name": "Freight Train v0.2",
+          "author": "David Moore",
+          "score": 170.027,
+          "style": "88",
+          "url": "https://asdflkj.net/COREWAR/88/HILL32/freighttrainv02.red",
+          "file": "imported/strategy-trends/88-3.red",
+          "notes": [
+            ";name Freight Train v0.2",
+            ";author David Moore",
+            ";strategy make a 7 point imp and grow it with dual continuous launchers.",
+            ";strategy add a stone that is a bit similar to Cannonade's.",
+            ";strategy optional q^2 (set switch to make the non-scanning version).",
+            ";strategy v0.2: Fixed a minor bug in the q^2",
+            "; qscan constants",
+            "stbd   equ  1500  ; stone",
+            "; imp copy step size",
+            "; constants related to stone",
+            "dd     equ     7  ; position of special bomb relative to stone",
+            "       jmp     @0,  cont-c1bd+(imp-main)+(6*is)",
+            "       mov stone+1, <qp",
+            "qscan  cmp main+QB+(QS* 0), main+QB+(QS* 0)+QI",
+            "; boot a stone, an imp, and two continuous launchers",
+            "main   spl launch,stone+4",
+            "cboot  mov imp, imp-is",
+            "       mov #-2-c2bd+(imp-main)+(6*is)+2, main+c2bd+2",
+            "imp    mov 0, is",
+            "stone  mov <dd+1+(2*time), 3+(step*time)",
+            "       jmp @0, imp-is",
+            "  end qscan"
+          ],
+          "classification": "Optional quickscan; stone and dual continuous imp launchers"
+        },
+        {
+          "rank": 4,
+          "name": "Resinoid",
+          "author": "John Metcalf",
+          "score": 168.336,
+          "style": "88",
+          "url": "https://asdflkj.net/COREWAR/88/HILL32/resinoid88.red",
+          "file": "imported/strategy-trends/88-4.red",
+          "notes": [
+            ";name Resinoid",
+            ";author John Metcalf",
+            ";strategy dual resin with paper/imps",
+            "        spl    1,        paper+6",
+            "; paper/imps",
+            "paper   mov    <size,    <papa",
+            "imp     mov    0,        istep"
+          ],
+          "classification": "Quickscan; dual resin clears plus paper/imps"
+        },
+        {
+          "rank": 5,
+          "name": "Quicksilver '88",
+          "author": "Michal Janeczek",
+          "score": 168.249,
+          "style": "88",
+          "url": "https://asdflkj.net/COREWAR/88/HILL32/quicksilver88.red",
+          "file": "imported/strategy-trends/88-5.red",
+          "notes": [
+            ";name Quicksilver '88",
+            ";author Michal Janeczek",
+            ";strategy qscan -> stone/imp",
+            "; It turned out that qscan steps interacted with",
+            "boot  mov imp+1         , sdist+dboff",
+            "      mov imp           , <-1",
+            "      mov <stone        , <iboot",
+            "      mov <stone        , <sboot",
+            "stone spl 0             , imp",
+            "      mov stone+dboff   , <-123",
+            "      mov stone+dboff   , @-1",
+            "imp   mov 0             , 2667",
+            "qscan cmp 2*qs+qd       , 2*qs",
+            "      cmp qscan+5*qs+qd , qscan+5*qs",
+            "      cmp qscan+4*qs+qd , qscan+4*qs",
+            "      cmp qscan+10*qs-2 , qscan+10*qs+qd-2  ; qscan-(qt2-1) = -2",
+            "      cmp qscan+9*qs+qd , qscan+9*qs",
+            "      cmp qscan+6*qs+qd , qscan+6*qs",
+            "      cmp qscan+8*qs+qd , qscan+8*qs",
+            "      cmp qscan+11*qs   , qscan+11*qs+qd",
+            "      cmp qscan+18*qs-8 , qscan+18*qs+qd-8  ; qscan-(qt3-1) = -8",
+            "      cmp qscan+16*qs-2 , qscan+16*qs+qd-2  ; qscan-(qt2-1) = -2",
+            "      cmp qscan+12*qs   , qscan+12*qs+qd",
+            "      cmp qscan+14*qs   , qscan+14*qs+qd"
+          ],
+          "classification": "Quickscan; stone/imp"
+        },
+        {
+          "rank": 6,
+          "name": "Into the Unknown",
+          "author": "John Metcalf",
+          "score": 167.957,
+          "style": "88",
+          "url": "https://asdflkj.net/COREWAR/88/HILL32/intotheunknown.red",
+          "file": "imported/strategy-trends/88-6.red",
+          "notes": [
+            ";name Into the Unknown",
+            ";author John Metcalf",
+            ";strategy qscan -> paper/stone",
+            "; qscan - 36 scans in 48 instructions",
+            "qscan   cmp qdist+qc,      qfirst+qc",
+            "        mov    <proc,    <papera",
+            "papera  spl    @0,       pstep1",
+            "        mov    <proc,    <paperb",
+            "paperb  spl    @0,       pstep2",
+            "        mov    <proc,    <paperc",
+            "paperc  spl    @0,       pstep3",
+            "stone   mov    bomb+4,   <hit+first",
+            "hit     mov    bomb+4,   @stone",
+            "        djn    stone,    <-3000",
+            "        end    qscan"
+          ],
+          "classification": "Quickscan; paper/stone"
+        },
+        {
+          "rank": 7,
+          "name": "Mountain Viper",
+          "author": "inversed",
+          "score": 166.469,
+          "style": "88",
+          "url": "https://asdflkj.net/COREWAR/88/HILL32/Mountain_Viper.red",
+          "file": "imported/strategy-trends/88-7.red",
+          "notes": [
+            ";name Mountain Viper",
+            ";author inversed",
+            ";strategy Oneshot, a rework of Michal Janeczek's vm5",
+            "; Quickscan",
+            "        ; Trimmed down quickscan, 10 pairs + jmz",
+            "qscan   cmp   2*qs+qd      ,   2*qs",
+            "        cmp   qscan+5*qs+qd,   qscan+5*qs",
+            "        cmp   qscan+4*qs+qd,   qscan+4*qs",
+            "        cmp   qscan+10*qs-2,   qscan+10*qs+qd-2",
+            "        cmp   qscan+9*qs+qd,   qscan+9*qs",
+            "        cmp   qscan+6*qs+qd,   qscan+6*qs",
+            "        cmp   qscan+8*qs+qd,   qscan+8*qs",
+            "        cmp   qscan+18*qs-8,   qscan+18*qs+qd-8",
+            "        cmp   qscan+12*qs  ,   qscan+12*qs+qd",
+            "        cmp   qscan+14*qs  ,   qscan+14*qs+qd",
+            "        jmz   sboot        ,   qscan+15*qs",
+            "qp      mov   4000         , < qscan+2*qs",
+            "end qscan"
+          ],
+          "classification": "Quickscan; oneshot"
+        },
+        {
+          "rank": 8,
+          "name": "Zygote (hill version)",
+          "author": "Roy van Rijn",
+          "score": 165.176,
+          "style": "88",
+          "url": "https://asdflkj.net/COREWAR/88/HILL32/zygote_hv.red",
+          "file": "imported/strategy-trends/88-8.red",
+          "notes": [
+            ";name Zygote (hill version)",
+            ";author Roy van Rijn",
+            ";strategy Improved after tournament, tweaked and added qscan",
+            "boot   spl stone, <1234",
+            "       spl stone, <2345",
+            "       spl stone, <3456",
+            "       spl stone, <4567",
+            "       spl stone, <5678",
+            "       spl stone, <7890",
+            "       spl stone, <8510",
+            "paper add #7,bptr",
+            "     jmz paper,paper",
+            "stone   spl 0             , <2761",
+            "qscan cmp 2*qs+qd       , 2*qs",
+            "     cmp qscan+5*qs+qd , qscan+5*qs",
+            "     cmp qscan+4*qs+qd , qscan+4*qs",
+            "     cmp qscan+10*qs-2 , qscan+10*qs+qd-2",
+            "     cmp qscan+9*qs+qd , qscan+9*qs",
+            "     cmp qscan+6*qs+qd , qscan+6*qs",
+            "     cmp qscan+8*qs+qd , qscan+8*qs",
+            "     cmp qscan+11*qs   , qscan+11*qs+qd",
+            "     cmp qscan+18*qs-8 , qscan+18*qs+qd-8",
+            "     cmp qscan+16*qs-2 , qscan+16*qs+qd-2",
+            "     cmp qscan+12*qs   , qscan+12*qs+qd"
+          ],
+          "classification": "Quickscan; multiprocess stone and paper"
+        },
+        {
+          "rank": 9,
+          "name": "Elemental Dust 2",
+          "author": "John Metcalf",
+          "score": 164.812,
+          "style": "88",
+          "url": "https://asdflkj.net/COREWAR/88/HILL32/elementaldust2.red",
+          "file": "imported/strategy-trends/88-9.red",
+          "notes": [
+            ";name Elemental Dust 2",
+            ";author John Metcalf",
+            ";strategy vampire/imp",
+            "        mov imp,       imp+idist",
+            "        jmp imp+idist, <4750",
+            "        jmp imp+idist+istep*1,<4850",
+            "        jmp imp+idist+istep*2,<5050",
+            "        jmp imp+idist+istep*3,<5150",
+            "        jmp imp+idist+istep*4,<5450",
+            "        jmp imp+idist+istep*5,<5550",
+            "imp     mov 0,         istep"
+          ],
+          "classification": "Vampire/imp"
+        },
+        {
+          "rank": 10,
+          "name": "Der Zweite Blitzkrieg 2021",
+          "author": "Mike Nonemacher",
+          "score": 164.739,
+          "style": "88",
+          "url": "https://asdflkj.net/COREWAR/88/HILL32/dzb2021.red",
+          "file": "imported/strategy-trends/88-10.red",
+          "notes": [
+            ";name Der Zweite Blitzkrieg 2021",
+            ";author Mike Nonemacher",
+            ";strategy quick-scan -> stone-spiral -> 2-pass coreclear -> gate",
+            "; The stone/imp is identical to Mike's original",
+            "; I've replaced the old qscan with a modern qscan",
+            "; qscan - 36 scans in 48 instructions",
+            "qscan   cmp qdist+qc,      qfirst+qc",
+            "INCR    EQU     20                      ;offset of inc from stone",
+            "PTR     EQU     -11                     ;offset of ptr from stone+4",
+            "I       EQU     1232                    ;offset of start of spiral from imp",
+            "CMPST   EQU     start+33                ;make sure stone doesn't kill spl/jmps",
+            "imp     mov     0,      D",
+            "stone   sub     stone+INCR, 1",
+            "        mov     @PTR,   <stone+INCR",
+            "isp     mov     imp,    imp+I",
+            "        jmp     @0,     imp+I",
+            "END     qscan"
+          ],
+          "classification": "Quickscan; stone/imp, two-pass clear, gate"
+        }
+      ],
+      "top50": {
+        "url": "https://asdflkj.net/COREWAR/88/TOP50/hill32.html",
+        "entries": [
+          {
+            "rank": 1,
+            "name": "Semiopacity",
+            "score": 151.466,
+            "url": "https://asdflkj.net/COREWAR/88/TOP50/HILL32/semiopacity.red",
+            "file": "imported/strategy-trends/88-top50-1.red",
+            "notes": [
+              ";author inversed",
+              ";name Semiopacity",
+              ";strategy Tournament Weekend 2025 entry",
+              ";strategy Conventional B-scanner",
+              "; Scanner",
+              "        ; Scanner"
+            ]
+          },
+          {
+            "rank": 2,
+            "name": "Stasis Prime",
+            "score": 151.225,
+            "url": "https://asdflkj.net/COREWAR/88/TOP50/HILL32/Stasis_Prime.red",
+            "file": "imported/strategy-trends/88-top50-2.red",
+            "notes": [
+              ";name Stasis Prime",
+              ";author inversed",
+              ";strategy B-scanner, remake of David Moore's Stasis",
+              "; Scanner",
+              "        ; Scanner"
+            ]
+          },
+          {
+            "rank": 3,
+            "name": "Freight Train v0.2",
+            "score": 144.022,
+            "url": "https://asdflkj.net/COREWAR/88/TOP50/HILL32/freighttrainv02.red"
+          },
+          {
+            "rank": 4,
+            "name": "Quicksilver '88",
+            "score": 143.604,
+            "url": "https://asdflkj.net/COREWAR/88/TOP50/HILL32/quicksilver88.red"
+          },
+          {
+            "rank": 5,
+            "name": "Mountain Viper",
+            "score": 142.917,
+            "url": "https://asdflkj.net/COREWAR/88/TOP50/HILL32/Mountain_Viper.red"
+          },
+          {
+            "rank": 6,
+            "name": "Janus",
+            "score": 142.817,
+            "url": "https://asdflkj.net/COREWAR/88/TOP50/HILL32/janus.red",
+            "file": "imported/strategy-trends/88-top50-6.red",
+            "notes": [
+              ";author inversed",
+              ";name Janus",
+              ";strategy Tournament Weekend 2025 entry",
+              ";strategy Double B-scanner",
+              "; Scanner",
+              "        ; Second scanner body",
+              "        ; First scanner body"
+            ]
+          },
+          {
+            "rank": 7,
+            "name": "Prometheus (decoy)",
+            "score": 142.478,
+            "url": "https://asdflkj.net/COREWAR/88/TOP50/HILL32/prometheusdecoy.red",
+            "file": "imported/strategy-trends/88-top50-7.red",
+            "notes": [
+              ";name Prometheus (decoy)",
+              ";author John Metcalf",
+              ";strategy scanner"
+            ]
+          },
+          {
+            "rank": 8,
+            "name": "Eidolon",
+            "score": 142.454,
+            "url": "https://asdflkj.net/COREWAR/88/TOP50/HILL32/eidolon.red",
+            "file": "imported/strategy-trends/88-top50-8.red",
+            "notes": [
+              ";name Eidolon",
+              ";author John Metcalf",
+              ";strategy scanner"
+            ]
+          },
+          {
+            "rank": 9,
+            "name": "Talisman",
+            "score": 141.274,
+            "url": "https://asdflkj.net/COREWAR/88/TOP50/HILL32/talisman.red"
+          },
+          {
+            "rank": 10,
+            "name": "Lithobolia C yvfp",
+            "score": 140.938,
+            "url": "https://asdflkj.net/COREWAR/88/TOP50/HILL32/lithoboliaC-yvfp.red"
+          }
+        ]
+      }
+    },
+    {
+      "id": "94x",
+      "url": "https://asdflkj.net/COREWAR/X/hill32_rec.html",
+      "entries": [
+        {
+          "rank": 1,
+          "name": "Fatamorgana X",
+          "author": "Zul Nadzri",
+          "score": 184.423,
+          "style": "P-Space",
+          "url": "https://asdflkj.net/COREWAR/X/HILL32/fatamorganaX.red",
+          "file": "imported/strategy-trends/94x-1.red",
+          "notes": [
+            ";name Fatamorgana X",
+            ";author Zul Nadzri",
+            ";strategy Engine : Predator Technology ver2.0 + SureWin ver2.0",
+            ";strategy Warrior: The X Machine + additional scanner",
+            ";strategy April 2004",
+            ";--------------------- fire and ice stone ; dclear for scannner",
+            ";-------------------------- ccpaper for pure rock"
+          ],
+          "classification": "P-space portfolio: stone, scanners, paper"
+        },
+        {
+          "rank": 2,
+          "name": "Fire and Ice II",
+          "author": "David Moore",
+          "score": 182.505,
+          "style": "P-Space",
+          "url": "https://asdflkj.net/COREWAR/X/HILL32/fireandice2.red",
+          "file": "imported/strategy-trends/94x-2.red",
+          "notes": [
+            ";name Fire and Ice II",
+            ";author David Moore",
+            ";strategy anti-imp scanner or stone with airbag",
+            ";   airbag stone + dclear   ;",
+            ";   P-Brain   ;"
+          ],
+          "classification": "P-space: airbag stone or anti-imp scanner"
+        },
+        {
+          "rank": 3,
+          "name": "Fire and Brimstone",
+          "author": "David Moore/Steve Gunnell",
+          "score": 180.761,
+          "style": "P-Space",
+          "url": "https://asdflkj.net/COREWAR/X/HILL32/fireandbrim.red",
+          "file": "imported/strategy-trends/94x-3.red",
+          "notes": [
+            ";name Fire and Brimstone",
+            ";author David Moore/Steve Gunnell",
+            ";strategy anti-imp scanner or stone with airbag",
+            ";strategy Replaced The Truth Is Out There II with Kenshin.",
+            ";   airbag stone + dclear   ;",
+            ";   P-Brain   ;"
+          ],
+          "classification": "P-space: airbag stone or Kenshin scanner"
+        },
+        {
+          "rank": 4,
+          "name": "Ballista",
+          "author": "Christian Schmidt",
+          "score": 175.294,
+          "style": "P-Space",
+          "url": "https://asdflkj.net/COREWAR/X/HILL32/ballista.red",
+          "file": "imported/strategy-trends/94x-4.red",
+          "notes": [
+            ";name Ballista",
+            ";author Christian Schmidt",
+            ";strategy p-warrior, Arrow X and a stone",
+            ";   airbag stone + dclear   ;",
+            ";   P-Brain   ;"
+          ],
+          "classification": "P-space: Arrow X and stone"
+        },
+        {
+          "rank": 5,
+          "name": "KAT v5",
+          "author": "Dave Hillis",
+          "score": 169.412,
+          "style": "P-Space",
+          "url": "https://asdflkj.net/COREWAR/X/HILL32/katv5.red",
+          "file": "imported/strategy-trends/94x-5.red",
+          "notes": [
+            ";name KAT v5",
+            ";author Dave Hillis",
+            ";strategy - p-switch idea from John Metcalf",
+            ";strategy - borrows from Katafutr by Michal Janeczek",
+            ";strategy - Switch between paper with imps, incendiary bomber,",
+            ";strategy - Paul Kline's FireHouse, denial by David Moore,",
+            ";strategy - and 55HSB by Robert Macrae.",
+            ";strategy - Oh, and I signed my name at the top.",
+            "; -- scanner",
+            "; -- paper/imp copy",
+            "; -- paper/imp based on Black Box by JKW",
+            "eImp    equ    35873",
+            "        add.f  #eImp            , 1",
+            "        jmp    -eImp            , {12087",
+            "        mov.i  #eImp            , *0",
+            "imp1  mov.i #5, i19",
+            "imp2  mov.i #i13, *0",
+            "impy  spl #i19, <i13",
+            "      spl impy+iD1-20*i19, impy+iD2-40*i13",
+            "      mov imp1, away+iDist+iD1",
+            "      mov imp2, away+iDist+iD2"
+          ],
+          "classification": "P-space portfolio: paper/imps, bomber, scanners and stone/imps"
+        },
+        {
+          "rank": 6,
+          "name": "Azathoth",
+          "author": "John Metcalf",
+          "score": 167.185,
+          "style": "94",
+          "url": "https://asdflkj.net/COREWAR/X/HILL32/azathothx.red",
+          "file": "imported/strategy-trends/94x-6.red",
+          "notes": [
+            ";name Azathoth",
+            ";author John Metcalf",
+            ";strategy paper/stone, sleeping chaos",
+            "        mov    <stone-1, {s",
+            "p       djn.f  pboot,    {paper+6",
+            "stone   mov    bomb,       @ptr",
+            "hit     sub.x  #sstep*2,   @stone",
+            "paper   spl    pstep,      {x",
+            "        mov    }x,         }paper",
+            "        mov    }x+3,       }paper",
+            "x       mov    {x+3,       }paper"
+          ],
+          "classification": "Paper/stone"
+        },
+        {
+          "rank": 7,
+          "name": "Void Runner",
+          "author": "John Metcalf",
+          "score": 165.99,
+          "style": "94",
+          "url": "https://asdflkj.net/COREWAR/X/HILL32/voidrunner.red",
+          "file": "imported/strategy-trends/94x-7.red",
+          "notes": [
+            ";name Void Runner",
+            ";author John Metcalf",
+            ";strategy stone/imp",
+            "        mov    <imp+1,     {idest2",
+            "        mov    {imp+1,     {idest3",
+            "stone   mov    sbmb,       @ptr",
+            "last    sub.x  #step*2,    @stone",
+            "launch  djn.f  imp-istep*32,<3455",
+            "imp     mov.i  #istep,     *0"
+          ],
+          "classification": "Stone/imp"
+        },
+        {
+          "rank": 8,
+          "name": "Denial",
+          "author": "David Moore",
+          "score": 163.034,
+          "style": "94",
+          "url": "https://asdflkj.net/COREWAR/X/HILL32/denial.red",
+          "file": "imported/strategy-trends/94x-8.red",
+          "notes": [
+            ";name Denial",
+            ";author David Moore",
+            ";strategy ineffective imp/stone",
+            ";strategy (13pt A-imps, 19pt B-imps)",
+            ";stone stolen from QuickSilver and modified",
+            "imp1  mov.i #5, i19",
+            "imp2  mov.i #i13, *0",
+            "impy  spl #i19, <i13",
+            "      spl impy+iD1-20*i19, impy+iD2-40*i13",
+            "      mov imp1, away+iDist+iD1",
+            "      mov imp2, away+iDist+iD2"
+          ],
+          "classification": "Dual imp systems and stone"
+        },
+        {
+          "rank": 9,
+          "name": "Big I.F.F.S.",
+          "author": "Dave Hillis",
+          "score": 162.242,
+          "style": "P-Space",
+          "url": "https://asdflkj.net/COREWAR/X/HILL32/bigiffs.red",
+          "file": "imported/strategy-trends/94x-9.red",
+          "notes": [
+            ";name Big I.F.F.S.",
+            ";author Dave Hillis",
+            ";strategy - Experimenting with P^3 tables",
+            ";strategy - using other people's components",
+            "; -- scanner from katafutr",
+            "imp1  mov.i #5, i19",
+            "imp2  mov.i #i13, *0",
+            "impy  spl #i19, <i13",
+            "      spl impy+iD1-20*i19, impy+iD2-40*i13",
+            "      mov imp1, away+iDist+iD1",
+            "      mov imp2, away+iDist+iD2"
+          ],
+          "classification": "P-space portfolio: scanner and stone/imps"
+        },
+        {
+          "rank": 10,
+          "name": "Discord",
+          "author": "John Metcalf",
+          "score": 161.872,
+          "style": "94",
+          "url": "https://asdflkj.net/COREWAR/X/HILL32/discord.red",
+          "file": "imported/strategy-trends/94x-10.red",
+          "notes": [
+            ";name Discord",
+            ";author John Metcalf",
+            ";strategy scanner"
+          ],
+          "classification": "Scanner"
+        }
+      ]
+    },
+    {
+      "id": "lp",
+      "url": "https://asdflkj.net/COREWAR/LP/hill32_rec.html",
+      "entries": [
+        {
+          "rank": 1,
+          "name": "R.O.U.S.",
+          "author": "S.Fernandes",
+          "score": 190.873,
+          "style": "94",
+          "url": "https://asdflkj.net/COREWAR/LP/HILL32/rous.red",
+          "file": "imported/strategy-trends/lp-1.red",
+          "notes": [
+            ";name R.O.U.S.",
+            ";author S.Fernandes",
+            ";strategy paper",
+            "paper   mov    #22          ,   #7",
+            "loop    mov    <paper       ,   {pboot",
+            "         spl    @paper       ,   >83"
+          ],
+          "classification": "Compact bombing paper"
+        },
+        {
+          "rank": 2,
+          "name": "Replinator",
+          "author": "Christian Schmidt",
+          "score": 178.452,
+          "style": "94",
+          "url": "https://asdflkj.net/COREWAR/LP/HILL32/l111.red",
+          "file": "imported/strategy-trends/lp-2.red",
+          "notes": [
+            ";name Replinator",
+            ";author Christian Schmidt",
+            ";strategy LP super paper",
+            ";------------ Qscan Constant ---------------"
+          ],
+          "classification": "Quickscan and bombing paper"
+        },
+        {
+          "rank": 3,
+          "name": "Bronze minotaur",
+          "author": "G.Labarga",
+          "score": 178.409,
+          "style": "94",
+          "url": "https://asdflkj.net/COREWAR/LP/HILL32/bronzeminotaur.red",
+          "file": "imported/strategy-trends/lp-3.red",
+          "notes": [
+            ";name Bronze minotaur",
+            ";author G.Labarga",
+            ";strategy Paper/stone"
+          ],
+          "classification": "Two separated bombing papers"
+        },
+        {
+          "rank": 4,
+          "name": "Digital Rain",
+          "author": "inversed",
+          "score": 170.332,
+          "style": "94",
+          "url": "https://asdflkj.net/COREWAR/LP/HILL32/digitalrain.red",
+          "file": "imported/strategy-trends/lp-4.red",
+          "notes": [
+            ";author inversed",
+            ";name Digital Rain",
+            ";strategy Bombing paper"
+          ],
+          "classification": "Bombing paper"
+        },
+        {
+          "rank": 5,
+          "name": "Fear of the Unknown",
+          "author": "John Metcalf",
+          "score": 170.123,
+          "style": "94",
+          "url": "https://asdflkj.net/COREWAR/LP/HILL32/fearfixed.red",
+          "file": "imported/strategy-trends/lp-5.red",
+          "notes": [
+            ";name Fear of the Unknown",
+            ";author John Metcalf",
+            ";strategy paper/stone",
+            "boot    spl    copy,     paper-pstep+5",
+            "stone   mov    >sstep*2, 1-sstep*2",
+            "paper   mov    #length,  >length",
+            "copy    mov    <paper,   <dest",
+            "        spl    *copy,    <paper+4000"
+          ],
+          "classification": "Paper/stone"
+        },
+        {
+          "rank": 6,
+          "name": "The LP Destroyer",
+          "author": "Christian Schmidt",
+          "score": 168.546,
+          "style": "P-Space",
+          "url": "https://asdflkj.net/COREWAR/LP/HILL32/lpdestroyer.red",
+          "file": "imported/strategy-trends/lp-6.red",
+          "notes": [
+            ";name The LP Destroyer",
+            ";author Christian Schmidt",
+            ";strategy paper and stone",
+            ";----p-brain----------- 13",
+            ";----- stone------------------31"
+          ],
+          "classification": "P-space: paper and stone"
+        },
+        {
+          "rank": 7,
+          "name": "Hippogriff",
+          "author": "John Metcalf",
+          "score": 165.487,
+          "style": "94",
+          "url": "https://asdflkj.net/COREWAR/LP/HILL32/hippogriff.red",
+          "file": "imported/strategy-trends/lp-7.red",
+          "notes": [
+            ";name Hippogriff",
+            ";author John Metcalf",
+            ";strategy looping paper",
+            "; trying to find a decent looping paper",
+            "; with each improvement it looks more like Digital Rain ",
+            "paper   mov    #28,      #28",
+            "        mov    <paper,   {dest",
+            "        jmn    copy,     paper",
+            "inc     spl    >paper,   }sstep"
+          ],
+          "classification": "Looping bombing paper"
+        },
+        {
+          "rank": 8,
+          "name": "Distortion Energy",
+          "author": "inversed",
+          "score": 162.419,
+          "style": "94",
+          "url": "https://asdflkj.net/COREWAR/LP/HILL32/dse_6.red",
+          "file": "imported/strategy-trends/lp-8.red",
+          "notes": [
+            ";name Distortion Energy",
+            ";author inversed",
+            ";strategy Paper + self-modifying stone",
+            "; ..... Paper .............................................",
+            "; ..... Stone .............................................",
+            "; If not overwritten by the paper, the stone undergoes ",
+            "; transforming into a clear.  Helps a lot if the paper",
+            "; 4 processes in the stone, rest in the paper. "
+          ],
+          "classification": "Paper plus self-modifying stone/clear"
+        },
+        {
+          "rank": 9,
+          "name": "The LP Destroyer II",
+          "author": "Christian Schmidt",
+          "score": 162.405,
+          "style": "P-Space",
+          "url": "https://asdflkj.net/COREWAR/LP/HILL32/lpdestroyer2.red",
+          "file": "imported/strategy-trends/lp-9.red",
+          "notes": [
+            ";name The LP Destroyer II",
+            ";author Christian Schmidt",
+            ";strategy p-switching LP paper and dwarf",
+            ";----p-brain----------- 13"
+          ],
+          "classification": "P-space: paper or dwarf"
+        },
+        {
+          "rank": 10,
+          "name": "Disciples of the Void",
+          "author": "inversed",
+          "score": 162.132,
+          "style": "94",
+          "url": "https://asdflkj.net/COREWAR/LP/HILL32/4xlb_6.red",
+          "file": "imported/strategy-trends/lp-10.red",
+          "notes": [
+            ";author inversed",
+            ";name Disciples of the Void",
+            ";strategy Quad scanner",
+            "; Base scanner uses JMZ.A and has only one  non-transparent instruction.",
+            "; JMZ tests  < ptr instead of  @ ptr, which helps against imps.  Fairly",
+            "; weak alone, but four of them are a different story. All four scanners",
+            "; slightly  different  scanners.  Step  magnitude  is the same, but one",
+            "; scanner uses ADD and another uses SUB,  so they do not hit each other",
+            "; Scanners from  different pairs do not see each other because the step",
+            "; is mod-2 and the shift is odd.  Dual boot helps against quickscanners."
+          ],
+          "classification": "Quad scanner"
+        }
+      ]
+    }
+  ]
+}

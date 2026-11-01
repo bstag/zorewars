@@ -7,8 +7,8 @@ export const combinators = {
   seq: { kids: [2, 8], purpose: 'Members run one after another; each hands control to the next.' },
   par: { kids: [2, 4], purpose: 'Members launched side by side with SPL.' },
   relocate: { kids: [1, 1], params: { HOP: [256, 54000] }, defaults: { HOP: 4096 }, purpose: 'Copies its member to probe + HOP and runs it there.' },
-  boot: { kids: [1, 2], params: { HOP: [0, 54000], UNROLL: [1, 4], HOPY: [0, 200], HOPZ: [0, 200], WIPE: [0, 1] }, defaults: { HOP: 4096, UNROLL: 1, HOPY: 0, HOPZ: 0, WIPE: 0 },
-    purpose: 'Copies its first member to + HOP (UNROLL cells per loop) and runs the copy; the second (data) stays behind. WIPE 1: the boot then erases its own pointers to the copy, so a scanner that finds the boot learns nothing.' },
+  boot: { kids: [1, 2], params: { HOP: [0, 54000], UNROLL: [1, 4], HOPY: [0, 200], HOPZ: [0, 200], WIPE: [0, 1], EARLY: [0, 1] }, defaults: { HOP: 4096, UNROLL: 1, HOPY: 0, HOPZ: 0, WIPE: 0, EARLY: 0 },
+    purpose: 'Copies its first member to + HOP (UNROLL cells per loop) and runs the copy; the second (data) stays behind. WIPE 1: the boot then erases its own pointers to the copy, so a scanner that finds the boot learns nothing. EARLY 1 (gap 10, copy-ahead): copies forward and SPLs into the copy as soon as its entry is in, then finishes copying the tail while it already runs, so the body is live and safe much sooner against a fast quickscan (\'94, ring only).' },
   image: { kids: [2, 4], purpose: 'Members laid out in order; the first runs, the rest are data.' },
   trigger: { kids: [2, 2], params: { MODE: [0, 2], TIME: [1, 4096] }, defaults: { MODE: 0, TIME: 2000 },
     purpose: 'Runs its first member (a block with a loop) with a watcher beside it; when the watcher fires it rewrites the loop to jump to the second member. MODE 0: after TIME laps of the watcher; 1: when its marker is damaged; 2: when the first member\'s loop is damaged (a watchdog).' },
@@ -141,7 +141,10 @@ export function iface(node, settings) {
       const hasRelocate = (n) => n.id === 'relocate' || (n.kids ?? []).some(hasRelocate);
       if (kids[0] && hasRelocate(kids[0])) out.mismatches.push('one relocation per warrior: relocate or boot');
       if (landsOnSelf()) out.mismatches.push('HOP lands on the warrior itself');
-      out.processes = (parts[0]?.processes ?? 0) + node.P.WIPE;   // the wiping process lives a few cycles beside the copy
+      if (node.P.EARLY && settings.dialect === '88') out.mismatches.push("boot: EARLY needs ICWS'94 (it copies forward with a postincrement)");
+      if (node.P.EARLY && torus) out.mismatches.push('boot: EARLY is ring-only');
+      // EARLY (copy-ahead) and WIPE both leave one boot process running beside the copy for a while.
+      out.processes = (parts[0]?.processes ?? 0) + (node.P.WIPE || node.P.EARLY ? 1 : 0);
       break;
     }
     case 'trigger': {
@@ -429,6 +432,33 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
             const main = spanOf(kids[0]);
             emit(kids[0], { ...env, span: main.size });
             if (kids[1]) emit(kids[1], env);
+            if (P.EARLY) {
+              // Copy-ahead (gap 10). Copy the member forward (postincrement), and the
+              // moment its entry is in, SPL a process into the copy and keep copying the
+              // tail behind it. A single-process body stays one step behind the boot, so
+              // each cell it reaches has already been written; the body is live and safe
+              // long before the copy is complete.
+              const entryOff = (sizes?.labels?.[entryOf(kids[0])] ?? main.start) - main.start;
+              const head = Math.max(1, Math.min(main.size, entryOff + 1));   // copy through the entry, then launch
+              const tail = main.size - head;
+              const launch = hopFrom(entryOf(kids[0]), P.HOP, P.HOPY, P.HOPZ);
+              ctx.ins('boot', 'MOV', 'I', `>${L('copyFrom')}`, `>${L('copyTo')}`);
+              ctx.ins('', 'DJN', 'B', L('boot'), L('headCount'));
+              ctx.ins('go', 'SPL', 'B', launch);
+              for (let i = 0; i < P.UNROLL; i++) ctx.ins(i ? '' : 'tail', 'MOV', 'I', `>${L('copyFrom')}`, `>${L('copyTo')}`);
+              ctx.ins('', 'DJN', 'B', L('tail'), L('tailCount'));
+              if (P.WIPE) {
+                // Erase the launch and the copy pointer, then die: the abandoned image points nowhere.
+                ctx.ins('', 'MOV', 'I', L('wiped'), L('go'));
+                ctx.ins('', 'MOV', 'I', L('wiped'), L('copyTo'));
+                ctx.ins('wiped', 'DAT', 'F', '#0', '#0');
+              } else ctx.ins('', 'JMP', 'B', launch);   // the boot process joins the copy
+              ctx.ins('copyFrom', 'DAT', 'F', '#0', `#${main.start - pc}`);               // forward: the member's first cell
+              ctx.ins('copyTo', 'DAT', 'F', '#0', `#${hop(main.start + P.HOP - pc, P.HOPY, P.HOPZ)}`);
+              ctx.ins('headCount', 'DAT', 'F', '#0', `#${head}`);
+              ctx.ins('tailCount', 'DAT', 'F', '#0', `#${Math.max(0, Math.ceil(tail / P.UNROLL))}`);
+              break;
+            }
             copyLoop(ctx, 'boot', 'copyFrom', 'copyTo', 'copyCount', P.UNROLL);
             if (P.WIPE) {
               // Start the copy, then erase the launch and the destination pointer and die.
