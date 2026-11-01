@@ -3,8 +3,10 @@
 // switch that picks a body from what the opening found.
 //
 //   fang-vampire   one dual-field fang is both scan pointer and bomb; the pit is
-//                  a parameter (stun, leaky DJN, counting, or none at all: the
-//                  Unpit sentinel); the first prisoner flips it to a SPL/DAT clear
+//                  a parameter (stun, leaky DJN, counting, none at all: the
+//                  Unpit sentinel, or Mohini's pit whose prisoner throws the
+//                  switch itself); the first prisoner flips it to a SPL/DAT
+//                  clear; BSTEP adds Nosferatu's bomb side
 //   probe-verdict  reads an opening's probe and records found-nothing / a lone
 //                  cell / a body, for a body or a future combinator to branch on
 //
@@ -43,6 +45,16 @@ const MARKER = { op: 'DAT', mod: 'F', aMode: '#', a: 1, bMode: '#', b: 123 };
 //               sentinel X = `dat #KILL`: the prisoner jumps through X to
 //               X+KILL, an empty cell KILL away, and dies there, and the `}`
 //               bumps X.A, which is the signal. No pit holds anyone.
+//   4 flip:     Mohini's switch (Ayan Chakrabarti). The pit's first line is
+//               `mov flip, check`, run by the prisoner: it rewrites the
+//               vampire's check, a plain `jmp loop`, into a jump to the clear,
+//               then stuns itself in a `spl #0`. The vampire never tests a
+//               signal; its prisoner throws the switch.
+// BSTEP > 0 is Nosferatu's bomb side (John Metcalf): each pass also drops a
+// DAT BSTEP further on, from just past the warrior. The bombs land only on
+// cells that are congruent to that first one modulo gcd(BSTEP, CORESIZE), so a
+// gcd larger than the warrior keeps them off it. The scan pass grows to four
+// instructions (.25c scan, .25c bombs). A DAT 0,0 looks empty to the scan.
 // RELAY > 0 (pits 0-2) is Carmilla's anti-trace: the start code drops a relay
 // `jmp pit` RELAY cells past the pit and the fangs aim at it, so a scanner
 // that follows a fang finds the relay, not the warrior.
@@ -54,7 +66,7 @@ const MARKER = { op: 'DAT', mod: 'F', aMode: '#', a: 1, bMode: '#', b: 123 };
 // clears with DATs for ever. A prisoner that arrives just after a bite is
 // noticed at the next bite (on an empty board, when the scan comes round to
 // its own fang a lap later).
-const PITS = ['stun', 'leaky DJN', 'counting', 'none (Unpit sentinel)'];
+const PITS = ['stun', 'leaky DJN', 'counting', 'none (Unpit sentinel)', 'flip (Mohini)'];
 
 // Offsets the watch and the plant need: the first scan cell and the k-th one.
 const scanCell = (api, k) => api.norm(api.at('vFang') + api.code('vFang').b + k * api.P.STEP);
@@ -73,11 +85,11 @@ function vampPlanted(api) {
 const fangVampire = {
   id: 'fang-vampire',
   kind: 'body', exit: 'never', processes: 1, writes: 'core', roams: false, dialects: '94',
-  purpose: 'Scanning vampire: one JMP fang whose A and B fields move oppositely by STEP is both scan pointer (B) and way home (A, summing to the pit); it bites occupied cells outside the warrior, and when the pit (PIT 0 stun, 1 leaky DJN, 2 counting HOLD arrivals, 3 none: an Unpit sentinel whose postincrement is the signal) reports a prisoner it switches to a SPL-then-DAT clear. RELAY > 0 aims the fangs at a remote relay (anti-trace).',
-  params: { STEP: [1, 27719], PIT: [0, 3], RELAY: [0, 27000], HOLD: [1, 4000], KILL: [256, 27000] },
-  defaults: { STEP: 2341, PIT: 0, RELAY: 0, HOLD: 6, KILL: 3000 },
+  purpose: 'Scanning vampire: one JMP fang whose A and B fields move oppositely by STEP is both scan pointer (B) and way home (A, summing to the pit); it bites occupied cells outside the warrior, and when the pit (PIT 0 stun, 1 leaky DJN, 2 counting HOLD arrivals, 3 none: an Unpit sentinel whose postincrement is the signal, 4 flip: the prisoner rewrites the vampire\'s check into a jump to the clear, as in Mohini) reports a prisoner it switches to a SPL-then-DAT clear. RELAY > 0 aims the fangs at a remote relay (anti-trace); BSTEP > 0 also bombs every BSTEP cells each pass (Nosferatu\'s bomb side).',
+  params: { STEP: [1, 27719], PIT: [0, 4], RELAY: [0, 27000], HOLD: [1, 4000], KILL: [256, 27000], BSTEP: [0, 27000] },
+  defaults: { STEP: 2341, PIT: 0, RELAY: 0, HOLD: 6, KILL: 3000, BSTEP: 0 },
   entry: 'vStart', loop: 'vLoop',
-  mutable: [['vFang', ['a', 'b']], ['vPit', ['a', 'b']], ['vPit1', ['b']], ['vCnt', ['b']], ['vSent', ['a']], ['cPtr', ['b']], ['cCnt', ['b']], ['cBomb', ['a', 'b']]],
+  mutable: [['vFang', ['a', 'b']], ['vPit', ['a', 'b']], ['vPit1', ['b']], ['vCnt', ['b']], ['vSent', ['a']], ['cPtr', ['b']], ['cCnt', ['b']], ['cBomb', ['a', 'b']], ['vCheck', ['op', 'mod', 'aMode', 'a', 'bMode', 'b']], ['vBp', ['b']]],
   mismatches(P, settings) {
     const core = settings.coreSize, room = settings.maxLength, out = [];
     const reach = core / gcd(P.STEP, core);
@@ -86,6 +98,15 @@ const fangVampire = {
     if (P.RELAY && (P.RELAY < 2 * room || P.RELAY > core - 2 * room)) out.push('fang-vampire: the relay lands on or next to the warrior');
     if (P.PIT === 3 && (P.KILL < 2 * room || P.KILL + 1000 > core - 2 * room)) out.push('fang-vampire: the kill zone (KILL past the sentinel, drifting a cell per prisoner) runs into the warrior');
     if (P.PIT === 2 && P.HOLD >= settings.maxProcesses) out.push(`fang-vampire: HOLD ${P.HOLD} prisoners can never all arrive (at most ${settings.maxProcesses} processes)`);
+    if (P.BSTEP && core / gcd(P.BSTEP, core) < 2) out.push(`fang-vampire: BSTEP ${P.BSTEP} bombs a single cell`);
+    return out;
+  },
+  // The bomb side is safe only when its lattice misses the warrior (and the relay).
+  linked(P, settings, at, { span }) {
+    if (!P.BSTEP) return [];
+    const core = settings.coreSize, g = gcd(P.BSTEP, core), out = [];
+    if (g <= span) out.push(`fang-vampire: gcd(BSTEP ${P.BSTEP}, ${core}) = ${g} is not larger than the warrior (${span} cells), so its bombs would land on it`);
+    else if (P.RELAY && mod(at('vPit') + P.RELAY, g) === mod(span, g)) out.push('fang-vampire: the bomb side lands on the relay');
     return out;
   },
   emit(ctx) {
@@ -95,6 +116,10 @@ const fangVampire = {
     if (P.RELAY) ctx.ins('vStart', 'MOV', 'I', L('vRel'), `${L('vPit')}+${P.RELAY}`);
     else ctx.mark('vStart');
     ctx.ins('vLoop', 'ADD', 'F', L('vInc'), L('vFang'));             // a -= STEP, b += STEP
+    if (P.BSTEP) {                                                   // Nosferatu's bomb side
+      ctx.ins('', 'ADD', 'AB', `#${P.BSTEP}`, L('vBp'));
+      ctx.ins('vBomb', 'MOV', 'I', L('cDat'), `@${L('vBp')}`);
+    }
     ctx.ins('vLook', 'JMZ', 'F', L('vLoop'), `@${L('vFang')}`);      // empty? scan on
     // Found something. Skip the warrior's own image [0, span): fang+b is in it
     // when b <= span-1-iF or b >= core-iF (iF = the fang's index).
@@ -111,6 +136,7 @@ const fangVampire = {
     ctx.ins('vBite', 'MOV', 'I', L('vFang'), `@${L('vFang')}`);     // the copy at S has S + a = aim
     // The signal: has a prisoner arrived?
     if (P.PIT <= 1) ctx.ins('vCheck', 'JMZ', 'B', L('vLoop'), L('vPit'));
+    else if (P.PIT === 4) ctx.ins('vCheck', 'JMP', 'B', L('vLoop'));  // the prisoner rewrites this
     else {
       ctx.ins('vCheck', 'SNE', P.PIT === 2 ? 'AB' : 'A', `#${P.PIT === 2 ? P.HOLD : P.KILL}`, P.PIT === 2 ? L('vCnt') : L('vSent'));
       ctx.ins('', 'JMP', 'B', L('vLoop'));
@@ -121,12 +147,14 @@ const fangVampire = {
     ctx.ins('', 'ADD', 'AB', `#${span}`, L('cPtr'));                // hop over the image
     ctx.ins('', 'MOV', 'AB', `#${core - span}`, L('cCnt'));
     ctx.ins('', 'MOV', 'I', L('cDat'), L('cBomb'));                 // DATs from the second lap on
-    for (const cell of { 0: ['vPit', 'vPit1'], 1: ['vPit'], 2: ['vHold'], 3: [] }[P.PIT]) ctx.ins('', 'MOV', 'I', L('cDat'), L(cell));
+    for (const cell of { 0: ['vPit', 'vPit1'], 1: ['vPit'], 2: ['vHold'], 3: [], 4: ['vPit', 'vPit1'] }[P.PIT]) ctx.ins('', 'MOV', 'I', L('cDat'), L(cell));
     ctx.ins('', 'JMP', 'B', L('clr'));
     ctx.ins('cPtr', 'DAT', 'F', '#0', `#${span - ctx.pc()}`);        // first write: just past the image
     ctx.ins('cCnt', 'DAT', 'F', '#0', `#${core - span}`);
     ctx.ins('cBomb', 'SPL', 'B', '#0', '#0');
     ctx.ins('cDat', 'DAT', 'F', '#0', '#0');
+    if (P.BSTEP) ctx.ins('vBp', 'DAT', 'F', '#0', `#(${span - P.BSTEP}-${ctx.pc()})`); // first bomb: just past the image
+    if (P.PIT === 4) ctx.ins('vFlip', 'JMP', 'B', `${L('clr')}-${L('vCheck')}`); // copied over vCheck
     // The fang. The first look (after one ADD) is the cell just past the image.
     ctx.ins('vInc', 'DAT', 'F', `#${-P.STEP}`, `#${P.STEP}`);
     const b0 = `(${span - P.STEP}-${ctx.pc()})`;
@@ -145,8 +173,11 @@ const fangVampire = {
       ctx.ins('vHold', 'JMN', 'B', L('vHold'), L('vCnt'));           // ...the rest wait for it
       ctx.ins('', 'DAT', 'F', '#0', '#0');
       ctx.ins('vCnt', 'DAT', 'F', '#0', `#${P.HOLD}`);
-    } else {
+    } else if (P.PIT === 3) {
       ctx.ins('vSent', 'DAT', 'F', `#${P.KILL}`, '#0');              // through here to an empty cell KILL away
+    } else {
+      ctx.ins('vPit', 'MOV', 'I', L('vFlip'), L('vCheck'));          // the prisoner throws the switch...
+      ctx.ins('vPit1', 'SPL', 'B', '#0', '#0');                      // ...and stuns itself here
     }
   },
   plant(api) {
@@ -157,11 +188,12 @@ const fangVampire = {
     const { vm, P } = api, fang = api.at('vFang'), aim = aimOf(api);
     const planted = api.scenario === 'fang-vampire: planted target';
     const target = planted ? vampPlanted(api) : null;
-    let looks = 0, fangs = 0, clearAt = null, hitPlanted = false;
+    let looks = 0, fangs = 0, bombs = 0, clearAt = null, hitPlanted = false;
     return {
       before(pc) {
         if (pc === api.at('vLook')) looks++;
         if (pc === api.at('clr') && clearAt === null) clearAt = vm.cycle;
+        if (P.BSTEP && pc === api.at('vBomb') && api.same(vm.peek(pc), api.code('vBomb'))) return { bomb: api.norm(api.at('vBp') + vm.peek(api.at('vBp')).b) };
         if (pc === api.at('vBite') && api.same(vm.peek(pc), api.code('vBite'))) return { bite: api.norm(fang + vm.peek(fang).b) };
         if (pc === api.at('clr') && api.same(vm.peek(pc), api.code('clr'))) return { clear: api.norm(api.at('cPtr') + vm.peek(api.at('cPtr')).b) };
         return null;
@@ -169,6 +201,7 @@ const fangVampire = {
       after(t) {
         if (!t) return;
         if (t.clear !== undefined) { if (api.inSelf(t.clear)) throw new Error("fang-vampire's clear hit its own code"); return; }
+        if (t.bomb !== undefined) { if (api.inImage(t.bomb) || (P.RELAY && t.bomb === aim)) throw new Error("fang-vampire's bomb side hit its own warrior"); bombs++; return; }
         const c = t.bite;
         if (api.inImage(c)) throw new Error('fang-vampire bit its own warrior');
         if (P.RELAY && c === aim) throw new Error('fang-vampire bit its own relay');
@@ -185,6 +218,7 @@ const fangVampire = {
         if (!api.alone) return;
         if (looks < 1000) throw new Error(`fang-vampire looked at too few cells (${looks})`);
         if (fangs) throw new Error('fang-vampire bit an empty core');
+        if (P.BSTEP && bombs < 1000) throw new Error(`fang-vampire's bomb side dropped too few bombs (${bombs})`);
         if (clearAt !== null) throw new Error('fang-vampire switched to its clear with no prisoner');
         if (P.RELAY && !api.same(vm.peek(aim), { ...api.code('vRel'), a: api.norm(-P.RELAY) })) throw new Error('fang-vampire did not place its relay');
         if (api.image.start === 0) prisonerDuel(api);
@@ -214,7 +248,7 @@ function prisonerDuel(api) {
     if (!switched && P.PIT !== 1) throw new Error('fang-vampire never switched to its clear');
   }
   // Our code outside the pit and the moving fields must be as loaded.
-  const skip = new Set(['vFang', 'cPtr', 'cCnt', 'cBomb', 'vPit', 'vPit1', 'vHold', 'vCnt', 'vSent'].map((l) => { try { return api.at(l); } catch { return -1; } }));
+  const skip = new Set(['vFang', 'cPtr', 'cCnt', 'cBomb', 'vPit', 'vPit1', 'vHold', 'vCnt', 'vSent', 'vCheck', 'vBp'].map((l) => { try { return api.at(l); } catch { return -1; } }));
   for (let c = api.self.start, n = 0; n < api.self.size; n++, c = api.norm(c + 1)) {
     if (skip.has(c)) continue;
     const k2 = api.norm(c - api.self.start);

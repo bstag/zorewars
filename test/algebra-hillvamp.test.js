@@ -30,9 +30,38 @@ function broken(id, f) {
 }
 
 test('fang-vampire builds with every pit on every rule set it supports', () => {
-  for (const rules of NEW) for (const PIT of [0, 1, 2, 3]) ok(vamp({ PIT }), rules, ['fang-vampire']);
+  for (const rules of NEW) for (const PIT of [0, 1, 2, 3, 4]) ok(vamp({ PIT }), rules, ['fang-vampire']);
   for (const rules of NEW) ok(vamp({ PIT: 0, RELAY: 2000 }), rules, ['fang-vampire']);
   ok(vamp({ PIT: 1, RELAY: 3001, STEP: 3359 }), '94nop', ['fang-vampire']);
+  ok(vamp({ PIT: 4, RELAY: 2000 }), '94nop', ['fang-vampire']);
+});
+
+test('fang-vampire bombs a lattice that misses it (Nosferatu\'s bomb side)', () => {
+  for (const rules of NEW) ok(vamp({ BSTEP: 80 }), rules, ['fang-vampire']);
+  ok(vamp({ PIT: 4, BSTEP: 200 }), '94nop', ['fang-vampire']);
+  ok(seq({ id: 'opening-qscan-mul' }, vamp({ BSTEP: 160 })), '94nop', ['fang-vampire']);
+  // gcd(BSTEP, CORESIZE) must be larger than the warrior, or the lattice crosses it.
+  assert.throws(() => buildTree(vamp({ BSTEP: 3044 }), { rules: '94nop', length: 100 }), /gcd\(BSTEP 3044, 8000\) = 4/);
+  assert.throws(() => buildTree(seq({ id: 'opening-qscan-mul' }, vamp({ BSTEP: 40 })), { rules: '94nop', length: 100 }), /would land on it/);
+});
+
+// Mohini: the prisoner runs the pit's MOV, which turns the vampire's
+// `jmp loop` into a jump to the clear.
+test('a Mohini prisoner throws the switch itself', () => {
+  const settings = recipeSettings('94nop', 100);
+  const P = { ...leaves['fang-vampire'].defaults, PIT: 4 };
+  const l = link({ id: 'fang-vampire', P }, settings);
+  const w = compile(l.source, 'redcode', settings);
+  const at = (name) => l.labels[Object.keys(l.labels).find((k) => k.endsWith(name))];
+  const check = at('vCheck');
+  // A victim that jumps straight into the pit, as a bitten one would.
+  const them = { name: 'victim', instructions: [{ op: 'JMP', mod: 'B', aMode: '$', a: at('vPit') - 3001, bMode: '$', b: 0 }], start: 0 };
+  const vm = new VM(settings);
+  vm.load([w, them], { positions: [0, 3001] });
+  assert.equal((check + vm.peek(check).a) % 8000, at('vLoop'));
+  for (let i = 0; i < 10; i++) vm.step();
+  assert.equal((check + vm.peek(check).a) % 8000, at('clr'), 'the check now jumps to the clear');
+  assert.equal(vm.warriors[1].alive, true, 'the prisoner is stunned in the pit, not dead yet');
 });
 
 test('fang-vampire follows an opening', () => {
@@ -113,6 +142,12 @@ test('the fang-vampire watch catches a broken mechanism', () => {
   // A stun pit that never splits nor marks: the clear never starts and the prisoner lives.
   const dud = broken('fang-vampire', (l, o, m, a, b) => (l === 'vPit' ? ['JMP', 'B', '$0', '0'] : [o, m, a, b]));
   assert.throws(() => buildTree(dud, rules), /did not finish its prisoner|never switched/);
+  // A Mohini flip that leads back into the loop: the prisoner's switch does nothing.
+  const flop = broken('fang-vampire', (l, o, m, a, b) => (l === 'vFlip' ? [o, m, a.replace('clr', 'vLoop'), b] : [o, m, a, b]));
+  assert.throws(() => buildTree({ ...flop, P: { ...leaves['fang-vampire'].defaults, PIT: 4 } }, rules), /did not finish its prisoner|never switched/);
+  // A bomb side that starts inside the warrior.
+  const wild = broken('fang-vampire', (l, o, m, a, b) => (l === 'vBp' ? [o, m, a, `${b}-6`] : [o, m, a, b]));
+  assert.throws(() => buildTree({ ...wild, P: { ...leaves['fang-vampire'].defaults, BSTEP: 80 } }, rules), /bomb side hit its own warrior/);
 });
 
 test('probe-verdict hands on found-nothing / lone / body', () => {
