@@ -285,20 +285,25 @@ function emitProgram(tree, lang, { numeric, loops }) {
           body.push(withComment(`${parts.join('; ')}${py ? '' : ';'}`, n.comment, indent));
           break;
         }
-        case 'for': {
-          const countAst = parseExpr(n.count);
+        case 'for': emitLoop(n,scope,indent); break;
+      }
+    }
+  }
+  // FOR translation owns count validation, counter scope and disabled blocks.
+  function emitLoop(n,scope,indent) {
+const countAst = parseExpr(n.count);
           const countIds = countAst ? [...idsOf(countAst)] : null;
           const countOk = loops && countAst && countIds.every((id) => BUILTINS.includes(id) || numericConsts.has(id) || scope.has(id) || id.toUpperCase() === 'CURLINE');
           if (!countOk) { // keep it as a Redcode FOR loop (outer counters substituted)
             body.push(`${indent}raw(${textLiteral(n.raw.trim(), scope)})${py ? '' : ';'}`);
             emitNodes(n.body, scope, indent);
             body.push(`${indent}raw("rof")${py ? '' : ';'}`);
-            break;
+            return;
           }
           if (n.labels.length) body.push(`${indent}${labelCalls(n.labels, scope).join('; ')}${py ? '' : ';'}`);
           if (countAst.k === 'num' && countAst.v === 0) {
             body.push(`${indent}${C} (a FOR 0 block: disabled in the original)`);
-            break;
+            return;
           }
           const v = n.counter ? varName(n.counter) : `_k${loopId}`;
           loopId++;
@@ -317,10 +322,7 @@ function emitProgram(tree, lang, { numeric, loops }) {
           emitNodes(n.body, inner, indent + step);
           if (py && body.length === before) body.push(`${indent}${step}pass`);
           if (!py) body.push(`${indent}}`);
-          break;
-        }
-      }
-    }
+          return;
   }
   emitNodes(tree, new Map(), '');
 

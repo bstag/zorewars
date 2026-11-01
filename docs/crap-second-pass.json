@@ -1,0 +1,589 @@
+{
+  "baselineCommit": "9ec91fbd639cae1102a732b8e82924a6ca0c5290",
+  "threshold": 30,
+  "baseline": {
+    "methods": 2037,
+    "aboveThreshold": 165,
+    "unknownCoverage": 673,
+    "maxRisk": 4830
+  },
+  "before": {
+    "methods": 2053,
+    "aboveThreshold": 165,
+    "unknownCoverage": 673,
+    "maxRisk": 4830
+  },
+  "after": {
+    "methods": 2055,
+    "aboveThreshold": 163,
+    "unknownCoverage": 673,
+    "maxRisk": 4830
+  },
+  "tests": {
+    "passed": 355,
+    "skipped": 7,
+    "failed": 0
+  },
+  "coverage": {
+    "lines": {
+      "total": 35959,
+      "covered": 21656,
+      "skipped": 0,
+      "pct": 60.22
+    },
+    "statements": {
+      "total": 35959,
+      "covered": 21656,
+      "skipped": 0,
+      "pct": 60.22
+    },
+    "functions": {
+      "total": 1952,
+      "covered": 1701,
+      "skipped": 0,
+      "pct": 87.14
+    },
+    "branches": {
+      "total": 11362,
+      "covered": 10160,
+      "skipped": 0,
+      "pct": 89.42
+    },
+    "branchesTrue": {
+      "total": 0,
+      "covered": 0,
+      "skipped": 0,
+      "pct": 100
+    }
+  },
+  "originalBrowser": {
+    "file": "web/app.js",
+    "method": "rulesHint",
+    "line": 456,
+    "endLine": 490,
+    "complexity": 39,
+    "coverage": 0,
+    "coverageStatus": "unexecuted",
+    "unknownReason": null,
+    "crap": 1560,
+    "risk": 1560,
+    "aboveThreshold": true
+  },
+  "browser": [
+    {
+      "file": "web/rules-hint.js",
+      "method": "battlefieldHint",
+      "line": 8,
+      "endLine": 25,
+      "complexity": 16,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 16,
+      "risk": 16,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/rules-hint.js",
+      "method": "limitsHint",
+      "line": 29,
+      "endLine": 42,
+      "complexity": 13,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 13,
+      "risk": 13,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/battlefield.js",
+      "method": "fieldKey",
+      "line": 4,
+      "endLine": 6,
+      "complexity": 4,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 4,
+      "risk": 4,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/rules-hint.js",
+      "method": "rulesHint",
+      "line": 46,
+      "endLine": 55,
+      "complexity": 4,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 4,
+      "risk": 4,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/battlefield.js",
+      "method": "fieldSettings",
+      "line": 8,
+      "endLine": 12,
+      "complexity": 2,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 2,
+      "risk": 2,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/battlefield.js",
+      "method": "battlefieldSettings",
+      "line": 17,
+      "endLine": 21,
+      "complexity": 2,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 2,
+      "risk": 2,
+      "aboveThreshold": false
+    }
+  ],
+  "parallelBoot": {
+    "before": {
+      "file": "tools/algebra/contracts.js",
+      "method": "checkParallelBoot",
+      "line": 131,
+      "endLine": 145,
+      "complexity": 22,
+      "coverage": 72.72727272727273,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 31.818181818181817,
+      "risk": 31.818181818181817,
+      "aboveThreshold": true
+    },
+    "after": {
+      "file": "tools/algebra/contracts.js",
+      "method": "checkParallelBoot",
+      "line": 131,
+      "endLine": 145,
+      "complexity": 22,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 22,
+      "risk": 22,
+      "aboveThreshold": false
+    }
+  },
+  "contractPolicies": [
+    {
+      "file": "tools/algebra/contracts.js",
+      "method": "combinatorContract",
+      "line": 168,
+      "endLine": 181,
+      "complexity": 27,
+      "coverage": 96,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 27.046656,
+      "risk": 27.046656,
+      "aboveThreshold": false
+    },
+    {
+      "file": "tools/algebra/contracts.js",
+      "method": "checkParallelBoot",
+      "line": 131,
+      "endLine": 145,
+      "complexity": 22,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 22,
+      "risk": 22,
+      "aboveThreshold": false
+    },
+    {
+      "file": "tools/algebra/contracts.js",
+      "method": "checkTrigger",
+      "line": 83,
+      "endLine": 91,
+      "complexity": 18,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 18,
+      "risk": 18,
+      "aboveThreshold": false
+    },
+    {
+      "file": "tools/algebra/contracts.js",
+      "method": "leafContract",
+      "line": 17,
+      "endLine": 30,
+      "complexity": 15,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 15,
+      "risk": 15,
+      "aboveThreshold": false
+    },
+    {
+      "file": "tools/algebra/contracts.js",
+      "method": "checkClassifier",
+      "line": 147,
+      "endLine": 154,
+      "complexity": 14,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 14,
+      "risk": 14,
+      "aboveThreshold": false
+    },
+    {
+      "file": "tools/algebra/contracts.js",
+      "method": "checkRestart",
+      "line": 122,
+      "endLine": 129,
+      "complexity": 13,
+      "coverage": 92.3076923076923,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 13.076923076923077,
+      "risk": 13.076923076923077,
+      "aboveThreshold": false
+    },
+    {
+      "file": "tools/algebra/contracts.js",
+      "method": "checkCopies",
+      "line": 93,
+      "endLine": 113,
+      "complexity": 13,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 13,
+      "risk": 13,
+      "aboveThreshold": false
+    },
+    {
+      "file": "tools/algebra/contracts.js",
+      "method": "hasRelocate",
+      "line": 77,
+      "endLine": 77,
+      "complexity": 3,
+      "coverage": null,
+      "coverageStatus": "unknown",
+      "unknownReason": "statement_unattributed",
+      "crap": null,
+      "risk": 12,
+      "aboveThreshold": false
+    },
+    {
+      "file": "tools/algebra/contracts.js",
+      "method": "checkBoot",
+      "line": 74,
+      "endLine": 81,
+      "complexity": 10,
+      "coverage": 90,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 10.1,
+      "risk": 10.1,
+      "aboveThreshold": false
+    },
+    {
+      "file": "tools/algebra/contracts.js",
+      "method": "checkRelocation",
+      "line": 66,
+      "endLine": 72,
+      "complexity": 9,
+      "coverage": 88.88888888888889,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 9.11111111111111,
+      "risk": 9.11111111111111,
+      "aboveThreshold": false
+    },
+    {
+      "file": "tools/algebra/contracts.js",
+      "method": "initialContract",
+      "line": 7,
+      "endLine": 15,
+      "complexity": 7,
+      "coverage": 83.33333333333334,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 7.226851851851851,
+      "risk": 7.226851851851851,
+      "aboveThreshold": false
+    },
+    {
+      "file": "tools/algebra/contracts.js",
+      "method": "protectPartners",
+      "line": 44,
+      "endLine": 48,
+      "complexity": 7,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 7,
+      "risk": 7,
+      "aboveThreshold": false
+    },
+    {
+      "file": "tools/algebra/contracts.js",
+      "method": "value",
+      "line": 5,
+      "endLine": 5,
+      "complexity": 2,
+      "coverage": null,
+      "coverageStatus": "unknown",
+      "unknownReason": "statement_unattributed",
+      "crap": null,
+      "risk": 6,
+      "aboveThreshold": false
+    },
+    {
+      "file": "tools/algebra/contracts.js",
+      "method": "landsOnSelf",
+      "line": 33,
+      "endLine": 38,
+      "complexity": 6,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 6,
+      "risk": 6,
+      "aboveThreshold": false
+    },
+    {
+      "file": "tools/algebra/contracts.js",
+      "method": "checkImage",
+      "line": 156,
+      "endLine": 160,
+      "complexity": 5,
+      "coverage": 85.71428571428571,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 5.072886297376093,
+      "risk": 5.072886297376093,
+      "aboveThreshold": false
+    },
+    {
+      "file": "tools/algebra/contracts.js",
+      "method": "checkSequence",
+      "line": 50,
+      "endLine": 57,
+      "complexity": 3,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 3,
+      "risk": 3,
+      "aboveThreshold": false
+    },
+    {
+      "file": "tools/algebra/contracts.js",
+      "method": "checkSwitch",
+      "line": 115,
+      "endLine": 120,
+      "complexity": 3,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 3,
+      "risk": 3,
+      "aboveThreshold": false
+    },
+    {
+      "file": "tools/algebra/contracts.js",
+      "method": "checkParallel",
+      "line": 59,
+      "endLine": 64,
+      "complexity": 2,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 2,
+      "risk": 2,
+      "aboveThreshold": false
+    },
+    {
+      "file": "tools/algebra/contracts.js",
+      "method": "w",
+      "line": 103,
+      "endLine": 103,
+      "complexity": 1,
+      "coverage": null,
+      "coverageStatus": "unknown",
+      "unknownReason": "statement_unattributed",
+      "crap": null,
+      "risk": 2,
+      "aboveThreshold": false
+    },
+    {
+      "file": "tools/algebra/contracts.js",
+      "method": "requireEndless",
+      "line": 40,
+      "endLine": 42,
+      "complexity": 1,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 1,
+      "risk": 1,
+      "aboveThreshold": false
+    }
+  ],
+  "comparison": {
+    "before": {
+      "methods": 2053,
+      "aboveThreshold": 165,
+      "unknownCoverage": 673,
+      "maxRisk": 4830
+    },
+    "after": {
+      "methods": 2055,
+      "aboveThreshold": 163,
+      "unknownCoverage": 673,
+      "maxRisk": 4830
+    },
+    "improved": [
+      {
+        "method": "tools/algebra/contracts.js:checkParallelBoot",
+        "before": 31.818181818181817,
+        "after": 22
+      }
+    ],
+    "worsened": [
+      {
+        "method": "web/app.js:renderEditorStatus",
+        "before": 552,
+        "after": 650
+      },
+      {
+        "method": "web/library-fit.js:scanLibraryFit",
+        "before": 25.580374631824842,
+        "after": 26.133544202782893
+      }
+    ],
+    "added": [
+      "web/rules-hint.js:battlefieldHint",
+      "web/rules-hint.js:limitsHint",
+      "web/battlefield.js:fieldKey",
+      "web/rules-hint.js:rulesHint",
+      "web/battlefield.js:fieldSettings",
+      "web/battlefield.js:battlefieldSettings"
+    ],
+    "removed": [
+      "web/app.js:rulesHint",
+      "web/app.js:fieldKey",
+      "web/app.js:fieldSettings",
+      "web/app.js:battlefieldSettings"
+    ]
+  },
+  "baselineComparison": {
+    "before": {
+      "methods": 2037,
+      "aboveThreshold": 165,
+      "unknownCoverage": 673,
+      "maxRisk": 4830
+    },
+    "after": {
+      "methods": 2055,
+      "aboveThreshold": 163,
+      "unknownCoverage": 673,
+      "maxRisk": 4830
+    },
+    "improved": [
+      {
+        "method": "tools/algebra/link.js:iface",
+        "before": 412.6818984848952,
+        "after": 7.178425125170687
+      },
+      {
+        "method": "tools/algebra/blocks/torus2.js:torusLeap.mismatches",
+        "before": 7.333333333333335,
+        "after": 6.166666666666666
+      }
+    ],
+    "worsened": [
+      {
+        "method": "web/app.js:renderEditorStatus",
+        "before": 552,
+        "after": 650
+      },
+      {
+        "method": "web/library-fit.js:scanLibraryFit",
+        "before": 25.580374631824842,
+        "after": 26.133544202782893
+      },
+      {
+        "method": "tools/algebra/blocks/papers88.js:antiImpSilk.mismatches",
+        "before": 9.583984375,
+        "after": 13.125
+      },
+      {
+        "method": "tools/algebra/blocks/hillopen.js:decoyMaker.mismatches",
+        "before": 3,
+        "after": 3.333333333333334
+      },
+      {
+        "method": "tools/genes.js:turn",
+        "before": 2,
+        "after": 2.5
+      }
+    ],
+    "added": [
+      "tools/algebra/contracts.js:combinatorContract",
+      "tools/algebra/contracts.js:checkParallelBoot",
+      "tools/algebra/contracts.js:checkTrigger",
+      "web/rules-hint.js:battlefieldHint",
+      "tools/algebra/contracts.js:leafContract",
+      "tools/algebra/contracts.js:checkClassifier",
+      "tools/algebra/contracts.js:checkRestart",
+      "tools/algebra/contracts.js:checkCopies",
+      "web/rules-hint.js:limitsHint",
+      "tools/algebra/contracts.js:hasRelocate",
+      "tools/algebra/contracts.js:checkBoot",
+      "tools/algebra/contracts.js:checkRelocation",
+      "tools/algebra/contracts.js:initialContract",
+      "tools/algebra/contracts.js:protectPartners",
+      "tools/algebra/contracts.js:value",
+      "tools/algebra/contracts.js:landsOnSelf",
+      "tools/algebra/contracts.js:checkImage",
+      "web/battlefield.js:fieldKey",
+      "web/rules-hint.js:rulesHint",
+      "tools/algebra/contracts.js:checkSequence",
+      "tools/algebra/contracts.js:checkSwitch",
+      "tools/algebra/contracts.js:checkParallel",
+      "tools/algebra/contracts.js:w",
+      "web/battlefield.js:fieldSettings",
+      "web/battlefield.js:battlefieldSettings",
+      "tools/algebra/contracts.js:requireEndless"
+    ],
+    "removed": [
+      "web/app.js:rulesHint",
+      "web/app.js:fieldKey",
+      "tools/algebra/link.js:hasRelocate",
+      "tools/algebra/link.js:landsOnSelf",
+      "tools/algebra/link.js:value",
+      "web/app.js:fieldSettings",
+      "web/app.js:battlefieldSettings",
+      "tools/algebra/link.js:w"
+    ]
+  },
+  "notes": [
+    "Battlefield hints now clear hill restrictions; a real compiler regression demonstrates Lift failing with the old 88 settings and succeeding with the suggested volume settings.",
+    "126 legacy/new hint results matched apart from deliberately clearing hill restrictions on battlefield changes.",
+    "All six extracted browser functions have measured 100% coverage; all algebra contract policies are below 30.",
+    "renderEditorStatus remains uncovered: passing the completed library-fit result increases its complexity from 23 to 25, and measured CRAP from 552 to 650. DOM behavior is a remaining gap.",
+    "scanLibraryFit is unchanged; timing-dependent coverage shifts its score from 25.58 to 26.13, still below 30.",
+    "673 functions still have unknown coverage attribution; eight non-JavaScript source files remain unsupported. The maximum repository risk remains 4830 in WebGL drawing.",
+    "The strict check still exits 2 for the remaining 163-function backlog; the original baseline is retained."
+  ]
+}

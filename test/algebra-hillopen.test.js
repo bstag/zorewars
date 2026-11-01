@@ -56,7 +56,8 @@ test('bad settings are refused', () => {
   const has = (tree, settings, re) => assert.ok(treeMismatches(tree, settings).some((m) => re.test(m)), JSON.stringify(treeMismatches(tree, settings)));
   has(seq(qdec, { id: 'probe-burst' }, stone), s88, /probe-burst needs ICWS'94/);
   has(seq(qdec, { id: 'probe-burst', P: { COUNT: 40, STEP: 100, OFFSET: 0, BOMB: 0 } }, stone), s94, /wrap into the warrior/);
-  has(seq({ id: 'decoy-maker', P: { COUNT: 8, DIST: 10, SPREAD: 40 } }, stone), s94, /starts inside the warrior/);
+  // An in-range distance wrapping onto the image exercises the overlap check.
+  has(seq({ id: 'decoy-maker', P: { COUNT: 8, DIST: 8000, SPREAD: 40 } }, stone), s94, /decoy region runs on into the warrior/);
   has(seq({ id: 'probe-burst' }, stone), s94, /nothing provides a probe/);
 });
 

@@ -1,0 +1,480 @@
+{
+  "baselineCommit": "9ec91fbd639cae1102a732b8e82924a6ca0c5290",
+  "inputs": "2915e86808c209d8b1860ff04e1b1ebd04ce1502de153e0dce7a841464484fb1",
+  "threshold": 30,
+  "baseline": {
+    "methods": 2037,
+    "aboveThreshold": 165,
+    "unknownCoverage": 673,
+    "maxRisk": 4830
+  },
+  "before": {
+    "methods": 2060,
+    "aboveThreshold": 160,
+    "unknownCoverage": 671,
+    "maxRisk": 4830
+  },
+  "after": {
+    "methods": 2064,
+    "aboveThreshold": 158,
+    "unknownCoverage": 671,
+    "maxRisk": 4830
+  },
+  "tests": {
+    "passed": 380,
+    "skipped": 7,
+    "failed": 0
+  },
+  "coverage": {
+    "lines": {
+      "total": 36447,
+      "covered": 22330,
+      "skipped": 0,
+      "pct": 61.26
+    },
+    "statements": {
+      "total": 36447,
+      "covered": 22330,
+      "skipped": 0,
+      "pct": 61.26
+    },
+    "functions": {
+      "total": 1993,
+      "covered": 1741,
+      "skipped": 0,
+      "pct": 87.35
+    },
+    "branches": {
+      "total": 11662,
+      "covered": 10454,
+      "skipped": 0,
+      "pct": 89.64
+    },
+    "branchesTrue": {
+      "total": 0,
+      "covered": 0,
+      "skipped": 0,
+      "pct": 100
+    }
+  },
+  "targets": [
+    {
+      "before": {
+        "file": "tools/refine.js",
+        "method": "refine",
+        "line": 167,
+        "endLine": 304,
+        "complexity": 30,
+        "coverage": 87.27272727272727,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 31.85544703230654,
+        "risk": 31.85544703230654,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "tools/refine.js",
+        "method": "refine",
+        "line": 182,
+        "endLine": 306,
+        "complexity": 25,
+        "coverage": 93.18181818181817,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 25.19810058226897,
+        "risk": 25.19810058226897,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "src/engine/report.js",
+        "method": "formatPostMortem",
+        "line": 213,
+        "endLine": 248,
+        "complexity": 17,
+        "coverage": 60,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 35.49600000000001,
+        "risk": 35.49600000000001,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "src/engine/report.js",
+        "method": "formatPostMortem",
+        "line": 213,
+        "endLine": 248,
+        "complexity": 15,
+        "coverage": 95.65217391304348,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 15.01849264403715,
+        "risk": 15.01849264403715,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "cli/refinement.js",
+        "method": "cmdRefine",
+        "line": 29,
+        "endLine": 50,
+        "complexity": 4,
+        "coverage": 88.88888888888889,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 4.021947873799726,
+        "risk": 4.021947873799726,
+        "aboveThreshold": false
+      },
+      "after": {
+        "file": "cli/refinement.js",
+        "method": "cmdRefine",
+        "line": 29,
+        "endLine": 51,
+        "complexity": 5,
+        "coverage": 90.9090909090909,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 5.018782870022539,
+        "risk": 5.018782870022539,
+        "aboveThreshold": false
+      }
+    }
+  ],
+  "extracted": [
+    {
+      "file": "tools/refinement/proposals.js",
+      "method": "screenProposals",
+      "line": 11,
+      "endLine": 26,
+      "complexity": 9,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 9,
+      "risk": 9,
+      "aboveThreshold": false
+    },
+    {
+      "file": "tools/refine.js",
+      "method": "lossReports",
+      "line": 170,
+      "endLine": 180,
+      "complexity": 5,
+      "coverage": 72.72727272727273,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 5.507137490608565,
+      "risk": 5.507137490608565,
+      "aboveThreshold": false
+    },
+    {
+      "file": "tools/refinement/proposals.js",
+      "method": "requestProposal",
+      "line": 3,
+      "endLine": 9,
+      "complexity": 4,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 4,
+      "risk": 4,
+      "aboveThreshold": false
+    },
+    {
+      "file": "src/engine/report.js",
+      "method": "ownerDescription",
+      "line": 207,
+      "endLine": 210,
+      "complexity": 3,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 3,
+      "risk": 3,
+      "aboveThreshold": false
+    },
+    {
+      "file": "src/engine/disassembly.js",
+      "method": "signed",
+      "line": 3,
+      "endLine": 6,
+      "complexity": 2,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 2,
+      "risk": 2,
+      "aboveThreshold": false
+    },
+    {
+      "file": "src/engine/disassembly.js",
+      "method": "formatInstruction",
+      "line": 8,
+      "endLine": 11,
+      "complexity": 2,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 2,
+      "risk": 2,
+      "aboveThreshold": false
+    }
+  ],
+  "comparison": {
+    "before": {
+      "methods": 2060,
+      "aboveThreshold": 160,
+      "unknownCoverage": 671,
+      "maxRisk": 4830
+    },
+    "after": {
+      "methods": 2064,
+      "aboveThreshold": 158,
+      "unknownCoverage": 671,
+      "maxRisk": 4830
+    },
+    "improved": [
+      {
+        "method": "src/engine/assembler.js:assemble",
+        "before": 78.94445130622547,
+        "after": 78.782958984375
+      },
+      {
+        "method": "web/library-fit.js:scanLibraryFit",
+        "before": 26.133544202782893,
+        "after": 25.580374631824842
+      },
+      {
+        "method": "tools/refine.js:refine",
+        "before": 31.85544703230654,
+        "after": 25.19810058226897
+      },
+      {
+        "method": "src/engine/report.js:formatPostMortem",
+        "before": 35.49600000000001,
+        "after": 15.01849264403715
+      },
+      {
+        "method": "src/engine/report.js:summarize",
+        "before": 12.018,
+        "after": 12.015549076773567
+      },
+      {
+        "method": "cli/devtools-context.js:hillOpponents",
+        "before": 5.390625,
+        "after": 5.1157407407407405
+      },
+      {
+        "method": "tools/refine.js:draft",
+        "before": 3.072,
+        "after": 2
+      },
+      {
+        "method": "src/engine/vm.js:VM.disassemble",
+        "before": 2,
+        "after": 1
+      }
+    ],
+    "worsened": [
+      {
+        "method": "cli/refinement.js:cmdRefine",
+        "before": 4.021947873799726,
+        "after": 5.018782870022539
+      }
+    ],
+    "added": [
+      "tools/refinement/proposals.js:screenProposals",
+      "tools/refine.js:lossReports",
+      "tools/refinement/proposals.js:requestProposal",
+      "src/engine/report.js:ownerDescription",
+      "src/engine/disassembly.js:signed",
+      "src/engine/disassembly.js:formatInstruction"
+    ],
+    "removed": [
+      "src/engine/report.js:signed",
+      "src/engine/report.js:formatInstruction"
+    ]
+  },
+  "baselineComparison": {
+    "before": {
+      "methods": 2037,
+      "aboveThreshold": 165,
+      "unknownCoverage": 673,
+      "maxRisk": 4830
+    },
+    "after": {
+      "methods": 2064,
+      "aboveThreshold": 158,
+      "unknownCoverage": 671,
+      "maxRisk": 4830
+    },
+    "improved": [
+      {
+        "method": "src/engine/assembler.js:assemble",
+        "before": 78.94445130622547,
+        "after": 78.782958984375
+      },
+      {
+        "method": "tools/refine.js:refine",
+        "before": 31.65237273584986,
+        "after": 25.19810058226897
+      },
+      {
+        "method": "src/engine/report.js:formatPostMortem",
+        "before": 306,
+        "after": 15.01849264403715
+      },
+      {
+        "method": "src/engine/report.js:summarize",
+        "before": 12.018,
+        "after": 12.015549076773567
+      },
+      {
+        "method": "tools/tune.js:tune",
+        "before": 110,
+        "after": 10.462962962962962
+      },
+      {
+        "method": "cli/devtools.js:cmdTune",
+        "before": 182,
+        "after": 8.032768
+      },
+      {
+        "method": "tools/algebra/link.js:iface",
+        "before": 412.6818984848952,
+        "after": 7.178425125170687
+      },
+      {
+        "method": "tools/algebra/blocks/torus2.js:torusLeap.mismatches",
+        "before": 7.333333333333335,
+        "after": 6.166666666666666
+      },
+      {
+        "method": "src/engine/match-backend.js:createMatchBackend",
+        "before": 6.036,
+        "after": 6.027047332832457
+      },
+      {
+        "method": "cli/devtools-context.js:hillOpponents",
+        "before": 5.390625,
+        "after": 5.1157407407407405
+      },
+      {
+        "method": "tools/refine.js:tools.battle",
+        "before": 5.150262960180315,
+        "after": 5.1157407407407405
+      },
+      {
+        "method": "cli/devtools-context.js:battlePool",
+        "before": 4.125,
+        "after": 3.333333333333334
+      },
+      {
+        "method": "tools/refine.js:lostRound",
+        "before": 6,
+        "after": 2.1481481481481484
+      },
+      {
+        "method": "tools/refine.js:draft",
+        "before": 3.072,
+        "after": 2
+      },
+      {
+        "method": "tools/tune.js:sample",
+        "before": 2,
+        "after": 1.0370370370370372
+      },
+      {
+        "method": "src/engine/vm.js:VM.disassemble",
+        "before": 2,
+        "after": 1
+      }
+    ],
+    "worsened": [
+      {
+        "method": "web/app.js:renderEditorStatus",
+        "before": 552,
+        "after": 650
+      },
+      {
+        "method": "tools/algebra/blocks/papers88.js:antiImpSilk.mismatches",
+        "before": 9.583984375,
+        "after": 13.125
+      },
+      {
+        "method": "tools/algebra/blocks/hillopen.js:decoyMaker.mismatches",
+        "before": 3,
+        "after": 3.333333333333334
+      }
+    ],
+    "added": [
+      "tools/algebra/contracts.js:combinatorContract",
+      "tools/algebra/contracts.js:checkParallelBoot",
+      "cli/search-options.js:refineOptions",
+      "tools/algebra/contracts.js:checkTrigger",
+      "web/rules-hint.js:battlefieldHint",
+      "tools/algebra/contracts.js:leafContract",
+      "tools/algebra/contracts.js:checkClassifier",
+      "tools/algebra/contracts.js:checkRestart",
+      "tools/algebra/contracts.js:checkCopies",
+      "web/rules-hint.js:limitsHint",
+      "cli/refinement.js:reportRefinement",
+      "cli/refinement.js:defaultProposer",
+      "tools/algebra/contracts.js:hasRelocate",
+      "tools/algebra/contracts.js:checkBoot",
+      "tools/algebra/contracts.js:checkRelocation",
+      "tools/refinement/proposals.js:screenProposals",
+      "tools/algebra/contracts.js:initialContract",
+      "tools/algebra/contracts.js:protectPartners",
+      "tools/algebra/contracts.js:value",
+      "tools/algebra/contracts.js:landsOnSelf",
+      "tools/refine.js:lossReports",
+      "tools/algebra/contracts.js:checkImage",
+      "cli/refinement.js:cmdRefine",
+      "cli/search-options.js:positiveInteger",
+      "cli/search-options.js:tuneOptions",
+      "tools/refinement/proposals.js:requestProposal",
+      "web/battlefield.js:fieldKey",
+      "web/rules-hint.js:rulesHint",
+      "src/engine/report.js:ownerDescription",
+      "tools/algebra/contracts.js:checkSequence",
+      "tools/algebra/contracts.js:checkSwitch",
+      "cli/refinement.js:onProgress",
+      "cli/search-options.js:integer",
+      "src/engine/disassembly.js:signed",
+      "src/engine/disassembly.js:formatInstruction",
+      "tools/algebra/contracts.js:checkParallel",
+      "tools/algebra/contracts.js:w",
+      "web/battlefield.js:fieldSettings",
+      "web/battlefield.js:battlefieldSettings",
+      "tools/algebra/contracts.js:requireEndless"
+    ],
+    "removed": [
+      "web/app.js:rulesHint",
+      "cli/devtools.js:cmdRefine",
+      "cli/devtools.js:integer",
+      "web/app.js:fieldKey",
+      "tools/algebra/link.js:hasRelocate",
+      "tools/algebra/link.js:landsOnSelf",
+      "tools/algebra/link.js:value",
+      "web/app.js:fieldSettings",
+      "web/app.js:battlefieldSettings",
+      "src/engine/report.js:signed",
+      "tools/algebra/link.js:w",
+      "src/engine/report.js:formatInstruction"
+    ]
+  },
+  "notes": [
+    "Failing regressions reproduced torus code being marked changed without execution and ambiguous vector-program attribution. VM disassembly and post-mortem originals now use the same canonical formatter.",
+    "Real plane/volume writes still report changed code and the actual writer; loaded provenance says (loaded) rather than @null, and cycle-zero writes retain @0.",
+    "Empty fields are rejected before CLI model/pool creation and by refine itself. Malformed submission arrays stop cleanly with token usage retained. Bad individual drafts enter history without discarding later valid drafts or an earlier confirmed improvement.",
+    "Six valid-response refinement runs across points and push-off matched the previous implementation, including results, history and usage. The 81 focused checks included engine behavior, torus/ring equivalence and independent-reference fuzzing; the final full suite passed 380 and skipped 7.",
+    "All extracted functions are below 30. The CLI command increases from CC 4 to 5 due to the empty-field guard and remains below the threshold.",
+    "Statement/line coverage rises to 61.26% and branch coverage to 89.64%; function coverage falls from 87.47% to 87.35%. Unknown-attribution count remains 671.",
+    "The outer postMortem function already had measured 100% coverage before the torus regressions: content assertions caught a bug that the coverage metric alone did not establish.",
+    "The original baseline is retained. Maximum repository risk remains 4830 in uncovered WebGL drawing; eight non-JavaScript source files remain unsupported. The strict check still exits 2 for the 158-function backlog."
+  ]
+}

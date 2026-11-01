@@ -10,33 +10,7 @@ import { genomeId } from '../tools/evolution/identity.js';
 
 export async function cmdEvolveBlocks(args, h, { quiet, battlePool, hillOpponents, hillSettingsFor }) {
   const f = args.flags;
-  const supported = new Set(['representation', 'rules', 'length', 'genome', 'families', 'generations', 'population', 'batch', 'batches',
-    'eval-rounds', 'rounds', 'local-steps', 'seed', 'objective', 'ties', 'algorithm', 'selection', 'hill', 'top', 'king', 'classics',
-    'out', 'json', 'backend', 'threads', 'gpu-batch', 'validate', 'seeds', 'check-rounds', 'finalists', 'partner', 'field-rounds']);
-  for (const key of Object.keys(f)) if (!supported.has(key)) h.usage(`--${key} is not supported with --representation blocks`);
-  if (f.algorithm && f.algorithm !== 'ga') h.usage('Block recipes currently use --algorithm ga');
-  if (f.selection && !['default', 'lexicase'].includes(f.selection)) h.usage('Block recipes use lexicase selection');
-  const rules = String(f.rules ?? '94x');
-  if (!Object.hasOwn(RULESETS, rules)) h.usage('Blocks require a standard --rules profile');
-  const integer = (key, fallback, min = 1) => {
-    const n = Number(f[key] ?? fallback);
-    if (!Number.isSafeInteger(n) || n < min) h.usage(`--${key} must be an integer >= ${min}`);
-    return n;
-  };
-  const length = Math.min(integer('length', 50), integer('genome', f.length ?? 50));
-  if (length > RULESETS[rules].maxLength) h.usage('Block length exceeds the profile limit');
-  const generations = integer('generations', 3), populationSize = integer('population', 12),
-    offspring = integer('batch', 12) * integer('batches', 1), rounds = integer('eval-rounds', f.rounds ?? 6),
-    localSteps = integer('local-steps', 0, 0), seed = integer('seed', 1, 0),
-    seeds = integer('seeds', 3, 2), checkRounds = integer('check-rounds', 30), finalists = integer('finalists', 6);
-  const objective = f.objective ?? 'points', tieValue = Number(f.ties ?? 0.5), fieldRounds = integer('field-rounds', 50);
-  if (!['points', 'smooth', 'pushoff'].includes(objective)) h.usage('Block objective takes points, smooth or pushoff');
-  if (objective === 'pushoff' && !f.hill) h.usage('--objective pushoff ranks in a hill: add --hill');
-  if (f.partner && objective !== 'pushoff') h.usage('--partner needs --objective pushoff');
-  if (!Number.isFinite(tieValue) || tieValue < 0 || tieValue > 1 || seed > 2147483646) h.usage('Invalid ties or seed');
-  const families = f.families ? String(f.families).split(',') : Object.keys(recipeFamilies).filter(k => recipeFamilies[k].rules.includes(rules));
-  if (!families.length || new Set(families).size !== families.length || families.some(k => !Object.hasOwn(recipeFamilies, k) || !recipeFamilies[k].rules.includes(rules))) h.usage('Unknown, duplicate or unsupported block family');
-  if (populationSize < families.length) h.usage('--population must be at least the number of families');
+  const {rules,length,generations,populationSize,offspring,rounds,localSteps,seed,seeds,checkRounds,finalists,objective,tieValue,fieldRounds,families}=blockCommandOptions(f,h);
   const initial = args._.map(file => {
     if (!file.endsWith('.recipe.json')) h.usage('Block seeds must be exported .recipe.json files; use --king for Redcode opponents');
     const saved = JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -90,4 +64,36 @@ export async function cmdEvolveBlocks(args, h, { quiet, battlePool, hillOpponent
       validation: r.validation }, null, 2) : `Saved recipes, generators, lineage and verification in ${out}`);
     return r;
   } finally { await pool.close(); }
+}
+
+// Validate the recipe search profile before loading seeds or opponents.
+export function blockCommandOptions(f,h) {
+  const supported = new Set(['representation', 'rules', 'length', 'genome', 'families', 'generations', 'population', 'batch', 'batches',
+    'eval-rounds', 'rounds', 'local-steps', 'seed', 'objective', 'ties', 'algorithm', 'selection', 'hill', 'top', 'king', 'classics',
+    'out', 'json', 'backend', 'threads', 'gpu-batch', 'validate', 'seeds', 'check-rounds', 'finalists', 'partner', 'field-rounds']);
+  for (const key of Object.keys(f)) if (!supported.has(key)) h.usage(`--${key} is not supported with --representation blocks`);
+  if (f.algorithm && f.algorithm !== 'ga') h.usage('Block recipes currently use --algorithm ga');
+  if (f.selection && !['default', 'lexicase'].includes(f.selection)) h.usage('Block recipes use lexicase selection');
+  const rules = String(f.rules ?? '94x');
+  if (!Object.hasOwn(RULESETS, rules)) h.usage('Blocks require a standard --rules profile');
+  const integer = (key, fallback, min = 1) => {
+    const n = Number(f[key] ?? fallback);
+    if (!Number.isSafeInteger(n) || n < min) h.usage(`--${key} must be an integer >= ${min}`);
+    return n;
+  };
+  const length = Math.min(integer('length', 50), integer('genome', f.length ?? 50));
+  if (length > RULESETS[rules].maxLength) h.usage('Block length exceeds the profile limit');
+  const generations = integer('generations', 3), populationSize = integer('population', 12),
+    offspring = integer('batch', 12) * integer('batches', 1), rounds = integer('eval-rounds', f.rounds ?? 6),
+    localSteps = integer('local-steps', 0, 0), seed = integer('seed', 1, 0),
+    seeds = integer('seeds', 3, 2), checkRounds = integer('check-rounds', 30), finalists = integer('finalists', 6);
+  const objective = f.objective ?? 'points', tieValue = Number(f.ties ?? 0.5), fieldRounds = integer('field-rounds', 50);
+  if (!['points', 'smooth', 'pushoff'].includes(objective)) h.usage('Block objective takes points, smooth or pushoff');
+  if (objective === 'pushoff' && !f.hill) h.usage('--objective pushoff ranks in a hill: add --hill');
+  if (f.partner && objective !== 'pushoff') h.usage('--partner needs --objective pushoff');
+  if (!Number.isFinite(tieValue) || tieValue < 0 || tieValue > 1 || seed > 2147483646) h.usage('Invalid ties or seed');
+  const families = f.families ? String(f.families).split(',') : Object.keys(recipeFamilies).filter(k => recipeFamilies[k].rules.includes(rules));
+  if (!families.length || new Set(families).size !== families.length || families.some(k => !Object.hasOwn(recipeFamilies, k) || !recipeFamilies[k].rules.includes(rules))) h.usage('Unknown, duplicate or unsupported block family');
+  if (populationSize < families.length) h.usage('--population must be at least the number of families');
+  return {rules,length,generations,populationSize,offspring,rounds,localSteps,seed,seeds,checkRounds,finalists,objective,tieValue,fieldRounds,families};
 }

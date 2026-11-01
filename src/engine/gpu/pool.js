@@ -1,7 +1,8 @@
 // Shared WebGPU compute backend. The host supplies a browser or native GPU.
 // `match` and `close` are the same interface as the CPU worker pool; calls
 // arriving together are collected into a single GPU batch.
-import { DEFAULT_SETTINGS, pSpaceSizeFor, OP, MOD, MODES } from '../constants.js';
+import { DEFAULT_SETTINGS, pSpaceSizeFor } from '../constants.js';
+import { appendWarrior } from './packing.js';
 import { topologyFor } from '../topology.js';
 import { makeGeometry } from '../geometry.js';
 import { matchPlan, summarizeMatch } from '../match.js';
@@ -31,21 +32,6 @@ function config(settings, solo = false) {
 // Only execution settings affect the shader; round counts can vary per match.
 const shaderKey = (s) => JSON.stringify([s.coreSize, s.maxCycles, s.maxProcesses, s.pSpaceSize, s.topology ?? 'ring', s.sizeX, s.sizeY, s.sizeZ]);
 
-function appendWarrior(input, desc, w, s, geo) {
-  const norm = (v) => ((v % s.coreSize) + s.coreSize) % s.coreSize;
-  if (!w?.instructions?.length || w.instructions.length > s.maxLength || (geo && w.instructions.length > geo.maxCodeLength)) throw new Error('GPU: invalid warrior length for ' + (w?.name ?? 'warrior'));
-  if (!Number.isSafeInteger(w.start)) throw new Error('GPU: invalid warrior start');
-  input[desc] = input.length; input[desc + 1] = w.instructions.length;
-  input[desc + 2] = geo ? geo.encode(w.start, 0, 0) : norm(w.start);
-  for (const ins of w.instructions) {
-    const op = typeof ins.op === 'number' ? ins.op : OP[ins.op];
-    const mod = typeof ins.mod === 'number' ? ins.mod : MOD[ins.mod];
-    const am = typeof ins.aMode === 'number' ? ins.aMode : MODES.indexOf(ins.aMode);
-    const bm = typeof ins.bMode === 'number' ? ins.bMode : MODES.indexOf(ins.bMode);
-    if (![op, mod, am, bm, ins.a, ins.b].every(Number.isInteger) || op < 0 || op > 18 || mod < 0 || mod > 6 || am < 0 || am > 7 || bm < 0 || bm > 7) throw new Error('GPU: invalid compiled instruction');
-    input.push(op | (mod << 5) | (am << 8) | (bm << 11), norm(ins.a), norm(ins.b));
-  }
-}
 function packSolo(tasks) {
   const input = new Array(1 + tasks.length * 3).fill(0); input[0] = tasks.length;
   tasks.forEach((task, i) => { const s = config(task.settings, true); appendWarrior(input, 1 + i * 3, task.warrior, s, makeGeometry(s)); });
@@ -113,15 +99,7 @@ export async function createGpuMatchPool({ gpu, batchSize = 1024, schedule = (fn
     schedule(() => { gpu = null; });
   }
 
-  async function runBatch(tasks, s, solo) {
-    if (failure) throw failure;
-    const start = performance.now();
-    const stride = memoryStride(s, solo);
-    const key = (solo ? 'solo:' : 'match:') + shaderKey(s);
-    const { input, totalRounds } = solo ? packSolo(tasks) : pack(tasks);
-    const outputBytes = solo ? tasks.length * 16 : totalRounds * 20; // Bad input must not trigger CPU fallback.
-    const buffers = [];
-    try {
+  async function preparePipeline(key, s, solo, stride) {
       if (!pipelines.has(key)) {
         const module = device.createShaderModule({ code: solo ? soloKernel(s, stride, CHUNK_STEPS) : gpuKernel(s, stride, CHUNK_STEPS) });
         const info = await module.getCompilationInfo();
@@ -129,17 +107,10 @@ export async function createGpuMatchPool({ gpu, batchSize = 1024, schedule = (fn
         if (errors.length) throw new Error(errors.map((m) => `GPU shader ${m.lineNum}:${m.linePos}: ${m.message}`).join('\n'));
         pipelines.set(key, await device.createComputePipelineAsync({ layout: 'auto', compute: { module, entryPoint: 'main' } }));
       }
-      if (input.byteLength > limit || outputBytes > limit) throw new Error('GPU: match input or results exceed the device buffer limit; reduce rounds or GPU batch size');
-      const buffer = (size, usage) => { const b = device.createBuffer({ size: Math.max(4, size), usage }); buffers.push(b); return b; };
-      const programs = buffer(input.byteLength, STORAGE | COPY_DST);
-      const memory = buffer(stride * tasks.length * 4, STORAGE | COPY_DST);
-      const results = buffer(outputBytes, STORAGE | COPY_SRC);
-      const finished = buffer(4, STORAGE | COPY_SRC | COPY_DST);
-      const status = buffer(4, COPY_DST | MAP_READ);
-      const readback = buffer(outputBytes, COPY_DST | MAP_READ);
-      device.queue.writeBuffer(programs, 0, input);
-      const pipeline = pipelines.get(key);
-      const group = device.createBindGroup({ layout: pipeline.getBindGroupLayout(0), entries: [programs, memory, results, finished].map((resource, binding) => ({ binding, resource: { buffer: resource } })) });
+  }
+
+  // Poll completion after bounded groups of interpreter dispatches.
+  async function dispatchBatch(tasks, s, solo, pipeline, group, finished, status) {
       // Upper bound ensures an interpreter defect cannot submit forever.
       const maxRounds = solo ? 1 : Math.max(...tasks.map((t) => config(t.settings).rounds));
       const maxPasses = Math.ceil((Math.ceil(s.maxCycles * (solo ? 1 : 2) / CHUNK_STEPS) + 1) * maxRounds / DISPATCHES) + 1;
@@ -161,6 +132,30 @@ export async function createGpuMatchPool({ gpu, batchSize = 1024, schedule = (fn
         if (done === tasks.length) { complete = true; break; }
       }
       if (!complete) throw new Error('GPU interpreter exceeded its instruction budget');
+  }
+
+  async function runBatch(tasks, s, solo) {
+    if (failure) throw failure;
+    const start = performance.now();
+    const stride = memoryStride(s, solo);
+    const key = (solo ? 'solo:' : 'match:') + shaderKey(s);
+    const { input, totalRounds } = solo ? packSolo(tasks) : pack(tasks);
+    const outputBytes = solo ? tasks.length * 16 : totalRounds * 20; // Bad input must not trigger CPU fallback.
+    const buffers = [];
+    try {
+      await preparePipeline(key, s, solo, stride);
+      if (input.byteLength > limit || outputBytes > limit) throw new Error('GPU: match input or results exceed the device buffer limit; reduce rounds or GPU batch size');
+      const buffer = (size, usage) => { const b = device.createBuffer({ size: Math.max(4, size), usage }); buffers.push(b); return b; };
+      const programs = buffer(input.byteLength, STORAGE | COPY_DST);
+      const memory = buffer(stride * tasks.length * 4, STORAGE | COPY_DST);
+      const results = buffer(outputBytes, STORAGE | COPY_SRC);
+      const finished = buffer(4, STORAGE | COPY_SRC | COPY_DST);
+      const status = buffer(4, COPY_DST | MAP_READ);
+      const readback = buffer(outputBytes, COPY_DST | MAP_READ);
+      device.queue.writeBuffer(programs, 0, input);
+      const pipeline = pipelines.get(key);
+      const group = device.createBindGroup({ layout: pipeline.getBindGroupLayout(0), entries: [programs, memory, results, finished].map((resource, binding) => ({ binding, resource: { buffer: resource } })) });
+      await dispatchBatch(tasks, s, solo, pipeline, group, finished, status);
       const encoder = device.createCommandEncoder();
       encoder.copyBufferToBuffer(results, 0, readback, 0, outputBytes);
       device.queue.submit([encoder.finish()]);

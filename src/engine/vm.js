@@ -8,6 +8,7 @@ import { OPCODES, MODIFIERS, MODES, OP, MOD, MODE, DEFAULT_SETTINGS, pSpaceSizeF
 import { mulberry32 } from './random.js';
 import { topologyFor } from './topology.js';
 import { makeGeometry } from './geometry.js';
+import { formatInstruction } from './disassembly.js';
 
 const { DAT, MOV, ADD, SUB, MUL, DIV, MOD: MODOP, JMP, JMZ, JMN, DJN, SPL, SLT, SEQ, SNE, NOP, LDP, STP, TRN } = OP;
 const { A, B, AB, BA, F, X, I } = MOD;
@@ -202,9 +203,7 @@ export class VM {
 
   // Human-readable instruction at an address, with fields shown signed.
   disassemble(addr) {
-    const i = this.peek(addr);
-    const s = this.geo ? this.geo.format : (v) => (v > this.size / 2 ? v - this.size : v);
-    return `${i.op}.${i.mod} ${i.aMode}${s(i.a)}, ${i.bMode}${s(i.b)}`;
+    return formatInstruction(this.peek(addr), this.size, this.geo);
   }
 
   processes(w) {

@@ -113,9 +113,9 @@ export class CoreRenderer {
   }
 
   draw(vm, fadeSteps, highlights = null) {
-    const { ctx, cols, cell } = this;
     const n = vm.size;
     if (n !== this.coreSize || vm.geo !== this.geo) this.layout(n, vm.geo);
+    const { ctx, cols, cell } = this;
     const grid = this.gridOf;
     ctx.fillStyle = '#050812';
     ctx.fillRect(0, 0, this.cssWidth, this.rows * cell);

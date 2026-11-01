@@ -11,6 +11,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { compile, detectLanguage, runMatch, runTournament, DEFAULT_SETTINGS, RULESETS, listing, formatPostMortem, generateFromJS, inLibraryFor, fitsBattlefield } from '../src/engine/index.js';
 import { convertWarrior, conversionCandidates } from '../src/engine/convert.js';
+import {writeConversionResult} from './conversion-output.js';
 import { runPythonFile, pythonRunner } from './python.js';
 import { fetchWarriorText, nameFromUrl } from './remote.js';
 
@@ -314,6 +315,16 @@ async function cmdBattle(args) {
   }
 
   console.log(`Battle: ${warriors.map((w) => w.name).join(' vs ')}  (${settings.rounds} round${settings.rounds === 1 ? '' : 's'}, ${fixed !== undefined ? `-F ${fixed}` : `seed ${seed}`})\n`);
+  printBattleRounds(result, warriors, settings, report);
+  if (report) {
+    const r = result.rounds[detailRound - 1];
+    console.log(`Post-mortem of round ${detailRound} (positions ${r.positions.join(', ')}; ${warriors[r.firstTurn].name} moved first). Use --round N for another round.\n`);
+    console.log(formatPostMortem(r.report));
+  }
+  printTable(result.warriors.map((s) => ({ Warrior: s.name, Author: s.author, Wins: s.wins, Losses: s.losses, Ties: s.ties, Score: s.score, Smooth: s.smooth.toFixed(2) })));
+}
+
+function printBattleRounds(result, warriors, settings, report) {
   if (settings.rounds <= 20 || report) {
     for (const r of result.rounds) {
       const who = warriors.length === 1 ? (r.survivors.length ? 'survived' : 'died')
@@ -323,12 +334,6 @@ async function cmdBattle(args) {
     }
     console.log('');
   }
-  if (report) {
-    const r = result.rounds[detailRound - 1];
-    console.log(`Post-mortem of round ${detailRound} (positions ${r.positions.join(', ')}; ${warriors[r.firstTurn].name} moved first). Use --round N for another round.\n`);
-    console.log(formatPostMortem(r.report));
-  }
-  printTable(result.warriors.map((s) => ({ Warrior: s.name, Author: s.author, Wins: s.wins, Losses: s.losses, Ties: s.ties, Score: s.score, Smooth: s.smooth.toFixed(2) })));
 }
 
 async function cmdTournament(args) {
@@ -403,12 +408,7 @@ async function cmdConvert(args) {
       process.exit(1);
     }
   }
-  if (args.flags.out) {
-    fs.writeFileSync(args.flags.out, result.code);
-    if (!json) console.error(`wrote ${args.flags.out} (${result.level} form${result.verified ? ', verified' : ''})`);
-  }
-  if (json) console.log(JSON.stringify({ ok: true, language: to, level: result.level, verified: result.verified, code: result.code }, null, 2));
-  else if (!args.flags.out) process.stdout.write(result.code);
+  writeConversionResult(result, args.flags.out, json, to);
 }
 
 async function cmdTrace(args) {

@@ -84,3 +84,62 @@ test('with objective pushoff, refine ranks rewrites by push-off place beside a p
     await assert.rejects(refine({ pool, source: weak, field, settings, propose, partners: [partner] }), /partners need objective pushoff/);
   } finally { pool.close(); }
 });
+
+test('refine refuses an empty field before evaluating or asking a model', async () => {
+  await assert.rejects(refine({ source: weak, field: [], settings,
+    pool: { match() { assert.fail('must not evaluate an empty field'); } },
+    propose() { assert.fail('must not ask a model without opponents'); },
+  }), /no opponents compiled/);
+});
+
+test('malformed model submissions stop cleanly and retain billed usage', async () => {
+  const pool = createPool(1);
+  try {
+    const responses = [undefined, null, ...[undefined, null, {}, 'not an array'].map(variants => ({ variants, usage: { input_tokens: 100 } }))];
+    for (const response of responses) {
+      const r = await refine({ pool, source: weak, field, settings, iterations: 2, rounds: 1,
+        propose: async () => response,
+      });
+      assert.equal(r.source, weak);
+      assert.equal(r.log.length, 1);
+      assert.match(r.log[0].error, /array of variants/);
+      assert.equal(r.usage.input_tokens, response?.usage?.input_tokens ?? 0);
+      assert.equal(r.cost, costOf(r.usage, 'claude-opus-5-5'));
+    }
+  } finally { pool.close(); }
+});
+
+test('bad individual rewrites are recorded without losing a later valid draft', async () => {
+  const pool = createPool(1);
+  try {
+    const r = await refine({ pool, source: weak, field, settings, iterations: 1, variants: 5, rounds: 1,
+      propose: async () => ({ variants: [null, { idea: 'missing source' }, { idea: 'bad syntax', redcode: 'MOV 0,' }, { idea: 'valid', redcode: weak }] }),
+    });
+    assert.equal(r.source, weak);
+    assert.equal(r.log[0].variants.length, 1);
+    assert.equal(r.log[0].variants[0].idea, 'valid');
+    assert.equal(r.history.length, 4);
+    assert.match(r.history[0].outcome, /idea and redcode strings/);
+    assert.match(r.history[1].outcome, /idea and redcode strings/);
+    assert.match(r.history[2].outcome, /does not compile/);
+  } finally { pool.close(); }
+});
+
+test('a malformed later response preserves an already confirmed improvement and its total cost', async () => {
+  const cfg = { ...settings, maxCycles: 40 }, pool = createPool(1);
+  const opponents = [{ name: 'Wait', group: 'test', w: strip(compile('JMP 0', 'redcode', cfg)) }];
+  let calls = 0;
+  try {
+    const r = await refine({ pool, source: 'DAT 0, 0', field: opponents, settings: cfg, iterations: 2, rounds: 2, checkRounds: 2, seeds: 2,
+      propose: async () => ++calls === 1
+        ? { variants: [{ idea: 'survive', redcode: 'JMP 0' }], usage: { input_tokens: 100 } }
+        : { variants: null, usage: { input_tokens: 200 } },
+    });
+    assert.equal(r.source, 'JMP 0');
+    assert.equal(r.improved, true);
+    assert.equal(r.log[0].kept, true);
+    assert.match(r.log[1].error, /array of variants/);
+    assert.equal(r.usage.input_tokens, 300);
+    assert.equal(r.cost, costOf(r.usage, 'claude-opus-5-5'));
+  } finally { pool.close(); }
+});

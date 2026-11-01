@@ -18,6 +18,7 @@
 // inspector.
 
 import { AvatarModel, LEGEND } from './avatar-model.js';
+import { hash, spine, positionAvatar } from './avatar-layout.js';
 import { WARRIOR_COLORS, colorIndex } from './arena.js';
 
 const BACKGROUND = '#050812';
@@ -33,37 +34,9 @@ function rgba(hex, a) {
   const n = parseInt(hex.slice(1), 16);
   return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
 }
-const hash = (i) => { const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
-
-// A body's shape: segment centres and radius in body units (height 1, feet
-// at y = 0, up is negative), laid along a spine that wiggles more the longer
-// the warrior is, so a 100-instruction paper coils like a serpent.
-function spine(n) {
-  const waves = n <= 8 ? 0 : Math.ceil(n / 10);
-  const amp = n <= 8 ? 0 : 0.2;
-  const top = n <= 8 ? 0.35 + n * 0.08 : 1;
-  const pts = [];
-  let len = 0;
-  const S = 240;
-  for (let k = 0; k <= S; k++) {
-    const t = k / S;
-    const p = [Math.sin(t * Math.PI * waves) * amp, -top * (1 - t) - 0.12];
-    if (k) len += Math.hypot(p[0] - pts[k - 1][0], p[1] - pts[k - 1][1]);
-    pts.push([...p, len]);
-  }
-  const r = Math.min(0.085, (len / Math.max(1, n)) * 0.6);
-  const seg = [];
-  for (let i = 0; i < n; i++) {
-    const at = n === 1 ? 0 : (i / (n - 1)) * len;
-    let k = 0;
-    while (k < S && pts[k + 1][2] < at) k++;
-    seg.push([pts[k][0], pts[k][1]]);
-  }
-  return { seg, r };
-}
-
 export class AvatarView {
-  constructor(canvas) {
+  constructor(canvas, { now = () => performance.now() } = {}) {
+    this.now = now;
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
     this.hover = -1;
@@ -74,6 +47,7 @@ export class AvatarView {
     this.yaw = 0;
     this.dragYaw = 0;
     this.pointer = null;
+    this.pointerStart = null;
     this.dragMoved = false;
     this.flying = [];       // projectiles on their way
     this.impacts = [];
@@ -86,17 +60,18 @@ export class AvatarView {
     c.addEventListener('pointerdown', (e) => {
       if (!this.active) return;
       this.pointer = e.clientX;
+      this.pointerStart = e.clientX;
       this.dragMoved = false;
     });
     c.addEventListener('pointermove', (e) => {
       if (!this.active || this.pointer === null) return;
       const dx = e.clientX - this.pointer;
       this.pointer = e.clientX;
-      if (Math.abs(dx) > 1) this.dragMoved = true;
+      if (Math.abs(e.clientX - this.pointerStart) > 1) this.dragMoved = true;
       this.dragYaw += dx * 0.008;
-      this.dragAt = performance.now();
+      this.dragAt = this.now();
     });
-    const up = () => { this.pointer = null; };
+    const up = () => { this.pointer = null; this.pointerStart = null; };
     c.addEventListener('pointerup', up);
     c.addEventListener('pointercancel', up);
     c.addEventListener('pointerleave', up);
@@ -105,7 +80,9 @@ export class AvatarView {
   // Redraw while the battle or a drag is moving, and for a few seconds after;
   // then rest until something moves again (a paused battle costs nothing).
   get animating() {
-    return this.active && (!!this.pointer || performance.now() - Math.max(this.quietSince ?? 0, this.dragAt ?? 0) < 4000 || this.flying?.length > 0);
+    if (!this.active) return false;
+    if (this.pointer !== null || this.flying.length || this.impacts.length) return true;
+    return this.now() - Math.max(this.quietSince ?? 0, this.dragAt ?? 0) < 4000;
   }
 
   layout(coreSize, geo) {
@@ -113,7 +90,7 @@ export class AvatarView {
     this.geo = geo;
     const width = this.canvas.parentElement.clientWidth || 800;
     const height = Math.round(width * 0.62);
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);     // 3x phones: 9x the pixels for no visible gain
+    const dpr = Math.min(globalThis.devicePixelRatio || 1, 2);     // 3x phones: 9x the pixels for no visible gain
     this.canvas.width = Math.round(width * dpr);
     this.canvas.height = Math.round(height * dpr);
     this.canvas.style.width = '100%';
@@ -130,7 +107,7 @@ export class AvatarView {
     let best = -1, bestD = Infinity;
     for (const h of this.hits) {
       const d = Math.hypot(h.x - x, h.y - y);
-      if (d < Math.max(h.r, 5) && d < bestD) { bestD = d; best = h.cell; }
+      if (d < Math.max(h.r, 5) && d <= bestD) { bestD = d; best = h.cell; }
     }
     return best;
   }
@@ -139,7 +116,7 @@ export class AvatarView {
   build(vm) {
     this.vm = vm;
     this.seenSteps = -1;
-    this.quietSince = performance.now();
+    this.quietSince = this.now();
     this.flying = [];
     this.impacts = [];
     this.model.build(vm);
@@ -172,11 +149,12 @@ export class AvatarView {
     if (vm !== this.vm) this.build(vm);
     if (vm.size !== this.coreSize || !this.w) this.layout(vm.size, vm.geo);
     const { ctx } = this;
-    const now = performance.now();
+    const now = this.now();
     const n = vm.warriors.length;
     if (vm.steps !== this.seenSteps) { this.seenSteps = vm.steps; this.quietSince = now; }
     this.yaw = Math.sin(now * 0.00015) * 0.3 + this.dragYaw;
     this.model.update(vm, now, Math.max(24, fadeSteps));
+    this.impacts = this.impacts.filter(e => now - e.t0 < IMPACT_MS);
 
     const g = ctx.createLinearGradient(0, 0, 0, this.h);
     g.addColorStop(0, '#0b1230');
@@ -268,25 +246,8 @@ export class AvatarView {
       ctx.stroke();
     }
 
-    const shake = b.shake && now - b.shake < 300 ? (1 - (now - b.shake) / 300) * s * 0.03 : 0;
-    const bob = war.alive ? Math.sin(now / 380 + w) * s * 0.012 : 0;
-    const collapse = b.deadAt ? Math.min(1, (now - b.deadAt) / 900) : 0;
-    const face = b.face;
-    const r = b.r * s;
-    const m = b.morph;
-
-    // Positions of the segments on screen.
-    const N = b.cells.length;
-    for (let i = 0; i < N; i++) {
-      let lx = b.seg[i][0] * face, ly = b.seg[i][1];
-      if (collapse) {                                   // a heap on the floor
-        lx = lx * (1 - collapse) + (hash(i + w * 101) - 0.5) * 0.5 * collapse;
-        ly = ly * (1 - collapse) + (-b.r * (1 + hash(i * 7) * 1.5)) * collapse;
-      }
-      b.screen[i * 3] = bx + lx * s + (shake ? (hash(now + i) - 0.5) * shake * 2 : 0);
-      b.screen[i * 3 + 1] = by + ly * s + bob;
-      b.screen[i * 3 + 2] = i === 0 ? r * 1.45 : r;
-    }
+    const { bob, collapse, r, dead } = positionAvatar(b, w, war.alive, now);
+    const face = b.face, m = b.morph, N = b.cells.length;
 
     // Converted: the opponent's body grows in place of this one.
     if (m > 0.02 && b.morphTo >= 0 && this.bodies[b.morphTo]) {
@@ -305,12 +266,40 @@ export class AvatarView {
     if (!collapse) ctx.stroke();
     if (!collapse) this.drawLegs(b, bx, by + bob, s, col, now, war.alive);
 
+    this.drawBodyParts(b, now, dead, col);
+    ctx.globalAlpha = 1;
+
+    // Processes running elsewhere orbit the body; those on enemy code take
+    // the captor's colour.
+    if (war.alive && b.away) {
+      const dots = Math.min(28, Math.ceil(Math.log2(b.away + 1) * 3));
+      const captive = b.total ? Math.round((dots * b.possessed) / b.total) : 0;
+      const cy = by - s * 0.55;
+      for (let k = 0; k < dots; k++) {
+        const t = now / (900 + 60 * (k % 5)) + (k * 2 * Math.PI) / dots;
+        const rx = s * (0.38 + 0.06 * (k % 3)), ry = s * 0.5;
+        ctx.fillStyle = k < captive ? colorOf(b.captor) : col;
+        ctx.globalAlpha = 0.85;
+        ctx.beginPath();
+        ctx.arc(bx + Math.cos(t) * rx, cy + Math.sin(t) * ry * 0.9, Math.max(1.5, s * 0.012), 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    // Impacts that landed on this avatar.
+    for (const e of this.impacts) if (e.to.w === w) this.drawImpact(e, now);
+  }
+
+  // Part appearance and selection share the exact screen geometry.
+  drawBodyParts(b, now, dead, col) {
+    const { ctx } = this;
+    const face = b.face, N = b.cells.length;
     for (let i = N - 1; i >= 0; i--) {
       const cell = b.cells[i];
       const x = b.screen[i * 3], y = b.screen[i * 3 + 1], rr = b.screen[i * 3 + 2];
       const enemy = b.enemy[i], dmg = b.damage[i], kind = b.kind[i], act = b.active[i];
       const partCol = dmg === 'converted' ? colorOf(enemy) : col;
-      const dead = collapse > 0;
 
       if (b.procs[i] && !dead) {                        // a process lives here
         ctx.fillStyle = rgba('#ffffff', Math.min(0.35, 0.1 + 0.05 * b.procs[i]));
@@ -340,30 +329,6 @@ export class AvatarView {
       }
       this.hits.push({ x, y, r: rr * 1.3, cell });
     }
-    ctx.globalAlpha = 1;
-
-    // Processes running elsewhere orbit the body; those on enemy code take
-    // the captor's colour.
-    if (war.alive && b.away) {
-      const dots = Math.min(28, Math.ceil(Math.log2(b.away + 1) * 3));
-      const captive = b.total ? Math.round((dots * b.possessed) / b.total) : 0;
-      const cy = by - s * 0.55;
-      for (let k = 0; k < dots; k++) {
-        const t = now / (900 + 60 * (k % 5)) + (k * 2 * Math.PI) / dots;
-        const rx = s * (0.38 + 0.06 * (k % 3)), ry = s * 0.5;
-        ctx.fillStyle = k < captive ? colorOf(b.captor) : col;
-        ctx.globalAlpha = 0.85;
-        ctx.beginPath();
-        ctx.arc(bx + Math.cos(t) * rx, cy + Math.sin(t) * ry * 0.9, Math.max(1.5, s * 0.012), 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-    }
-    b.center = [bx, by - s * 0.55];
-
-    // Impacts that landed on this avatar.
-    for (const e of this.impacts) if (e.to.w === w) this.drawImpact(e, now);
-    this.impacts = this.impacts.filter((e) => now - e.t0 < IMPACT_MS);
   }
 
   drawLegs(b, bx, by, s, col, now, alive) {
@@ -586,11 +551,13 @@ export class AvatarView {
     ctx.globalAlpha = 1;
     this.flying = this.flying.filter((p) => !p.done);
     for (const p of landed) {
+      const landedAt = p.t0 + FLIGHT_MS;
+      if (now - landedAt >= IMPACT_MS) continue;
       if (!p.minor) {
         const b = this.bodies[p.to.w];
-        if (b && p.to.i >= 0) { b.lastHit[p.to.i] = now; b.lastHitBy[p.to.i] = p.attacker; }
+        if (b && p.to.i >= 0) { b.lastHit[p.to.i] = landedAt; b.lastHitBy[p.to.i] = p.attacker; }
       }
-      if (this.impacts.length < MAX_FLYING) this.impacts.push({ to: p.to, kind: p.kind, attacker: p.attacker, t0: now, minor: p.minor });
+      if (this.impacts.length < MAX_FLYING) this.impacts.push({ to: p.to, kind: p.kind, attacker: p.attacker, t0: landedAt, minor: p.minor });
     }
   }
 

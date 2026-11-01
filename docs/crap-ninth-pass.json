@@ -1,0 +1,2145 @@
+{
+  "baselineCommit": "9ec91fbd639cae1102a732b8e82924a6ca0c5290",
+  "inputs": "3622586faa17718503a0a03d487d242ebc95a4a82eca8e85fc43be93380ecf1e",
+  "threshold": 30,
+  "goalMaximum": 250,
+  "goalMet": true,
+  "before": {
+    "methods": 2089,
+    "aboveThreshold": 141,
+    "unknownCoverage": 734,
+    "maxRisk": 1640
+  },
+  "after": {
+    "methods": 2118,
+    "aboveThreshold": 123,
+    "unknownCoverage": 716,
+    "maxRisk": 240
+  },
+  "baseline": {
+    "methods": 2037,
+    "aboveThreshold": 165,
+    "unknownCoverage": 673,
+    "maxRisk": 4830
+  },
+  "tests": {
+    "passed": 504,
+    "skipped": 7,
+    "failed": 0
+  },
+  "focusedTests": 83,
+  "browserBundle": true,
+  "coverage": {
+    "lines": {
+      "total": 37826,
+      "covered": 26339,
+      "skipped": 0,
+      "pct": 69.63
+    },
+    "statements": {
+      "total": 37826,
+      "covered": 26339,
+      "skipped": 0,
+      "pct": 69.63
+    },
+    "functions": {
+      "total": 2289,
+      "covered": 2003,
+      "skipped": 0,
+      "pct": 87.5
+    },
+    "branches": {
+      "total": 13404,
+      "covered": 12123,
+      "skipped": 0,
+      "pct": 90.44
+    },
+    "branchesTrue": {
+      "total": 0,
+      "covered": 0,
+      "skipped": 0,
+      "pct": 100
+    }
+  },
+  "comparison": {
+    "before": {
+      "methods": 2089,
+      "aboveThreshold": 141,
+      "unknownCoverage": 734,
+      "maxRisk": 1640
+    },
+    "after": {
+      "methods": 2118,
+      "aboveThreshold": 123,
+      "unknownCoverage": 716,
+      "maxRisk": 240
+    },
+    "improved": [
+      {
+        "method": "cli/evolution.js:cmdEvolve",
+        "before": 273.1050991398163,
+        "after": 164.7271310836853
+      },
+      {
+        "method": "web/app.js:compileSlot",
+        "before": 702,
+        "after": 156
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.track",
+        "before": 182,
+        "after": 110.80092592592594
+      },
+      {
+        "method": "web/app.js:pickRenderer",
+        "before": 756,
+        "after": 90
+      },
+      {
+        "method": "web/app.js:renderEditorStatus",
+        "before": 650,
+        "after": 90
+      },
+      {
+        "method": "web/app.js:boot",
+        "before": 552,
+        "after": 90
+      },
+      {
+        "method": "cli/zorewars.js:cmdConvert",
+        "before": 272,
+        "after": 77.27272727272725
+      },
+      {
+        "method": "web/app.js:frame",
+        "before": 420,
+        "after": 72
+      },
+      {
+        "method": "src/engine/convert.js:emitProgram",
+        "before": 70.4631928896126,
+        "after": 68.68269230769236
+      },
+      {
+        "method": "tools/evolution/instructions/options.js:validateInstructionSearch",
+        "before": 38.397725615979006,
+        "after": 30.35257758883359
+      },
+      {
+        "method": "scripts/fuzz-pmars.js:differ",
+        "before": 342,
+        "after": 30
+      },
+      {
+        "method": "src/engine/gpu/pool.js:runBatch",
+        "before": 552,
+        "after": 30
+      },
+      {
+        "method": "web/arena.js:CoreRenderer.draw",
+        "before": 380,
+        "after": 28.747000000000003
+      },
+      {
+        "method": "web/library-fit.js:scanLibraryFit",
+        "before": 26.133544202782893,
+        "after": 25.580374631824842
+      },
+      {
+        "method": "src/engine/gpu/pool.js:config",
+        "before": 132,
+        "after": 20.524781341107875
+      },
+      {
+        "method": "src/engine/gpu/kernel.js:gpuKernel",
+        "before": 380,
+        "after": 19
+      },
+      {
+        "method": "src/engine/gpu/pool.js:flush",
+        "before": 182,
+        "after": 17.563000000000002
+      },
+      {
+        "method": "src/engine/geometry.js:makeGeometry",
+        "before": 16.22114242522406,
+        "after": 16.14814814814815
+      },
+      {
+        "method": "src/engine/gpu/pool.js:createGpuMatchPool",
+        "before": 42,
+        "after": 13.776
+      },
+      {
+        "method": "cli/zorewars.js:cmdBattle",
+        "before": 306,
+        "after": 13.271484375
+      },
+      {
+        "method": "src/engine/gpu/pool.js:releaseRuntime",
+        "before": 30,
+        "after": 12.407407407407408
+      },
+      {
+        "method": "web/arena3d.js:shapePositions",
+        "before": 110,
+        "after": 10.237037037037037
+      },
+      {
+        "method": "src/engine/assembler.js:listing",
+        "before": 9.298271975957926,
+        "after": 8.384673178061608
+      },
+      {
+        "method": "web/arena.js:gridLayout",
+        "before": 72,
+        "after": 8
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.drawBox",
+        "before": 72,
+        "after": 8
+      },
+      {
+        "method": "src/engine/convert.js:textLiteral",
+        "before": 7.993989481592787,
+        "after": 7.765625
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.layout",
+        "before": 30,
+        "after": 5.925925925925927
+      },
+      {
+        "method": "src/engine/gpu/pool.js:close",
+        "before": 12,
+        "after": 5.666666666666668
+      },
+      {
+        "method": "web/arena.js:CoreRenderer.layout",
+        "before": 12,
+        "after": 5.666666666666668
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.draw",
+        "before": 1640,
+        "after": 4.125
+      },
+      {
+        "method": "src/engine/gpu/pool.js:enqueue",
+        "before": 20,
+        "after": 4.0466472303206995
+      },
+      {
+        "method": "cli/zorewars.js:printTable",
+        "before": 12,
+        "after": 3.0262390670553936
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.inSlice",
+        "before": 6,
+        "after": 2.5
+      },
+      {
+        "method": "src/engine/gpu/pool.js:unpackSolo",
+        "before": 6,
+        "after": 2.2560000000000002
+      },
+      {
+        "method": "tools/genes.js:turn",
+        "before": 2.5,
+        "after": 2
+      },
+      {
+        "method": "web/app.js:renderInspector",
+        "before": 380,
+        "after": 2
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.project",
+        "before": 6,
+        "after": 2
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.attach",
+        "before": 2,
+        "after": 1.3587075375419158
+      },
+      {
+        "method": "src/engine/gpu/live-kernel.js:liveKernel",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "src/engine/gpu/pool.js:packSolo",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "src/engine/gpu/solo-kernel.js:soloKernel",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/arena.js:hexToRgb",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/arena.js:mix",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/arena.js:makePalettes",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/arena.js:CoreRenderer.constructor",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.constructor",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.followWarriorIndex",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.setSlice",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.at",
+        "before": 2,
+        "after": 1
+      }
+    ],
+    "worsened": [],
+    "added": [
+      "scripts/pmars-programs.js:block",
+      "src/engine/gpu/packing.js:appendWarrior",
+      "scripts/pmars-programs.js:expr",
+      "cli/zorewars.js:printBattleRounds",
+      "cli/evolution-options.js:evolutionOptions",
+      "scripts/pmars-comparison.js:compareAssembly",
+      "scripts/pmars-programs.js:instruction",
+      "src/engine/gpu/pool.js:dispatchBatch",
+      "web/inspector.js:paintInspector",
+      "web/arena3d.js:CoreView3D.collectCells",
+      "web/editor-status.js:compileStatusMarkup",
+      "web/renderer-choice.js:selectRenderer",
+      "web/startup-slots.js:initializeLocalSlots",
+      "web/compile-source.js:compileSource",
+      "scripts/pmars-programs.js:operand",
+      "web/renderer-choice.js:updateRendererControls",
+      "web/arena3d.js:CoreView3D.drawProcesses",
+      "web/arena3d.js:CoreView3D.updateCamera",
+      "web/editor-status.js:generatedListing",
+      "web/frame-policy.js:sceneNeedsDraw",
+      "web/arena3d.js:CoreView3D.paintCells",
+      "cli/conversion-output.js:writeConversionResult",
+      "web/startup-slots.js:initializeRemoteImport",
+      "web/app.js:onPythonLoading",
+      "web/frame-policy.js:advanceFrame",
+      "web/inspector.js:inspectorRows",
+      "web/arena3d.js:CoreView3D.drawFollowTrail",
+      "web/arena3d.js:CoreView3D.drawOverlays",
+      "scripts/pmars-programs.js:generated",
+      "web/compile-source.js:canStartEditedRound",
+      "src/engine/gpu/pool.js:preparePipeline",
+      "cli/evolution-options.js:integer",
+      "web/inspector.js:cellOrigin",
+      "scripts/pmars-programs.js:r",
+      "scripts/pmars-programs.js:pick",
+      "scripts/pmars-programs.js:chance",
+      "src/engine/gpu/packing.js:norm",
+      "web/app.js:getSettings",
+      "web/app.js:startup.clearQuery",
+      "scripts/pmars-programs.js:createProgramGenerator",
+      "web/editor-status.js:escapeHtml"
+    ],
+    "removed": [
+      "scripts/fuzz-pmars.js:block",
+      "src/engine/gpu/pool.js:appendWarrior",
+      "scripts/fuzz-pmars.js:expr",
+      "scripts/fuzz-pmars.js:instruction",
+      "scripts/fuzz-pmars.js:operand",
+      "scripts/fuzz-pmars.js:generated",
+      "cli/evolution.js:integer",
+      "scripts/fuzz-pmars.js:r",
+      "scripts/fuzz-pmars.js:pick",
+      "scripts/fuzz-pmars.js:chance",
+      "src/engine/gpu/pool.js:norm",
+      "web/app.js:escapeHtml"
+    ]
+  },
+  "baselineComparison": {
+    "before": {
+      "methods": 2037,
+      "aboveThreshold": 165,
+      "unknownCoverage": 673,
+      "maxRisk": 4830
+    },
+    "after": {
+      "methods": 2118,
+      "aboveThreshold": 123,
+      "unknownCoverage": 716,
+      "maxRisk": 240
+    },
+    "improved": [
+      {
+        "method": "web/avatars3d.js:AvatarView3D.draw",
+        "before": 812,
+        "after": 182
+      },
+      {
+        "method": "cli/evolution.js:cmdEvolve",
+        "before": 273.1050991398163,
+        "after": 164.7271310836853
+      },
+      {
+        "method": "web/app.js:compileSlot",
+        "before": 702,
+        "after": 156
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.track",
+        "before": 182,
+        "after": 110.80092592592594
+      },
+      {
+        "method": "web/app.js:pickRenderer",
+        "before": 756,
+        "after": 90
+      },
+      {
+        "method": "web/app.js:renderEditorStatus",
+        "before": 552,
+        "after": 90
+      },
+      {
+        "method": "web/app.js:boot",
+        "before": 552,
+        "after": 90
+      },
+      {
+        "method": "src/engine/assembler.js:assemble",
+        "before": 78.94445130622547,
+        "after": 78.782958984375
+      },
+      {
+        "method": "cli/zorewars.js:cmdConvert",
+        "before": 272,
+        "after": 77.27272727272725
+      },
+      {
+        "method": "web/app.js:frame",
+        "before": 420,
+        "after": 72
+      },
+      {
+        "method": "src/engine/convert.js:emitProgram",
+        "before": 70.4631928896126,
+        "after": 68.68269230769236
+      },
+      {
+        "method": "tools/evolution/instructions/options.js:validateInstructionSearch",
+        "before": 38.397725615979006,
+        "after": 30.35257758883359
+      },
+      {
+        "method": "scripts/fuzz-pmars.js:differ",
+        "before": 342,
+        "after": 30
+      },
+      {
+        "method": "src/engine/gpu/pool.js:runBatch",
+        "before": 552,
+        "after": 30
+      },
+      {
+        "method": "web/arena.js:CoreRenderer.draw",
+        "before": 380,
+        "after": 28.747000000000003
+      },
+      {
+        "method": "tools/refine.js:refine",
+        "before": 31.65237273584986,
+        "after": 25.19810058226897
+      },
+      {
+        "method": "src/engine/gpu/pool.js:config",
+        "before": 132,
+        "after": 20.524781341107875
+      },
+      {
+        "method": "src/engine/gpu/kernel.js:gpuKernel",
+        "before": 380,
+        "after": 19
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.applyMap",
+        "before": 342,
+        "after": 18
+      },
+      {
+        "method": "src/engine/gpu/pool.js:flush",
+        "before": 182,
+        "after": 17.563000000000002
+      },
+      {
+        "method": "web/avatars.js:AvatarView.drawAvatar",
+        "before": 1482,
+        "after": 17.036125
+      },
+      {
+        "method": "src/engine/geometry.js:makeGeometry",
+        "before": 16.22114242522406,
+        "after": 16.14814814814815
+      },
+      {
+        "method": "web/avatars.js:AvatarView.draw",
+        "before": 272,
+        "after": 16.104049179494996
+      },
+      {
+        "method": "web/avatars.js:AvatarView.drawFlying",
+        "before": 240,
+        "after": 16
+      },
+      {
+        "method": "src/engine/report.js:formatPostMortem",
+        "before": 306,
+        "after": 15.01849264403715
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.drawWarrior",
+        "before": 4830,
+        "after": 14.196
+      },
+      {
+        "method": "src/engine/gpu/pool.js:createGpuMatchPool",
+        "before": 42,
+        "after": 13.776
+      },
+      {
+        "method": "cli/zorewars.js:cmdBattle",
+        "before": 306,
+        "after": 13.271484375
+      },
+      {
+        "method": "src/engine/gpu/pool.js:releaseRuntime",
+        "before": 30,
+        "after": 12.407407407407408
+      },
+      {
+        "method": "web/avatar-model.js:AvatarModel.status",
+        "before": 17.33333333333334,
+        "after": 12.341333333333333
+      },
+      {
+        "method": "src/engine/report.js:summarize",
+        "before": 12.018,
+        "after": 12.015549076773567
+      },
+      {
+        "method": "src/engine/pushoff.js:pushOff",
+        "before": 40.34978060011858,
+        "after": 12
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.drawPart",
+        "before": 156,
+        "after": 12
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.drawHeadEyes",
+        "before": 132,
+        "after": 11.035851851851852
+      },
+      {
+        "method": "web/avatars.js:AvatarView.drawPart",
+        "before": 132,
+        "after": 11
+      },
+      {
+        "method": "tools/tune.js:tune",
+        "before": 110,
+        "after": 10.462962962962962
+      },
+      {
+        "method": "web/arena3d.js:shapePositions",
+        "before": 110,
+        "after": 10.237037037037037
+      },
+      {
+        "method": "src/engine/assembler.js:listing",
+        "before": 9.298271975957926,
+        "after": 8.384673178061608
+      },
+      {
+        "method": "web/avatars.js:AvatarView.drawEyes",
+        "before": 72,
+        "after": 8.0480841472577
+      },
+      {
+        "method": "web/avatars.js:AvatarView.drawImpact",
+        "before": 72,
+        "after": 8.037037037037038
+      },
+      {
+        "method": "cli/devtools.js:cmdTune",
+        "before": 182,
+        "after": 8.032768
+      },
+      {
+        "method": "web/arena.js:gridLayout",
+        "before": 72,
+        "after": 8
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.drawBox",
+        "before": 72,
+        "after": 8
+      },
+      {
+        "method": "src/engine/convert.js:textLiteral",
+        "before": 7.993989481592787,
+        "after": 7.765625
+      },
+      {
+        "method": "tools/algebra/link.js:iface",
+        "before": 412.6818984848952,
+        "after": 7.178425125170687
+      },
+      {
+        "method": "web/avatars.js:AvatarView.get animating",
+        "before": 56,
+        "after": 7
+      },
+      {
+        "method": "web/highlights.js:Highlights.draw",
+        "before": 56,
+        "after": 7
+      },
+      {
+        "method": "tools/algebra/blocks/torus2.js:torusLeap.mismatches",
+        "before": 7.333333333333335,
+        "after": 6.166666666666666
+      },
+      {
+        "method": "src/engine/match-backend.js:createMatchBackend",
+        "before": 6.036,
+        "after": 6.027047332832457
+      },
+      {
+        "method": "web/avatar-model.js:AvatarModel.update",
+        "before": 6.166666666666666,
+        "after": 6
+      },
+      {
+        "method": "web/avatars.js:AvatarView.drawFloor",
+        "before": 42,
+        "after": 6
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.layout",
+        "before": 30,
+        "after": 5.925925925925927
+      },
+      {
+        "method": "src/engine/gpu/pool.js:close",
+        "before": 12,
+        "after": 5.666666666666668
+      },
+      {
+        "method": "web/arena.js:CoreRenderer.layout",
+        "before": 12,
+        "after": 5.666666666666668
+      },
+      {
+        "method": "tools/refine.js:tools.battle",
+        "before": 5.150262960180315,
+        "after": 5.1157407407407405
+      },
+      {
+        "method": "cli/devtools-context.js:hillOpponents",
+        "before": 5.390625,
+        "after": 5
+      },
+      {
+        "method": "web/avatars.js:AvatarView.ingest",
+        "before": 30,
+        "after": 5
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.draw",
+        "before": 1640,
+        "after": 4.125
+      },
+      {
+        "method": "web/avatars.js:AvatarView.endPoint",
+        "before": 20,
+        "after": 4.0740740740740735
+      },
+      {
+        "method": "src/engine/gpu/pool.js:enqueue",
+        "before": 20,
+        "after": 4.0466472303206995
+      },
+      {
+        "method": "web/avatars.js:AvatarView.addressAt",
+        "before": 20,
+        "after": 4
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.stepFall",
+        "before": 12,
+        "after": 3.512061902594447
+      },
+      {
+        "method": "cli/devtools-context.js:battlePool",
+        "before": 4.125,
+        "after": 3.333333333333334
+      },
+      {
+        "method": "web/avatars.js:AvatarView.drawLabel",
+        "before": 12,
+        "after": 3.333333333333334
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.startFall",
+        "before": 12,
+        "after": 3.333333333333334
+      },
+      {
+        "method": "cli/zorewars.js:printTable",
+        "before": 12,
+        "after": 3.0262390670553936
+      },
+      {
+        "method": "web/avatars.js:AvatarView.layout",
+        "before": 12,
+        "after": 3
+      },
+      {
+        "method": "web/avatars.js:AvatarView.drawLegs",
+        "before": 12,
+        "after": 3
+      },
+      {
+        "method": "web/avatars.js:AvatarView.drawWeb",
+        "before": 12,
+        "after": 3
+      },
+      {
+        "method": "web/avatars.js:AvatarView.drawGhost",
+        "before": 12,
+        "after": 3
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.inSlice",
+        "before": 6,
+        "after": 2.5
+      },
+      {
+        "method": "src/engine/gpu/pool.js:unpackSolo",
+        "before": 6,
+        "after": 2.2560000000000002
+      },
+      {
+        "method": "tools/refine.js:lostRound",
+        "before": 6,
+        "after": 2.1481481481481484
+      },
+      {
+        "method": "src/engine/pushoff.js:dist",
+        "before": 19.011016845703125,
+        "after": 2
+      },
+      {
+        "method": "tools/refine.js:draft",
+        "before": 3.072,
+        "after": 2
+      },
+      {
+        "method": "web/app.js:renderInspector",
+        "before": 380,
+        "after": 2
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.project",
+        "before": 6,
+        "after": 2
+      },
+      {
+        "method": "web/avatars.js:AvatarView.build",
+        "before": 6,
+        "after": 2
+      },
+      {
+        "method": "web/avatars.js:AvatarView.drawBombed",
+        "before": 6,
+        "after": 2
+      },
+      {
+        "method": "web/avatars.js:AvatarView.drawChips",
+        "before": 6,
+        "after": 2
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.attach",
+        "before": 2,
+        "after": 1.3587075375419158
+      },
+      {
+        "method": "tools/tune.js:sample",
+        "before": 2,
+        "after": 1.0370370370370372
+      },
+      {
+        "method": "web/avatars.js:AvatarView.attach",
+        "before": 2,
+        "after": 1.0013717421124828
+      },
+      {
+        "method": "src/engine/gpu/live-kernel.js:liveKernel",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "src/engine/gpu/pool.js:packSolo",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "src/engine/gpu/solo-kernel.js:soloKernel",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "src/engine/vm.js:VM.disassemble",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/arena.js:hexToRgb",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/arena.js:mix",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/arena.js:makePalettes",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/arena.js:CoreRenderer.constructor",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.constructor",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.followWarriorIndex",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.setSlice",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.at",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/avatars.js:rgba",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/avatars.js:AvatarView.constructor",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/avatars.js:AvatarView.project",
+        "before": 2,
+        "after": 1
+      }
+    ],
+    "worsened": [
+      {
+        "method": "tools/algebra/blocks/papers88.js:antiImpSilk.mismatches",
+        "before": 9.583984375,
+        "after": 13.125
+      },
+      {
+        "method": "tools/algebra/blocks/hillopen.js:decoyMaker.mismatches",
+        "before": 3,
+        "after": 3.333333333333334
+      }
+    ],
+    "added": [
+      "tools/algebra/contracts.js:combinatorContract",
+      "scripts/pmars-programs.js:block",
+      "src/engine/gpu/packing.js:appendWarrior",
+      "scripts/pmars-programs.js:expr",
+      "tools/algebra/contracts.js:checkParallelBoot",
+      "src/engine/diversity.js:dist",
+      "cli/search-options.js:refineOptions",
+      "tools/algebra/contracts.js:checkTrigger",
+      "web/avatars3d.js:AvatarView3D.positionWarriorPart",
+      "cli/zorewars.js:printBattleRounds",
+      "src/engine/diversity.js:createDiversity",
+      "cli/evolution-options.js:evolutionOptions",
+      "web/rules-hint.js:battlefieldHint",
+      "tools/algebra/contracts.js:leafContract",
+      "web/avatars3d.js:AvatarView3D.paintWarriorPart",
+      "tools/algebra/contracts.js:checkClassifier",
+      "web/avatars.js:AvatarView.drawBodyParts",
+      "web/highlight-model.js:candidateOffsets",
+      "tools/algebra/contracts.js:checkRestart",
+      "scripts/pmars-comparison.js:compareAssembly",
+      "scripts/pmars-programs.js:instruction",
+      "tools/algebra/contracts.js:checkCopies",
+      "web/rules-hint.js:limitsHint",
+      "cli/refinement.js:reportRefinement",
+      "src/engine/gpu/pool.js:dispatchBatch",
+      "src/engine/diversity.js:distances",
+      "web/inspector.js:paintInspector",
+      "cli/pushoff-record.js:validateRecord",
+      "cli/pushoff.js:requestFrom",
+      "cli/refinement.js:defaultProposer",
+      "tools/algebra/contracts.js:hasRelocate",
+      "web/arena3d.js:CoreView3D.collectCells",
+      "web/avatars3d.js:AvatarView3D.warriorPartAppearance",
+      "web/editor-status.js:compileStatusMarkup",
+      "web/renderer-choice.js:selectRenderer",
+      "web/avatars3d.js:AvatarView3D.drawWarriorSupports",
+      "web/startup-slots.js:initializeLocalSlots",
+      "tools/algebra/contracts.js:checkBoot",
+      "web/avatars3d.js:AvatarView3D.drawWarriorProcesses",
+      "web/avatar-layout.js:spine",
+      "web/avatars3d.js:AvatarView3D.takeBlows",
+      "web/compile-source.js:compileSource",
+      "tools/algebra/contracts.js:checkRelocation",
+      "scripts/pmars-programs.js:operand",
+      "tools/refinement/proposals.js:screenProposals",
+      "web/avatar-layout.js:positionAvatar",
+      "web/renderer-choice.js:updateRendererControls",
+      "web/arena3d.js:CoreView3D.drawProcesses",
+      "cli/pushoff.js:cmdPushoff",
+      "cli/pushoff-record.js:validateResults",
+      "web/arena3d.js:CoreView3D.updateCamera",
+      "web/editor-status.js:generatedListing",
+      "web/frame-policy.js:sceneNeedsDraw",
+      "tools/algebra/contracts.js:initialContract",
+      "tools/algebra/contracts.js:protectPartners",
+      "web/avatars3d.js:AvatarView3D.faceOpponents",
+      "web/arena3d.js:CoreView3D.paintCells",
+      "cli/conversion-output.js:writeConversionResult",
+      "web/startup-slots.js:initializeRemoteImport",
+      "cli/pushoff.js:integer",
+      "tools/algebra/contracts.js:value",
+      "tools/algebra/contracts.js:landsOnSelf",
+      "web/app.js:onPythonLoading",
+      "web/frame-policy.js:advanceFrame",
+      "web/highlight-model.js:canAnimate",
+      "web/inspector.js:inspectorRows",
+      "web/arena3d.js:CoreView3D.drawFollowTrail",
+      "tools/refine.js:lossReports",
+      "tools/algebra/contracts.js:checkImage",
+      "web/arena3d.js:CoreView3D.drawOverlays",
+      "cli/refinement.js:cmdRefine",
+      "cli/pushoff-record.js:validResult",
+      "scripts/pmars-programs.js:generated",
+      "web/compile-source.js:canStartEditedRound",
+      "web/highlight-model.js:pickOffsets",
+      "web/highlight-model.js:HighlightModel.ingest",
+      "src/engine/gpu/pool.js:preparePipeline",
+      "cli/evolution-options.js:integer",
+      "cli/search-options.js:positiveInteger",
+      "cli/search-options.js:tuneOptions",
+      "src/engine/diversity.js:validateDiversityOptions",
+      "tools/refinement/proposals.js:requestProposal",
+      "web/battlefield.js:fieldKey",
+      "web/highlight-model.js:decayHeat",
+      "web/rules-hint.js:rulesHint",
+      "cli/pushoff-record.js:square",
+      "cli/pushoff.js:showRanking",
+      "src/engine/pushoff.js:validatePushOffOptions",
+      "src/engine/report.js:ownerDescription",
+      "tools/algebra/contracts.js:checkSequence",
+      "tools/algebra/contracts.js:checkSwitch",
+      "web/highlight-model.js:HighlightModel.hottest",
+      "web/inspector.js:cellOrigin",
+      "cli/pushoff-record.js:loadPushoffRecord",
+      "cli/pushoff.js:onProgress",
+      "cli/refinement.js:onProgress",
+      "cli/search-options.js:integer",
+      "scripts/pmars-programs.js:r",
+      "scripts/pmars-programs.js:pick",
+      "scripts/pmars-programs.js:chance",
+      "src/engine/disassembly.js:signed",
+      "src/engine/disassembly.js:formatInstruction",
+      "src/engine/diversity.js:FEATURES.points",
+      "src/engine/diversity.js:FEATURES.wlt",
+      "src/engine/diversity.js:FEATURES.wl",
+      "src/engine/gpu/packing.js:norm",
+      "tools/algebra/contracts.js:checkParallel",
+      "tools/algebra/contracts.js:w",
+      "web/app.js:getSettings",
+      "web/app.js:startup.clearQuery",
+      "web/avatar-layout.js:hash",
+      "web/battlefield.js:fieldSettings",
+      "web/battlefield.js:battlefieldSettings",
+      "web/highlight-model.js:HighlightModel.constructor",
+      "web/highlight-model.js:HighlightModel.get active",
+      "cli/pushoff-record.js:savePushoffRecord",
+      "scripts/pmars-programs.js:createProgramGenerator",
+      "tools/algebra/contracts.js:requireEndless",
+      "web/editor-status.js:escapeHtml",
+      "web/highlight-model.js:HighlightModel.reset"
+    ],
+    "removed": [
+      "web/app.js:rulesHint",
+      "cli/devtools.js:cmdRefine",
+      "scripts/fuzz-pmars.js:block",
+      "src/engine/gpu/pool.js:appendWarrior",
+      "web/highlights.js:Highlights.ingest",
+      "scripts/fuzz-pmars.js:expr",
+      "scripts/fuzz-pmars.js:instruction",
+      "cli/devtools.js:cmdPushoff",
+      "web/avatars.js:spine",
+      "scripts/fuzz-pmars.js:operand",
+      "scripts/fuzz-pmars.js:generated",
+      "cli/devtools.js:integer",
+      "web/app.js:fieldKey",
+      "tools/algebra/link.js:hasRelocate",
+      "web/highlights.js:Highlights.hottest",
+      "tools/algebra/link.js:landsOnSelf",
+      "tools/algebra/link.js:value",
+      "web/app.js:fieldSettings",
+      "web/app.js:battlefieldSettings",
+      "cli/devtools.js:show",
+      "cli/evolution.js:integer",
+      "scripts/fuzz-pmars.js:r",
+      "scripts/fuzz-pmars.js:pick",
+      "scripts/fuzz-pmars.js:chance",
+      "src/engine/gpu/pool.js:norm",
+      "src/engine/pushoff.js:FEATURES.points",
+      "src/engine/pushoff.js:FEATURES.wlt",
+      "src/engine/pushoff.js:FEATURES.wl",
+      "src/engine/report.js:signed",
+      "tools/algebra/link.js:w",
+      "web/app.js:escapeHtml",
+      "web/avatars.js:hash",
+      "web/highlights.js:Highlights.constructor",
+      "web/highlights.js:Highlights.reset",
+      "web/highlights.js:Highlights.get active",
+      "src/engine/report.js:formatInstruction"
+    ]
+  },
+  "goalTargets": [
+    {
+      "before": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.drawWarrior",
+        "line": 872,
+        "endLine": 1005,
+        "complexity": 69,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 4830,
+        "risk": 4830,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.drawWarrior",
+        "line": 883,
+        "endLine": 912,
+        "complexity": 14,
+        "coverage": 90,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 14.196,
+        "risk": 14.196,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "web/arena3d.js",
+        "method": "CoreView3D.draw",
+        "line": 279,
+        "endLine": 395,
+        "complexity": 40,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 1640,
+        "risk": 1640,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/arena3d.js",
+        "method": "CoreView3D.draw",
+        "line": 279,
+        "endLine": 293,
+        "complexity": 3,
+        "coverage": 50,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 4.125,
+        "risk": 4.125,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.draw",
+        "line": 793,
+        "endLine": 868,
+        "complexity": 28,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 812,
+        "risk": 812,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.draw",
+        "line": 793,
+        "endLine": 843,
+        "complexity": 13,
+        "coverage": null,
+        "coverageStatus": "unknown",
+        "unknownReason": "branch_unattributed",
+        "crap": null,
+        "risk": 182,
+        "aboveThreshold": true
+      }
+    },
+    {
+      "before": {
+        "file": "scripts/fuzz-pmars.js",
+        "method": "block",
+        "line": 166,
+        "endLine": 198,
+        "complexity": 27,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 756,
+        "risk": 756,
+        "aboveThreshold": true
+      },
+      "after": null
+    },
+    {
+      "before": {
+        "file": "web/app.js",
+        "method": "pickRenderer",
+        "line": 143,
+        "endLine": 180,
+        "complexity": 27,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 756,
+        "risk": 756,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/app.js",
+        "method": "pickRenderer",
+        "line": 149,
+        "endLine": 170,
+        "complexity": 9,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 90,
+        "risk": 90,
+        "aboveThreshold": true
+      }
+    },
+    {
+      "before": {
+        "file": "web/app.js",
+        "method": "compileSlot",
+        "line": 272,
+        "endLine": 315,
+        "complexity": 26,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 702,
+        "risk": 702,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/app.js",
+        "method": "compileSlot",
+        "line": 262,
+        "endLine": 286,
+        "complexity": 12,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 156,
+        "risk": 156,
+        "aboveThreshold": true
+      }
+    },
+    {
+      "before": {
+        "file": "src/engine/gpu/pool.js",
+        "method": "appendWarrior",
+        "line": 34,
+        "endLine": 48,
+        "complexity": 25,
+        "coverage": null,
+        "coverageStatus": "unknown",
+        "unknownReason": "statement_unattributed",
+        "crap": null,
+        "risk": 650,
+        "aboveThreshold": true
+      },
+      "after": null
+    },
+    {
+      "before": {
+        "file": "web/app.js",
+        "method": "renderEditorStatus",
+        "line": 398,
+        "endLine": 432,
+        "complexity": 25,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 650,
+        "risk": 650,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/app.js",
+        "method": "renderEditorStatus",
+        "line": 366,
+        "endLine": 387,
+        "complexity": 9,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 90,
+        "risk": 90,
+        "aboveThreshold": true
+      }
+    },
+    {
+      "before": {
+        "file": "scripts/fuzz-pmars.js",
+        "method": "expr",
+        "line": 129,
+        "endLine": 149,
+        "complexity": 23,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 552,
+        "risk": 552,
+        "aboveThreshold": true
+      },
+      "after": null
+    },
+    {
+      "before": {
+        "file": "src/engine/gpu/pool.js",
+        "method": "runBatch",
+        "line": 116,
+        "endLine": 176,
+        "complexity": 23,
+        "coverage": null,
+        "coverageStatus": "unknown",
+        "unknownReason": "statement_unattributed",
+        "crap": null,
+        "risk": 552,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "src/engine/gpu/pool.js",
+        "method": "runBatch",
+        "line": 137,
+        "endLine": 171,
+        "complexity": 12,
+        "coverage": 50,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 30,
+        "risk": 30,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "web/app.js",
+        "method": "boot",
+        "line": 1556,
+        "endLine": 1628,
+        "complexity": 23,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 552,
+        "risk": 552,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/app.js",
+        "method": "boot",
+        "line": 1464,
+        "endLine": 1508,
+        "complexity": 9,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 90,
+        "risk": 90,
+        "aboveThreshold": true
+      }
+    },
+    {
+      "before": {
+        "file": "web/app.js",
+        "method": "frame",
+        "line": 889,
+        "endLine": 930,
+        "complexity": 20,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 420,
+        "risk": 420,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/app.js",
+        "method": "frame",
+        "line": 844,
+        "endLine": 875,
+        "complexity": 8,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 72,
+        "risk": 72,
+        "aboveThreshold": true
+      }
+    },
+    {
+      "before": {
+        "file": "src/engine/gpu/kernel.js",
+        "method": "gpuKernel",
+        "line": 4,
+        "endLine": 314,
+        "complexity": 19,
+        "coverage": null,
+        "coverageStatus": "unknown",
+        "unknownReason": "branch_unattributed",
+        "crap": null,
+        "risk": 380,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "src/engine/gpu/kernel.js",
+        "method": "gpuKernel",
+        "line": 4,
+        "endLine": 314,
+        "complexity": 19,
+        "coverage": 100,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 19,
+        "risk": 19,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "web/app.js",
+        "method": "renderInspector",
+        "line": 1015,
+        "endLine": 1054,
+        "complexity": 19,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 380,
+        "risk": 380,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/app.js",
+        "method": "renderInspector",
+        "line": 960,
+        "endLine": 962,
+        "complexity": 1,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 2,
+        "risk": 2,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "web/arena.js",
+        "method": "CoreRenderer.draw",
+        "line": 115,
+        "endLine": 183,
+        "complexity": 19,
+        "coverage": null,
+        "coverageStatus": "unknown",
+        "unknownReason": "branch_unattributed",
+        "crap": null,
+        "risk": 380,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/arena.js",
+        "method": "CoreRenderer.draw",
+        "line": 115,
+        "endLine": 183,
+        "complexity": 19,
+        "coverage": 70,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 28.747000000000003,
+        "risk": 28.747000000000003,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "scripts/fuzz-pmars.js",
+        "method": "differ",
+        "line": 88,
+        "endLine": 110,
+        "complexity": 18,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 342,
+        "risk": 342,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "scripts/fuzz-pmars.js",
+        "method": "differ",
+        "line": 90,
+        "endLine": 106,
+        "complexity": 5,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 30,
+        "risk": 30,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.applyMap",
+        "line": 465,
+        "endLine": 484,
+        "complexity": 18,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 342,
+        "risk": 342,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.applyMap",
+        "line": 465,
+        "endLine": 484,
+        "complexity": 18,
+        "coverage": 100,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 18,
+        "risk": 18,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "cli/zorewars.js",
+        "method": "cmdBattle",
+        "line": 285,
+        "endLine": 332,
+        "complexity": 17,
+        "coverage": null,
+        "coverageStatus": "unknown",
+        "unknownReason": "branch_unattributed",
+        "crap": null,
+        "risk": 306,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "cli/zorewars.js",
+        "method": "cmdBattle",
+        "line": 286,
+        "endLine": 325,
+        "complexity": 9,
+        "coverage": 62.5,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 13.271484375,
+        "risk": 13.271484375,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "cli/evolution.js",
+        "method": "cmdEvolve",
+        "line": 13,
+        "endLine": 147,
+        "complexity": 59,
+        "coverage": 60.526315789473685,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 273.1050991398163,
+        "risk": 273.1050991398163,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "cli/evolution.js",
+        "method": "cmdEvolve",
+        "line": 13,
+        "endLine": 108,
+        "complexity": 44,
+        "coverage": 60.3448275862069,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 164.7271310836853,
+        "risk": 164.7271310836853,
+        "aboveThreshold": true
+      }
+    },
+    {
+      "before": {
+        "file": "cli/zorewars.js",
+        "method": "cmdConvert",
+        "line": 379,
+        "endLine": 412,
+        "complexity": 16,
+        "coverage": null,
+        "coverageStatus": "unknown",
+        "unknownReason": "branch_unattributed",
+        "crap": null,
+        "risk": 272,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "cli/zorewars.js",
+        "method": "cmdConvert",
+        "line": 384,
+        "endLine": 412,
+        "complexity": 11,
+        "coverage": 18.181818181818183,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 77.27272727272725,
+        "risk": 77.27272727272725,
+        "aboveThreshold": true
+      }
+    }
+  ],
+  "addedMethods": [
+    {
+      "file": "scripts/pmars-programs.js",
+      "method": "block",
+      "line": 57,
+      "endLine": 89,
+      "complexity": 27,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 27,
+      "risk": 27,
+      "aboveThreshold": false
+    },
+    {
+      "file": "src/engine/gpu/packing.js",
+      "method": "appendWarrior",
+      "line": 3,
+      "endLine": 17,
+      "complexity": 25,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 25,
+      "risk": 25,
+      "aboveThreshold": false
+    },
+    {
+      "file": "scripts/pmars-programs.js",
+      "method": "expr",
+      "line": 20,
+      "endLine": 40,
+      "complexity": 23,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 23,
+      "risk": 23,
+      "aboveThreshold": false
+    },
+    {
+      "file": "cli/zorewars.js",
+      "method": "printBattleRounds",
+      "line": 327,
+      "endLine": 337,
+      "complexity": 9,
+      "coverage": 55.55555555555556,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 16.11111111111111,
+      "risk": 16.11111111111111,
+      "aboveThreshold": false
+    },
+    {
+      "file": "cli/evolution-options.js",
+      "method": "evolutionOptions",
+      "line": 3,
+      "endLine": 45,
+      "complexity": 16,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 16,
+      "risk": 16,
+      "aboveThreshold": false
+    },
+    {
+      "file": "scripts/pmars-comparison.js",
+      "method": "compareAssembly",
+      "line": 2,
+      "endLine": 12,
+      "complexity": 13,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 13,
+      "risk": 13,
+      "aboveThreshold": false
+    },
+    {
+      "file": "scripts/pmars-programs.js",
+      "method": "instruction",
+      "line": 41,
+      "endLine": 56,
+      "complexity": 13,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 13,
+      "risk": 13,
+      "aboveThreshold": false
+    },
+    {
+      "file": "src/engine/gpu/pool.js",
+      "method": "dispatchBatch",
+      "line": 113,
+      "endLine": 135,
+      "complexity": 9,
+      "coverage": 63.63636363636363,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 12.894815927873779,
+      "risk": 12.894815927873779,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/inspector.js",
+      "method": "paintInspector",
+      "line": 25,
+      "endLine": 52,
+      "complexity": 12,
+      "coverage": 94.44444444444444,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 12.024691358024691,
+      "risk": 12.024691358024691,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/arena3d.js",
+      "method": "CoreView3D.collectCells",
+      "line": 314,
+      "endLine": 339,
+      "complexity": 12,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 12,
+      "risk": 12,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/editor-status.js",
+      "method": "compileStatusMarkup",
+      "line": 7,
+      "endLine": 19,
+      "complexity": 11,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 11,
+      "risk": 11,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/renderer-choice.js",
+      "method": "selectRenderer",
+      "line": 2,
+      "endLine": 10,
+      "complexity": 11,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 11,
+      "risk": 11,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/startup-slots.js",
+      "method": "initializeLocalSlots",
+      "line": 26,
+      "endLine": 40,
+      "complexity": 10,
+      "coverage": 83.33333333333334,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 10.462962962962962,
+      "risk": 10.462962962962962,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/compile-source.js",
+      "method": "compileSource",
+      "line": 2,
+      "endLine": 30,
+      "complexity": 10,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 10,
+      "risk": 10,
+      "aboveThreshold": false
+    },
+    {
+      "file": "scripts/pmars-programs.js",
+      "method": "operand",
+      "line": 48,
+      "endLine": 53,
+      "complexity": 9,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 9,
+      "risk": 9,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/renderer-choice.js",
+      "method": "updateRendererControls",
+      "line": 11,
+      "endLine": 27,
+      "complexity": 9,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 9,
+      "risk": 9,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/arena3d.js",
+      "method": "CoreView3D.drawProcesses",
+      "line": 369,
+      "endLine": 384,
+      "complexity": 7,
+      "coverage": 71.42857142857143,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 8.142857142857142,
+      "risk": 8.142857142857142,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/arena3d.js",
+      "method": "CoreView3D.updateCamera",
+      "line": 295,
+      "endLine": 311,
+      "complexity": 8,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 8,
+      "risk": 8,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/editor-status.js",
+      "method": "generatedListing",
+      "line": 20,
+      "endLine": 25,
+      "complexity": 8,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 8,
+      "risk": 8,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/frame-policy.js",
+      "method": "sceneNeedsDraw",
+      "line": 14,
+      "endLine": 19,
+      "complexity": 8,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 8,
+      "risk": 8,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/arena3d.js",
+      "method": "CoreView3D.paintCells",
+      "line": 341,
+      "endLine": 367,
+      "complexity": 6,
+      "coverage": 71.42857142857143,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 6.839650145772595,
+      "risk": 6.839650145772595,
+      "aboveThreshold": false
+    },
+    {
+      "file": "cli/conversion-output.js",
+      "method": "writeConversionResult",
+      "line": 3,
+      "endLine": 10,
+      "complexity": 6,
+      "coverage": 75,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 6.5625,
+      "risk": 6.5625,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/startup-slots.js",
+      "method": "initializeRemoteImport",
+      "line": 4,
+      "endLine": 24,
+      "complexity": 6,
+      "coverage": 90,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 6.036,
+      "risk": 6.036,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/app.js",
+      "method": "onPythonLoading",
+      "line": 271,
+      "endLine": 274,
+      "complexity": 2,
+      "coverage": 0,
+      "coverageStatus": "unexecuted",
+      "unknownReason": null,
+      "crap": 6,
+      "risk": 6,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/frame-policy.js",
+      "method": "advanceFrame",
+      "line": 2,
+      "endLine": 13,
+      "complexity": 6,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 6,
+      "risk": 6,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/inspector.js",
+      "method": "inspectorRows",
+      "line": 4,
+      "endLine": 16,
+      "complexity": 6,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 6,
+      "risk": 6,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/arena3d.js",
+      "method": "CoreView3D.drawFollowTrail",
+      "line": 386,
+      "endLine": 409,
+      "complexity": 5,
+      "coverage": 69.56521739130434,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 5.7047752116380375,
+      "risk": 5.7047752116380375,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/arena3d.js",
+      "method": "CoreView3D.drawOverlays",
+      "line": 411,
+      "endLine": 425,
+      "complexity": 5,
+      "coverage": 87.5,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 5.048828125,
+      "risk": 5.048828125,
+      "aboveThreshold": false
+    },
+    {
+      "file": "scripts/pmars-programs.js",
+      "method": "generated",
+      "line": 90,
+      "endLine": 96,
+      "complexity": 5,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 5,
+      "risk": 5,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/compile-source.js",
+      "method": "canStartEditedRound",
+      "line": 32,
+      "endLine": 35,
+      "complexity": 5,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 5,
+      "risk": 5,
+      "aboveThreshold": false
+    },
+    {
+      "file": "src/engine/gpu/pool.js",
+      "method": "preparePipeline",
+      "line": 102,
+      "endLine": 110,
+      "complexity": 4,
+      "coverage": 85.71428571428571,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 4.0466472303206995,
+      "risk": 4.0466472303206995,
+      "aboveThreshold": false
+    },
+    {
+      "file": "cli/evolution-options.js",
+      "method": "integer",
+      "line": 4,
+      "endLine": 8,
+      "complexity": 4,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 4,
+      "risk": 4,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/inspector.js",
+      "method": "cellOrigin",
+      "line": 17,
+      "endLine": 24,
+      "complexity": 3,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 3,
+      "risk": 3,
+      "aboveThreshold": false
+    },
+    {
+      "file": "scripts/pmars-programs.js",
+      "method": "r",
+      "line": 5,
+      "endLine": 5,
+      "complexity": 1,
+      "coverage": null,
+      "coverageStatus": "unknown",
+      "unknownReason": "statement_unattributed",
+      "crap": null,
+      "risk": 2,
+      "aboveThreshold": false
+    },
+    {
+      "file": "scripts/pmars-programs.js",
+      "method": "pick",
+      "line": 6,
+      "endLine": 6,
+      "complexity": 1,
+      "coverage": null,
+      "coverageStatus": "unknown",
+      "unknownReason": "statement_unattributed",
+      "crap": null,
+      "risk": 2,
+      "aboveThreshold": false
+    },
+    {
+      "file": "scripts/pmars-programs.js",
+      "method": "chance",
+      "line": 7,
+      "endLine": 7,
+      "complexity": 1,
+      "coverage": null,
+      "coverageStatus": "unknown",
+      "unknownReason": "statement_unattributed",
+      "crap": null,
+      "risk": 2,
+      "aboveThreshold": false
+    },
+    {
+      "file": "src/engine/gpu/packing.js",
+      "method": "norm",
+      "line": 4,
+      "endLine": 4,
+      "complexity": 1,
+      "coverage": null,
+      "coverageStatus": "unknown",
+      "unknownReason": "statement_unattributed",
+      "crap": null,
+      "risk": 2,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/app.js",
+      "method": "getSettings",
+      "line": 270,
+      "endLine": 270,
+      "complexity": 1,
+      "coverage": 0,
+      "coverageStatus": "unexecuted",
+      "unknownReason": null,
+      "crap": 2,
+      "risk": 2,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/app.js",
+      "method": "startup.clearQuery",
+      "line": 1489,
+      "endLine": 1489,
+      "complexity": 1,
+      "coverage": 0,
+      "coverageStatus": "unexecuted",
+      "unknownReason": null,
+      "crap": 2,
+      "risk": 2,
+      "aboveThreshold": false
+    },
+    {
+      "file": "scripts/pmars-programs.js",
+      "method": "createProgramGenerator",
+      "line": 3,
+      "endLine": 98,
+      "complexity": 1,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 1,
+      "risk": 1,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/editor-status.js",
+      "method": "escapeHtml",
+      "line": 3,
+      "endLine": 5,
+      "complexity": 1,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 1,
+      "risk": 1,
+      "aboveThreshold": false
+    }
+  ],
+  "audit": {
+    "currentSourceMatchesCoverage": true,
+    "currentCoverageMatchesManifest": true,
+    "reportedMethods": 2118,
+    "aboveGoal": 0,
+    "unsupportedFiles": [
+      "examples/carpet.py",
+      "examples/dwarf.cpp",
+      "examples/dwarf.py",
+      "lang/cpp/zorewars.hpp",
+      "lang/python/zorewars.py",
+      "modelwar/arena.sh",
+      "modelwar/eval.sh",
+      "warriors/dwarf.py"
+    ],
+    "policy": "Named declarations, assigned functions and methods; anonymous callbacks and embedded shader/Redcode strings are not scored. Unknown coverage uses labelled pessimistic estimates."
+  },
+  "limitations": [
+    "Canvas/Three.js checks validate scene commands and model state, not browser pixels or native GPU execution.",
+    "Seven optional tests remain skipped, including hardware GPU tests.",
+    "Unknown coverage remains labelled and uses pessimistic estimates; the goal includes those estimates.",
+    "The existing threshold of 30 is retained, with 123 flagged functions remaining."
+  ]
+}

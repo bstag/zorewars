@@ -1,0 +1,357 @@
+[
+  {
+    "digest": "8a35bf72daff8eb1fb4dddfc777e16c465b44a026b8b74f954af6316dcfc8c98",
+    "count": 61,
+    "meshes": [
+      "arm",
+      "claw",
+      "eye",
+      "eyeballs",
+      "gear",
+      "glows",
+      "halos",
+      "jaws",
+      "joint",
+      "legs",
+      "links",
+      "plate",
+      "pod",
+      "pupils",
+      "sparks",
+      "tentacles"
+    ]
+  },
+  {
+    "digest": "f6b60508047eba05a503b07e480308d55e4d4d49cc6ce1f892aaf6569de96d92",
+    "count": 61,
+    "meshes": [
+      "eyeballs",
+      "glows",
+      "halos",
+      "legs",
+      "links",
+      "pupils",
+      "shards",
+      "sparks"
+    ]
+  },
+  {
+    "digest": "e8398e1242dda1a8d2666b08be160f677873b8a5cb65fe4caebbdf7a0294e2e6",
+    "count": 68,
+    "meshes": [
+      "arm",
+      "claw",
+      "eye",
+      "eyeballs",
+      "gear",
+      "glows",
+      "halos",
+      "jaws",
+      "joint",
+      "legs",
+      "links",
+      "plate",
+      "pod",
+      "pupils",
+      "sparks",
+      "tentacles",
+      "webs"
+    ]
+  },
+  {
+    "digest": "4bcbcf23b75f0046a1594707f72f02303f858c16eeb3b902ce25b521ebdba93c",
+    "count": 82,
+    "meshes": [
+      "arm",
+      "chips",
+      "claw",
+      "eye",
+      "eyeballs",
+      "gear",
+      "glows",
+      "halos",
+      "jaws",
+      "joint",
+      "legs",
+      "links",
+      "plate",
+      "pod",
+      "pupils",
+      "sparks",
+      "tentacles"
+    ]
+  },
+  {
+    "digest": "7755bed4ad6b4b4bba0a4052f30805ba2fbaf42d8a62dc9289c6c89b309d70c7",
+    "count": 61,
+    "meshes": [
+      "arm",
+      "claw",
+      "eye",
+      "eyeballs",
+      "gear",
+      "glows",
+      "halos",
+      "jaws",
+      "joint",
+      "legs",
+      "links",
+      "plate",
+      "pod",
+      "pupils",
+      "sparks",
+      "tentacles"
+    ]
+  },
+  {
+    "digest": "bf27f161b5070c8ca769b65b84abd1c69cfcaa7367af84c3581c3c9485beb382",
+    "count": 63,
+    "meshes": [
+      "arm",
+      "claw",
+      "eye",
+      "eyeballs",
+      "gear",
+      "glows",
+      "halos",
+      "jaws",
+      "joint",
+      "legs",
+      "links",
+      "plate",
+      "pod",
+      "pupils",
+      "sparks",
+      "tentacles"
+    ]
+  },
+  {
+    "digest": "4271d31b30bdb9fcb42cc7f56a65190990c4df66b7b66565698a8a5f85df28e5",
+    "count": 51,
+    "meshes": [
+      "arm",
+      "claw",
+      "eye",
+      "eyeballs",
+      "gear",
+      "glows",
+      "halos",
+      "jaws",
+      "joint",
+      "legs",
+      "links",
+      "plate",
+      "pod",
+      "pupils",
+      "sparks",
+      "tentacles"
+    ]
+  },
+  {
+    "digest": "86cfd0efaae3fd5971964ae97f607124c74f3909677e6f2f171e334f7c8bdb62",
+    "count": 51,
+    "meshes": [
+      "arm",
+      "claw",
+      "eye",
+      "eyeballs",
+      "gear",
+      "glows",
+      "halos",
+      "jaws",
+      "joint",
+      "legs",
+      "links",
+      "plate",
+      "pod",
+      "pupils",
+      "sparks",
+      "tentacles"
+    ]
+  },
+  {
+    "digest": "9c0c04840afd06defff9f5ff790ad7b8082704746906e493f2f70b36b629885d",
+    "count": 51,
+    "meshes": [
+      "arm",
+      "claw",
+      "eye",
+      "eyeballs",
+      "gear",
+      "glows",
+      "halos",
+      "jaws",
+      "joint",
+      "legs",
+      "links",
+      "plate",
+      "pod",
+      "pupils",
+      "sparks",
+      "tentacles"
+    ]
+  },
+  {
+    "digest": "4d2cfeee874b28b6cf3e46853b9b422f89868455d6856b9e58a441c30a53f66c",
+    "count": 36,
+    "meshes": [
+      "eye",
+      "eyeballs",
+      "gear",
+      "glows",
+      "halos",
+      "joint",
+      "legs",
+      "links",
+      "pupils",
+      "sparks"
+    ]
+  },
+  {
+    "digest": "e4f0a88af6c61fa97e2f2256faa53e955834dba0d77782d1c6efe6de23c2b290",
+    "count": 44,
+    "meshes": [
+      "arm",
+      "claw",
+      "eyeballs",
+      "gear",
+      "glows",
+      "halos",
+      "jaws",
+      "legs",
+      "links",
+      "pupils",
+      "sparks",
+      "tentacles"
+    ]
+  },
+  {
+    "digest": "61edcabde3a656b88fc44a348429640fe7cd615228aded676658b0ca652b1cc1",
+    "count": 9,
+    "meshes": [
+      "arm",
+      "claw",
+      "eye",
+      "eyeballs",
+      "gear",
+      "joint",
+      "plate",
+      "pod"
+    ]
+  },
+  {
+    "digest": "61edcabde3a656b88fc44a348429640fe7cd615228aded676658b0ca652b1cc1",
+    "count": 9,
+    "meshes": [
+      "arm",
+      "claw",
+      "eye",
+      "eyeballs",
+      "gear",
+      "joint",
+      "plate",
+      "pod"
+    ]
+  },
+  {
+    "digest": "7f8b18e61e3b5fe9012aacef357a7ec7d1b07a2a432021f4ed9eec8a4f89bfd0",
+    "count": 48,
+    "meshes": [
+      "arm",
+      "claw",
+      "eye",
+      "eyeballs",
+      "gear",
+      "glows",
+      "halos",
+      "jaws",
+      "joint",
+      "legs",
+      "links",
+      "plate",
+      "pod",
+      "pupils",
+      "tentacles"
+    ]
+  },
+  {
+    "digest": "618134c8a88952735e24834823900494caeebfb10ff27e1e90fca04dcd966160",
+    "count": 61,
+    "meshes": [
+      "arm",
+      "claw",
+      "eye",
+      "eyeballs",
+      "gear",
+      "glows",
+      "halos",
+      "jaws",
+      "joint",
+      "legs",
+      "links",
+      "plate",
+      "pod",
+      "pupils",
+      "sparks",
+      "tentacles"
+    ]
+  },
+  {
+    "digest": "cd0397c1801704580a453e44bc07e951855b8e3ff1943c8cef8145a32fc00c9a",
+    "count": 61,
+    "meshes": [
+      "arm",
+      "claw",
+      "eye",
+      "eyeballs",
+      "gear",
+      "glows",
+      "halos",
+      "jaws",
+      "joint",
+      "legs",
+      "links",
+      "plate",
+      "pod",
+      "pupils",
+      "sparks",
+      "tentacles"
+    ]
+  },
+  {
+    "digest": "84be8634fb15eb5ea46c168088dd0dff58ba09452ab46e34adff1d6df232f2fe",
+    "count": 63,
+    "meshes": [
+      "arm",
+      "claw",
+      "eye",
+      "eyeballs",
+      "gear",
+      "glows",
+      "halos",
+      "jaws",
+      "joint",
+      "legs",
+      "links",
+      "plate",
+      "pod",
+      "pupils",
+      "sparks",
+      "tentacles"
+    ]
+  },
+  {
+    "digest": "27cd3d57f5e50862ebce12a8566c8867fee7a2dac82ec3f5c5df28aee5c86932",
+    "count": 26,
+    "meshes": [
+      "arm",
+      "eyeballs",
+      "glows",
+      "halos",
+      "legs",
+      "pupils",
+      "sparks",
+      "tentacles"
+    ]
+  }
+]

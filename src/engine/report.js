@@ -4,20 +4,14 @@
 // wrote each cell and with which instruction, every process death and its
 // cause, and the first time each warrior wrote into, or ran, another's code.
 
+import { formatInstruction } from './disassembly.js';
+
 const CAUSES = {
   ownCode: 'its own code or data',
   enemyCode: 'a cell written by an opponent',
   emptyCore: 'empty core (it ran past its own code)',
   divideByZero: 'a division by zero',
 };
-
-function signed(v, size) {
-  return v > size / 2 ? v - size : v;
-}
-
-function formatInstruction(ins, size) {
-  return `${ins.op}.${ins.mod} ${ins.aMode}${signed(((ins.a % size) + size) % size, size)}, ${ins.bMode}${signed(((ins.b % size) + size) % size, size)}`;
-}
 
 const pad4 = (n) => String(n).padStart(4, '0');
 
@@ -54,7 +48,7 @@ export function postMortem(vm) {
   const add = (map, key, idx) => map.set(key, (map.get(key) || new Set()).add(idx));
   for (const w of vm.warriors) {
     for (const ins of w.original) {
-      add(exact, formatInstruction(ins, size), w.index);
+      add(exact, formatInstruction(ins, size, vm.geo), w.index);
       add(shape, shapeOf(ins), w.index);
     }
   }
@@ -69,7 +63,7 @@ export function postMortem(vm) {
     // Ending code: the warrior's original footprint, then and now.
     const code = w.original.map((orig, k) => {
       const now = cell(step(w.position, k));
-      const was = formatInstruction(orig, size);
+      const was = formatInstruction(orig, size, vm.geo);
       return { offset: k, ...now, original: was, changed: was !== now.instruction };
     });
     // Where its live processes are, and whose code they are running.
@@ -209,6 +203,12 @@ export function diagnoseRounds(rounds, index = 0) {
   return d;
 }
 
+// Loaded cells have no write cycle; cycle zero is a real write, not a load.
+function ownerDescription(cell) {
+  if (!cell.ownerName) return 'empty';
+  return `${cell.ownerName}${cell.writtenAtCycle !== null ? ` @${cell.writtenAtCycle}` : ' (loaded)'}`;
+}
+
 // Plain-text rendering for the CLI.
 export function formatPostMortem(r) {
   const out = [];
@@ -221,7 +221,7 @@ export function formatPostMortem(r) {
   if (r.killingBlow) {
     out.push(`Killing blow (${r.killingBlow.victim}, cycle ${r.killingBlow.cycle}):`);
     for (const c of r.killingBlow.context) {
-      const who = c.ownerName ? `${c.ownerName}${c.writtenAtCycle !== null ? ` @${c.writtenAtCycle}` : ' (loaded)'}` : 'empty';
+      const who = ownerDescription(c);
       out.push(`  ${c.here ? '>' : ' '} ${pad4(c.addr)}  ${c.instruction.padEnd(24)} ${who}`);
     }
     out.push('');
@@ -239,7 +239,7 @@ export function formatPostMortem(r) {
     out.push(`  ending code (${w.codeIntact}/${w.code.length} unchanged, loaded at ${pad4(w.position)}):`);
     for (const c of w.code) {
       const mark = c.changed ? '*' : ' ';
-      const now = c.changed ? `${c.instruction.padEnd(24)} ${c.ownerName ? `by ${c.ownerName} @${c.writtenAtCycle}` : ''}` : '';
+      const now = c.changed ? `${c.instruction.padEnd(24)} ${c.ownerName ? `by ${ownerDescription(c)}` : ''}` : '';
       out.push(`   ${mark} ${pad4(c.addr)}  ${c.original.padEnd(24)} ${now}`.trimEnd());
     }
     out.push('');

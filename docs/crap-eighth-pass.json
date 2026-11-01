@@ -1,0 +1,229 @@
+{
+  "inputs": "8f6babf0582d598fa474ea157dcc1e3bb19164dfafe6be7204d5da3134b2c6ee",
+  "before": {
+    "methods": 2082,
+    "aboveThreshold": 145,
+    "unknownCoverage": 677,
+    "maxRisk": 4830
+  },
+  "after": {
+    "methods": 2089,
+    "aboveThreshold": 141,
+    "unknownCoverage": 734,
+    "maxRisk": 1640
+  },
+  "above250Before": 20,
+  "above250After": 17,
+  "tests": {
+    "passed": 445,
+    "skipped": 7,
+    "failed": 0
+  },
+  "focusedTests": 21,
+  "coverage": {
+    "lines": {
+      "total": 37446,
+      "covered": 24623,
+      "skipped": 0,
+      "pct": 65.75
+    },
+    "statements": {
+      "total": 37446,
+      "covered": 24623,
+      "skipped": 0,
+      "pct": 65.75
+    },
+    "functions": {
+      "total": 2169,
+      "covered": 1852,
+      "skipped": 0,
+      "pct": 85.38
+    },
+    "branches": {
+      "total": 12497,
+      "covered": 11285,
+      "skipped": 0,
+      "pct": 90.3
+    },
+    "branchesTrue": {
+      "total": 0,
+      "covered": 0,
+      "skipped": 0,
+      "pct": 100
+    }
+  },
+  "targets": [
+    {
+      "file": "web/avatars3d.js",
+      "method": "AvatarView3D.applyMap",
+      "line": 465,
+      "endLine": 484,
+      "complexity": 18,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 18,
+      "risk": 18,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/avatars3d.js",
+      "method": "AvatarView3D.positionWarriorPart",
+      "line": 915,
+      "endLine": 944,
+      "complexity": 17,
+      "coverage": 91.66666666666666,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 17.16724537037037,
+      "risk": 17.16724537037037,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/avatars3d.js",
+      "method": "AvatarView3D.paintWarriorPart",
+      "line": 969,
+      "endLine": 1002,
+      "complexity": 15,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 15,
+      "risk": 15,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/avatars3d.js",
+      "method": "AvatarView3D.drawWarrior",
+      "line": 883,
+      "endLine": 912,
+      "complexity": 14,
+      "coverage": 90,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 14.196,
+      "risk": 14.196,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/avatars3d.js",
+      "method": "AvatarView3D.drawWarriorSupports",
+      "line": 1004,
+      "endLine": 1030,
+      "complexity": 9,
+      "coverage": 71.42857142857143,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 10.889212827988338,
+      "risk": 10.889212827988338,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/avatars3d.js",
+      "method": "AvatarView3D.drawWarriorProcesses",
+      "line": 1032,
+      "endLine": 1054,
+      "complexity": 10,
+      "coverage": 92.3076923076923,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 10.04551661356395,
+      "risk": 10.04551661356395,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/avatars3d.js",
+      "method": "AvatarView3D.takeBlows",
+      "line": 846,
+      "endLine": 858,
+      "complexity": 10,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 10,
+      "risk": 10,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/avatars3d.js",
+      "method": "AvatarView3D.faceOpponents",
+      "line": 860,
+      "endLine": 879,
+      "complexity": 7,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 7,
+      "risk": 7,
+      "aboveThreshold": false
+    }
+  ],
+  "comparison": {
+    "before": {
+      "methods": 2082,
+      "aboveThreshold": 145,
+      "unknownCoverage": 677,
+      "maxRisk": 4830
+    },
+    "after": {
+      "methods": 2089,
+      "aboveThreshold": 141,
+      "unknownCoverage": 734,
+      "maxRisk": 1640
+    },
+    "improved": [
+      {
+        "method": "web/avatars3d.js:AvatarView3D.draw",
+        "before": 812,
+        "after": 182
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.applyMap",
+        "before": 342,
+        "after": 18
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.drawWarrior",
+        "before": 4830,
+        "after": 14.196
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.drawPart",
+        "before": 156,
+        "after": 12
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.drawHeadEyes",
+        "before": 132,
+        "after": 11.035851851851852
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.stepFall",
+        "before": 12,
+        "after": 3.512061902594447
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.startFall",
+        "before": 12,
+        "after": 3.333333333333334
+      }
+    ],
+    "worsened": [
+      {
+        "method": "web/library-fit.js:scanLibraryFit",
+        "before": 25.580374631824842,
+        "after": 26.133544202782893
+      }
+    ],
+    "added": [
+      "web/avatars3d.js:AvatarView3D.positionWarriorPart",
+      "web/avatars3d.js:AvatarView3D.paintWarriorPart",
+      "web/avatars3d.js:AvatarView3D.warriorPartAppearance",
+      "web/avatars3d.js:AvatarView3D.drawWarriorSupports",
+      "web/avatars3d.js:AvatarView3D.drawWarriorProcesses",
+      "web/avatars3d.js:AvatarView3D.takeBlows",
+      "web/avatars3d.js:AvatarView3D.faceOpponents"
+    ],
+    "removed": []
+  }
+}

@@ -15,3 +15,5 @@ dist-check/
 evolved/
 # Python bytecode (created when the tests run the Python generators)
 __pycache__/
+# Local coverage and CRAP reports; the reviewed baseline lives in docs/.
+coverage/

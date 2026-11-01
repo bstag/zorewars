@@ -1,0 +1,20 @@
+{
+  "seeds": [
+    ";name Test\nMOV 0,1\nJMP -1\n",
+    ";name Second\nDAT 0,0\nJMP 0\n"
+  ],
+  "golden": [
+    {
+      "seed": 1,
+      "digest": "9dd6ca2358a89f10d53c61bf80f1ba0f9fa563ab461873f5e5833947bcb96c58"
+    },
+    {
+      "seed": 7,
+      "digest": "29b22461a358dddc04f8fe8ac82f5b13abea21a86347afa298d148c6ffd43a8d"
+    },
+    {
+      "seed": 99,
+      "digest": "a151a3bc2cd54f9e6ef42e02c9b154570060c3531722b11d69d19fe037d1559e"
+    }
+  ]
+}

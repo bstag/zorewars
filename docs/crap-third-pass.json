@@ -1,0 +1,525 @@
+{
+  "baselineCommit": "9ec91fbd639cae1102a732b8e82924a6ca0c5290",
+  "inputs": "a5855942b9e0e994046b3dd40b3500e84f8feb724822715bfae9bbac70233857",
+  "threshold": 30,
+  "baseline": {
+    "methods": 2037,
+    "aboveThreshold": 165,
+    "unknownCoverage": 673,
+    "maxRisk": 4830
+  },
+  "before": {
+    "methods": 2055,
+    "aboveThreshold": 163,
+    "unknownCoverage": 673,
+    "maxRisk": 4830
+  },
+  "after": {
+    "methods": 2060,
+    "aboveThreshold": 160,
+    "unknownCoverage": 671,
+    "maxRisk": 4830
+  },
+  "tests": {
+    "passed": 367,
+    "skipped": 7,
+    "failed": 0
+  },
+  "coverage": {
+    "lines": {
+      "total": 36235,
+      "covered": 22113,
+      "skipped": 0,
+      "pct": 61.02
+    },
+    "statements": {
+      "total": 36235,
+      "covered": 22113,
+      "skipped": 0,
+      "pct": 61.02
+    },
+    "functions": {
+      "total": 1980,
+      "covered": 1732,
+      "skipped": 0,
+      "pct": 87.47
+    },
+    "branches": {
+      "total": 11581,
+      "covered": 10365,
+      "skipped": 0,
+      "pct": 89.5
+    },
+    "branchesTrue": {
+      "total": 0,
+      "covered": 0,
+      "skipped": 0,
+      "pct": 100
+    }
+  },
+  "originalRefinement": {
+    "file": "cli/devtools.js",
+    "method": "cmdRefine",
+    "line": 125,
+    "endLine": 189,
+    "complexity": 35,
+    "coverage": null,
+    "coverageStatus": "unknown",
+    "unknownReason": "statement_unattributed",
+    "crap": null,
+    "risk": 1260,
+    "aboveThreshold": true
+  },
+  "extracted": [
+    {
+      "file": "cli/search-options.js",
+      "method": "refineOptions",
+      "line": 20,
+      "endLine": 45,
+      "complexity": 19,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 19,
+      "risk": 19,
+      "aboveThreshold": false
+    },
+    {
+      "file": "cli/refinement.js",
+      "method": "reportRefinement",
+      "line": 14,
+      "endLine": 25,
+      "complexity": 12,
+      "coverage": 81.25,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 12.94921875,
+      "risk": 12.94921875,
+      "aboveThreshold": false
+    },
+    {
+      "file": "cli/refinement.js",
+      "method": "defaultProposer",
+      "line": 9,
+      "endLine": 12,
+      "complexity": 3,
+      "coverage": null,
+      "coverageStatus": "unknown",
+      "unknownReason": "branch_unattributed",
+      "crap": null,
+      "risk": 12,
+      "aboveThreshold": false
+    },
+    {
+      "file": "cli/refinement.js",
+      "method": "cmdRefine",
+      "line": 29,
+      "endLine": 50,
+      "complexity": 4,
+      "coverage": 88.88888888888889,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 4.021947873799726,
+      "risk": 4.021947873799726,
+      "aboveThreshold": false
+    },
+    {
+      "file": "cli/search-options.js",
+      "method": "positiveInteger",
+      "line": 6,
+      "endLine": 10,
+      "complexity": 4,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 4,
+      "risk": 4,
+      "aboveThreshold": false
+    },
+    {
+      "file": "cli/search-options.js",
+      "method": "tuneOptions",
+      "line": 12,
+      "endLine": 18,
+      "complexity": 4,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 4,
+      "risk": 4,
+      "aboveThreshold": false
+    },
+    {
+      "file": "cli/refinement.js",
+      "method": "onProgress",
+      "line": 43,
+      "endLine": 43,
+      "complexity": 1,
+      "coverage": null,
+      "coverageStatus": "unknown",
+      "unknownReason": "statement_unattributed",
+      "crap": null,
+      "risk": 2,
+      "aboveThreshold": false
+    },
+    {
+      "file": "cli/search-options.js",
+      "method": "integer",
+      "line": 24,
+      "endLine": 24,
+      "complexity": 1,
+      "coverage": null,
+      "coverageStatus": "unknown",
+      "unknownReason": "statement_unattributed",
+      "crap": null,
+      "risk": 2,
+      "aboveThreshold": false
+    }
+  ],
+  "related": [
+    {
+      "before": {
+        "file": "cli/devtools.js",
+        "method": "cmdTune",
+        "line": 89,
+        "endLine": 121,
+        "complexity": 13,
+        "coverage": null,
+        "coverageStatus": "unknown",
+        "unknownReason": "statement_unattributed",
+        "crap": null,
+        "risk": 182,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "cli/devtools.js",
+        "method": "cmdTune",
+        "line": 90,
+        "endLine": 117,
+        "complexity": 8,
+        "coverage": 92,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 8.032768,
+        "risk": 8.032768,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "tools/tune.js",
+        "method": "tune",
+        "line": 50,
+        "endLine": 91,
+        "complexity": 10,
+        "coverage": null,
+        "coverageStatus": "unknown",
+        "unknownReason": "statement_unattributed",
+        "crap": null,
+        "risk": 110,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "tools/tune.js",
+        "method": "tune",
+        "line": 50,
+        "endLine": 91,
+        "complexity": 10,
+        "coverage": 83.33333333333334,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 10.462962962962962,
+        "risk": 10.462962962962962,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "tools/refine.js",
+        "method": "refine",
+        "line": 167,
+        "endLine": 304,
+        "complexity": 30,
+        "coverage": 87.75510204081633,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 31.65237273584986,
+        "risk": 31.65237273584986,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "tools/refine.js",
+        "method": "refine",
+        "line": 167,
+        "endLine": 304,
+        "complexity": 30,
+        "coverage": 87.27272727272727,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 31.85544703230654,
+        "risk": 31.85544703230654,
+        "aboveThreshold": true
+      }
+    },
+    {
+      "before": {
+        "file": "src/engine/report.js",
+        "method": "formatPostMortem",
+        "line": 213,
+        "endLine": 248,
+        "complexity": 17,
+        "coverage": null,
+        "coverageStatus": "unknown",
+        "unknownReason": "branch_unattributed",
+        "crap": null,
+        "risk": 306,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "src/engine/report.js",
+        "method": "formatPostMortem",
+        "line": 213,
+        "endLine": 248,
+        "complexity": 17,
+        "coverage": 60,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 35.49600000000001,
+        "risk": 35.49600000000001,
+        "aboveThreshold": true
+      }
+    }
+  ],
+  "comparison": {
+    "before": {
+      "methods": 2055,
+      "aboveThreshold": 163,
+      "unknownCoverage": 673,
+      "maxRisk": 4830
+    },
+    "after": {
+      "methods": 2060,
+      "aboveThreshold": 160,
+      "unknownCoverage": 671,
+      "maxRisk": 4830
+    },
+    "improved": [
+      {
+        "method": "src/engine/report.js:formatPostMortem",
+        "before": 306,
+        "after": 35.49600000000001
+      },
+      {
+        "method": "tools/tune.js:tune",
+        "before": 110,
+        "after": 10.462962962962962
+      },
+      {
+        "method": "cli/devtools.js:cmdTune",
+        "before": 182,
+        "after": 8.032768
+      },
+      {
+        "method": "src/engine/match-backend.js:createMatchBackend",
+        "before": 6.036,
+        "after": 6.027047332832457
+      },
+      {
+        "method": "tools/refine.js:tools.battle",
+        "before": 5.150262960180315,
+        "after": 5.1157407407407405
+      },
+      {
+        "method": "cli/devtools-context.js:battlePool",
+        "before": 4.125,
+        "after": 3.333333333333334
+      },
+      {
+        "method": "tools/refine.js:lostRound",
+        "before": 6,
+        "after": 2.1481481481481484
+      },
+      {
+        "method": "tools/genes.js:turn",
+        "before": 2.5,
+        "after": 2
+      },
+      {
+        "method": "tools/tune.js:sample",
+        "before": 2,
+        "after": 1.0370370370370372
+      }
+    ],
+    "worsened": [
+      {
+        "method": "tools/refine.js:refine",
+        "before": 31.65237273584986,
+        "after": 31.85544703230654
+      }
+    ],
+    "added": [
+      "cli/search-options.js:refineOptions",
+      "cli/refinement.js:reportRefinement",
+      "cli/refinement.js:defaultProposer",
+      "cli/refinement.js:cmdRefine",
+      "cli/search-options.js:positiveInteger",
+      "cli/search-options.js:tuneOptions",
+      "cli/refinement.js:onProgress",
+      "cli/search-options.js:integer"
+    ],
+    "removed": [
+      "cli/devtools.js:cmdRefine",
+      "cli/devtools.js:integer"
+    ]
+  },
+  "baselineComparison": {
+    "before": {
+      "methods": 2037,
+      "aboveThreshold": 165,
+      "unknownCoverage": 673,
+      "maxRisk": 4830
+    },
+    "after": {
+      "methods": 2060,
+      "aboveThreshold": 160,
+      "unknownCoverage": 671,
+      "maxRisk": 4830
+    },
+    "improved": [
+      {
+        "method": "src/engine/report.js:formatPostMortem",
+        "before": 306,
+        "after": 35.49600000000001
+      },
+      {
+        "method": "tools/tune.js:tune",
+        "before": 110,
+        "after": 10.462962962962962
+      },
+      {
+        "method": "cli/devtools.js:cmdTune",
+        "before": 182,
+        "after": 8.032768
+      },
+      {
+        "method": "tools/algebra/link.js:iface",
+        "before": 412.6818984848952,
+        "after": 7.178425125170687
+      },
+      {
+        "method": "tools/algebra/blocks/torus2.js:torusLeap.mismatches",
+        "before": 7.333333333333335,
+        "after": 6.166666666666666
+      },
+      {
+        "method": "src/engine/match-backend.js:createMatchBackend",
+        "before": 6.036,
+        "after": 6.027047332832457
+      },
+      {
+        "method": "tools/refine.js:tools.battle",
+        "before": 5.150262960180315,
+        "after": 5.1157407407407405
+      },
+      {
+        "method": "cli/devtools-context.js:battlePool",
+        "before": 4.125,
+        "after": 3.333333333333334
+      },
+      {
+        "method": "tools/refine.js:lostRound",
+        "before": 6,
+        "after": 2.1481481481481484
+      },
+      {
+        "method": "tools/tune.js:sample",
+        "before": 2,
+        "after": 1.0370370370370372
+      }
+    ],
+    "worsened": [
+      {
+        "method": "web/app.js:renderEditorStatus",
+        "before": 552,
+        "after": 650
+      },
+      {
+        "method": "tools/refine.js:refine",
+        "before": 31.65237273584986,
+        "after": 31.85544703230654
+      },
+      {
+        "method": "web/library-fit.js:scanLibraryFit",
+        "before": 25.580374631824842,
+        "after": 26.133544202782893
+      },
+      {
+        "method": "tools/algebra/blocks/papers88.js:antiImpSilk.mismatches",
+        "before": 9.583984375,
+        "after": 13.125
+      },
+      {
+        "method": "tools/algebra/blocks/hillopen.js:decoyMaker.mismatches",
+        "before": 3,
+        "after": 3.333333333333334
+      }
+    ],
+    "added": [
+      "tools/algebra/contracts.js:combinatorContract",
+      "tools/algebra/contracts.js:checkParallelBoot",
+      "cli/search-options.js:refineOptions",
+      "tools/algebra/contracts.js:checkTrigger",
+      "web/rules-hint.js:battlefieldHint",
+      "tools/algebra/contracts.js:leafContract",
+      "tools/algebra/contracts.js:checkClassifier",
+      "tools/algebra/contracts.js:checkRestart",
+      "tools/algebra/contracts.js:checkCopies",
+      "web/rules-hint.js:limitsHint",
+      "cli/refinement.js:reportRefinement",
+      "cli/refinement.js:defaultProposer",
+      "tools/algebra/contracts.js:hasRelocate",
+      "tools/algebra/contracts.js:checkBoot",
+      "tools/algebra/contracts.js:checkRelocation",
+      "tools/algebra/contracts.js:initialContract",
+      "tools/algebra/contracts.js:protectPartners",
+      "tools/algebra/contracts.js:value",
+      "tools/algebra/contracts.js:landsOnSelf",
+      "tools/algebra/contracts.js:checkImage",
+      "cli/refinement.js:cmdRefine",
+      "cli/search-options.js:positiveInteger",
+      "cli/search-options.js:tuneOptions",
+      "web/battlefield.js:fieldKey",
+      "web/rules-hint.js:rulesHint",
+      "tools/algebra/contracts.js:checkSequence",
+      "tools/algebra/contracts.js:checkSwitch",
+      "cli/refinement.js:onProgress",
+      "cli/search-options.js:integer",
+      "tools/algebra/contracts.js:checkParallel",
+      "tools/algebra/contracts.js:w",
+      "web/battlefield.js:fieldSettings",
+      "web/battlefield.js:battlefieldSettings",
+      "tools/algebra/contracts.js:requireEndless"
+    ],
+    "removed": [
+      "web/app.js:rulesHint",
+      "cli/devtools.js:cmdRefine",
+      "cli/devtools.js:integer",
+      "web/app.js:fieldKey",
+      "tools/algebra/link.js:hasRelocate",
+      "tools/algebra/link.js:landsOnSelf",
+      "tools/algebra/link.js:value",
+      "web/app.js:fieldSettings",
+      "web/app.js:battlefieldSettings",
+      "tools/algebra/link.js:w"
+    ]
+  },
+  "notes": [
+    "Regression tests failed on the prior implementation: refine field-rounds validation was delayed until after setup, and tune accepted malformed counts through parseInt/clamping.",
+    "Local search counts now require positive safe integers before loading fields or creating model clients. Push-off defaults no longer mutate caller flags.",
+    "Offline command tests use deterministic proposers with real compilers, local hill files, CPU worker battles, paired significance checks, and persisted result files. No model API requests or external hill fetches were made.",
+    "The old cli/devtools.js cmdRefine export is preserved. The default SDK proposer and two inline helper functions retain unknown attribution estimates below the threshold; the SDK tool runner is not covered by this pass.",
+    "All new extracted functions are below 30, including pessimistic estimates. cmdTune and tools/tune.js tune now have measured scores below 30.",
+    "The unchanged refinement loop has a coverage-dependent increase from 31.65 to 31.86 and remains flagged. formatPostMortem now has measured CRAP 35.50 instead of an unknown-coverage estimate of 306.",
+    "The maximum repository score remains 4830 in uncovered WebGL drawing. Eight non-JavaScript source files remain unsupported. The strict check still exits 2 for the 160-function backlog."
+  ]
+}

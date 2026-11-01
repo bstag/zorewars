@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import {difference} from './replay-difference.js';
 // Replay pinned compiled inputs from an evolution report. Legacy reports omit
 // partner programs and field-round counts, so supply those explicitly.
 import fs from 'node:fs';
@@ -30,15 +31,6 @@ if (fs.existsSync(out) && fs.readdirSync(out).length) throw Error('Use a new, em
 fs.mkdirSync(out, { recursive: true });
 const sha = value => createHash('sha256').update(typeof value === 'string' || Buffer.isBuffer(value) ? value : JSON.stringify(value)).digest('hex');
 const canonical = value => JSON.parse(JSON.stringify(value));
-function difference(actual, wanted, where = '') {
-  if (Object.is(actual, wanted)) return null;
-  if (actual === null || wanted === null || typeof actual !== 'object' || typeof wanted !== 'object') return { path: where, actual, expected: wanted };
-  if (Array.isArray(actual) !== Array.isArray(wanted)) return { path: where, actualType: typeof actual, expectedType: typeof wanted };
-  const aKeys = Object.keys(actual).sort(), bKeys = Object.keys(wanted).sort();
-  if (JSON.stringify(aKeys) !== JSON.stringify(bKeys)) return { path: where, actualKeys: aKeys, expectedKeys: bKeys };
-  for (const key of aKeys) { const diff = difference(actual[key], wanted[key], where + '/' + key); if (diff) return diff; }
-  return null;
-}
 function requireMatch(actual, wanted, context) {
   const diff = difference(canonical(actual), canonical(wanted));
   if (diff) throw Error(context + ': ' + JSON.stringify(diff));

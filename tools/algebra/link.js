@@ -1,6 +1,7 @@
 // Combinators, contracts and the linker (docs/block-algebra.md). A tree is
 // { id, P?, kids? }: a leaf from leaves.js, or a combinator from here.
 import { leaves } from './leaves.js';
+import { initialContract, leafContract, combinatorContract } from './contracts.js';
 import { makeGeometry } from '../../src/engine/geometry.js';
 
 export const combinators = {
@@ -38,7 +39,6 @@ for (const [id, c] of Object.entries(combinators)) { c.id = id; c.combinator = t
 
 export const definition = (id) => leaves[id] ?? combinators[id];
 const isLeaf = (node) => Object.hasOwn(leaves, node.id);
-const value = (v, ...args) => (typeof v === 'function' ? v(...args) : v);
 
 // Give every node its own label namespace, in a deterministic order.
 export function annotate(tree) {
@@ -62,156 +62,13 @@ const parOrder = (kids) => [...kids].sort((a, b) => (leaves[a.id]?.layout === 'l
 
 // The contract of a node: what it does, what it needs, and why it can't be built.
 export function iface(node, settings) {
-  const def = definition(node.id), old = settings.dialect === '88', core = settings.coreSize;
-  const out = { processes: 0, grows: false, exit: 'never', writes: 'sparse', roams: false, relocatable: false,
-    provides: new Map(), needs: new Set(), mismatches: [] };
-  for (const [key, [lo, hi]] of Object.entries(def.params ?? {})) {
-    const v = node.P?.[key];
-    if (!Number.isSafeInteger(v) || v < lo || v > hi) out.mismatches.push(`${node.id}: ${key} must be an integer from ${lo} to ${hi}`);
-  }
-  if (isLeaf(node)) {
-    const P = node.P;
-    if (def.dialects === '94' && old) out.mismatches.push(`${node.id} needs ICWS'94`);
-    const topo = settings.topology === 'torus' ? 'torus' : 'ring';
-    if (!(def.topologies ?? ['ring']).includes(topo)) out.mismatches.push(`${node.id} is written for the ${topo === 'torus' ? 'ring' : 'torus'}`);
-    out.mismatches.push(...(def.mismatches?.(P, settings) ?? []));
-    Object.assign(out, { processes: value(def.processes, P), grows: !!def.grows, exit: def.exit, writes: value(def.writes, P),
-      roams: !!def.roams, relocatable: !!def.relocatable, link: def.link ?? 'fall' });
-    for (const [cap, label] of Object.entries(value(def.provides, P) ?? {})) out.provides.set(cap, node.ns + label);
-    for (const cap of def.needs ?? []) out.needs.add(cap);
-    return out;
-  }
+  const def = definition(node.id), out = initialContract(node, def);
+  if (isLeaf(node)) return leafContract(node, def, settings, out);
+  // Refuse invalid parameters before calling arithmetic/loop-dependent policies.
+  if (out.mismatches.length) return out;
   const [lo, hi] = def.kids, kids = node.kids ?? [];
   if (kids.length < lo || kids.length > hi) out.mismatches.push(`${node.id} takes ${lo}${hi > lo ? ` to ${hi}` : ''} members`);
-  const parts = kids.map((k) => iface(k, settings));
-  for (const p of parts) out.mismatches.push(...p.mismatches);
-  out.grows = parts.some((p) => p.grows);
-  out.roams = parts.some((p) => p.roams);
-  out.writes = parts.some((p) => p.writes === 'core') ? 'core' : 'sparse';
-  for (const p of parts) { for (const [c, l] of p.provides) if (!out.provides.has(c)) out.provides.set(c, l); for (const c of p.needs) out.needs.add(c); }
-  const torus = settings.topology === 'torus';
-  // On the ring a hop must clear the warrior; on a torus, a hop with a y or z part changes row.
-  const landsOnSelf = (x = node.P.HOP, y = node.P.HOPY, z = node.P.HOPZ) => {
-    if (!torus) return x % core < 256 || core - (x % core) < 256;
-    const w = x % settings.sizeX;
-    return !(y || z) && (w < settings.maxLength || settings.sizeX - w < settings.maxLength);
-  };
-  if (!torus && (node.P?.HOPY || node.P?.HOPZ || node.P?.DY || node.P?.DZ || node.P?.HOP2Y || node.P?.HOP2Z)) out.mismatches.push(`${node.id}: y and z parts only mean something on a torus`);
-  switch (node.id) {
-    case 'seq':
-      parts.forEach((p, i) => {
-        if (i < parts.length - 1 && p.exit !== 'next') out.mismatches.push(`seq: ${kids[i].id} never hands on, so nothing after it runs`);
-        if (i === parts.length - 1 && p.exit !== 'never') out.mismatches.push(`seq: the last member (${kids[i].id}) must run forever`);
-      });
-      out.processes = Math.max(0, ...parts.map((p) => p.processes));
-      for (const c of [...out.needs]) if (out.provides.has(c)) out.needs.delete(c);   // met inside the seq
-      break;
-    case 'par':
-      parts.forEach((p, i) => { if (p.exit !== 'never') out.mismatches.push(`par: ${kids[i].id} must run forever`); });
-      if (kids.filter((k) => leaves[k.id]?.layout === 'last').length > 1) out.mismatches.push('par: only one member may write just ahead of itself (each must be laid out last)');
-      if (out.writes === 'core') out.mismatches.push('par: a clear erases its partners, so a clear runs alone');
-      for (const k of kids) if (leaves[k.id]?.attacks === 'all') out.mismatches.push(`par: ${k.id} attacks every cell but its own, partners included`);
-      out.processes = parts.reduce((n, p) => n + p.processes, 0);
-      break;
-    case 'relocate':
-      if (parts[0] && !parts[0].relocatable) out.mismatches.push(`relocate: ${kids[0].id} reads state in the image, so it cannot be relocated`);
-      if (leaves[kids[0]?.id]?.entryFirst === false) out.mismatches.push(`relocate: ${kids[0].id} doesn't start at its first cell`);
-      if (landsOnSelf()) out.mismatches.push('HOP lands on the warrior itself');
-      out.processes = parts[0]?.processes ?? 0;
-      out.needs.add('probe');
-      break;
-    case 'boot': {
-      if (parts[0] && parts[0].exit !== 'never') out.mismatches.push('boot: its first member must run forever');
-      if (parts[1] && parts[1].exit !== 'data') out.mismatches.push('boot: its second member stays behind, so it must be data');
-      const hasRelocate = (n) => n.id === 'relocate' || (n.kids ?? []).some(hasRelocate);
-      if (kids[0] && hasRelocate(kids[0])) out.mismatches.push('one relocation per warrior: relocate or boot');
-      if (landsOnSelf()) out.mismatches.push('HOP lands on the warrior itself');
-      out.processes = parts[0]?.processes ?? 0;
-      break;
-    }
-    case 'trigger': {
-      const a = kids[0], A = leaves[a?.id];
-      if (!A?.loop) out.mismatches.push(`trigger: ${a?.id} has no loop for the watcher to rewrite`);
-      if (A?.moves) out.mismatches.push(`trigger: ${a.id} moves itself away, so the watcher would lose it`);
-      parts.forEach((p, i) => { if (p.exit !== 'never') out.mismatches.push(`trigger: ${kids[i].id} must run forever`); });
-      if ((parts[0]?.processes ?? 0) > 1 && leaves[kids[1]?.id]?.kind === 'finisher') out.mismatches.push(`trigger: ${kids[1].id} is a one-process clear; it can't take over ${kids[0].id}'s processes`);
-      // After a watchdog fires, a's redirected process and the watcher may both enter b.
-      out.processes = Math.max((parts[0]?.processes ?? 0) + 1, (parts[1]?.processes ?? 0) * (node.P.MODE === 2 ? 2 : 1));
-      break;
-    }
-    case 'apart':
-    case 'copies': {
-      parts.forEach((p, i) => { if (p.exit !== 'never') out.mismatches.push(`${node.id}: ${kids[i].id} must run forever`); });
-      if (out.writes === 'core') out.mismatches.push(`${node.id}: a clear erases the other copies, so a clear runs alone`);
-      for (const k of kids) if (leaves[k.id]?.attacks === 'all') out.mismatches.push(`${node.id}: ${k.id} attacks every cell but its own, the other copies included`);
-      const n = node.id === 'copies' ? node.P.N : 1;
-      out.processes = node.id === 'copies' ? n * (parts[0]?.processes ?? 0) : parts.reduce((t, p) => t + p.processes, 0);
-      // Every copy needs room: no two may overlap, nor the original image.
-      const count = n + 1 - (node.id === 'copies' ? 1 : 0);
-      if (torus) {
-        // Copies sit at k x (D, DY, DZ): no two may share a row closer than a warrior's length.
-        const geo = makeGeometry(settings), at = Array.from({ length: count }, (_, i) => geo.decode(geo.encode(i * node.P.D, i * node.P.DY, i * node.P.DZ)));
-        const X = settings.sizeX, w = (v) => ((v % X) + X) % X;
-        for (let i = 0; i < at.length; i++) for (let j = i + 1; j < at.length; j++) {
-          const [a, b] = [at[i], at[j]], dx = w(b[0] - a[0]);
-          if (a[1] === b[1] && a[2] === b[2] && Math.min(dx, X - dx) < settings.maxLength) out.mismatches.push(`${node.id}: D puts copies on top of each other or of the warrior`);
-        }
-      } else {
-        const at = Array.from({ length: count }, (_, i) => (i * node.P.D) % core).sort((x, y) => x - y);
-        const gaps = at.map((x, i) => ((i + 1 < at.length ? at[i + 1] : at[0] + core) - x));
-        if (Math.min(...gaps) < 256) out.mismatches.push(`${node.id}: D puts copies on top of each other or of the warrior`);
-      }
-      break;
-    }
-    case 'switch':
-      if (!settings.pSpace) out.mismatches.push('switch needs P-space (the 94x hill)');
-      if (old) out.mismatches.push("switch needs ICWS'94 (LDP and STP)");
-      parts.forEach((p, i) => { if (p.exit !== 'never') out.mismatches.push(`switch: ${kids[i].id} must run forever`); });
-      out.processes = Math.max(0, ...parts.map((p) => p.processes));
-      break;
-    case 'restart': {
-      const x = kids[0], X = leaves[x?.id];
-      if (!X?.loop) out.mismatches.push(`restart: ${x?.id} has no loop to watch`);
-      if (X?.moves) out.mismatches.push(`restart: ${x.id} moves itself away, so a restored copy wouldn't help`);
-      if (parts[0] && parts[0].exit !== 'never') out.mismatches.push(`restart: ${x.id} must run forever`);
-      if (parts[0]?.roams) out.mismatches.push(`restart: ${x.id} moves away from its code, so a restored copy wouldn't help`);
-      out.processes = 2 * (parts[0]?.processes ?? 0) + 1;     // a restart may join a process that survived
-      break;
-    }
-    case 'parboot': {
-      const x = kids[0], X = leaves[x?.id], P = node.P;
-      if (parts[0] && parts[0].exit !== 'never') out.mismatches.push(`parboot: ${x.id} must run forever`);
-      if (landsOnSelf()) out.mismatches.push('HOP lands on the warrior itself');
-      if (P.REACT) {
-        if (P.K < 2) out.mismatches.push('parboot: REACT needs K of 2 or more (the loops that lose the race watch the copy)');
-        if (!X?.loop) out.mismatches.push(`parboot: ${x?.id} has no loop for the watchers to check`);
-        if (X?.moves) out.mismatches.push(`parboot: ${x.id} moves itself away, so the watchers would lose it`);
-        if (landsOnSelf(P.HOP2, P.HOP2Y, P.HOP2Z)) out.mismatches.push('HOP2 lands on the warrior itself');
-        if (!torus && Math.min((P.HOP2 - P.HOP + 2 * core) % core, (P.HOP - P.HOP2 + 2 * core) % core) < 256) out.mismatches.push('parboot: the new copy would land on the first');
-        if (torus && P.HOP2Y === P.HOPY && P.HOP2Z === P.HOPZ && Math.abs((P.HOP2 - P.HOP) % settings.sizeX) < settings.maxLength) out.mismatches.push('parboot: the new copy would land on the first');
-      }
-      // The copy, the original (STAY), the new copy (REACT), and every loop's process until it stops.
-      out.processes = (parts[0]?.processes ?? 0) * (1 + P.STAY + (P.REACT ? 1 : 0)) + P.K;
-      break;
-    }
-    case 'classify': {
-      const a = kids[0], A = leaves[a?.id];
-      if (!A?.loop) out.mismatches.push(`classify: ${a?.id} has no loop for the watcher to rewrite`);
-      if (A?.moves) out.mismatches.push(`classify: ${a.id} moves itself away, so the watcher would lose it`);
-      if (old) out.mismatches.push("classify needs ICWS'94 (JMZ.F)");
-      parts.forEach((p, i) => { if (p.exit !== 'never') out.mismatches.push(`classify: ${kids[i].id} must run forever`); });
-      out.processes = Math.max((parts[0]?.processes ?? 0) + 1, parts[1]?.processes ?? 0, parts[2]?.processes ?? 0);
-      break;
-    }
-    case 'image':
-      if (parts[0] && parts[0].exit !== 'never') out.mismatches.push('image: its first member must run forever');
-      parts.slice(1).forEach((p, i) => { if (p.exit !== 'data') out.mismatches.push(`image: ${kids[i + 1].id} is laid out after the code, so it must be data`); });
-      out.processes = parts[0]?.processes ?? 0;
-      break;
-  }
-  if (node.id === 'image' || node.id === 'boot') out.exit = parts[0]?.exit ?? 'never';
-  if (['trigger', 'apart', 'copies', 'switch', 'restart', 'classify', 'parboot'].includes(node.id) && !out.mismatches.length) out.exit = 'never';
-  return out;
+  return combinatorContract(node, settings, kids.map(k => iface(k, settings)), out);
 }
 
 // Why a whole tree can't be built on these settings; empty when it can.

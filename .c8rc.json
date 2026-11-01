@@ -1,0 +1,8 @@
+{
+  "all": true,
+  "src": ["src", "cli", "tools", "web", "worker", "scripts", "warriors", "examples", "modelwar"],
+  "extension": [".js", ".mjs", ".cjs"],
+  "exclude": ["web/vendor/**", "warriors/javascript/**"],
+  "reporter": ["json", "json-summary", "text-summary"],
+  "reports-dir": "coverage"
+}
