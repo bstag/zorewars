@@ -1,0 +1,334 @@
+[
+  {
+    "file": "imp.red",
+    "language": "redcode",
+    "tags": []
+  },
+  {
+    "file": "dwarf.red",
+    "language": "redcode",
+    "tags": []
+  },
+  {
+    "file": "gemini.red",
+    "language": "redcode",
+    "tags": []
+  },
+  {
+    "file": "mice.red",
+    "language": "redcode",
+    "tags": []
+  },
+  {
+    "file": "impring.red",
+    "language": "redcode",
+    "tags": [
+      "imp"
+    ]
+  },
+  {
+    "file": "scanner.red",
+    "language": "redcode",
+    "tags": []
+  },
+  {
+    "file": "seeker.red",
+    "language": "redcode",
+    "tags": [
+      "clear"
+    ]
+  },
+  {
+    "file": "oneshot.red",
+    "language": "redcode",
+    "tags": [
+      "clear"
+    ]
+  },
+  {
+    "file": "silk.red",
+    "language": "redcode",
+    "tags": []
+  },
+  {
+    "file": "vampire.red",
+    "language": "redcode",
+    "tags": []
+  },
+  {
+    "file": "sweeper.red",
+    "language": "redcode",
+    "tags": [
+      "clear"
+    ]
+  },
+  {
+    "file": "twopass.red",
+    "language": "redcode",
+    "tags": [
+      "clear"
+    ]
+  },
+  {
+    "file": "stunner.red",
+    "language": "redcode",
+    "tags": [
+      "clear"
+    ]
+  },
+  {
+    "file": "stoneimp.red",
+    "language": "redcode",
+    "tags": [
+      "imp"
+    ]
+  },
+  {
+    "file": "evolvedsilk.red",
+    "language": "redcode",
+    "tags": []
+  },
+  {
+    "file": "twinsilk.red",
+    "language": "redcode",
+    "tags": []
+  },
+  {
+    "file": "redqueen.red",
+    "language": "redcode",
+    "tags": [
+      "clear"
+    ]
+  },
+  {
+    "file": "dwarf.js",
+    "language": "javascript",
+    "tags": []
+  },
+  {
+    "file": "carpet.js",
+    "language": "javascript",
+    "tags": [
+      "clear"
+    ]
+  },
+  {
+    "file": "quickscan.js",
+    "language": "javascript",
+    "tags": [
+      "qscan"
+    ]
+  },
+  {
+    "file": "gatekeeper.js",
+    "language": "javascript",
+    "tags": [
+      "clear"
+    ]
+  },
+  {
+    "file": "papercut.js",
+    "language": "javascript",
+    "tags": []
+  },
+  {
+    "file": "fastsilk.js",
+    "language": "javascript",
+    "tags": []
+  },
+  {
+    "file": "blitz.js",
+    "language": "javascript",
+    "tags": [
+      "qscan"
+    ]
+  },
+  {
+    "file": "chameleon.js",
+    "language": "javascript",
+    "tags": [
+      "clear",
+      "pspace"
+    ]
+  },
+  {
+    "file": "bandit.js",
+    "language": "javascript",
+    "tags": [
+      "clear",
+      "pspace"
+    ]
+  },
+  {
+    "file": "hedgehog.js",
+    "language": "javascript",
+    "tags": [
+      "qscan",
+      "imp",
+      "clear",
+      "decoy"
+    ]
+  },
+  {
+    "file": "hydra.js",
+    "language": "javascript",
+    "tags": [
+      "qscan",
+      "clear",
+      "decoy"
+    ]
+  },
+  {
+    "file": "gremlin.red",
+    "language": "redcode",
+    "tags": []
+  },
+  {
+    "file": "88/gemini-88.red",
+    "language": "redcode",
+    "tags": []
+  },
+  {
+    "file": "88/scout-88.red",
+    "language": "redcode",
+    "tags": []
+  },
+  {
+    "file": "88/impring-88.red",
+    "language": "redcode",
+    "tags": [
+      "imp"
+    ]
+  },
+  {
+    "file": "88/stunner-88.red",
+    "language": "redcode",
+    "tags": []
+  },
+  {
+    "file": "prototypes/oneshot2.red",
+    "language": "redcode",
+    "tags": []
+  },
+  {
+    "file": "javascript/imp.js",
+    "language": "javascript",
+    "tags": []
+  },
+  {
+    "file": "javascript/dwarf.js",
+    "language": "javascript",
+    "tags": []
+  },
+  {
+    "file": "javascript/gemini.js",
+    "language": "javascript",
+    "tags": []
+  },
+  {
+    "file": "javascript/mice.js",
+    "language": "javascript",
+    "tags": []
+  },
+  {
+    "file": "javascript/impring.js",
+    "language": "javascript",
+    "tags": [
+      "imp"
+    ]
+  },
+  {
+    "file": "javascript/scanner.js",
+    "language": "javascript",
+    "tags": []
+  },
+  {
+    "file": "javascript/seeker.js",
+    "language": "javascript",
+    "tags": [
+      "clear"
+    ]
+  },
+  {
+    "file": "javascript/oneshot.js",
+    "language": "javascript",
+    "tags": [
+      "clear"
+    ]
+  },
+  {
+    "file": "javascript/silk.js",
+    "language": "javascript",
+    "tags": []
+  },
+  {
+    "file": "javascript/vampire.js",
+    "language": "javascript",
+    "tags": []
+  },
+  {
+    "file": "javascript/sweeper.js",
+    "language": "javascript",
+    "tags": [
+      "clear"
+    ]
+  },
+  {
+    "file": "javascript/twopass.js",
+    "language": "javascript",
+    "tags": [
+      "clear"
+    ]
+  },
+  {
+    "file": "javascript/stunner.js",
+    "language": "javascript",
+    "tags": [
+      "clear"
+    ]
+  },
+  {
+    "file": "javascript/stoneimp.js",
+    "language": "javascript",
+    "tags": [
+      "imp"
+    ]
+  },
+  {
+    "file": "javascript/evolvedsilk.js",
+    "language": "javascript",
+    "tags": []
+  },
+  {
+    "file": "javascript/redqueen.js",
+    "language": "javascript",
+    "tags": [
+      "clear"
+    ]
+  },
+  {
+    "file": "javascript/gremlin.js",
+    "language": "javascript",
+    "tags": []
+  },
+  {
+    "file": "88/imp.red",
+    "language": "redcode",
+    "tags": []
+  },
+  {
+    "file": "88/dwarf.red",
+    "language": "redcode",
+    "tags": []
+  },
+  {
+    "file": "88/mice.red",
+    "language": "redcode",
+    "tags": []
+  },
+  {
+    "file": "88/vampire.red",
+    "language": "redcode",
+    "tags": []
+  }
+]

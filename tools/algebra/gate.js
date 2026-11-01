@@ -121,7 +121,7 @@ function checkChain(built) {
     }
     if (firstDat === null || stuns !== expectedStuns) throw new Error('Incorrect stun phase');
     vm.run();
-    if (!vm.warriors[0].alive || vm.cycle !== settings.maxCycles || vm.warriors[0].peak !== 1) throw new Error('Solo/process contract failed');
+    if (!vm.warriors[0].alive || vm.cycle !== settings.maxCycles || vm.warriors[0].peak !== 1 + (boot && (boot.P.WIPE || boot.P.EARLY) ? 1 : 0)) throw new Error('Solo/process contract failed');
     if (!intact()) throw new Error('The clear damaged protected code');
     for (let c = 0; c < core; c++) if (!inProtected(c) && vm.writeCycle[c] < arrivedAt) throw new Error('The clear left cells untouched');
     return { base, arrivedAt, attacks, firstWrite, stunWrites: stuns, survives: true };
@@ -228,7 +228,7 @@ function checkBodies({ w, settings, root, labels, spans }) {
     const result = { base, processes: vm.processes(0).length, peak: vm.warriors[0].peak };
     if (alone) {
       const p = parts[0];
-      if ((p.id === 'stone' || p.id === 'vampire') && vm.warriors[0].peak !== 1) throw new Error('A one-process body split');
+      if ((p.id === 'stone' || p.id === 'vampire') && vm.warriors[0].peak !== 1 + (boot && (boot.P.WIPE || boot.P.EARLY) ? 1 : 0)) throw new Error('A one-process body split');
       if (p.id === 'stone' && stoneCells[0].size < 100) throw new Error('The stone bombs too few cells');
       if (p.id === 'vampire' && fangs[0] < 100) throw new Error('The vampire drops too few fangs');
       if (p.id === 'spiral' && vm.processes(0).length !== 2 ** p.P.SK - 1) throw new Error('The spiral lost processes on its own');
@@ -252,6 +252,10 @@ function checkBodies({ w, settings, root, labels, spans }) {
 // with what the gate expects of it.
 function instances(root, labels, spans, settings) {
   const out = [];
+  // The cells each copying combinator lays down: its member's span at the new
+  // shift. A copy holds only that member, not the whole warrior.
+  const regions = out.regions = [];
+  const copied = (kid, shifts) => { for (const shift of shifts) regions.push({ shift, start: spans[kid.ns].start, size: spans[kid.ns].size }); return shifts; };
   const geo = makeGeometry(settings);
   const vec = (x, y = 0, z = 0) => (geo ? geo.encode(x, y, z) : x);
   const plus = (a, b) => (geo ? geo.add(a, b) : a + b);
@@ -259,26 +263,40 @@ function instances(root, labels, spans, settings) {
     if (isLeaf(node)) { for (const shift of shifts) out.push({ node, shift, ...flags }); return; }
     const k = node.kids;
     switch (node.id) {
-      case 'boot': walk(k[0], shifts.map((s) => plus(s, vec(node.P.HOP, node.P.HOPY, node.P.HOPZ))), flags); if (k[1]) walk(k[1], shifts, flags); break;
+      case 'boot': walk(k[0], copied(k[0], shifts.map((s) => plus(s, vec(node.P.HOP, node.P.HOPY, node.P.HOPZ)))), flags); if (k[1]) walk(k[1], shifts, flags); break;
       case 'relocate': {
         const probe = labels[node.probeLabel];
-        walk(k[0], shifts.map((s) => s + probe + node.P.HOP - spans[k[0].ns].start), flags);
+        walk(k[0], copied(k[0], shifts.map((s) => s + probe + node.P.HOP - spans[k[0].ns].start)), flags);
         break;
       }
       case 'apart': walk(k[0], shifts, flags); walk(k[1], shifts.map((s) => plus(s, vec(node.P.D, node.P.DY, node.P.DZ))), flags); break;
-      case 'copies': walk(k[0], shifts.flatMap((s) => Array.from({ length: node.P.N }, (_, i) => plus(s, vec(i * node.P.D, i * node.P.DY, i * node.P.DZ)))), flags); break;
+      case 'copies': walk(k[0], copied(k[0], shifts.flatMap((s) => Array.from({ length: node.P.N }, (_, i) => plus(s, vec(i * node.P.D, i * node.P.DY, i * node.P.DZ))))), flags); break;
       case 'trigger':
         walk(k[0], shifts, { ...flags, mayStop: true });
         walk(k[1], shifts, { ...flags, ...(node.P.MODE ? { optional: true, triggered: node.ns } : {}) });
         break;
       case 'switch': k.forEach((kid, i) => walk(kid, shifts, { ...flags, optional: true, branch: `${node.ns}:${i}` })); break;
+      case 'fork':
+        walk(k[0], shifts, flags);
+        walk(k[1], shifts, { ...flags, optional: true, branch: `${node.ns}:1` });
+        walk(k[2], shifts, { ...flags, optional: true, branch: `${node.ns}:2` });
+        break;
       case 'parboot': {
         const { HOP, HOPY, HOPZ, STAY, REACT, HOP2, HOP2Y, HOP2Z } = node.P;
-        walk(k[0], shifts.map((s) => plus(s, vec(HOP, HOPY, HOPZ))), REACT ? { ...flags, mayStop: true } : flags);   // the copy (a REACT scenario hits it)
+        walk(k[0], copied(k[0], shifts.map((s) => plus(s, vec(HOP, HOPY, HOPZ)))), REACT ? { ...flags, mayStop: true } : flags);   // the copy (a REACT scenario hits it)
         if (STAY) walk(k[0], shifts, flags);                                  // the original, still running
-        if (REACT) walk(k[0], shifts.map((s) => plus(s, vec(HOP2, HOP2Y, HOP2Z))), { ...flags, optional: true, triggered: `${node.ns}:react` });
+        if (REACT) walk(k[0], copied(k[0], shifts.map((s) => plus(s, vec(HOP2, HOP2Y, HOP2Z)))), { ...flags, optional: true, triggered: `${node.ns}:react` });
         break;
       }
+      case 'fanboot':
+        // Each member's copy starts at its copy label and holds M cells (the copy lines copy
+        // whole rounds of N, so a little of what follows the member comes along).
+        k.forEach((kid, i) => {
+          const hop = i ? node.P.HOPB : node.P.HOPA, moved = shifts.map((s) => s + hop);
+          for (const shift of moved) regions.push({ shift, start: labels[node.ns + 'c' + i], size: node.fan.M[i] });
+          walk(kid, moved, flags);
+        });
+        break;
       case 'classify':
         walk(k[0], shifts, { ...flags, mayStop: true });
         walk(k[1], shifts, { ...flags, optional: true, branch: `${node.ns}:1` });
@@ -294,11 +312,12 @@ function instances(root, labels, spans, settings) {
 // What the combinators and blocks promise, as runs with something planted.
 function scenarios(root, labels, settings) {
   const out = [{ name: 'alone' }];
+  const hitBranch = {};   // an opening under a fork: its planted target must take the fork's hit branch
   const geo = makeGeometry(settings);
   const offset = (x, y, z, k) => (geo ? geo.add(geo.encode(x, y, z), k) : x + k);   // a hop, then k cells along the row
   const walk = (node) => {
     // A block that reacts to an opponent (a scanner) plants one and checks its reaction in watch.final.
-    if (isLeaf(node) && leaves[node.id].plant) out.push({ name: `${node.id}: planted target`, plant: node.ns, id: node.id });
+    if (isLeaf(node) && leaves[node.id].plant) out.push({ name: `${node.id}: planted target`, plant: node.ns, id: node.id, ...(hitBranch[node.ns] ? { branch: hitBranch[node.ns], decideBy: true } : {}) });
     if (node.id === 'trigger' && node.P.MODE) {
       const target = node.P.MODE === 1 ? node.ns + 'mark' : node.kids[0].ns + leaves[node.kids[0].id].loop;
       out.push({ name: `trigger ${node.P.MODE === 1 ? 'marker' : 'damage'} hit`, at: 200, poke: labels[target], expect: node.ns });
@@ -312,11 +331,22 @@ function scenarios(root, labels, settings) {
         out.push({ name: `switch: result ${result}, choice ${choice}, losses ${losses}`, pspace: p, branch: `${node.ns}:${pick}` });
       }
     }
+    if (node.id === 'fork') {
+      // The opening's own planted target is a hit (branch 1); with nothing planted it must find
+      // nothing (branch 2). The planting leaf is the last one in the opening that has a plant.
+      const planters = [];
+      const find = (n) => { if (isLeaf(n)) { if (leaves[n.id].plant) planters.push(n); } else (n.kids ?? []).forEach(find); };
+      find(node.kids[0]);
+      if (planters.length) hitBranch[planters[planters.length - 1].ns] = `${node.ns}:1`;
+      out.push({ name: 'fork: nothing found', branch: `${node.ns}:2`, decideBy: true });
+    }
     if (node.id === 'classify') {
       const zero = { op: 'DAT', mod: 'F', aMode: '#', a: 0, bMode: '#', b: 0 };
       const code = { op: 'MOV', mod: 'I', aMode: '$', a: 0, bMode: '$', b: 1 };
-      out.push({ name: 'classify: hit by a zero DAT', at: 200, poke: labels[node.ns + 'mark'], ins: zero, branch: `${node.ns}:1` });
-      out.push({ name: 'classify: hit by copied code', at: 200, poke: labels[node.ns + 'mark'], ins: code, branch: `${node.ns}:2` });
+      // The first tripwire is planted at ptr + DIST; poke it once planting is done.
+      const trip0 = (labels[node.ns + 'ptr'] + node.P.DIST) % settings.coreSize;
+      out.push({ name: 'classify: hit by a zero DAT', at: 200, poke: trip0, ins: zero, branch: `${node.ns}:1` });
+      out.push({ name: 'classify: hit by copied code', at: 200, poke: trip0, ins: code, branch: `${node.ns}:2` });
     }
     if (node.id === 'parboot') {
       const P = node.P, x = node.kids[0];
@@ -340,7 +370,9 @@ function scenarios(root, labels, settings) {
 function checkGeneric(built) {
   const { w, settings, root, labels, spans, total } = built;
   const core = settings.coreSize, norm = (x) => ((x % core) + core) % core, same = sameIns(core);
-  const all = instances(root, labels, spans, settings).filter((x) => leaves[x.node.id].kind !== 'data');
+  const found = instances(root, labels, spans, settings), regions = found.regions;
+  const all = found.filter((x) => leaves[x.node.id].kind !== 'data');
+  const deadBase = !all.some((x) => x.shift === 0);
   // Address arithmetic: plain numbers mod the core on the ring; through the geometry on a torus,
   // where code runs along a row. `rel(c, from)` is how many cells along the row c is from `from`
   // (or a large number when it isn't on that row).
@@ -364,6 +396,22 @@ function checkGeneric(built) {
     const vm = new VM(settings);
     vm.load([w], { positions: [base], ...(scenario.pspace ? { pspaces: [scenario.pspace] } : {}) });
     const watchedBy = new Map();
+    // Once a fork, switch or classify has entered one branch, the branches it didn't take
+    // are dead code: a body may attack them.
+    const group = (b) => b.slice(0, b.lastIndexOf(':'));
+    let live = [];   // `watched`, once built
+    const inOff = (c) => live.some((v) => v.x.branch && !v.entered && v.api.inSelf(c)
+      && live.some((u) => u.entered && u.x.branch && u.x.branch !== v.x.branch && group(u.x.branch) === group(v.x.branch)));
+    // When each fork picked (its pick instruction ran), so a later visit by a roaming copy isn't
+    // taken for the wrong branch.
+    const picks = new Set(Object.keys(labels).filter((l) => l.endsWith('pick') && all.some((x) => x.branch?.startsWith(l.slice(0, -4) + ':')))
+      .flatMap((l) => shifts.map((s) => add(add(base, s), labels[l]))));
+    let pickedAt = null;
+    // A copy counts as the warrior's once a process has run in it: before that its cells are
+    // still to be written, and anything that lands there will be copied over.
+    const occupied = regions.map(() => false);
+    const regionAt = (r) => add(add(base, r.shift), r.start);
+    const inCopy = (c) => regions.some((r, i) => occupied[i] && rel(c, regionAt(r)) < r.size);
     const watched = all.map((x) => {
       const def = leaves[x.node.id], home = add(base, x.shift), at = (local, k = 0) => add(home, labels[x.node.ns + local] + k);
       const { start, size } = spans[x.node.ns];
@@ -387,14 +435,19 @@ function checkGeneric(built) {
         alone: alone && scenario.name === 'alone',          // alone, and nothing planted
         code: (local, k = 0) => w.instructions[labels[x.node.ns + local] + k],
         entry: () => add(home, labels[entryOf(x.node)]),
-        inImage: (c) => shifts.some((s) => rel(c, add(base, s)) < total),
+        // The warrior as loaded, plus each copy a combinator laid down (only its member's span).
+        inImage: (c) => (rel(c, base) < total || inCopy(c)) && !inOff(c),
+        // Cells of the warrior as loaded that no longer run: once a boot has moved
+        // everything away, the original is a decoy, and an opening may find it.
+        inDead: (c) => inOff(c) || (deadBase && rel(c, base) < total && !regions.some((r) => rel(c, add(add(base, r.shift), r.start)) < r.size)),
         inSelf: (c) => rel(c, add(home, start)) < size,
         add, rel, geo,                                              // address arithmetic that works on a torus too
         // Every live process is inside this copy's own code: it's the only block still running.
         sole: () => vm.processes(0).every((q) => rel(q, add(home, start)) < size),
         entered: () => watchedBy.get(x)?.entered ?? false,          // has this copy run yet (a switch may never pick it)
-        // The address of a capability another block provides (as seen from this block's tree).
-        ref: (cap) => { const l = caps.get(cap); return l === undefined ? null : add(base, labels[l]); },
+        // The address of a capability another block provides (as seen from this block's tree),
+        // resolved in this copy's frame: a booted seq's capability lives in the copy.
+        ref: (cap) => { const l = caps.get(cap); return l === undefined ? null : add(home, labels[l]); },
       };
       const v = { x, def, api, hooks: def.watch?.(api) ?? {}, entryAt: api.entry(), entered: false, enteredAt: null, checked: false };
       watchedBy.set(x, v);
@@ -407,6 +460,7 @@ function checkGeneric(built) {
       const v = watched.find((u) => u.x.node.ns === scenario.plant);       // the first copy
       for (const [addr, ins, cycle] of v.def.plant(v.api)) if (cycle) later.push([cycle, norm(addr), ins]); else vm.poke(norm(addr), ins);
     }
+    live = watched;
     const byEntry = new Map();
     for (const v of watched) byEntry.set(v.entryAt, [...(byEntry.get(v.entryAt) ?? []), v]);
     while (!vm.done && vm.cycle < horizon) {
@@ -419,6 +473,8 @@ function checkGeneric(built) {
         for (let k = -n; k <= n; k++) if (vm.peek(norm(at + k)).op === 'SPL') stunned++;
       }
       const pc = vm.processes(0)[0];
+      regions.forEach((r, i) => { if (!occupied[i] && rel(pc, regionAt(r)) < r.size) occupied[i] = true; });
+      if (pickedAt === null && picks.has(pc)) pickedAt = vm.cycle;
       for (const v of byEntry.get(pc) ?? []) if (!v.entered) { v.entered = true; v.enteredAt = vm.cycle; }
       const tokens = watched.map((v) => v.hooks.before?.(pc) ?? null);
       vm.step();
@@ -442,7 +498,8 @@ function checkGeneric(built) {
       const required = scenario.branch ? (x.branch ? x.branch === scenario.branch : !x.optional)
         : scenario.expect ? !x.optional || x.triggered === scenario.expect : !x.optional;
       if (required && !v.entered) throw new Error(`${x.node.id} was never entered (${scenario.name})`);
-      if (scenario.branch && x.branch && x.branch !== scenario.branch && v.entered) throw new Error(`ran the wrong branch (${scenario.name})`);
+      // A fork decides early; later a roaming copy may wander onto the other branch's entry.
+      if (scenario.branch && x.branch && x.branch !== scenario.branch && v.entered && !(scenario.decideBy && pickedAt !== null && v.enteredAt > pickedAt + 2)) throw new Error(`ran the wrong branch (${scenario.name})`);
       v.hooks.final?.();
     }
     return { base, scenario: scenario.name, cycles: vm.cycle, peak: vm.warriors[0].peak };

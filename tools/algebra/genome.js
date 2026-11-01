@@ -99,7 +99,7 @@ function assemble({ main, boot, decoys }) {
   return decoys ? { id: 'image', kids: [main, decoys] } : main;
 }
 
-export const MUTATIONS = ['tune', 'swap', 'boot', 'decoys', 'relocate', 'member', 'opening', 'wrap', 'unwrap'];
+export const MUTATIONS = ['tune', 'swap', 'boot', 'decoys', 'relocate', 'member', 'opening', 'wrap', 'unwrap', 'fan', 'fork'];
 const WRAPPERS = ['trigger', 'apart', 'copies', 'switch', 'restart', 'classify', 'parboot'];
 
 // One mutation that keeps the tree legal; returns { tree, op } or null.
@@ -175,6 +175,25 @@ function mutation(op, tree, random) {
       const p = parts(tree);
       if (!WRAPPERS.includes(p.main.id) && p.main.id !== 'par') return null;
       p.main = pick(p.main.kids, random);
+      return assemble(p);
+    }
+    case 'fan': {                                // two bodies side by side become a fan boot, or the other way round
+      const p = parts(tree), last = p.main.id === 'seq' ? p.main.kids.at(-1) : p.main;
+      let next;
+      if (last.id === 'par' && last.kids.length === 2) next = { id: 'fanboot', P: sampleParams('fanboot', random), kids: last.kids };
+      else if (last.id === 'fanboot') next = { id: 'par', kids: last.kids };
+      else return null;
+      if (p.main.id === 'seq') { p.main = structuredClone(p.main); p.main.kids[p.main.kids.length - 1] = next; } else p.main = next;
+      if (next.id === 'fanboot') p.boot = null;    // fanboot is the warrior's one relocation
+      return assemble(p);
+    }
+    case 'fork': {                               // an opening's body gains a second body to pick by what it found, or loses it
+      const p = parts(tree);
+      if (p.main.id === 'seq' && p.main.kids.length === 2 && kindOf(p.main.kids[0]) === 'opening') {
+        const other = leaf(pick(random() < 0.5 ? kinds.body : kinds.finisher, random), random);
+        p.main = { id: 'fork', P: sampleParams('fork', random), kids: random() < 0.5 ? [p.main.kids[0], p.main.kids[1], other] : [p.main.kids[0], other, p.main.kids[1]] };
+      } else if (p.main.id === 'fork') p.main = { id: 'seq', kids: [p.main.kids[0], p.main.kids[1 + Math.floor(random() * 2)]] };
+      else return null;
       return assemble(p);
     }
     case 'opening': {                            // a bare clear gains an opening, or loses an empty one

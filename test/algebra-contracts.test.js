@@ -53,15 +53,45 @@ test('parallel boot rejects workers that cannot be watched and replacement copie
 
 // Captured before splitting iface at 9ec91fb. Every leaf and combinator, varied
 // child counts and every recipe are compared across dialects and topologies.
+// Derived from the current branch contract implementation before reconciliation.
 const snapshots = [
-  ['88', null, '7e1a7aafcc1b0c626f8d89e14ff9cc0b044415a471f94f7bc6c2d4848fad25f6'],
-  ['94nop', null, '6d329da257af2de74bcc5a5e37522294bdd887ad92cc2f4ef3e68dc950a42b5b'],
-  ['lp', null, 'c583afc5731a83868005c21d41c47f92c7c1ca7891b27b6d21e146e2d5999dc9'],
-  ['94x', null, '3f30640df2d9cd0bdab52a50fd5406d00f733c4ac723a3bd3afb6e4a59bb870c'],
-  ['94x-hill', null, '073041e26cfb00978e0055b39542c337a1deea73061f45e2c3d57ba0d851f51e'],
-  ['94nop', '100x80', 'b4093cca446a739c10c1342db5eaa67fd44856f6157b115cc139dc3e55bf181a'],
-  ['94nop', '40x20x10', 'bc2959164249ba49c1e5c3f093b247fb14bd19722be6f39d1d460c7e1601878d'],
+  [
+    "88",
+    null,
+    "adde3ebf6f0bf13e73dcb88668aae593c423791bdca7ae002a32e74ec40efd1b"
+  ],
+  [
+    "94nop",
+    null,
+    "d5cab95f92e00c035a3ee6a7d7bed6cd65f2032d7bc1c3374a360a3b3e82f4b6"
+  ],
+  [
+    "lp",
+    null,
+    "9a6c48a54ce677e81b2804acc0a97c1958ed1c490b093f490de492d9039dacc6"
+  ],
+  [
+    "94x",
+    null,
+    "0e2814a0ac30f61ed98b124bf09c8387720c8579a9bb77d2ec18bb4b52cdfdc6"
+  ],
+  [
+    "94x-hill",
+    null,
+    "1f6f1151ede8f03535c5587d39a3b192af9f52541c98b4beb71c61860859a392"
+  ],
+  [
+    "94nop",
+    "100x80",
+    "8b6a76d9cfadfdb5b3e31dd8b7ef5aeb0125acc3699d9473953eb00b42a01fff"
+  ],
+  [
+    "94nop",
+    "40x20x10",
+    "ca3a06c3ad95a267faad43d019edc62d6de90c6ebde0bba7361156db6fe3f30d"
+  ]
 ];
+
 for (const [rules, torus, expected] of snapshots) test(`contracts preserve ${rules} ${torus ?? 'ring'} behavior`, () => {
   const settings = treeSettings(rules, 100, torus);
   const members = ['stone', 'finisher-counted', 'decoys', 'opening-none', 'paper', 'imp'];

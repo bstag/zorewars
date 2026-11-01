@@ -30,6 +30,7 @@ export function buildTree(tree, { rules = '94x', length = 50, name, torus = null
   const misfits = treeMismatches(tree, settings);
   if (misfits.length) throw new Error(`Blocks do not fit: ${misfits.join('; ')}`);
   const built = { ...link(tree, settings, { name }), settings, rules, tree };
+  if (built.misfits.length) throw new Error(`Blocks do not fit: ${built.misfits.join('; ')}`);
   if (built.total > settings.maxLength) throw new Error(`The tree needs ${built.total} instructions; budget is ${settings.maxLength}`);
   built.w = compile(built.source, 'redcode', settings);
   if (!built.w.ok) throw new Error(JSON.stringify(built.w.errors));

@@ -1,8 +1,11 @@
 // Hill openings: the burst and the scatter that the Koenigstuhl 94nop leaders
 // open with. `probe-burst` drops bombs around the cell the scanner found;
 // `decoy-maker` scatters junk far away so scanners find decoys, not us;
-// `opening-qscan-lattice` is a denser decoding quickscan. How to write a
-// block: docs/block-algebra.md. All Redcode here is written from scratch.
+// `opening-qscan-lattice` is a denser decoding quickscan, and
+// `opening-qscan-mul` decodes its hit with a MUL. How to write a block:
+// docs/block-algebra.md. All Redcode here is written from scratch.
+
+import { modInverse } from '../util.js';
 
 const MARKER = { op: 'DAT', mod: 'F', aMode: '#', a: 1, bMode: '#', b: 123 };
 const mod = (x, core) => ((x % core) + core) % core;
@@ -20,7 +23,18 @@ const mod = (x, core) => ((x % core) + core) % core;
 
 // The found cell the gate's planted run aims the opening at: far from the
 // image, and +1 to dodge round numbers a quickscan's lattice might land on.
-const burstFound = (api) => mod(api.image.start + Math.floor(api.core / 2) + 1, api.core);
+// Stepped on until no cell of the burst touches the warrior, so a boot's copy
+// (which may sit half a core away) is never in the way.
+const burstFound = (api) => {
+  const { P, core } = api, lo = -P.OFFSET - 2, hi = -P.OFFSET + P.COUNT * P.STEP + 2;
+  let c = mod(api.image.start + Math.floor(core / 2) + 1, core);
+  for (let tries = 0; tries < 16; tries++, c = mod(c + 1009, core)) {
+    let clear = true;
+    for (let d = lo; d <= hi && clear; d++) if (api.inImage(c + d)) clear = false;
+    if (clear) return c;
+  }
+  return c;
+};
 
 const probeBurst = {
   id: 'probe-burst',
@@ -78,20 +92,23 @@ const probeBurst = {
     const found = burstFound(api);
     const want = new Set(Array.from({ length: P.COUNT }, (_, k) => mod(found - P.OFFSET + k * P.STEP, core)));
     const hit = new Set();
-    let bombs = 0;
+    let bombs = 0, aimed = null;
     return {
       before(pc) {
+        if (pc === api.entry() && aimed === null) aimed = mod(api.ref('probe') + vm.peek(api.ref('probe')).b, core) === found;
         if (pc !== api.at('bLoop') + 2) return null;        // the MOV.I bomb, @bp
         return mod(bp + vm.peek(bp).b, core);
       },
       after(t) {
         if (t === null) return;
-        if (api.inImage(t)) throw new Error('probe-burst bombed its own image');
+        if (api.inImage(t) && !api.inDead(t)) throw new Error('probe-burst bombed its own image');
         if (!api.same(vm.peek(t), api.code('bomb')) || vm.writerPc[t] !== api.at('bLoop') + 2) throw new Error('probe-burst dropped something other than its bomb');
         bombs++; hit.add(t);
       },
       final() {
-        if (own) {
+        // Under a boot the opening may find the abandoned original first; the
+        // ring is only owed when the burst started at the planted cell.
+        if (own && aimed) {
           if (bombs !== P.COUNT) throw new Error(`probe-burst dropped ${bombs} bombs, not ${P.COUNT}`);
           for (const c of want) if (!hit.has(c)) throw new Error('probe-burst did not bomb the ring around the found cell');
         }
@@ -185,7 +202,7 @@ function onExit(api, check) {
   let prevInSelf = false, exited = false;
   return {
     before(pc) {
-      if (prevInSelf && !api.inSelf(pc) && !exited) { exited = true; check(api.vm.peek(api.at('probe')).b); }
+      if (prevInSelf && !api.inSelf(pc) && !exited && !api.vm.processes(0).some((q) => api.inSelf(q))) { exited = true; check(api.vm.peek(api.at('probe')).b); }
       prevInSelf = api.inSelf(pc);
       return null;
     },
@@ -247,11 +264,135 @@ const qscanLattice = {
     const cells = latticeCells(api.P, api.core);
     const seesSelf = cells.some((c) => api.inImage(api.at('probe') + c));
     const exit = onExit(api, (b) => {
-      if (planted && b !== want) throw new Error(`The lattice quickscan handed on ${b}, not the planted cell ${want}`);
+      if (planted && b !== want && !api.inImage(api.at('probe') + b)) throw new Error(`The lattice quickscan handed on ${b}, not the planted cell ${want}`);
       if (api.scenario === 'alone' && !seesSelf && !atBoundary(api, b)) throw new Error('The lattice quickscan found nothing but did not hand on the image boundary');
     });
     return { before: exit.before, final: () => { if (planted && !exit.exited()) throw new Error('The lattice quickscan never handed on'); } };
   },
 };
 
-export default [probeBurst, decoyMaker, qscanLattice];
+// ---------------------------------------------------------------------------
+// opening-qscan-mul
+//
+// A quickscan that decodes a hit with one MUL instead of a loop (the q^4 idea
+// of the 94nop leaders; docs/hill-recipe-book.md, openings chapter). Each of
+// UNITS units owns a table cell t_k (a state cell k+1 past the probe) holding
+// X_k = 1 + QFAC*(k+1), and tests two locations, each a pair GAP apart:
+//
+//   sne  probe+S_k+QDEC, probe+S_k+QDEC+GAP   ; location A = QDEC * X_k
+//   seq  <t_k, probe+S_k+GAP                  ; location B = QDEC * (X_k - 1)
+//   jmp  dec_g, {sel / $0 / }sel              ; pick t_k for the decoder
+//
+// with QDEC = 1 + QFAC^-1 and S_k = (k+1)(1+QFAC), all mod the core. The SEQ's
+// `<t_k` decrements the entry to X_k - 1 and, because of how QDEC is chosen,
+// lands exactly on location B's first cell. So the entry records which
+// location fired: X_k if the SNE did (the SEQ never ran), X_k - 1 if the SEQ
+// did. The decoder points `sel` at t_k (units come in threes: {sel, nothing,
+// }sel around a middle entry, and a ladder of ADD #3 for later threes), sets
+// probe.B = QDEC, multiplies it by the entry and has the location; a JMN picks
+// the occupied cell of the pair. A hit costs 4 to 5 + g cycles (g = UNITS/3
+// rounded down at most). No hit leaves the probe at the image boundary.
+//
+// Nothing above needs t_k to be k+1 past the probe: with t_k at any offset d_k
+// the entry is 1 + QFAC*d_k and location B is d_k*(1+QFAC). So SHARE 1 lets the
+// linker put whole threes of the table in B-fields another block never reads
+// (gap #4: Hullabaloo's and Elven King's tables live in their boots' SPLs):
+// today the fan lines of a fanboot later in the same seq. The code below is
+// written with label arithmetic, so it is the same either way, and the checks
+// on where the probes land run after linking, when the d_k are known.
+
+const gcd = (a, b) => (b ? gcd(b, a % b) : a);
+// Unit k's locations relative to the probe: B (the SEQ's) and A (the SNE's).
+const mulUnits = (P, core) => {
+  const dec = mod(1 + modInverse(P.QFAC, core), core);
+  return Array.from({ length: P.UNITS }, (_, k) => {
+    const b = mod((k + 1) * (1 + P.QFAC), core);
+    return { k, b, a: mod(b + dec, core), entry: mod(1 + P.QFAC * (k + 1), core) };
+  });
+};
+const mulCells = (P, core) => mulUnits(P, core).flatMap((u) => [u.a, mod(u.a + P.GAP, core), u.b, mod(u.b + P.GAP, core)]);
+// The same, with each table cell where the linker put it (d[k] past the probe).
+const placedUnits = (P, core, d) => {
+  const dec = mod(1 + modInverse(P.QFAC, core), core);
+  return d.map((dk, k) => { const b = mod(dk * (1 + P.QFAC), core); return { k, b, a: mod(b + dec, core) }; });
+};
+const placedCells = (P, core, d) => placedUnits(P, core, d).flatMap((u) => [u.a, mod(u.a + P.GAP, core), u.b, mod(u.b + P.GAP, core)]);
+const groupSizes = (P) => Array.from({ length: Math.ceil(P.UNITS / 3) }, (_, g) => Math.min(3, P.UNITS - 3 * g));
+const tableOffsets = (api) => Array.from({ length: api.P.UNITS }, (_, k) => mod(api.at(`t${k}`) - api.at('probe'), api.core));
+const probeProblems = (P, settings, cells) => {
+  const core = settings.coreSize, room = settings.maxLength, out = [];
+  if (cells.some((c) => c <= room || c >= core - room)) out.push('a MUL quickscan probe lands on or next to the warrior itself');
+  if (new Set(cells).size < cells.length) out.push('two MUL quickscan probes test the same cell');
+  return out;
+};
+
+const qscanMul = {
+  id: 'opening-qscan-mul',
+  kind: 'opening', exit: 'next', processes: 1, writes: 'sparse', link: 'fall', dialects: '94',
+  purpose: 'MUL-decoding quickscan: UNITS unrolled units of three instructions test two pair locations each (an SNE, and an SEQ whose predecrement of a table entry records which location fired); on a hit one MUL turns that entry into the location, a JMN picks the occupied cell of the pair and hands it on, or the image boundary.',
+  params: { QFAC: [1, 54000], GAP: [1, 2000], UNITS: [4, 13], SHARE: [0, 1] },
+  defaults: { QFAC: 349, GAP: 197, UNITS: 8, SHARE: 0 },
+  entry: 'qScan',
+  provides: { probe: 'probe' },
+  mutable: (P) => [['probe', ['a', 'b']], ['sel', ['a']], ...Array.from({ length: P.UNITS }, (_, k) => [`t${k}`, ['b']])],
+  mismatches(P, settings) {
+    const core = settings.coreSize;
+    if (gcd(P.QFAC, core) !== 1) return [`QFAC ${P.QFAC} has no inverse mod ${core}, so a hit can't be decoded`];
+    // With a shared table the offsets are known only after linking (see linked).
+    return P.SHARE ? [] : probeProblems(P, settings, mulCells(P, core));
+  },
+  // Threes of the table that may live in another block's free B-fields.
+  claimsFreeB: (P) => (P.SHARE ? groupSizes(P) : null),
+  claimCell: (P, L, k) => ({ label: L(`t${k}`), value: `1-${P.QFAC}*(${L('probe')})` }),
+  linked: (P, settings, at) => probeProblems(P, settings, placedCells(P, settings.coreSize, Array.from({ length: P.UNITS }, (_, k) => mod(at(`t${k}`) - at('probe'), settings.coreSize)))),
+  // The probe and the table are state cells, laid out together before all
+  // code, so the table's offsets from the probe (and so every location) are
+  // fixed whatever the rest of the warrior is. A three the linker placed
+  // elsewhere (ctx.claimed) is left out here.
+  state(ctx) {
+    const { L, P } = ctx;
+    ctx.ins('probe', 'DAT', 'F', '#0', `#${ctx.span}`);
+    for (let k = 0; k < P.UNITS; k++) if (!ctx.claimed?.has(Math.floor(k / 3))) ctx.ins(`t${k}`, 'DAT', 'F', '#0', `#1-${P.QFAC}*(${L('probe')})`);
+  },
+  emit(ctx) {
+    const { L, P, core } = ctx, probe = L('probe');
+    const dec = mod(1 + modInverse(P.QFAC, core), core), groups = Math.ceil(P.UNITS / 3);
+    const t = (k) => L(`t${k}`), loc = (k) => `(${t(k)}-${probe})*${1 + P.QFAC}`;   // location B, as label arithmetic
+    const mid = (g) => (3 * g + 1 < P.UNITS ? t(3 * g + 1) : `${t(3 * g)}+1`);       // where sel.A points for group g
+    for (let k = 0; k < P.UNITS; k++) {
+      const g = Math.floor(k / 3), r = k % 3;
+      ctx.ins(k ? '' : 'qScan', 'SNE', 'I', `${probe}+${loc(k)}+${dec}`, `${probe}+${loc(k)}+${dec + P.GAP}`);
+      ctx.ins('', 'SEQ', 'I', `<${t(k)}`, `${probe}+${loc(k)}+${P.GAP}`);
+      ctx.ins('', 'JMP', 'B', L(`dec${g}`), r === 0 ? `{${L('sel')}` : r === 2 ? `}${L('sel')}` : '$0');
+    }
+    ctx.ins('', 'JMP', 'B', ctx.next);                   // nothing found: probe stays at the boundary
+    // Ladder: entering at dec_g walks sel.A from group to group down to group g.
+    for (let g = groups - 1; g >= 1; g--) ctx.ins(`dec${g}`, 'ADD', 'A', `#${mid(g)}-${mid(g - 1)}`, L('sel'));
+    ctx.ins('dec0', 'MOV', 'AB', `#${mod(1 + modInverse(P.QFAC, core), core)}`, probe);
+    ctx.ins('', 'MUL', 'B', `*${L('sel')}`, probe);      // probe.B = QDEC * entry = the location
+    ctx.ins('', 'JMN', 'F', ctx.next, `@${probe}`);      // first cell occupied: hand it on
+    ctx.ins('', 'ADD', 'AB', `#${P.GAP}`, probe);        // otherwise it is the second
+    ctx.ins('', 'JMP', 'B', ctx.next);
+    // sel.A starts at the middle entry of the first three.
+    ctx.ins('sel', 'DAT', 'F', `${mid(0)}-${L('sel')}`, '#0');
+  },
+  // Plant on the second cell of the SEQ location of a middle unit, so the
+  // decrement, the ladder and the pair choice all run.
+  plant(api) {
+    const u = placedUnits(api.P, api.core, tableOffsets(api))[Math.floor(api.P.UNITS / 2)];
+    return [[api.at('probe') + u.b + api.P.GAP, MARKER]];
+  },
+  watch(api) {
+    const planted = api.scenario === 'opening-qscan-mul: planted target';
+    const d = tableOffsets(api), u = placedUnits(api.P, api.core, d)[Math.floor(api.P.UNITS / 2)];
+    const want = mod(u.b + api.P.GAP, api.core);
+    const seesSelf = placedCells(api.P, api.core, d).some((c) => api.inImage(api.at('probe') + c));
+    const exit = onExit(api, (b) => {
+      if (planted && b !== want && !api.inImage(api.at('probe') + b)) throw new Error(`The MUL quickscan handed on ${b}, not the planted cell ${want}`);
+      if (api.scenario === 'alone' && !seesSelf && !atBoundary(api, b)) throw new Error(`The MUL quickscan found nothing but did not hand on the image boundary (handed on ${b}, image ${api.total})`);
+    });
+    return { before: exit.before, final: () => { if (planted && !exit.exited()) throw new Error('The MUL quickscan never handed on'); } };
+  },
+};
+
+export default [probeBurst, decoyMaker, qscanLattice, qscanMul];

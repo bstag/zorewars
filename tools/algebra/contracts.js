@@ -1,3 +1,4 @@
+import {fanLines} from './fan-lines.js';
 // Contract policies for algebra nodes. Each combinator owns its safety rules;
 // shared validation and capability aggregation stay separate from code emission.
 import { leaves } from './leaves.js';
@@ -50,8 +51,9 @@ function protectPartners(node, kids, out) {
 function checkSequence({ parts, out, kids }) {
   parts.forEach((p, i) => {
     if (i < parts.length - 1 && p.exit !== 'next') out.mismatches.push(`seq: ${kids[i].id} never hands on, so nothing after it runs`);
-    if (i === parts.length - 1 && p.exit !== 'never') out.mismatches.push(`seq: the last member (${kids[i].id}) must run forever`);
+    if (i === parts.length - 1 && p.exit !== 'never' && p.exit !== 'next') out.mismatches.push(`seq: the last member (${kids[i].id}) must run forever, or hand on`);
   });
+  if (parts.at(-1)?.exit === 'next') Object.assign(out, {exit:'next',link:parts.at(-1).link});
   out.processes = Math.max(0, ...parts.map((p) => p.processes));
   for (const c of [...out.needs]) if (out.provides.has(c)) out.needs.delete(c);   // met inside the seq
 }
@@ -77,7 +79,9 @@ function checkBoot({ node, settings, parts, out, kids }) {
   const hasRelocate = (n) => n.id === 'relocate' || (n.kids ?? []).some(hasRelocate);
   if (kids[0] && hasRelocate(kids[0])) out.mismatches.push('one relocation per warrior: relocate or boot');
   if (landsOnSelf(node, settings)) out.mismatches.push('HOP lands on the warrior itself');
-  out.processes = parts[0]?.processes ?? 0;
+  if (node.P.EARLY && settings.dialect === '88') out.mismatches.push("boot: EARLY needs ICWS'94 (it copies forward with a postincrement)");
+  if (node.P.EARLY && settings.topology === 'torus') out.mismatches.push('boot: EARLY is ring-only');
+  out.processes = (parts[0]?.processes ?? 0) + (node.P.WIPE || node.P.EARLY ? 1 : 0);
 }
 
 function checkTrigger({ node, parts, out, kids }) {
@@ -144,12 +148,16 @@ function checkParallelBoot({ node, settings, parts, out, kids, torus, core }) {
   out.processes = (parts[0]?.processes ?? 0) * (1 + P.STAY + (P.REACT ? 1 : 0)) + P.K;
 }
 
-function checkClassifier({ node, old, parts, out, kids }) {
+function checkClassifier({ node, settings, torus, old, parts, out, kids }) {
   const a = kids[0], A = leaves[a?.id];
   if (!A?.loop) out.mismatches.push(`classify: ${a?.id} has no loop for the watcher to rewrite`);
   if (A?.moves) out.mismatches.push(`classify: ${a.id} moves itself away, so the watcher would lose it`);
   if (old) out.mismatches.push("classify needs ICWS'94 (JMZ.F)");
+  if (torus) out.mismatches.push('classify: remote tripwires are ring-only');
   requireEndless(node, kids, parts, out);
+  const {MARKS,DIST,SPREAD}=node.P, room=settings.maxLength;
+  if (DIST < room) out.mismatches.push('classify: the tripwire region starts inside the warrior');
+  if (DIST + MARKS * SPREAD > settings.coreSize - room) out.mismatches.push('classify: the tripwire region runs on into the warrior');
   out.processes = Math.max((parts[0]?.processes ?? 0) + 1, parts[1]?.processes ?? 0, parts[2]?.processes ?? 0);
 }
 
@@ -159,8 +167,35 @@ function checkImage({ parts, out, kids }) {
   out.processes = parts[0]?.processes ?? 0;
 }
 
+
+function checkFork({node,settings,parts,out,kids,old,torus,core}) {
+const [o, a, b] = parts;
+      if (o && o.exit !== 'next') out.mismatches.push(`fork: ${kids[0].id} must hand on (an opening)`);
+      if (o && !o.provides.has('probe')) out.mismatches.push(`fork: ${kids[0].id} provides no probe to decide by`);
+      if (node.P.BY && o && !o.provides.has('verdict')) out.mismatches.push(`fork: BY 1 needs a verdict, and ${kids[0].id} provides none (put probe-verdict after the opening)`);
+      [a, b].forEach((p, i) => { if (p && p.exit !== 'never') out.mismatches.push(`fork: ${kids[i + 1].id} must run forever`); });
+      out.processes = Math.max(0, ...parts.map((p) => p.processes));
+      for (const c of [...out.needs]) if (out.provides.has(c)) out.needs.delete(c);   // the opening's probe meets the bodies' needs
+}
+
+function checkFanBoot({node,settings,parts,out,kids,old,torus,core}) {
+const P = node.P;
+      if (old) out.mismatches.push("fanboot needs ICWS'94 (A-field pointers)");
+      if (torus) out.mismatches.push('fanboot is ring-only');
+      if (!fanLines(P.N)) out.mismatches.push('fanboot: N must be 2, 3, 4, 6, 8, 12 or 16');
+      parts.forEach((p, i) => { if (p.exit !== 'never') out.mismatches.push(`fanboot: ${kids[i].id} must run forever`); });
+      const hasRelocate = (n) => n.id === 'relocate' || n.id === 'boot' || n.id === 'parboot' || n.id === 'fanboot' || (n.kids ?? []).some(hasRelocate);
+      if (kids.some(hasRelocate)) out.mismatches.push('one relocation per warrior: fanboot moves both members');
+      if (!torus) {
+        if (landsOnSelf(node,settings,P.HOPA)) out.mismatches.push('HOPA lands on the warrior itself');
+        if (landsOnSelf(node,settings,P.HOPB)) out.mismatches.push('HOPB lands on the warrior itself');
+        if (Math.min((P.HOPA - P.HOPB + 2 * core) % core, (P.HOPB - P.HOPA + 2 * core) % core) < 256) out.mismatches.push('fanboot: the two copies would land on each other');
+      }
+      const [a, b] = [parts[0]?.processes ?? 0, parts[1]?.processes ?? 0];
+      out.processes = Math.max(P.N, P.SPLIT ? (P.N - 1) * a + b : P.K * P.N * a + P.N * b);
+}
 const checks = {
-  seq: checkSequence, par: checkParallel, relocate: checkRelocation, boot: checkBoot,
+  fork: checkFork, fanboot: checkFanBoot, seq: checkSequence, par: checkParallel, relocate: checkRelocation, boot: checkBoot,
   trigger: checkTrigger, apart: checkCopies, copies: checkCopies, switch: checkSwitch,
   restart: checkRestart, parboot: checkParallelBoot, classify: checkClassifier, image: checkImage,
 };
@@ -176,7 +211,7 @@ export function combinatorContract(node, settings, parts, out) {
   if (!torus && (node.P?.HOPY || node.P?.HOPZ || node.P?.DY || node.P?.DZ || node.P?.HOP2Y || node.P?.HOP2Z)) out.mismatches.push(`${node.id}: y and z parts only mean something on a torus`);
   checks[node.id]({ node, settings, parts, out, kids, old, core, torus });
   if (node.id === 'image' || node.id === 'boot') out.exit = parts[0]?.exit ?? 'never';
-  if (['trigger', 'apart', 'copies', 'switch', 'restart', 'classify', 'parboot'].includes(node.id) && !out.mismatches.length) out.exit = 'never';
+  if (['trigger', 'apart', 'copies', 'switch', 'restart', 'classify', 'parboot', 'fanboot'].includes(node.id) && !out.mismatches.length) out.exit = 'never';
   return out;
 }
 

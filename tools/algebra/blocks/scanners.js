@@ -15,7 +15,7 @@ function onExit(api, check) {
   let prevInSelf = false, exited = false;
   return {
     before(pc) {
-      if (prevInSelf && !api.inSelf(pc) && !exited) { exited = true; check(api.vm.peek(api.at('probe')).b); }
+      if (prevInSelf && !api.inSelf(pc) && !exited && !api.vm.processes(0).some((q) => api.inSelf(q))) { exited = true; check(api.vm.peek(api.at('probe')).b); }
       prevInSelf = api.inSelf(pc);
       return null;
     },
@@ -133,13 +133,22 @@ function scanBody(ctx, { fields, bomb, width }) {
     ctx.ins('', 'JMP', 'B', L(loop));
   } else ctx.ins('sLook', 'JMZ', fields, L(loop), `@${ptr}`);
   // Sizes don't depend on span; the pointer's index does not either.
-  const after = 5 + 2 * width;                     // instructions between here and ptr
+  const sibs = ctx.siblings;                        // other copies' cells (copies, apart), each skipped as the image is
+  const after = 5 + 2 * width + 4 * sibs.length;   // instructions between here and ptr
   const idx = ctx.pc() + after;
   ctx.ins('sHit', 'SLT', 'AB', `#${span - idx - 1}`, ptr);
   ctx.ins('', 'JMP', 'B', L(loop));
   ctx.ins('', 'SLT', 'AB', `#${core - idx - width}`, ptr);
-  ctx.ins('', 'JMP', 'B', L('sBomb'));
+  ctx.ins('', 'JMP', 'B', L(sibs.length ? 'sSib0' : 'sBomb'));
   ctx.ins('', 'JMP', 'B', L(loop));
+  // A sibling's window [s, s + size): the bombs t .. t+width-1 miss it unless
+  // t - (s - width + 1) < size + width - 1, unsigned (mod core).
+  sibs.forEach((w, i) => {
+    ctx.ins(`sSib${i}`, 'MOV', 'B', ptr, L('sTmp'));
+    ctx.ins('', 'ADD', 'AB', `#${((idx - w.start + width - 1) % core + core) % core}`, L('sTmp'));
+    ctx.ins('', 'SLT', 'AB', `#${w.size + width - 2}`, L('sTmp'));
+    ctx.ins('', 'JMP', 'B', L(loop));
+  });
   for (let i = 0; i < width; i++) {
     if (i) ctx.ins('', 'ADD', 'AB', '#1', ptr);
     ctx.ins(i ? '' : 'sBomb', 'MOV', 'I', L('bomb'), `@${ptr}`);
@@ -151,6 +160,7 @@ function scanBody(ctx, { fields, bomb, width }) {
   if (bomb === 'SPL') ctx.ins('bomb', 'SPL', 'B', old ? '0' : '#0', old ? '0' : '#0');
   else ctx.ins('bomb', 'DAT', 'F', '#0', '#0');
   if (compare) ctx.ins('empty', 'DAT', 'F', '#0', '#0');
+  if (sibs.length) ctx.ins('sTmp', 'DAT', 'F', '#0', '#0');
 }
 
 // Watch a scanning body: every bomb misses its own code and any live code of
@@ -164,8 +174,8 @@ function watchScan(api, id) {
   return {
     before(pc) {
       if (pc === api.at('sLook')) looks++;
-      // Every MOV in the block but the '88 set-up bombs @ptr.
-      if (!api.inSelf(pc) || pc === api.at('sInit') || api.vm.peek(pc).op !== 'MOV') return null;
+      // Every MOV in the block that writes through @ptr is a bomb (not the '88 set-up, nor the sibling checks' copies of ptr).
+      if (!api.inSelf(pc) || pc === api.at('sInit') || api.vm.peek(pc).op !== 'MOV' || api.vm.peek(pc).bMode !== '@') return null;
       return mod(ptr + api.vm.peek(ptr).b, core);
     },
     after(t) {

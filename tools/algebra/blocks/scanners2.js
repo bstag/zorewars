@@ -220,7 +220,7 @@ function onExit(api, check) {
   let prevInSelf = false, exited = false;
   return {
     before(pc) {
-      if (prevInSelf && !api.inSelf(pc) && !exited) { exited = true; check(api.vm.peek(api.at('probe')).b); }
+      if (prevInSelf && !api.inSelf(pc) && !exited && !api.vm.processes(0).some((q) => api.inSelf(q))) { exited = true; check(api.vm.peek(api.at('probe')).b); }
       prevInSelf = api.inSelf(pc);
       return null;
     },

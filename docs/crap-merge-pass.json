@@ -1,0 +1,110 @@
+{
+  "destination": "modelwar-riptide-own",
+  "crapCheckpoint": "a4653b8",
+  "destinationCheckpoint": "52c82e0",
+  "inputs": "5374da1d46bca513092c2ce8c64890bc54e1c3e436c8dab2d38b0bd34f8f9d85",
+  "coverageHash": "19d2fa39f735728ad7affd41cf1a408a1573f4da699681a27a69e9ce706923ec",
+  "tests": {
+    "passed": 662,
+    "skipped": 7,
+    "failed": 0
+  },
+  "sourceFiles": 280,
+  "beforeIntegration": {
+    "methods": 2150,
+    "aboveThreshold": 91,
+    "unknownCoverage": 701,
+    "maxRisk": 99.23896222121073
+  },
+  "afterIntegration": {
+    "methods": 2631,
+    "aboveThreshold": 97,
+    "unknownCoverage": 897,
+    "maxRisk": 99.23896222121073
+  },
+  "coverage": {
+    "lines": {
+      "total": 45693,
+      "covered": 35390,
+      "skipped": 0,
+      "pct": 77.45
+    },
+    "statements": {
+      "total": 45693,
+      "covered": 35390,
+      "skipped": 0,
+      "pct": 77.45
+    },
+    "functions": {
+      "total": 3102,
+      "covered": 2833,
+      "skipped": 0,
+      "pct": 91.32
+    },
+    "branches": {
+      "total": 18052,
+      "covered": 16448,
+      "skipped": 0,
+      "pct": 91.11
+    },
+    "branchesTrue": {
+      "total": 0,
+      "covered": 0,
+      "skipped": 0,
+      "pct": 100
+    }
+  },
+  "contracts": {
+    "casesPerProfile": 209,
+    "profiles": 7,
+    "total": 1463,
+    "reference": "52c82e0:tools/algebra/link.js",
+    "snapshots": [
+      [
+        "88",
+        null,
+        "adde3ebf6f0bf13e73dcb88668aae593c423791bdca7ae002a32e74ec40efd1b"
+      ],
+      [
+        "94nop",
+        null,
+        "d5cab95f92e00c035a3ee6a7d7bed6cd65f2032d7bc1c3374a360a3b3e82f4b6"
+      ],
+      [
+        "lp",
+        null,
+        "9a6c48a54ce677e81b2804acc0a97c1958ed1c490b093f490de492d9039dacc6"
+      ],
+      [
+        "94x",
+        null,
+        "0e2814a0ac30f61ed98b124bf09c8387720c8579a9bb77d2ec18bb4b52cdfdc6"
+      ],
+      [
+        "94x-hill",
+        null,
+        "1f6f1151ede8f03535c5587d39a3b192af9f52541c98b4beb71c61860859a392"
+      ],
+      [
+        "94nop",
+        "100x80",
+        "8b6a76d9cfadfdb5b3e31dd8b7ef5aeb0125acc3699d9473953eb00b42a01fff"
+      ],
+      [
+        "94nop",
+        "40x20x10",
+        "ca3a06c3ad95a267faad43d019edc62d6de90c6ebde0bba7361156db6fe3f30d"
+      ]
+    ]
+  },
+  "above100": 0,
+  "notes": [
+    "Preserved current checkout work in a separate checkpoint before integration.",
+    "Ported sequence/fork/fanboot/early-boot/classifier contracts into modular policies and retained invalid-parameter guards.",
+    "Sibling-aware emission and the current branch gate changes are retained.",
+    "The incoming hill census helper is independently tested; classifications match the compiled library.",
+    "Recovery snapshots use non-executable extensions after an interrupted discovery attempt; subsequent full runs passed.",
+    "The original 30-point advisory threshold remains; 97 functions exceed it. Unknown coverage stays labelled and included.",
+    "Headless scene and mocked-device tests do not imply browser pixel or native GPU validation."
+  ]
+}

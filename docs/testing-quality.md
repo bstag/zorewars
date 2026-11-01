@@ -779,3 +779,36 @@ languages retain the parser limits, and headless scene/device tests do not
 prove browser pixels or native GPU execution. Both browser entries bundle,
 and all selected source files parse. Changes remain uncommitted on
 codex/crap-repo.
+
+## Integration into modelwar-riptide-own
+
+Before reconciliation, current checkout work was preserved in checkpoint
+52c82e0 and the CRAP cleanup in a4653b8. The linker conflict retains the smaller
+contract policies while incorporating fork, fanboot, opening-sequence handoff,
+WIPE/EARLY process accounting, classifier tripwire bounds and sibling-aware
+linking from the destination branch. The shared SPL fan helper keeps its
+existing link.js export. All 1,463 contract results (209 cases on seven rule/
+topology profiles) match the destination implementation used as the reference;
+the invalid-parameter hang fix remains. Thirty-two focused integration tests,
+a dedicated EARLY boot test, and both browser bundles pass. Full merged-tree
+coverage and CRAP measurements are pending before merge finalization.
+
+The first complete merged-tree run passed 660 tests with seven skips. Its
+report identified one incoming, previously unexecuted census heuristic above
+100: hill-recipes codeTags (182). The heuristic now lives in a module separate
+from hill fetching, with compiled-library classification preservation and
+individual signal checks. Both focused census tests pass. A final full run
+verifies this addition before the integration commit and destination update.
+
+### Final integration validation
+
+The final merged tree passed **662 tests, seven skipped, zero failures**.
+The fresh report covers **280 source files and 2,631 functions**, with maximum
+risk **99.24** and **zero above 100**, including 897 labelled unknown-coverage
+estimates. Statement/line coverage is 77.45%, branch coverage 91.11%, and
+function coverage 91.32%. The 30-point advisory backlog is 97 functions; its
+increase from 91 includes the destination branch's additional source scope.
+Both browser bundles and all source parsing checks pass. Input and coverage
+hashes match the validated candidate. Details and parent checkpoints are in
+[crap-merge-pass.json](crap-merge-pass.json). The integration is finalized on
+codex/crap-repo and then fast-forwarded into modelwar-riptide-own.
