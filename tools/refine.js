@@ -27,6 +27,7 @@ import { compile, runMatch, formatPostMortem, measureSpecies } from '../src/engi
 import { evaluate } from './hill.js';
 import { pairedGain } from './tune.js';
 import { createObjective } from './objective.js';
+import { requestProposal, screenProposals } from './refinement/proposals.js';
 
 export const DEFAULT_MODEL = 'claude-opus-5-5';
 
@@ -164,6 +165,20 @@ export async function claudeProposer({ model = DEFAULT_MODEL, effort = 'high', t
   };
 }
 
+// Worst losses shown to the proposer, retaining each opponent's original index
+// so replay seeds refer to the same field rows as the aggregate evaluation.
+function lossReports(rows, limit, readRound) {
+  const losers = rows.map((r, i) => ({ ...r, i })).sort((a, b) => a.pts - b.pts).slice(0, limit).filter(r => r.l > 0);
+  const mortems = [];
+  for (const row of losers) {
+    const text = readRound(row.i);
+    if (!text) continue;
+    const symptoms = Object.entries(row.d ?? {}).filter(([, n]) => n).map(([key, n]) => `${n} ${key}`).join(', ') || 'none';
+    mortems.push({ name: row.name, symptoms, text });
+  }
+  return { worst: losers.map(row => row.name), mortems };
+}
+
 export async function refine({ pool, source, field, settings, entrySettings = settings, propose,
   iterations = 3, variants = 4, rounds = 20, checkRounds = 30, seeds = 3, worst = 3, seed = 1,
   model = DEFAULT_MODEL, turns = 20, budget = Infinity,   // budget: estimated dollars for the whole run
@@ -171,6 +186,7 @@ export async function refine({ pool, source, field, settings, entrySettings = se
   onProgress = () => {} }) {
   if (!['points', 'pushoff'].includes(objective)) throw new Error('objective must be points or pushoff');
   if (partners.length && objective !== 'pushoff') throw new Error('partners need objective pushoff');
+  if (!field.length) throw new Error('no opponents compiled for this battlefield');
   const maxLength = entrySettings.maxLength;
   const build = (src) => compile(src, 'redcode', entrySettings);
   let current = { source, w: build(source), idea: 'starting warrior' };
@@ -214,7 +230,6 @@ export async function refine({ pool, source, field, settings, entrySettings = se
   const draft = (redcode) => {
     const w = build(String(redcode));
     if (!w.ok) throw new Error(`does not compile: line ${w.errors[0].line}: ${w.errors[0].message}`);
-    if (w.instructions.length > maxLength) throw new Error(`too long: ${w.instructions.length} instructions (limit ${maxLength})`);
     return w;
   };
 
@@ -224,14 +239,7 @@ export async function refine({ pool, source, field, settings, entrySettings = se
     onProgress(`iteration ${it}: playing the field`);
     const base = await evaluate(pool, current.w, field, { rounds, seed: screenSeed, settings, diagnose: true });
     const baseFit = await judge(current.w, screenSeed);
-    const losers = base.rows.map((r, i) => ({ ...r, i })).sort((a, b) => a.pts - b.pts).slice(0, worst).filter((r) => r.l > 0);
-    const mortems = [];
-    for (const r of losers) {
-      const text = lostRound(current.w, r.i, screenSeed + r.i * 7);
-      if (!text) continue;
-      const d = r.d ?? {};
-      mortems.push({ name: r.name, symptoms: Object.entries(d).filter(([, v]) => v).map(([k, v]) => `${v} ${k}`).join(', ') || 'none', text });
-    }
+    const losses = lossReports(base.rows, worst, i => lostRound(current.w, i, screenSeed + i * 7));
     // The model's testing tools. They play on their own seed, not the screen's.
     const calls = { check: 0, battle: 0, score: 0 };
     const tools = {
@@ -263,7 +271,7 @@ export async function refine({ pool, source, field, settings, entrySettings = se
     onProgress(`iteration ${it}: the model is writing and testing`);
     let proposal;
     try {
-      proposal = await propose({ system, prompt: userPrompt({ source: current.source, rows: base.rows, mortems, history, variants, place: target && baseFit.text }), tools, budget: budget - cost() });
+      proposal = await requestProposal(propose, { system, prompt: userPrompt({ source: current.source, rows: base.rows, mortems: losses.mortems, history, variants, place: target && baseFit.text }), tools, budget: budget - cost() });
     } catch (e) {
       for (const k in usage) usage[k] += e.usage?.[k] ?? 0;
       log.push({ iteration: it, error: e.message, calls });
@@ -271,15 +279,9 @@ export async function refine({ pool, source, field, settings, entrySettings = se
     }
     for (const k in usage) usage[k] += proposal.usage?.[k] ?? 0;
     // Screen every rewrite on the iteration's seed.
-    const tried = [];
-    for (const v of proposal.variants.slice(0, variants)) {
-      let w;
-      try { w = draft(v.redcode); } catch (e) { history.push({ idea: v.idea, outcome: e.message }); continue; }
-      const j = await judge(w, screenSeed);
-      tried.push({ ...v, w, screen: j.fit, text: j.text });
-    }
-    tried.sort((a, b) => b.screen - a.screen);
-    const entry = { iteration: it, score: base.score, fit: baseFit.fit, text: baseFit.text, worst: losers.map((r) => r.name), calls, turns: proposal.turns,
+    const { ranked: tried, failures } = await screenProposals(proposal.variants, { limit: variants, seed: screenSeed, draft, judge });
+    history.push(...failures);
+    const entry = { iteration: it, score: base.score, fit: baseFit.fit, text: baseFit.text, worst: losses.worst, calls, turns: proposal.turns,
       variants: tried.map((t) => ({ idea: t.idea, screen: t.screen, text: t.text, redcode: t.redcode })) };
     // Check the screen's best (if it beat the current version there) on fresh seeds.
     const top = tried[0];

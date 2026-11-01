@@ -52,13 +52,13 @@ export class AvatarModel {
     this.vm = null;
     this.bodies = [];
     this.hits = [];
-    this.last = 0;
+    this.last = null;
   }
 
   build(vm) {
     this.vm = vm;
     this.hits = [];
-    this.last = 0;
+    this.last = null;
     this.scannedSteps = -1;
     this.partW = new Int8Array(vm.size).fill(-1);
     this.partI = new Int16Array(vm.size);
@@ -90,7 +90,7 @@ export class AvatarModel {
         procs: new Uint16Array(n),             // processes sitting on each part
         lastHit: new Float64Array(n).fill(-Infinity),
         lastHitBy: new Int8Array(n).fill(-1),
-        alive: true, diedAt: null, deadAt: 0, shake: -Infinity,
+        alive: true, diedAt: null, deadAt: null, shake: -Infinity,
         total: 0, away: 0, possessed: 0, captor: -1,
         integrity: 1,
         capture: 0, lastCaptor: -1, converted: false, morph: 0, morphTo: -1,
@@ -147,7 +147,7 @@ export class AvatarModel {
   // part still counts as just run. Smoothing runs on `now` (milliseconds).
   update(vm, now, recentSteps = 400) {
     if (vm !== this.vm) this.build(vm);
-    const dt = this.last ? Math.min(250, Math.max(0, now - this.last)) : 16;
+    const dt = this.last === null ? 16 : Math.min(250, Math.max(0, now - this.last));
     this.last = now;
     // Counting the processes and parts reads the whole queue: only when the
     // VM has moved (or the fade changed). The smoothing runs every call.
@@ -187,8 +187,8 @@ export class AvatarModel {
     b.captor = captor;
     b.alive = war.alive;
     b.diedAt = war.diedAt;
-    if (!war.alive && !b.deadAt) b.deadAt = now;
-    if (war.alive) b.deadAt = 0;
+    if (!war.alive && b.deadAt === null) b.deadAt = now;
+    if (war.alive) b.deadAt = null;
 
     // The parts, and how much of the body is still ours.
     let lost = 0;

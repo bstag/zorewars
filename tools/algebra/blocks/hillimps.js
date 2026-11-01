@@ -420,4 +420,3 @@ const movingImp = (api) => {
 };
 
 export default [knightPump, cappedPump, movingImpSilk];
-

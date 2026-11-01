@@ -1,3 +1,4 @@
+import {CONSTANTS,ALL_OPS,OP_RE,redcodeMode,definedNames} from './redcode-language.js';
 // The code editor: CodeMirror 6 (web/vendor/codemirror.js) with Redcode
 // highlighting, inline assembler errors, autocomplete and instruction help.
 // If the bundle can't load, the plain textarea already on the page is used,
@@ -5,7 +6,7 @@
 //   getValue() setValue(text) setLanguage(lang) setErrors([{line, message}])
 //   insert(text) moveCursor(delta) undo() focus() hasFocus()
 
-import { OPCODES, MODIFIERS, MODE_NAMES } from '../src/engine/index.js';
+import { MODIFIERS, MODE_NAMES } from '../src/engine/index.js';
 
 // One-line help shown in autocomplete and on hover.
 const OPCODE_HELP = {
@@ -37,51 +38,6 @@ const PSEUDO_HELP = {
   ORG: 'Where execution starts: ORG label', END: 'End of the program (optionally END label)',
   EQU: 'Named constant: name EQU expression', FOR: 'Repeat a block: counter FOR count … ROF', ROF: 'End of a FOR block',
 };
-const CONSTANTS = ['CORESIZE', 'MAXPROCESSES', 'MAXCYCLES', 'MAXLENGTH', 'MINDISTANCE', 'PSPACESIZE', 'CURLINE'];
-const ALL_OPS = [...OPCODES, 'CMP'];
-const OP_RE = new RegExp(`^(${ALL_OPS.join('|')})(\\.(AB|BA|A|B|F|X|I))?$`, 'i');
-const PSEUDO_RE = /^(ORG|END|EQU|FOR|ROF|PIN)$/i;
-
-// ---------------------------------------------------------------- Redcode mode
-
-const redcodeMode = {
-  name: 'redcode',
-  startState: () => ({ sawOpcode: false }),
-  token(stream, state) {
-    if (stream.sol()) state.sawOpcode = false;
-    if (stream.eatSpace()) return null;
-    if (stream.peek() === ';') {
-      const meta = stream.match(/^;\s*(name|author|strategy|assert|redcode)\b/i, false);
-      stream.skipToEnd();
-      return meta ? 'meta' : 'comment';
-    }
-    if (stream.match(/^\d+/)) return 'number';
-    if (stream.match(/^[#$*@{<}>]/)) return state.sawOpcode ? 'operator' : 'operator';
-    const word = stream.match(/^[A-Za-z_][\w.&]*/);
-    if (word) {
-      const w = word[0];
-      if (OP_RE.test(w)) { state.sawOpcode = true; return 'keyword'; }
-      if (PSEUDO_RE.test(w)) { state.sawOpcode = true; return 'controlKeyword'; }
-      if (CONSTANTS.includes(w.toUpperCase())) return 'atom';
-      // A word before the opcode is a label being defined.
-      return state.sawOpcode ? 'variableName' : 'labelName';
-    }
-    stream.next();
-    return /[-+*/%()=!<>&|]/.test(stream.current()) ? 'operator' : null;
-  },
-  languageData: { commentTokens: { line: ';' } },
-};
-
-// Labels and EQU names defined in a Redcode document.
-function definedNames(text) {
-  const names = new Set();
-  for (const line of text.split('\n')) {
-    const m = /^\s*([A-Za-z_][\w]*):?(\s|$)/.exec(line.replace(/;.*/, ''));
-    if (m && !OP_RE.test(m[1]) && !PSEUDO_RE.test(m[1])) names.add(m[1]);
-  }
-  return [...names];
-}
-
 function redcodeCompletions(context) {
   const word = context.matchBefore(/[A-Za-z_][\w]*(\.[A-Za-z]*)?/);
   if (!word || (word.from === word.to && !context.explicit)) return null;

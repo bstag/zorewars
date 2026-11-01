@@ -28,3 +28,5 @@ wrangler.jsonc
 .assetsignore
 .nojekyll
 dist-check
+coverage
+.c8rc.json

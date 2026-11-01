@@ -17,8 +17,7 @@ export async function createGpuLiveEngine({ gpu } = {}) {
     stats,
     async createSession(vm) {
       if (closed || failure) throw failure ?? new GpuBackendError('GPU engine is closed');
-      if (vm.warriors.length < 1 || vm.warriors.length > 4 || vm.size > 200000 || vm.settings.maxCycles > 10000000
-        || vm.settings.maxProcesses > 200000 || vm.traceSize) throw new GpuBackendError('Live GPU supports 1–4 warriors, up to 200000 cells/processes and 10000000 cycles; instruction tracing uses CPU');
+      validateLiveVM(vm);
       const layout = liveLayout(vm), settings = { ...vm.settings, pSpaceSize: vm.warriors[0].pspace.length };
       const bytes = layout.words * 4;
       if (bytes > device.limits.maxStorageBufferBindingSize) throw new GpuBackendError('Live round exceeds GPU buffer capacity');
@@ -32,14 +31,8 @@ export async function createGpuLiveEngine({ gpu } = {}) {
       })());
       const pipeline = await pipelines.get(key);
       if (closed || failure) throw failure ?? new GpuBackendError('GPU engine is closed');
-      const buffers = [];
-      const buffer = (size, usage) => { const b = device.createBuffer({ size, usage }); buffers.push(b); return b; };
+      const {buffers, memory, controls, readback, group} = sessionResources(device, bytes, vm, layout, pipeline);
       let sessionClosed = false, busy = false, lastStep = null;
-      const memory = buffer(bytes, STORAGE | COPY_DST | COPY_SRC);
-      const controls = buffer(8, STORAGE | COPY_DST);
-      const readback = buffer(bytes, COPY_DST | MAP_READ);
-      device.queue.writeBuffer(memory, 0, encodeLiveVM(vm, layout));
-      const group = device.createBindGroup({ layout: pipeline.getBindGroupLayout(0), entries: [controls, memory].map((b, binding) => ({ binding, resource: { buffer: b } })) });
       const session = {
         backend: 'gpu',
         get lastStep() { return lastStep; },
@@ -74,4 +67,28 @@ export async function createGpuLiveEngine({ gpu } = {}) {
     },
     close() { if (!closed) { closed = true; for (const s of sessions) s.close(); device.destroy(); gpu = null; } },
   };
+}
+
+function validateLiveVM(vm) {
+      if (vm.warriors.length < 1 || vm.warriors.length > 4 || vm.size > 200000 || vm.settings.maxCycles > 10000000
+        || vm.settings.maxProcesses > 200000 || vm.traceSize) throw new GpuBackendError('Live GPU supports 1–4 warriors, up to 200000 cells/processes and 10000000 cycles; instruction tracing uses CPU');
+}
+function sessionResources(device, bytes, vm, layout, pipeline) {
+  const buffers = [];
+  const buffer = (size, usage) => {
+    const b = device.createBuffer({size,usage});
+    buffers.push(b);
+    return b;
+  };
+  try {
+    const memory = buffer(bytes, STORAGE | COPY_DST | COPY_SRC);
+    const controls = buffer(8, STORAGE | COPY_DST);
+    const readback = buffer(bytes, COPY_DST | MAP_READ);
+    device.queue.writeBuffer(memory, 0, encodeLiveVM(vm, layout));
+    const group = device.createBindGroup({layout:pipeline.getBindGroupLayout(0),entries:[controls,memory].map((b,binding)=>({binding,resource:{buffer:b}}))});
+    return {buffers,memory,controls,readback,group};
+  } catch (error) {
+    for (const b of buffers) b.destroy();
+    throw error;
+  }
 }

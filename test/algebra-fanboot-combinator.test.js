@@ -142,3 +142,12 @@ test('copied scanners see each other and leave each other alone', () => {
     }
   }
 });
+
+test('boot EARLY preserves copy-ahead processes and optional wipe',()=>{
+ for(const WIPE of [0,1]){
+  const built=buildTree({id:'boot',P:{HOP:3000,EARLY:1,WIPE},kids:[{id:'mod-stone'}]},{rules:'94nop',length:100});
+  assert.ok(built.verification.ok);const w=compile(built.source,'redcode',s94);assert.ok(w.ok);const vm=new VM(s94);vm.load([w],{positions:[0]});vm.run(300);assert.ok(vm.warriors[0].alive);assert.equal(vm.warriors[0].peak,2);assert.equal(vm.processes(0).length,WIPE?1:2);
+ }
+ const tree={id:'boot',P:{HOP:3000,EARLY:1},kids:[{id:'mod-stone'}]};
+ assert.ok(treeMismatches(tree,recipeSettings('88',100)).some(x=>x.includes('EARLY needs')));
+});

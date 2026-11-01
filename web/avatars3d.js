@@ -144,7 +144,8 @@ function spriteTexture() {
 }
 
 export class AvatarView3D {
-  constructor(canvas, overlay) {
+  constructor(canvas, overlay, {now = () => performance.now()} = {}) {
+    this.now = now;
     this.canvas = canvas;
     this.overlay = overlay;
     this.hover = -1;
@@ -153,7 +154,7 @@ export class AvatarView3D {
     this.vm = null;
     this.model = new AvatarModel();
     this.t = 0;                         // scene time in seconds (slows down after a knockout)
-    this.lastNow = 0;
+    this.lastNow = null;
     this.slowUntil = 0;
     this.userAt = -Infinity;
     this.userHolding = false;
@@ -189,9 +190,9 @@ export class AvatarView3D {
     controls.maxDistance = 12;
     controls.maxPolarAngle = 1.48;
     controls.target.set(0, 0.8, 0);
-    controls.addEventListener('start', () => { this.userHolding = true; this.userAt = performance.now(); });
-    controls.addEventListener('end', () => { this.userHolding = false; this.userAt = performance.now(); });
-    controls.addEventListener('change', () => { this.userAt = performance.now(); });
+    controls.addEventListener('start', () => { this.userHolding = true; this.userAt = (this.now?.() ?? performance.now()); });
+    controls.addEventListener('end', () => { this.userHolding = false; this.userAt = (this.now?.() ?? performance.now()); });
+    controls.addEventListener('change', () => { this.userAt = (this.now?.() ?? performance.now()); });
     this.controls = controls;
     canvas.addEventListener('pointerdown', (e) => { this.down = [e.clientX, e.clientY]; this.dragMoved = false; });
     canvas.addEventListener('pointermove', (e) => {
@@ -416,7 +417,7 @@ export class AvatarView3D {
     this.focus = null;
     this.slowUntil = 0;
     this.seenSteps = -1;
-    this.quietSince = performance.now();
+    this.quietSince = (this.now?.() ?? performance.now());
     this.mapDirty = true;
 
     for (const l of this.labels) l.el.remove();
@@ -465,7 +466,7 @@ export class AvatarView3D {
   applyMap() {
     const on = this.mapOn;
     this.mapDirty = true;
-    this.quietSince = performance.now();
+    this.quietSince = (this.now?.() ?? performance.now());
     this.mapMesh.visible = on && !this.space;
     if (this.spaceMesh) this.spaceMesh.visible = on;
     for (const r of this.arenaRings) r.visible = !on;
@@ -700,7 +701,7 @@ export class AvatarView3D {
   // moves again, so a paused or finished battle costs nothing.
   get animating() {
     if (!this.active) return false;
-    const now = performance.now();
+    const now = (this.now?.() ?? performance.now());
     return this.userHolding || now - Math.max(this.quietSince ?? 0, this.userAt) < SETTLE_MS || now < this.slowUntil || this.flying?.length > 0;
   }
 
@@ -793,8 +794,8 @@ export class AvatarView3D {
   draw(vm, fadeSteps) {
     if (vm !== this.vm) this.build(vm);
     if (!this.w || vm.size !== this.coreSize) this.layout(vm.size, vm.geo);
-    const now = performance.now();
-    const realDt = this.lastNow ? Math.min(0.1, (now - this.lastNow) / 1000) : 0.016;
+    const now = (this.now?.() ?? performance.now());
+    const realDt = this.lastNow === null ? 0.016 : Math.min(0.1, Math.max(0, (now - this.lastNow) / 1000));
     this.lastNow = now;
     const dt = realDt * (now < this.slowUntil ? SLOW : 1);
     this.t += dt;
@@ -803,17 +804,7 @@ export class AvatarView3D {
     this.model.update(vm, now, Math.max(24, fadeSteps));
     const bodies = this.model.bodies;
 
-    // New blows: kills land now (and pull the camera in), shots take flight.
-    for (const h of this.model.takeHits()) {
-      if (h.to.i < 0) h.to = { ...h.to, cell: h.cell };    // on the map, it lands on the cell itself
-      if (h.kind === 'kill') {
-        const at = this.endPoint(h.to);
-        if (at) this.impact('kill', at, h.attacker, false);
-        if (!this.focus || now - this.focus.start > 900) this.focus = { w: h.to.w, i: h.to.i, start: now, until: now + 1300 };
-      } else if (this.flying.length < MAX_FLYING && (!h.minor || this.flying.filter((f) => f.minor).length < MAX_MINOR)) {
-        this.flying.push({ ...h, t0: this.t });
-      }
-    }
+    this.takeBlows(now);
     // Knockouts: the body falls apart, in slow motion, with the camera on it.
     bodies.forEach((b, w) => {
       const rt = this.rt[w];
@@ -835,6 +826,40 @@ export class AvatarView3D {
       }
     }
 
+    this.faceOpponents(realDt);
+
+    this.begin();
+    for (let w = 0; w < bodies.length; w++) this.drawWarrior(vm, w, now, dt);
+    this.drawFlying(now);
+    this.drawRings();
+    this.stepParticles(dt);
+    this.stepFlashes();
+    this.drawHover();
+    if (this.mapOn) this.drawTethers(vm);
+    this.finish();
+    this.drawCycle(vm);
+    this.direct(now, realDt);
+    this.drawLabels(vm);
+    this.composer.render();
+  }
+
+  // Battle events are consumed once per frame, before knockout handling.
+  takeBlows(now) {
+    // New blows: kills land now (and pull the camera in), shots take flight.
+    for (const h of this.model.takeHits()) {
+      if (h.to.i < 0) h.to = { ...h.to, cell: h.cell };    // on the map, it lands on the cell itself
+      if (h.kind === 'kill') {
+        const at = this.endPoint(h.to);
+        if (at) this.impact('kill', at, h.attacker, false);
+        if (!this.focus || now - this.focus.start > 900) this.focus = { w: h.to.w, i: h.to.i, start: now, until: now + 1300 };
+      } else if (this.flying.length < MAX_FLYING && (!h.minor || this.flying.filter((f) => f.minor).length < MAX_MINOR)) {
+        this.flying.push({ ...h, t0: this.t });
+      }
+    }
+  }
+
+  faceOpponents(realDt) {
+    const bodies = this.model.bodies;
     // Everyone faces the nearest living opponent.
     for (let w = 0; w < bodies.length; w++) {
       const rt = this.rt[w];
@@ -852,19 +877,6 @@ export class AvatarView3D {
       }
     }
 
-    this.begin();
-    for (let w = 0; w < bodies.length; w++) this.drawWarrior(vm, w, now, dt);
-    this.drawFlying(now);
-    this.drawRings();
-    this.stepParticles(dt);
-    this.stepFlashes();
-    this.drawHover();
-    if (this.mapOn) this.drawTethers(vm);
-    this.finish();
-    this.drawCycle(vm);
-    this.direct(now, realDt);
-    this.drawLabels(vm);
-    this.composer.render();
   }
 
   // A warrior: its parts (blending into its captor's shape while converted),
@@ -886,11 +898,25 @@ export class AvatarView3D {
     const shake = now - b.shake < 300 ? (1 - (now - b.shake) / 300) * 0.05 : 0;
     const fallen = !!rt.fall;
     if (fallen) this.stepFall(rt, dt);
-    const local = W.local, pos = W.pos, c = W.c;
     rt.top = 0;
     rt.drawn = N;
 
+    const frame = { b, L, rt, col, n, to, TB, TL, e, N, W, qYaw, fwd, side, bob, shake, fallen, now, w };
     for (let j = 0; j < N; j++) {
+      const part = this.positionWarriorPart(frame, j);
+      if (!part) continue;
+      const appearance = this.warriorPartAppearance(frame, part, j);
+      if (appearance) this.paintWarriorPart(frame, part, appearance, j);
+    }
+    this.drawWarriorSupports(frame);
+    this.drawWarriorProcesses(frame, vm);
+  }
+
+  // Position slots also drive hit testing and projectile endpoints.
+  positionWarriorPart(frame, j) {
+    const { b, L, rt, n, TB, TL, e, W, qYaw, bob, shake, fallen, now } = frame;
+    const local = W.local, pos = W.pos;
+
       const own = j < n;
       const tOwn = TL ? j < TB.cells.length : false;
       const srcR = own ? (j === 0 ? L.r * 1.45 : L.r) : 0;
@@ -905,7 +931,7 @@ export class AvatarView3D {
       rt.slotR[j] = r;
       rt.slotCell[j] = own ? b.cells[j] : -1;
       if (fallen && own) {
-        if (j >= rt.fall.r.length) continue;
+        if (j >= rt.fall.r.length) return null;
         pos.fromArray(rt.fall.pos, j * 3);
       } else {
         pos.copy(local).applyQuaternion(qYaw).add(rt.stage);
@@ -913,9 +939,18 @@ export class AvatarView3D {
         if (shake) pos.x += (hash(now * 0.01 + j) - 0.5) * shake;
       }
       rt.slotPos[j].copy(pos);
-      if (r < 0.004 || (fallen && !own)) continue;
+      if (r < 0.004 || (fallen && !own)) return null;
       rt.top = Math.max(rt.top, pos.y + r);
+    const result = W.positionResult ??= {};
+    result.own = own; result.tOwn = tOwn; result.r = r;
+    return result;
+  }
 
+  // Appearance changes at the middle of a conversion, after the shrink.
+  warriorPartAppearance(frame, part, j) {
+    const { b, col, to, TB, TL, e, W, fallen } = frame;
+    const { own, tOwn } = part;
+    const c = W.c, colors = this.colors;
       // Which shape and colour this part has right now.
       const useTarget = TL && e >= 0.5;
       let kind, dmg = null, enemy = -1, act = 0, procs = 0;
@@ -926,11 +961,23 @@ export class AvatarView3D {
         kind = b.kind[j]; dmg = b.damage[j]; enemy = b.enemy[j]; act = b.active[j]; procs = b.procs[j];
         c.copy(dmg === 'converted' ? colors[colorIndex(enemy) % colors.length] : col);
       }
-      if (!kind) continue;
+      if (!kind) return null;
       if (TL && !useTarget) c.lerp(colors[colorIndex(to) % colors.length], e * 1.6);
       if (fallen) { c.set('#475569'); act = 0; procs = 0; }
       if (dmg === 'stunned') c.multiplyScalar(0.5);
 
+    const result = W.appearanceResult ??= {};
+    result.kind = kind; result.dmg = dmg; result.enemy = enemy;
+    result.act = act; result.procs = procs;
+    return result;
+  }
+
+  paintWarriorPart(frame, part, appearance, j) {
+    const { b, rt, W, qYaw, fwd, side, fallen, now, w } = frame;
+    const { own, r } = part;
+    const { kind, dmg, enemy, act, procs } = appearance;
+    const { tmp, colors } = this;
+    const pos = W.pos, c = W.c;
       const q = tmp.q2.copy(qYaw);
       if (fallen) q.setFromAxisAngle(rt.fall.axis[j], rt.fall.spin[j] * this.t);
       if (dmg === 'bombed') {
@@ -958,8 +1005,11 @@ export class AvatarView3D {
         if (since < 450) { const s = r * (1.1 + since / 300); this.put(this.glows, pos, q, s, s, s, tmp.c.setScalar(1.4 * (1 - since / 450))); }
       }
       if (j === 0) this.drawHeadEyes(b, pos, r, fwd, side, fallen, w);
-    }
+  }
 
+  drawWarriorSupports(frame) {
+    const { b, rt, col, to, e, N, n, W, side, fwd, fallen } = frame;
+    const { tmp, colors } = this;
     // Spine links between consecutive parts, and legs to the floor.
     if (!fallen) {
       const body = W.body.copy(col);
@@ -983,6 +1033,11 @@ export class AvatarView3D {
       }
     }
 
+  }
+
+  drawWarriorProcesses(frame, vm) {
+    const { b, rt, col, qYaw } = frame;
+    const { tmp, colors } = this;
     // A halo on the floor for how many processes it has.
     if (b.alive) {
       const v = Math.min(1, Math.log2(1 + b.total) / Math.log2(1 + vm.settings.maxProcesses));

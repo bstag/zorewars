@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { libraryOpponents, strip } from '../tools/hill.js';
 import { evolve } from '../tools/evolution/instructions/index.js';
-import { validateInstructionSearch } from '../tools/evolution/instructions/options.js';
+import {evolutionOptions} from './evolution-options.js';
 import { trainingProfiles, validateCandidates } from '../tools/training.js';
 import { roleOf, toRedcode } from '../tools/genes.js';
 import { makeGeometry } from '../src/engine/geometry.js';
@@ -19,67 +19,8 @@ export async function cmdEvolve(args, h, { quiet = false } = {}) {
   if (args.flags.representation && args.flags.representation !== 'instructions') h.usage('--representation takes instructions, blocks or tree');
   const settings = h.settingsFrom(args.flags);
   const json = !!args.flags.json;
-  const integer = (key, fallback, min = 1) => {
-    const n = Number(args.flags[key] ?? fallback);
-    if (!Number.isSafeInteger(n) || n < min) h.usage(`--${key} must be an integer >= ${min}`);
-    return n;
-  };
-  const generations = integer('generations', 6);
-  const batches = integer('batches', 4);
-  const batchSize = integer('batch', 40);
-  const seed = integer('seed', 1, 0);
-  if (seed > 2147483646) h.usage('--seed must be <= 2147483646');
-  const algorithm = args.flags.algorithm ?? 'map-elites';
-  const objective = args.flags.objective ?? 'smooth';
-  const selection = args.flags.selection ?? 'default';
-  const descriptor = args.flags.descriptor ?? 'species';
-  const epsilon = args.flags.epsilon === undefined || args.flags.epsilon === 'auto' ? 'auto' : Number(args.flags.epsilon);
-  if (objective === 'pushoff' && args.flags.scratch) h.usage('--objective pushoff ranks against a field: not with --scratch');
-  const tieValue = Number(args.flags.ties ?? 0.5);
-  const evalRounds = integer('eval-rounds', args.flags.rounds ?? 6);
-  const populationSize = integer('population', batchSize);
-  const archiveSize = integer('archive-size', 64);
-  const localSteps = integer('local-steps', 0, 0);
-  const checkRounds = integer('check-rounds', 30);
-  const seeds = integer('seeds', 3, 2);
-  const finalists = integer('finalists', 6);
-  const out = args.flags.out ?? 'evolved';
-  // Gene pool and starting opponents: the library, plus any warriors given.
-  // --scratch: none of that. Random programs, scored only against each
-  // other's champions; the library is only held out, to report progress.
-  const scratch = !!args.flags.scratch;
-  const fieldRounds = integer('field-rounds', 50);
-  const league = !!args.flags.league;
-  const exploitWin = Number(args.flags['exploit-win'] ?? 2);
-  if (!Number.isFinite(exploitWin)) h.usage('--exploit-win takes a number of points per round');
-  const exploitAge = integer('exploit-age', 6);
-  const race = integer('race', 0, 0);
-  const maxLength = Math.min(settings.maxLength, integer('genome', 40));
-  try {
-    validateInstructionSearch({ algorithm, selection, epsilon, descriptor, localSteps, race,
-      objective, tieValue, league, scratch, exploitWin, exploitAge });
-  } catch (error) { h.usage(error.message); }
-  // Separate the legal opponent field from additional sources of genes.
-  const library = libraryOpponents(settings);
-  // '88 uses its actual adapted library for opponents. Additional '94 genes
-  // may be bent into '88, but must never become illegal '88 opponents.
-  const genes = settings.dialect === '88' ? [...library, ...libraryOpponents({ ...settings, dialect: undefined })] : library;
-  const hill = args.flags.hill ? await hillOpponents(String(args.flags.hill), settings, args.flags) : null;
-  const field = scratch ? [] : hill ?? library;
-  const extra = args._.length ? await h.loadAll(h.expandRefs(args._), settings, json) : [];
-  const sources = [
-    ...(scratch ? [] : genes).map((o) => ({ w: o.w, role: roleOf(`${o.category} ${o.name}`) })),
-    ...extra.map((w) => ({ w: strip(w), role: roleOf(`${w.name} ${w.strategy || ''}`) || 'paper' })),
-  ];
-  const classics = args.flags.classics ? await opponents(h, settings, { ...args.flags, classics: true }, []).then((f) => f.filter((x) => x.group === 'classic')) : [];
-  const heldOut = scratch ? [...library, ...classics] : classics;
-  // --king a.js,b.red: start the Red Queen with these as champions (they
-  // also join the gene pool and the starting population).
-  const kings = args.flags.king ? await h.loadAll(h.expandRefs(String(args.flags.king).split(',')), settings, json) : [];
-  for (const w of kings) sources.push({ w: strip(w), role: roleOf(`${w.name} ${w.strategy || ''}`) || 'paper' });
-  // --partner a.red,b.red: our other entries, ranked beside each candidate (--objective pushoff).
-  const partners = args.flags.partner ? await h.loadAll(h.expandRefs(String(args.flags.partner).split(',')), settings, json) : [];
-  if (partners.length && objective !== 'pushoff') h.usage('--partner needs --objective pushoff');
+  const {generations, batches, batchSize, seed, algorithm, objective, selection, descriptor, epsilon, tieValue, evalRounds, populationSize, archiveSize, localSteps, checkRounds, seeds, finalists, out, scratch, fieldRounds, league, exploitWin, exploitAge, race, maxLength} = evolutionOptions(args,h,settings);
+  const {sources,field,heldOut,kings,partners,hill}=await prepareInstructionField(args,h,settings,{json,scratch,objective});
   const entrySettings = { ...settings };
   if (hill) Object.assign(settings, hillSettingsFor(settings));   // genomes keep the entry limit above
   if (!scratch && !field.length) h.usage('no opponents compiled for this battlefield');
@@ -173,4 +114,30 @@ export async function cmdTrain(args, h) {
     if (!args.flags.json) console.log(`${profile.name}: ${best.score.toFixed(3)} pts/round (${r.validation.improved ? `${r.validation.objective} gain +${best.gain.toFixed(3)}` : 'baseline retained'}) -> ${result.file}`);
   }
   if (args.flags.json) console.log(JSON.stringify(campaign, null, 2));
+}
+
+// Build legal opponents separately from gene sources, including held-out validation inputs.
+export async function prepareInstructionField(args,h,settings,{json,scratch,objective}) {
+  // Separate the legal opponent field from additional sources of genes.
+  const library = libraryOpponents(settings);
+  // '88 uses its actual adapted library for opponents. Additional '94 genes
+  // may be bent into '88, but must never become illegal '88 opponents.
+  const genes = settings.dialect === '88' ? [...library, ...libraryOpponents({ ...settings, dialect: undefined })] : library;
+  const hill = args.flags.hill ? await hillOpponents(String(args.flags.hill), settings, args.flags) : null;
+  const field = scratch ? [] : hill ?? library;
+  const extra = args._.length ? await h.loadAll(h.expandRefs(args._), settings, json) : [];
+  const sources = [
+    ...(scratch ? [] : genes).map((o) => ({ w: o.w, role: roleOf(`${o.category} ${o.name}`) })),
+    ...extra.map((w) => ({ w: strip(w), role: roleOf(`${w.name} ${w.strategy || ''}`) || 'paper' })),
+  ];
+  const classics = args.flags.classics ? await opponents(h, settings, { ...args.flags, classics: true }, []).then((f) => f.filter((x) => x.group === 'classic')) : [];
+  const heldOut = scratch ? [...library, ...classics] : classics;
+  // --king a.js,b.red: start the Red Queen with these as champions (they
+  // also join the gene pool and the starting population).
+  const kings = args.flags.king ? await h.loadAll(h.expandRefs(String(args.flags.king).split(',')), settings, json) : [];
+  for (const w of kings) sources.push({ w: strip(w), role: roleOf(`${w.name} ${w.strategy || ''}`) || 'paper' });
+  // --partner a.red,b.red: our other entries, ranked beside each candidate (--objective pushoff).
+  const partners = args.flags.partner ? await h.loadAll(h.expandRefs(String(args.flags.partner).split(',')), settings, json) : [];
+  if (partners.length && objective !== 'pushoff') h.usage('--partner needs --objective pushoff');
+  return {sources,field,heldOut,kings,partners,hill};
 }

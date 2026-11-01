@@ -31,10 +31,10 @@ async function tagField(field, settings, json) {
   if (!json) console.log(`Tagged ${field.length} opponents by behaviour; ${wrong} do not do what their comments claim.`);
 }
 
-function printCounters(counters) {
+function printCounters(counters,write=console.log) {
   counters.save();
   const lines = counters.summary();
-  if (lines.length) console.log(`\nWhat helped, by opponent strategy (mean change in pts/round against it, n experiments):\n${lines.map((x) => `  ${x}`).join('\n')}`);
+  if (lines.length) write(`\nWhat helped, by opponent strategy (mean change in pts/round against it, n experiments):\n${lines.map((x) => `  ${x}`).join('\n')}`);
 }
 
 // evolve --representation tree: breed block trees (tools/algebra) against a hill,
@@ -45,31 +45,7 @@ export async function cmdEvolveTrees(args, h, { quiet = false } = {}) {
   const { placeOnHill } = await import('../tools/evolution/trees/placement.js');
   const { treeSettings, recipes, shape } = await import('../tools/algebra/index.js');
   const f = args.flags, json = !!f.json;
-  const integer = (key, fallback, min = 1) => {
-    const n = Number(f[key] ?? fallback);
-    if (!Number.isInteger(n) || n < min) h.usage(`--${key} must be an integer of at least ${min}`);
-    return n;
-  };
-  const rules = f.rules ?? '94nop', length = integer('length', 100), torus = f.torus ?? null;
-  const settings = treeSettings(rules, length, torus);
-  const generations = integer('generations', 10), batch = integer('batch', 30), rounds = integer('rounds', 10);
-  const race = integer('race', 2, 0), seed = integer('seed', 1, 0), archiveSize = integer('archive-size', 48);
-  const ties = Number(f.ties ?? 1);
-  if (!(ties >= 0 && ties <= 1)) h.usage('--ties must be between 0 and 1');
-  const aim = f.aim === undefined ? true : !['0', 'false', 'no', 'off'].includes(String(f.aim));
-  const aimTries = integer('aim-tries', 6), aimExplore = Number(f['aim-explore'] ?? 0.3);
-  const lexicase = f.select ? f.select === 'lexicase' : true;   // --select lexicase|tournament
-  const lexEpsilon = Number(f['lex-epsilon'] ?? 0.1);
-  if (f.select && !['lexicase', 'tournament'].includes(f.select)) h.usage('--select takes lexicase or tournament');
-  if (!Number.isFinite(lexEpsilon) || lexEpsilon < 0) h.usage('--lex-epsilon must be a nonnegative finite number');
-  const ops = f.tune ? ['tune'] : undefined;
-  // Starting trees: --start a.json[,b.json] (a tree or an array of trees), else the recipes for these rules.
-  const starts = [];
-  for (const file of f.start ? String(f.start).split(',') : []) starts.push(...[].concat(JSON.parse(fs.readFileSync(file, 'utf8'))));
-  if (f.tune && (!f.start || !starts.length)) h.usage('--tune needs a nonempty --start tree.json');
-  if (!starts.length) for (const r of Object.values(recipes)) if (r.rules.includes(rules) && !torus) starts.push(r.tree(rules));
-  if (f.ladder && !f.hill) h.usage('--ladder needs --hill');
-  const out = f.out ?? path.join('evolved', 'trees');
+  const {integer,rules,length,torus,settings,generations,batch,rounds,race,seed,archiveSize,ties,aim,aimTries,aimExplore,lexicase,lexEpsilon,ops,starts,out}=treeCommandOptions(f,h,{treeSettings,recipes});
   fs.mkdirSync(out, { recursive: true });
   if (f.ladder) return climbHill(args, h, { settings, rules, length, torus, starts, batch, rounds, race, seed, archiveSize, ties, aim, aimTries, aimExplore, lexicase, lexEpsilon, ops, integer, out, json });
   const field = f.hill ? await hillOpponents(String(f.hill), settings, { ...f, top: f.top ?? '30' }) : libraryOpponents(settings);
@@ -107,14 +83,7 @@ export async function cmdEvolveTrees(args, h, { quiet = false } = {}) {
     fs.writeFileSync(path.join(out, 'evolve-trees.json'), JSON.stringify(report, null, 1));
     if (quiet) return report;
     if (json) { console.log(JSON.stringify(report, null, 2)); return report; }
-    console.log(`\nGate: ${r.stats.built} trees built, ${r.stats.refused} refused; ${r.stats.scored} scored (${r.stats.battleRounds} battle rounds)${r.stats.aimed ? `; ${r.stats.aimed} mutations aimed, ${r.stats.experiments} experiments recorded` : ''}.`);
-    for (const p of placed) console.log(`${p.placement.score.toFixed(2)} pts/round, place ${p.placement.place} of ${p.placement.of} on the hill: ${p.shape} (${p.size} cells, ${p.species})`);
-    if (best?.placement) {
-      console.log(`\nThe hill by score, with the best tree:`);
-      best.placement.table.slice(0, 12).forEach((x, i) => console.log(`${String(i + 1).padStart(3)}. ${x.score.toFixed(2)}  ${x.ours ? `>> ${best.shape}` : x.name}`));
-    }
-    printCounters(counters);
-    console.log(`\nWritten to ${out}/: best.red and best.json, tree-N.json (each generation's champion), evolve-trees.json; the counter table to ${counters.file}.`);
+    printTreeResults(r,placed,best,counters,out);
     return report;
   } finally { pool.close(); }
 }
@@ -176,4 +145,46 @@ async function climbHill(args, h, o) {
     console.log(`\nWritten to ${out}/: rung-N.json/.red (each evolved rung's champion), best.red, best.json, climb.json; the counter table to ${counters.file}.`);
     return report;
   } finally { pool.close(); }
+}
+
+// Command configuration and seed trees are resolved before pools are allocated.
+export function treeCommandOptions(f,h,{treeSettings,recipes}) {
+  const integer = (key, fallback, min = 1) => {
+    const n = Number(f[key] ?? fallback);
+    if (!Number.isInteger(n) || n < min) h.usage(`--${key} must be an integer of at least ${min}`);
+    return n;
+  };
+  const rules = f.rules ?? '94nop', length = integer('length', 100), torus = f.torus ?? null;
+  const settings = treeSettings(rules, length, torus);
+  const generations = integer('generations', 10), batch = integer('batch', 30), rounds = integer('rounds', 10);
+  const race = integer('race', 2, 0), seed = integer('seed', 1, 0), archiveSize = integer('archive-size', 48);
+  const ties = Number(f.ties ?? 1);
+  if (!(ties >= 0 && ties <= 1)) h.usage('--ties must be between 0 and 1');
+  const aim = f.aim === undefined ? true : !['0', 'false', 'no', 'off'].includes(String(f.aim));
+  const aimTries = integer('aim-tries', 6), aimExplore = Number(f['aim-explore'] ?? 0.3);
+  const lexicase = f.select ? f.select === 'lexicase' : true;   // --select lexicase|tournament
+  const lexEpsilon = Number(f['lex-epsilon'] ?? 0.1);
+  if (f.select && !['lexicase', 'tournament'].includes(f.select)) h.usage('--select takes lexicase or tournament');
+  if (!Number.isFinite(lexEpsilon) || lexEpsilon < 0) h.usage('--lex-epsilon must be a nonnegative finite number');
+  const ops = f.tune ? ['tune'] : undefined;
+  // Starting trees: --start a.json[,b.json] (a tree or an array of trees), else the recipes for these rules.
+  const starts = [];
+  for (const file of f.start ? String(f.start).split(',') : []) starts.push(...[].concat(JSON.parse(fs.readFileSync(file, 'utf8'))));
+  if (f.tune && (!f.start || !starts.length)) h.usage('--tune needs a nonempty --start tree.json');
+  if (!starts.length) for (const r of Object.values(recipes)) if (r.rules.includes(rules) && !torus) starts.push(r.tree(rules));
+  if (f.ladder && !f.hill) h.usage('--ladder needs --hill');
+  const out = f.out ?? path.join('evolved', 'trees');
+  return {integer,rules,length,torus,settings,generations,batch,rounds,race,seed,archiveSize,ties,aim,aimTries,aimExplore,lexicase,lexEpsilon,ops,starts,out};
+}
+
+// Human output is kept outside search orchestration and JSON serialization.
+export function printTreeResults(r,placed,best,counters,out,write=console.log) {
+    write(`\nGate: ${r.stats.built} trees built, ${r.stats.refused} refused; ${r.stats.scored} scored (${r.stats.battleRounds} battle rounds)${r.stats.aimed ? `; ${r.stats.aimed} mutations aimed, ${r.stats.experiments} experiments recorded` : ''}.`);
+    for (const p of placed) write(`${p.placement.score.toFixed(2)} pts/round, place ${p.placement.place} of ${p.placement.of} on the hill: ${p.shape} (${p.size} cells, ${p.species})`);
+    if (best?.placement) {
+      write(`\nThe hill by score, with the best tree:`);
+      best.placement.table.slice(0, 12).forEach((x, i) => write(`${String(i + 1).padStart(3)}. ${x.score.toFixed(2)}  ${x.ours ? `>> ${best.shape}` : x.name}`));
+    }
+    printCounters(counters,write);
+    write(`\nWritten to ${out}/: best.red and best.json, tree-N.json (each generation's champion), evolve-trees.json; the counter table to ${counters.file}.`);
 }

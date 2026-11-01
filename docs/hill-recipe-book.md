@@ -215,7 +215,7 @@ Failure modes visible in the code: a scan location inside the warrior's own imag
 | Hill part | Our block(s) | Difference / gap |
 |---|---|---|
 | Pair-test detection | `opening-quickscan`, `opening-qscan-decode` (SEQ+MOV per pair), `opening-qscan-lattice` (SNE/SEQ/JMP, 4 cells per 3 lines) | Detection density matches; the lattice block has the hill's 3-line unit |
-| q^4 / q^i MUL decode | none | **Gap.** `opening-qscan-lattice` walks the lattice with a loop (up to ~4 cycles per pair); the hill decodes in 1–3 cycles with MUL, SEQ-predecrement table mutation and JMP B-operand selectors. No block has `qdec = 1 + qfac^-1`, the qz mutation or two-factor q^i |
+| q^4 / q^i MUL decode | `opening-qscan-mul` | **Mostly built.** `opening-qscan-mul` is the single-factor q^4: `qdec = 1 + qfac^-1`, an inverse-constant table, a one-MUL hit decode, and (SHARE 1) the table stored in other instructions' B-fields. Remaining gap: the q^4.5 qz-mutation and inversed's two-factor q^i (more locations per cycle). `opening-qscan-lattice` is the loop-decode fallback (~4 cycles a pair) |
 | Tables stored in other code's fields | none | **Gap.** Our blocks keep private data cells; the hill reuses the boot's SPL B fields and the scan's exit DJN as the table, which our block contracts can't express |
 | Two-stream burst | `probe-burst` | Ours is one guarded stream (≈5 cycles a bomb). The hill's second stream addresses through the bomb it just wrote: 2 bombs per 4 cycles |
 | Final JMZ test / fall-through exit | none needed (`seq` hand-on) | Free extra cell missing |
@@ -522,7 +522,7 @@ Failure modes visible in the code and in solo runs:
 | Hill part | Block(s) | Notes / gaps |
 |---|---|---|
 | Q^4 / lattice quickscan | `opening-qscan-decode`, `opening-qscan-lattice` | gap: decode tables stored in the boot's `spl` B-fields (cell sharing between parts) |
-| Quicksilver stone | `hill-stone` (PROCS, WRITES 2, STREAM 1, REMOTE 1) | important difference: `hill-stone` stays safe by requiring gcd(STEP, core) >= length; hill stones use coprime steps and a TIME after which they bomb themselves. There is no "switch off by self-hit" option, and ENDCLEAR (turn into a clear) is something this family does not do |
+| Quicksilver stone | `fanboot-paper-stone`'s stone (2 writes + a decrement per loop, TIME self-off); `hill-stone` for the layout-safe variant | **Built.** `fanboot-paper-stone`'s stone is a faithful Quicksilver: 2 writes + 1 decrement per loop and a planned self-hit that switches it off after TIME, so the paper inherits the core. Its contract has no gcd constraint, so a full-core coprime step is allowed (its default step 2377 is coprime). `hill-stone` is the separate layout-safe bomber (gcd(STEP, core) >= length, optional ENDCLEAR) |
 | Azathoth forward crawl | `hill-stone` STREAM, `djn-stream` | gap: a crawl folded into the A-field side of the same pointer cell, moving opposite to the bombs |
 | Reepicheep pair bombs | `carpet-bomber` (WIDTH 2) | gap: pair spacing 31, not adjacent |
 | Step-17 carpet stone | `finisher-counted` (roughly) | gap: a sparse forward carpet that closes up over laps |
@@ -951,15 +951,16 @@ A vampire pairs a scanner (to find targets) with a clear (to finish), and the pi
 | hill part | block(s) | gap / difference |
 |---|---|---|
 | blind fang thrower | `vampire`, `vampire-trap` | ours aim at the pit directly; no A/B dual-pointer fang, no relay (anti-trace) pointer |
-| scan + bite | `scan-vampire` (COUNT 1 = gathering pit) | no `mov.a #0` re-aim; no separate bomb side (Nosferatu) |
-| spl#0 stun pit, DJN leaky pit, counting pit | partly inside `vampire-trap` / `scan-vampire` | **gap:** the pit as a choice (stun / leaky DJN / MAXPROCESSES-counting); **gap:** Unpit's pitless kill-and-signal fang; Mohini's victim-flipped switch |
+| scan + bite | `scan-vampire` (COUNT 1 = gathering pit), `fang-vampire` (the A/B pair sums to the pit, so no `mov.a #0` re-aim is needed; BSTEP adds Nosferatu's bomb side) | match |
+| spl#0 stun pit, DJN leaky pit, counting pit | `fang-vampire` PIT 0-2 | match |
+| Unpit's pitless kill-and-signal fang; Mohini's victim-flipped switch | `fang-vampire` PIT 3 and PIT 4 | match |
 | switch to clear on capture | `trigger` MODE 1 (marker damaged) | close, but the hill's signal is the pit or sentinel being written by prisoners, inside the vampire loop |
 | SPL/DAT clear | `finisher-twopass`, `finisher-dclear`, `finisher-gated` | match |
-| airbag loop (3 processes in one loop via self-modifying launch) | `spl-stone` PROCS, `hill-stone` | **gap** for vampires: no multi-process vampire loop |
-| DJN.F throw / leftover DJN stream | `djn-stream`, `elf`, `hill-stone` STREAM | ours stream; **gap:** throwing scattered `djn.f #1,1` bombs from a vampire loop |
-| Living Dead / scratcher streams | `elf` (multi-process stream) | **gap:** many independent one-line streams spread core/N apart |
-| qscan-chosen component (Alternating Raisins) | `classify` (chooses by what hit a marker), `switch` (P-space, 94x only) | **gap:** choose a body by the opening's probe result (found / not found) |
-| multiplicative scan (Russ Post) | none | **gap**: our scanners all step additively |
+| airbag loop (3 processes in one loop via self-modifying launch) | `spl-stone` PROCS, `hill-stone`, `airbag-vampire` | match |
+| DJN.F throw / leftover DJN stream | `djn-stream`, `elf`, `hill-stone` STREAM, `djn-vampire` (throws scattered `djn.f` bombs) | match |
+| Living Dead / scratcher streams | `stream-swarm`, `fed-stream-swarm` | match |
+| qscan-chosen component (Alternating Raisins) | `fork` (by the opening's probe: found / not found; BY 1: a body / a lone cell), `classify`, `switch` | match |
+| multiplicative scan (Russ Post) | `scanner-mul` | match |
 | Morrell `jmp >0` spiral launch | `vector-spiral`, `imp-feeder` (imptest02's pump) | same result, different launcher |
 | evolved payload (RainRat) | none needed | the 5-line engine is a paper; the 95 inert lines are decoys we could model with `decoys` |
 
@@ -969,11 +970,11 @@ Each chapter ends with its own block table. This list merges the gaps and orders
 
 | # | Technique | Used by | Nearest block today | Chapter |
 |---|---|---|---|---|
-| 1 | **MUL-decoded quickscan** (q^4 with `qdec = 1 + qfac^-1`, q^4.5 mutation, inversed's two-factor q^i), decoding in 1-3 cycles | most top-50 quickscanners | `opening-qscan-lattice` (loop decode, ~4 cycles a pair) | openings |
+| 1 | **MUL-decoded quickscan** — single-factor q^4 (`qdec = 1 + qfac^-1`) is now built as `opening-qscan-mul`. Remaining: the q^4.5 qz-mutation and inversed's two-factor q^i, decoding in ~1 cycle | most top-50 quickscanners | `opening-qscan-mul` (q^4); `opening-qscan-lattice` (loop decode) | openings |
 | 2 | **Two-stream quickscan burst**: the second MOV addresses through the bomb just written, 2 bombs per 4 cycles | every quickscan read | `probe-burst` (one stream) | openings |
 | 3 | **Fan boot of two bodies**: N processes copy one cell each, copy pointers become jump vectors, k:1 stone-to-paper split, or a `djn #N` counter splitting N-1 / 1 | ranks 1-3, the paper/stone and stone/imp lines | `parboot`, `waveboot`, `par` (independent copy loops) | openings, paper/stone, stones |
 | 4 | **Tables in other parts' fields**: quickscan tables in the boot's SPL B-fields or the scan's exit DJN | Hullabaloo, Tolypeutes, Elven King, pdQscan, SnowScan and others | none; block contracts keep private data cells | openings |
-| 5 | **Timed stone endings**: coprime step plus a TIME after which the stone bombs its own pointer (paper/stone), or the `dat X, >1` bomb landing on the stone's own ADD so the wreck clears the core (stone/imp) | Azathoth line, Quicksilver line | `hill-stone` (requires gcd(STEP, core) ≥ length; ENDCLEAR adds ~7 counted clear lines) | paper/stone, stones |
+| 5 | **Timed stone endings** — the paper/stone self-off is now built (`fanboot-paper-stone`'s stone: TIME self-hit, coprime step allowed). Remaining: the stone/imp variant where the `dat X, >1` bomb lands on the stone's own ADD so the wreck clears the core | Azathoth line, Quicksilver line | `fanboot-paper-stone` (self-off); `fanboot-stone-imp`; `hill-stone` (layout-safe) | paper/stone, stones |
 | 6 | **King Cobra clear**: two-pair bomb detection, clear starting at the scan pointer, DJN stream as the SPL→DAT timer, `mov.i #4000,1` imp spun off at the find | King Cobra #4, Kaitain #7, KryneLamiya, Infravision | `one-shot` recipe, `finisher-twopass` (own counter) | scanners |
 | 7 | **Armadillo stone switch**: the A-trail copies the stone's SPL over its DJN and floods a gated forward clear; the bomb's B-field (HOP+1) resets the gate on wrap | Tolypeutes #6, Armadillo #33, Elven King #42 | `finisher-gated`, `trigger` | stones |
 | 8 | **Silk tails**: a slot after the last stage for a cc clear, silk-imps (last step = 2668), a backward stage `mov {s1,<s2`, a moving last stage `jmz.a @0`, the `mov.i #X, }2667` bomb, Mercenary's moving imp | the quickscan papers, For John, Swarm, Electra | `paper`, `silk3`, `bomb-paper` (end in DAT, stages copy forward and split) | papers |
@@ -985,7 +986,7 @@ Each chapter ends with its own block table. This list merges the gaps and orders
 | 14 | **Scanner engines**: Pendulum's .75c wipe-until-empty with a self-find counter, the spl/spl/jmp trap (Z++), One Shot's pointer-overwrite three-pass clear, the hill blur's single moving carpet on a mod-10 step, two booted scanners at once | Pendulum #62, Z++ #35, Twin Storms #31, One Shot | `scanner`, `blur-scanner`, `pair-wipe-scanner` | scanners |
 | 15 | **Odd engines**: the `{0,}0` self-adding 3-line stone, the step-17 carpet stone, multiplicative scan steps, many one-line DJN streams core/N apart | Positive Knife, Black Knight, Hullab3loo, Russ Post, Living Dead | `stone`, `elf` | stones, paper/stone, vampires |
 
-Two of our recipes are furthest from their hill counterparts. `paper-stone` (`par` of `paper` and a stone) lacks the four things every top paper/stone has: the quickscan, the boot away from the original, the process ratio and the timed stop. `stone-imp` lacks the counter split and the wreck-becomes-clear ending.
+The old `paper-stone`/`stone-imp` recipes (`par` of a paper and a stone) lacked the quickscan, the boot, the process ratio and the timed stop. The `fanboot-paper-stone` and `fanboot-stone-imp` blocks now supply all of these in one fan boot (self-metering launch, k:1 or N-1:1 split, timed self-off), behind `opening-qscan-mul`'s q^4 — so the paper/stone and stone/imp lines are built bar the q^4.5/q^i decode refinement (#1) and the stone/imp wreck-clear ending (#5).
 
 ### Progress on the gaps
 
@@ -1070,6 +1071,20 @@ Both of those are now done:
 - **Composing plain scanners doesn't pay**, though: two copies of `scanner` score 0.153 and three 0.115, against 0.419 for one; `apart(scanner, bscan-body)` scores 0.264. Each copy gets a share of the cycles, so `twin-storm`'s 0.752 comes from its engines (SPL carpets, then a clear), not from there being two of them.
 
 Every gap the book listed now has a block.
+
+**Fourth round** (2026-10-31): the last two vampire differences, as `fang-vampire` parameters. The tree for both is qscan-mul → `fang-vampire`, 94nop top 50, 20 rounds.
+
+| Parameter | Before (PIT 0, stun) | After |
+|---|---:|---:|
+| PIT 4: Mohini's pit, where the prisoner rewrites the vampire's `jmp loop` into a jump to the clear | 0.377 | 0.374 |
+| PIT 4 with RELAY 2000 | 0.377 | 0.309 |
+| BSTEP 80 (Nosferatu's bomb side) | 0.377 | 0.322 |
+| BSTEP 200 | 0.377 | 0.297 |
+| PIT 4 with BSTEP 80 | 0.377 | 0.309 |
+
+- **Mohini's pit is as good as the stun pit, and no better.** The vampire's check after a bite becomes a plain `jmp`, the same length as `jmz` on the pit.
+- **The bomb side costs points.** Its bombs must stay on a lattice whose spacing gcd(BSTEP, 8000) is wider than the warrior, so they reach only 1 cell in 80 or so, and they halve the scan rate. Nosferatu bombs the whole core, which only its own layout allows. `linked` refuses a BSTEP whose lattice would cross the warrior or the relay.
+- **The vampire table above now reads "match" on every row.**
 
 ## Reproducing the census
 

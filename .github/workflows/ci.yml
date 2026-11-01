@@ -25,7 +25,24 @@ jobs:
         with:
           python-version: '3.12'
       - run: npm ci
-      - run: npm test
+      - if: matrix.node == 20
+        run: npm test
+      - name: Tests with repository coverage
+        if: matrix.node == 22
+        run: npm run test:coverage
+      - name: CRAP report (advisory; threshold 30)
+        if: matrix.node == 22
+        run: npm run crap
+      - uses: actions/upload-artifact@v7
+        if: matrix.node == 22 && always()
+        with:
+          name: quality-node-${{ matrix.node }}
+          path: |
+            coverage/coverage-final.json
+            coverage/coverage-summary.json
+            coverage/crap.json
+            coverage/crap-comparison.json
+          if-no-files-found: warn
       # Checks the Cloudflare configuration and Worker bundle without deploying.
       # (Wrangler itself needs Node 22; the game and CLI run on Node 18+.)
       - if: matrix.node == 22

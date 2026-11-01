@@ -280,6 +280,19 @@ export class CoreView3D {
     if (vm.size !== this.coreSize || vm.geo !== this.geo) this.layout(vm.size, vm.geo);
     this.highlights = highlights;
     const now = performance.now();
+    this.updateCamera(vm, highlights);
+    const cam = this.project();
+    this.ctx.fillStyle = BACKGROUND;
+    this.ctx.fillRect(0, 0, this.w, this.h);
+    this.drawBox(cam);
+    const sorted = this.collectCells(vm, fadeSteps);
+    this.paintCells(vm, fadeSteps, sorted);
+    this.drawProcesses(vm);
+    this.drawFollowTrail(now);
+    this.drawOverlays(highlights, now);
+  }
+
+  updateCamera(vm, highlights) {
     // Camera: spin, follow the action, ease towards targets.
     if (this.spin && !this.pointers.size) this.yaw += 0.006;
     if (this.follow && highlights) {
@@ -295,15 +308,12 @@ export class CoreView3D {
     for (let k = 0; k < 3; k++) this.center[k] += (this.targetCenter[k] - this.center[k]) * ease;
     this.changed = false;
 
-    const { ctx } = this;
-    const cam = this.project();
-    ctx.fillStyle = BACKGROUND;
-    ctx.fillRect(0, 0, this.w, this.h);
-    this.drawBox(cam);
+  }
 
-    const n = this.coreSize;
-    const { owner, lastWrite, lastExec, op, a, b } = vm;
-    const steps = vm.steps;
+  // Draw empty space in one path and sort occupied cells from far to near.
+  collectCells(vm, fadeSteps) {
+    const { ctx, coreSize: n } = this;
+    const { owner, lastExec, op, a, b, steps } = vm;
     const slicing = this.slice.axis >= 0;
     // Empty space as faint dots (one path, one fill); occupied cells are
     // collected with a depth key for sorting far to near.
@@ -325,6 +335,12 @@ export class CoreView3D {
     ctx.fill();
     const sorted = keys.subarray(0, m).sort();
     this.drawnCount = m;
+    return sorted;
+  }
+
+  paintCells(vm, fadeSteps, sorted) {
+    const { ctx, coreSize: n, drawnCount: m } = this;
+    const { owner, lastWrite, lastExec, op, steps } = vm;
     for (let j = 0; j < m; j++) {
       const i = sorted[j] % n;
       this.drawnCells[j] = i;
@@ -348,6 +364,11 @@ export class CoreView3D {
         ctx.fillRect(x, y, size, size);
       }
     }
+  }
+
+  drawProcesses(vm) {
+    const { ctx } = this;
+    const slicing = this.slice.axis >= 0;
     // Running processes: small bright points, so the warriors' colours show.
     ctx.fillStyle = '#ffffff';
     for (const war of vm.warriors) {
@@ -360,6 +381,10 @@ export class CoreView3D {
         if (++count > 2000) break;
       }
     }
+  }
+
+  drawFollowTrail(now) {
+    const { ctx } = this;
     // The followed process: its trail (broken where it jumps) and a pulsing ring.
     if (this.followWarrior >= 0 && this.tracked >= 0) {
       ctx.strokeStyle = this.followColor;
@@ -381,6 +406,11 @@ export class CoreView3D {
       ctx.arc(this.sx[c], this.sy[c], r, 0, Math.PI * 2);
       ctx.stroke();
     }
+  }
+
+  drawOverlays(highlights, now) {
+    const { ctx, coreSize: n } = this;
+    const slicing = this.slice.axis >= 0;
     // Battle highlights.
     if (highlights) {
       highlights.draw(ctx, now, (cell) => (slicing && !this.inSlice(cell) ? null : [this.sx[cell], this.sy[cell], this.cellSize * this.scale[cell]]), warriorColors());

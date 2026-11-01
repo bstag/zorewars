@@ -1,0 +1,154 @@
+[
+  {
+    "s": {
+      "coreSize": 80,
+      "maxProcesses": 8,
+      "pSpaceSize": 5,
+      "maxCycles": 100
+    },
+    "mode": "match",
+    "layout": {
+      "words": 10000,
+      "core": 160,
+      "count": 4,
+      "contacts": 9000,
+      "events": 9500
+    },
+    "digest": "e6e2eb1abf43a3418dd2f2cf2fb8f6f68df01d2d4ffff9da69a84e3214a09ad9"
+  },
+  {
+    "s": {
+      "coreSize": 80,
+      "maxProcesses": 8,
+      "pSpaceSize": 5,
+      "maxCycles": 100
+    },
+    "mode": "solo",
+    "layout": {
+      "words": 10000,
+      "core": 160,
+      "count": 4,
+      "contacts": 9000,
+      "events": 9500
+    },
+    "digest": "90cdfd5a6a3cbcff5b29ae83342ddc9a6cab7359e6ba2f577da18e19315219a3"
+  },
+  {
+    "s": {
+      "coreSize": 80,
+      "maxProcesses": 8,
+      "pSpaceSize": 5,
+      "maxCycles": 100
+    },
+    "mode": "live1",
+    "layout": {
+      "words": 10000,
+      "core": 160,
+      "count": 1,
+      "contacts": 9000,
+      "events": 9500
+    },
+    "digest": "625615dc36eac5adc17cc4475374fe1604ab9c71a9432078fa4005a07ea47732"
+  },
+  {
+    "s": {
+      "coreSize": 80,
+      "maxProcesses": 8,
+      "pSpaceSize": 5,
+      "maxCycles": 100
+    },
+    "mode": "live4",
+    "layout": {
+      "words": 10000,
+      "core": 160,
+      "count": 4,
+      "contacts": 9000,
+      "events": 9500
+    },
+    "digest": "43c4a4ae941d2432904bbf952496249e3b4d45e99cd1ea4c3132dd2f2b12c3a0"
+  },
+  {
+    "s": {
+      "coreSize": 80,
+      "maxProcesses": 8,
+      "pSpaceSize": 5,
+      "maxCycles": 100,
+      "topology": "torus",
+      "sizeX": 10,
+      "sizeY": 4,
+      "sizeZ": 2
+    },
+    "mode": "match",
+    "layout": {
+      "words": 10000,
+      "core": 160,
+      "count": 4,
+      "contacts": 9000,
+      "events": 9500
+    },
+    "digest": "f6ccb569fb08236da668da63650fcdb520ef579fa66f02324cd0407a2a980510"
+  },
+  {
+    "s": {
+      "coreSize": 80,
+      "maxProcesses": 8,
+      "pSpaceSize": 5,
+      "maxCycles": 100,
+      "topology": "torus",
+      "sizeX": 10,
+      "sizeY": 4,
+      "sizeZ": 2
+    },
+    "mode": "solo",
+    "layout": {
+      "words": 10000,
+      "core": 160,
+      "count": 4,
+      "contacts": 9000,
+      "events": 9500
+    },
+    "digest": "a5124b9b396e048fcda30ccb9df8deaf31a257709b3967f87c6559cd519487cd"
+  },
+  {
+    "s": {
+      "coreSize": 80,
+      "maxProcesses": 8,
+      "pSpaceSize": 5,
+      "maxCycles": 100,
+      "topology": "torus",
+      "sizeX": 10,
+      "sizeY": 4,
+      "sizeZ": 2
+    },
+    "mode": "live1",
+    "layout": {
+      "words": 10000,
+      "core": 160,
+      "count": 1,
+      "contacts": 9000,
+      "events": 9500
+    },
+    "digest": "67ea48a330dbf72091335c6f01867d5f5f95b8b5733ffe2752bfed85e31a2834"
+  },
+  {
+    "s": {
+      "coreSize": 80,
+      "maxProcesses": 8,
+      "pSpaceSize": 5,
+      "maxCycles": 100,
+      "topology": "torus",
+      "sizeX": 10,
+      "sizeY": 4,
+      "sizeZ": 2
+    },
+    "mode": "live4",
+    "layout": {
+      "words": 10000,
+      "core": 160,
+      "count": 4,
+      "contacts": 9000,
+      "events": 9500
+    },
+    "digest": "12840831f9b3c4bd3f8b612460b1e59230b6592da6cc4046a82349597537240c"
+  }
+]

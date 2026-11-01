@@ -84,6 +84,7 @@ node cli/zorewars.js train --profiles 94nop,88,lp,94x --seed 4242
 | `scripts/benchmark.js` | Round robin of the library; writes `warriors/benchmarks.json` (`npm run bench`). |
 | `examples/` | Example warriors in each language. |
 | `test/` | Engine, converter and tool tests: `npm test`. |
+| `tools/quality/`, `scripts/coverage.js`, `scripts/crap.js` | Repository coverage and CRAP reports: see the [change-risk process](docs/testing-quality.md). |
 
 ## How it works
 

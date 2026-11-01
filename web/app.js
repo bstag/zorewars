@@ -1,3 +1,14 @@
+import {roundOutcome} from './round-outcome.js';
+import {librarySwitchPrompt} from './library-choice.js';
+import {conversionTarget,installConversion,conversionStatus,clearConversionStatus} from './conversion-slots.js';
+import {createRoundActions} from './round-actions.js';
+import {prepareReplay} from './replay.js';
+import {initializeRemoteImport,initializeLocalSlots} from './startup-slots.js';
+import {advanceFrame,sceneNeedsDraw} from './frame-policy.js';
+import {paintInspector} from './inspector.js';
+import {compileSource,canStartEditedRound,publishCompilation} from './compile-source.js';
+import {escapeHtml,compileStatusMarkup,generatedListing} from './editor-status.js';
+import {selectRenderer,updateRendererControls} from './renderer-choice.js';
 // ZoreWars arena: editors, live battle view, inspector and tournaments.
 
 import { compile, VM, mulberry32, DEFAULT_SETTINGS, RULESETS, listing, roundPoints, postMortem, generateFromJS } from '../src/engine/index.js';
@@ -8,6 +19,8 @@ import { AvatarView } from './avatars.js';
 import { Highlights } from './highlights.js';
 import { initPicker } from './picker.js';
 import { scanLibraryFit } from './library-fit.js';
+import { fieldKey, fieldSettings, battlefieldSettings, NO_HILL_RULES } from './battlefield.js';
+import { rulesHint } from './rules-hint.js';
 import { createSimulationRunner } from './simulation.js';
 import { createBrowserMatchPool } from './matches.js';
 import { createBrowserLiveController } from './live.js';
@@ -139,29 +152,13 @@ function updateShapeButton(view = renderer) {
 // Splashes and sparks where warriors overwrite and kill each other.
 const highlights = new Highlights();
 function pickRenderer() {
-  const geo = state.vm?.geo ?? null;
-  const want3d = !state.avatars && !!geo && (state.view3d ?? geo.Z > 1);
-  const flat = !!state.avatarsFlat || avatars3dState === 'failed';
+  const {geo,want3d,flat,next} = selectRenderer(state, {avatars,avatars3d,renderer2d,renderer3d}, avatars3dState);
   if (state.avatars && !flat) loadAvatars3d();
-  const avatarView = !flat && avatars3d ? avatars3d : avatars;
-  const next = state.avatars ? avatarView : want3d ? renderer3d : renderer2d;
   const key = `${!!geo}/${want3d}/${!!state.avatars}/${next === avatars3d}/${flat}`;
   if (key === pickRenderer.last && next === renderer) return;      // nothing changed this frame
   pickRenderer.last = key;
-  $('viewToggle').hidden = state.avatars ? avatars3dState === 'failed' : !geo;
-  $('avatarToggle').setAttribute('aria-pressed', String(!!state.avatars));
-  if (state.avatars) {
-    $('viewToggle').textContent = flat ? '3D' : 'Flat';
-    $('viewToggle').title = flat ? 'Show the avatars in 3D (WebGL)' : 'Show the avatars on a flat canvas';
-  } else {
-    $('viewToggle').textContent = want3d ? '2D' : '3D';
-    $('viewToggle').title = want3d ? 'Show the flat grid' : 'Show the battlefield in 3D (drag to turn it)';
-  }
-  for (const id of ['spinToggle', 'zoomOut', 'zoomIn', 'fitView', 'actionView', 'sliceToggle']) $(id).hidden = !want3d;
+  updateRendererControls($, state, {want3d,flat,geo}, renderer3d, avatars3dState);
   updateShapeButton(next);
-  $('sliceBar').hidden = !want3d || renderer3d.slice.axis < 0;
-  $('actionView').setAttribute('aria-pressed', String(renderer3d.follow));
-  $('spinToggle').setAttribute('aria-pressed', String(renderer3d.spin));
   if (next === renderer) return;
   renderer = next;
   renderer3d.active = want3d;
@@ -240,10 +237,8 @@ function pickLibrary(entry) {
   if (!isPristine(slot) && !confirm('Replace your edits with this warrior?')) return;
   // A warrior for another battlefield (or other rules) offers to switch to its own.
   const field = entry.battlefield ?? 'ring';
-  const switchTo = libraryFits(entry) === false && (fieldKey(state.settings) !== field || state.settings.rulesName)
-    && confirm(fieldKey(state.settings) !== field
-      ? `${entry.name} plays on ${field === 'ring' ? 'the ring' : `the ${field.replace('torus:', '')} battlefield`}. Switch to it?`
-      : `${entry.name} doesn't play under the ${state.settings.rulesName} rules. Switch to the standard rules?`);
+  const prompt = librarySwitchPrompt(entry,state.settings,libraryFits(entry));
+  const switchTo = prompt && confirm(prompt);
   Object.assign(slot, { language: entry.language, source: entry.source, libFile: entry.file, origin: null, edited: false, compiled: null });
   saveSlots();
   renderEditor();
@@ -271,45 +266,22 @@ async function compileSlot(slot) {
   const token = ++slot.token;
   slot.status = 'compiling';
   if (slot === activeSlot()) renderEditorStatus();
-  let result;
-  const generator = slot.language !== 'redcode', source = slot.source;
-  const hung = generator && (safeGet(GENERATING_KEY) || []).includes(source);
-  try {
-    if (hung) {
-      throw new Error("This warrior's code didn't finish running last time (an endless loop?), so it wasn't run again. Edit it to try again.");
-    }
-    if (slot.language === 'python') {
-      if (!pythonReady()) {
-        slot.statusText = 'Loading Python in your browser (about 10 MB, first time only)…';
-        if (slot === activeSlot()) renderEditorStatus();
-      }
-      await loadPython();             // a slow download is not a hang
-      generating(source, true);
-      const redcode = await generateFromPython(source, state.settings);
-      generating(source, false);
-      result = compile(redcode, 'redcode', state.settings);
-    } else {
-      if (generator) generating(source, true);
-      result = compile(source, slot.language, state.settings);
-      if (generator) generating(source, false);
-    }
-  } catch (e) {
-    if (generator && !hung) generating(source, false);
-    const msg = String(e.message || e).split('\n').filter(Boolean).slice(-3).join('\n');
-    result = { ok: false, errors: [{ line: 0, message: msg }], warnings: [], instructions: [] };
-  }
-  if (token !== slot.token) return; // superseded by a newer edit
-  if (result.ok && result.name === 'Unnamed' && slot.origin?.name) result.name = slot.origin.name;
-  slot.compiled = result;
-  slot.status = result.ok ? 'ok' : 'error';
-  slot.statusText = '';
+  const source = slot.source;
+  const hung = slot.language !== 'redcode' && (safeGet(GENERATING_KEY) || []).includes(source);
+  const result = await compileSource(source, slot.language, {
+    compile, pythonReady, loadPython, generateFromPython, generating, hung,
+    getSettings: () => state.settings,
+    onPythonLoading: () => {
+      slot.statusText = 'Loading Python in your browser (about 10 MB, first time only)…';
+      if (slot === activeSlot()) renderEditorStatus();
+    },
+  });
+  if (!publishCompilation(slot, token, result)) return;
   renderTabs();
   if (slot === activeSlot()) renderEditorStatus();
   refreshPanels();
   // Apply edits immediately when the current round has not started or is over.
-  if (!state.booting && (!state.vm || state.vm.steps === 0 || state.vm.done)) {
-    if (state.slots.every((s) => s.status !== 'compiling')) newRound();
-  }
+  if (canStartEditedRound(state)) newRound();
 }
 
 function scheduleCompile(slot, delay) {
@@ -389,25 +361,14 @@ function onSourceChange(text) {
   scheduleCompile(slot, slot.language === 'python' ? 900 : 250);
 }
 
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-}
 
 function renderEditorStatus() {
   const slot = activeSlot();
   const el = $('compileStatus');
   const c = slot.compiled;
-  if (slot.status === 'compiling') {
-    el.innerHTML = `<span class="pending">● ${escapeHtml(slot.statusText || 'Compiling…')}</span>`;
-  } else if (c && !c.ok) {
-    const where = slot.language === 'redcode' ? 'line' : 'Redcode line';
-    el.innerHTML = `<span class="bad">✕ ${c.errors.length} error${c.errors.length > 1 ? 's' : ''}</span><ul>${
-      c.errors.map((e) => `<li>${e.line ? `${where} ${e.line}: ` : ''}${escapeHtml(e.message)}</li>`).join('')}</ul>`;
-  } else if (c) {
-    const warn = c.warnings.length ? ` <span class="pending">(${c.warnings.length} warning${c.warnings.length > 1 ? 's' : ''}: ${escapeHtml(c.warnings[0].message)})</span>` : '';
-    el.innerHTML = `<span class="ok">✓ ${escapeHtml(c.name)}</span> <span class="muted">by ${escapeHtml(c.author)} · ${c.instructions.length} instruction${c.instructions.length === 1 ? '' : 's'}</span>${warn}`;
-  } else el.textContent = '';
-  const hint = rulesHint(c);
+  el.innerHTML = compileStatusMarkup(slot);
+  const hint = rulesHint(c, { settings: state.settings, entry: libraryEntry(slot.libFile),
+    fit: state.libraryFit?.done ? state.libraryFit.fit.get(slot.libFile) : undefined });
   if (hint) {
     el.insertAdjacentHTML('beforeend', `<div class="rules-hint pending">${escapeHtml(hint.text)}<button class="btn" id="useRules">Use these rules</button></div>`);
     $('useRules').onclick = () => applySettings(hint.settings);
@@ -415,16 +376,12 @@ function renderEditorStatus() {
   $('strategyText').textContent = c?.ok ? c.strategy.replace(/\s*\n\s*/g, ' ') : '';
   $('convertRow').hidden = !(c?.ok && slot.language === 'redcode');
 
-  const gen = $('generatedBox');
-  if (c?.ok) {
-    $('generatedCode').textContent = listing(c, state.settings);
-    $('generatedMeta').textContent = slot.language === 'redcode' ? '(normalised)' : `(generated from ${slot.language === 'python' ? 'Python' : 'JavaScript'})`;
-    gen.hidden = false;
-  } else if (c?.redcode && slot.language !== 'redcode') {
-    $('generatedCode').textContent = c.redcode;
-    $('generatedMeta').textContent = '(generated, has errors)';
-    gen.hidden = false;
-  } else gen.hidden = true;
+  const generated = generatedListing(slot, state.settings);
+  $('generatedBox').hidden = !generated;
+  if (generated) {
+    $('generatedCode').textContent = generated.code;
+    $('generatedMeta').textContent = generated.meta;
+  }
   renderGutter();
 }
 
@@ -449,45 +406,6 @@ function removeSlot() {
   newRound();
 }
 
-
-// Originals written for another hill say so with ;assert CORESIZE == N or
-// by being longer than our limit. Offer to switch the arena's rules.
-const HILL_94X = { coreSize: 55440, maxProcesses: 10000, maxCycles: 500000, maxLength: 200, minDistance: 200 };
-function rulesHint(c) {
-  if (!c) return null;
-  // Warriors written for a 3D battlefield, or the plane, say so when compiled elsewhere.
-  const field3d = libraryEntry(activeSlot()?.libFile)?.battlefield ?? 'torus:40x20x10';
-  if ((state.settings.sizeZ ?? 1) < 2 && c.errors?.some((e) => /is for a 3D battlefield/.test(e.message))) {
-    const size = field3d.slice(6).replaceAll('x', '×');
-    return { settings: { ...state.settings, ...fieldSettings(field3d) }, text: `This warrior is written for the 3D battlefield (${size}, experimental). Switching applies to every warrior in the arena.` };
-  }
-  // A ring warrior on a plane or volume: too long for half a row, or it would
-  // destroy itself there. Offer the classic ring.
-  const lib = activeSlot()?.libFile;
-  const home = libraryEntry(lib)?.battlefield;
-  if (home && home !== fieldKey(state.settings) && c.errors?.length) {
-    return { settings: { ...state.settings, ...fieldSettings(home) }, text: `This warrior is written for the ${home.slice(6).replaceAll('x', '×')} battlefield (experimental). Switching applies to every warrior in the arena.` };
-  }
-  const misfit = lib && state.libraryFit?.done && state.libraryFit.fit.get(lib) === false && !libraryEntry(lib)?.battlefield;
-  if (state.settings.topology === 'torus' && (misfit || c.errors?.some((e) => /half a row/.test(e.message)))) {
-    return { settings: { ...state.settings, ...fieldSettings('ring'), coreSize: 8000 }, text: "This warrior is written for the classic ring and can't play on this battlefield. Switching applies to every warrior in the arena." };
-  }
-  if (state.settings.topology !== 'torus' && c.errors?.some((e) => /is for a plane/.test(e.message))) {
-    return { settings: { ...state.settings, ...fieldSettings('torus:100x80') }, text: 'This warrior is written for the plane battlefield (100×80, experimental). Switching applies to every warrior in the arena.' };
-  }
-  const core = c.warnings?.map((w) => /CORESIZE\s*==\s*(\d+)/.exec(w.message)).find(Boolean);
-  const len = c.errors?.map((e) => /is (\d+) instructions long/.exec(e.message)).find(Boolean);
-  if (!core && !len) return null;
-  let settings = { ...state.settings };
-  if (core && +core[1] === 55440) settings = { ...settings, ...HILL_94X };
-  else if (core) settings.coreSize = +core[1];
-  if (len) settings.maxLength = Math.max(settings.maxLength, +len[1]);
-  if (settings.coreSize === state.settings.coreSize && settings.maxLength === state.settings.maxLength) return null;
-  const parts = [];
-  if (settings.coreSize !== state.settings.coreSize) parts.push(`core size ${settings.coreSize.toLocaleString()}`);
-  if (settings.maxLength !== state.settings.maxLength) parts.push(`max length ${settings.maxLength}`);
-  return { settings, text: `This warrior was written for different rules (${parts.join(', ')}). Switching applies to every warrior in the arena.` };
-}
 
 // ---------------------------------------------------------------- importing
 
@@ -626,24 +544,13 @@ async function convertActive(lang) {
   const status = $('convertStatus');
   const buttons = [...document.querySelectorAll('#convertRow .linkbtn')];
   buttons.forEach((b) => { b.disabled = true; });
-  status.textContent = lang === 'python' && !pythonReady() ? 'loading Python to verify the conversion…' : 'converting…';
+  status.textContent = conversionStatus(lang,pythonReady());
   try {
     const toRedcode = lang === 'javascript' ? (code) => generateFromJS(code, state.settings) : (code) => generateFromPython(code, state.settings);
     const r = await convertWarrior(slot.source, lang, { compile, toRedcode, settings: state.settings });
-    let target;
-    if (state.slots.length < MAX_SLOTS) {
-      target = makeSlot(null);
-      state.slots.push(target);
-      state.active = state.slots.length - 1;
-    } else {
-      if (!confirm('All four slots are in use. Replace this warrior with its conversion?')) return;
-      target = slot;
-    }
-    const label = lang === 'python' ? 'Python' : 'JavaScript';
-    Object.assign(target, {
-      language: lang, source: r.code, libFile: null, edited: false, compiled: null,
-      origin: { name: `${slot.compiled.name}, converted to ${label}`, url: slot.origin?.url ?? null },
-    });
+    const target = conversionTarget(state,slot,MAX_SLOTS,makeSlot,confirm);
+    if (!target) return;
+    const label = installConversion(target,slot,lang,r);
     saveSlots();
     renderEditor();
     await compileSlot(target);
@@ -652,8 +559,7 @@ async function convertActive(lang) {
   } catch (e) {
     status.textContent = `couldn't convert: ${e.message}`;
   } finally {
-    buttons.forEach((b) => { b.disabled = false; });
-    if (status.textContent.startsWith('converting') || status.textContent.startsWith('loading')) status.textContent = '';
+    clearConversionStatus(status,buttons);
   }
 }
 
@@ -722,7 +628,7 @@ function forgetRound() {
 
 function discardLive() {
   state.live?.close(); state.live = null; state.liveGeneration++;
-  state.livePending = null; state.carry = 0; finishing = null;
+  state.livePending = null; state.carry = 0; roundActions.cancelFinish();
   $('liveBackendStatus').textContent = ''; $('liveBackendStatus').dataset.backend = '';
   $('stepBtn').disabled = false; $('finishBtn').disabled = false;
 }
@@ -745,26 +651,7 @@ function colorName(k, name) {
 }
 const pad4 = (n) => String(n).padStart(4, '0');
 
-async function stepVM(maxSteps, valid = () => true) {
-  const vm = state.vm;
-  const live = state.live;
-  if (!vm || vm.done || !live) return 0;
-  const token = { vm, live }; state.livePending = token; $('stepBtn').disabled = true;
-  try {
-    const n = await live.advance(maxSteps, { cancelled: () => state.vm !== vm || state.live !== live || !valid() });
-    if (state.vm !== vm || state.live !== live) return 0;
-    state.lastStep = live.lastStep;
-    checkDeaths();
-    if (vm.done) finishRound();
-    sampleChart(); updateCycle(); state.dirtyFrame = true;
-    return n;
-  } catch (error) {
-    if (state.vm === vm && state.live === live) { stopRunning(); log(`Live battle stopped: ${escapeHtml(error.message)}`); }
-    return 0;
-  } finally {
-    if (state.livePending === token) { state.livePending = null; $('stepBtn').disabled = false; }
-  }
-}
+function stepVM(maxSteps, valid) { return roundActions.step(maxSteps, valid); }
 
 function checkDeaths() {
   const vm = state.vm;
@@ -781,19 +668,9 @@ function finishRound() {
   stopRunning();
   vm.recordResults();
   renderPostMortem(postMortem(vm));
-  const tag = state.replaying ? '<span class="replay-tag">Replay:</span> ' : '';
-  if (vm.winner !== null && vm.winner !== undefined) {
-    const w = vm.warriors[vm.winner];
-    log(`${tag}${colorName(vm.winner, w.name)} <b>wins</b> at cycle ${vm.cycle}`);
-    showOverlay(`${w.name} wins`, `cycle ${vm.cycle.toLocaleString()} · see "Why it ended" · ${touchQuery.matches ? "tap" : "click"} for a new round`, WARRIOR_COLORS[state.roster[vm.winner]]);
-  } else {
-    const survivors = vm.warriors.filter((w) => w.alive);
-    const msg = vm.warriors.length === 1
-      ? (survivors.length ? `Survived all ${vm.cycle.toLocaleString()} cycles` : `Died at cycle ${vm.cycle}`)
-      : `Tie: ${survivors.map((w) => w.name).join(', ')} survived ${vm.cycle.toLocaleString()} cycles`;
-    log(`${tag}<b>${escapeHtml(msg)}</b>`);
-    showOverlay(vm.warriors.length === 1 ? (survivors.length ? 'Survived' : 'Died') : 'Tie', `${msg} · ${touchQuery.matches ? "tap" : "click"} for a new round`);
-  }
+  const outcome = roundOutcome(vm, {replaying:state.replaying,roster:state.roster,colors:WARRIOR_COLORS,touch:touchQuery.matches,colorName});
+  log(outcome.log);
+  showOverlay(outcome.overlay.title,outcome.overlay.sub,outcome.overlay.color);
   renderScoreboard();
 }
 
@@ -847,21 +724,11 @@ async function replayEnd(cyclesBefore = 100) {
   stopRunning();
   discardLive();
   const generation = state.liveGeneration;
-  const vm = new VM(state.settings);
-  vm.enableEvents();
-  highlights.reset(vm.size);
-  vm.load(setup.warriors, { positions: setup.positions, firstTurn: setup.firstTurn, pspaces: setup.pspaces.map((ps) => ps.slice()) });
-  const target = Math.max(0, end - cyclesBefore);
-  let deadline = performance.now() + 4;
-  while (!vm.done && vm.cycle < target) {
-    vm.step();
-    if ((vm.steps & 511) === 0 && performance.now() >= deadline) {
-      await new Promise((resolve) => setTimeout(resolve, 0));
-      if (state.liveGeneration !== generation) return;
-      deadline = performance.now() + 4;
-    }
-  }
-  if (state.liveGeneration !== generation) return;
+  const vm = await prepareReplay(state.settings, setup, end, cyclesBefore, {
+    isCurrent: () => state.liveGeneration === generation,
+    resetHighlights: size => highlights.reset(size),
+  });
+  if (!vm) return;
   state.vm = vm;
   installLive(vm);
   state.replaying = true;
@@ -900,20 +767,13 @@ function stopRunning() {
   $('runBtn').setAttribute('aria-label', 'Run');
 }
 
-let finishing = null;
-async function finishFast() {
-  if (!state.vm || state.vm.done || finishing) return;
-  stopRunning();
-  const token = { vm: state.vm, live: state.live }; finishing = token;
-  $('finishBtn').disabled = true;
-  try {
-    while (finishing === token && state.vm === token.vm && state.live === token.live && !token.vm.done) {
-      const n = await stepVM(Infinity);
-      if (!n) break;
-      await new Promise((resolve) => setTimeout(resolve, 0));
-    }
-  } finally { if (finishing === token) { finishing = null; $('finishBtn').disabled = false; } }
-}
+const roundActions = createRoundActions(state, {
+  setStepDisabled: value => { $('stepBtn').disabled = value; },
+  setFinishDisabled: value => { $('finishBtn').disabled = value; },
+  checkDeaths, finishRound, sampleChart, updateCycle, stopRunning,
+  onError: error => { stopRunning(); log(`Live battle stopped: ${escapeHtml(error.message)}`); },
+});
+function finishFast() { return roundActions.finish(); }
 
 // ---------------------------------------------------------------- rendering loop
 
@@ -925,15 +785,7 @@ function sampleChart() {
 function frame() {
   requestAnimationFrame(frame);           // first, so one bad frame can't stop the loop
   const vm = state.vm;
-  if (vm && state.running && !vm.done && !state.livePending) {
-    state.carry += state.stepsPerFrame * vm.warriors.filter((w) => w.alive).length;
-    const want = Math.floor(state.carry);
-    state.carry -= want;
-    if (want > 0) {
-      const epoch = state.liveEpoch;
-      stepVM(want, () => state.running && state.liveEpoch === epoch);
-    }
-  }
+  advanceFrame(state, stepVM);
   const now = performance.now();
   if (vm) {
     pickRenderer();
@@ -945,9 +797,7 @@ function frame() {
   // redraws everything; an animation (highlights fading, the avatars, a
   // spinning view) only redraws the arena, at most 30 times a second while
   // paused, and not at all while the arena is off screen.
-  if (state.dirtyFrame) state.sceneDirty = true;
-  let scene = state.sceneDirty || highlights.active || renderer.animating;
-  if (scene && !state.sceneDirty && !state.running && now - state.lastSceneDraw < 33) scene = false;
+  const scene = sceneNeedsDraw(state, highlights.active, renderer.animating, now);
   if (scene && vm && arenaVisible()) {
     const fade = Math.min(40000, Math.max(24, state.stepsPerFrame * vm.warriors.length * 36));
     renderer.hover = state.hover;
@@ -1049,44 +899,7 @@ function renderScoreboardLive() {
 }
 
 function renderInspector() {
-  const vm = state.vm;
-  const addr = state.pinned >= 0 ? state.pinned : state.hover;
-  const el = $('inspector');
-  const hint = $('inspectHint');
-  if (!vm) { el.textContent = ''; return; }
-  const ls = state.lastStep;
-  let center = addr;
-  if (center < 0 && ls && !state.running) center = ls.pc;
-  if (center < 0) {
-    el.innerHTML = '';
-    hint.textContent = 'Hover over the core to read memory. Click to pin.';
-    return;
-  }
-  const rows = [];
-  for (let d = -4; d <= 4; d++) {
-    const p = vm.norm(center + d);
-    const o = vm.owner[p];
-    const who = o >= 0 ? `<span style="color:${WARRIOR_COLORS[state.roster[o]]}">${escapeHtml(vm.warriors[o].name)}</span>` : '';
-    const running = vm.warriors.some((w) => w.alive && [...w.queue].includes(p)) ? ' ◂ pc' : '';
-    const text = `${d === 0 ? '▸' : ' '}${pad4(p)}  ${vm.disassemble(p).padEnd(22)}`;
-    rows.push(d === 0 ? `<span class="cur">${escapeHtml(text)}${who}${running}</span>` : `${escapeHtml(text)}${who}${running}`);
-  }
-  el.innerHTML = rows.join('\n');
-  if (addr < 0 && ls) {
-    hint.innerHTML = `Last step: ${colorName(ls.warrior, vm.warriors[ls.warrior].name)} ran address ${pad4(ls.pc)}${ls.killed ? ' and the process <b>died</b>' : ''}.`;
-  } else {
-    // Where this cell's current contents came from.
-    const p = vm.norm(addr);
-    const o = vm.owner[p];
-    const wpc = vm.writerPc[p];
-    const origin = o < 0 ? 'Empty core: never written.'
-      : wpc < 0 ? `Loaded as part of ${colorName(o, vm.warriors[o].name)}.`
-      : `Written by ${colorName(o, vm.warriors[o].name)} at cycle ${vm.writeCycle[p].toLocaleString()}, using ${escapeHtml(vm.disassemble(wpc))} at ${pad4(wpc)}.`;
-    hint.innerHTML = `${origin} ${state.pinned >= 0 ? `Pinned at ${pad4(state.pinned)}; click again to unpin.` : 'Click to pin.'}`;
-    const peek = $('cellPeek');
-    peek.hidden = state.pinned < 0;
-    if (state.pinned >= 0) peek.innerHTML = `<b>${pad4(p)}</b> ${escapeHtml(vm.disassemble(p))} · ${origin} <span class="muted">Tap again to unpin.</span>`;
-  }
+  paintInspector(state, $, colorName, pad4);
 }
 
 function log(html) {
@@ -1192,15 +1005,6 @@ function runTournamentUI() {
 const SETTING_INPUTS = {
   coreSize: 'setCoreSize', maxCycles: 'setMaxCycles', maxProcesses: 'setMaxProcesses', maxLength: 'setMaxLength', minDistance: 'setMinDistance',
 };
-// The battlefield: the classic ring, or a torus plane (see design/3d-battlefield.md).
-function fieldKey(s) {
-  return s.topology === 'torus' ? `torus:${s.sizeX}x${s.sizeY}${(s.sizeZ ?? 1) > 1 ? `x${s.sizeZ}` : ''}` : 'ring';
-}
-function fieldSettings(key) {
-  if (!key.startsWith('torus:')) return { topology: 'ring', sizeX: undefined, sizeY: undefined, sizeZ: undefined };
-  const [x, y, z = 1] = key.slice(6).split('x').map(Number);
-  return { topology: 'torus', sizeX: x, sizeY: y, sizeZ: z, coreSize: x * y * z };
-}
 // Custom sizes: any torus up to MAX_CELLS (the 3D view slows down beyond it).
 const MAX_CELLS = 200000;
 const PRESET_FIELDS = () => [...$('setField').options].map((o) => o.value).filter((v) => v !== 'custom');
@@ -1232,11 +1036,6 @@ function renderSettings() {
   $('setRules').value = state.settings.rulesName || '';
   $('setCoreSize').disabled = state.settings.topology === 'torus';   // fixed by the plane's size
 }
-const NO_HILL_RULES = { rulesName: '', dialect: undefined, pSpace: undefined, assertErrors: undefined };
-// A battlefield with the standard rules (the ring also gets its default sizes).
-const battlefieldSettings = (field) => (field === 'ring'
-  ? { ...DEFAULT_SETTINGS, ...fieldSettings('ring'), ...NO_HILL_RULES }
-  : { ...NO_HILL_RULES, ...fieldSettings(field) });
 function applySettings(values) {
   stopRunning(); discardLive();
   state.settings = { ...state.settings, ...values };
@@ -1627,41 +1426,13 @@ async function boot() {
   // ?url=<archive file>&vs=silk.red imports an original to fight a library
   // warrior (the encyclopedia's Hall of Fame links here).
   const params = new URLSearchParams(location.search);
-  const remote = params.get('url');
-  let pendingImport = null;
-  if (remote) {
-    const vs = libraryEntry(params.get('vs')) ? params.get('vs') : 'dwarf.red';
-    state.slots = [makeSlot(null), makeSlot(vs)];
-    state.slots[0].source = `; Loading ${remote}…\n`;
-    pendingImport = remote;
-    // &rules=94x-hill&length=201: the rules the original was written for
-    // (pMARS needs warriors at least their length apart); otherwise the
-    // classic ring.
-    const rules = RULESETS[params.get('rules')];
-    const length = parseInt(params.get('length'), 10) || 0;
-    applySettings(rules
-      ? { ...fieldSettings('ring'), ...NO_HILL_RULES, ...rules, rulesName: params.get('rules'), ...(length ? { maxLength: length, minDistance: Math.max(rules.minDistance, length) } : {}) }
-      : { ...DEFAULT_SETTINGS, ...fieldSettings('ring'), ...NO_HILL_RULES });
-    history.replaceState(null, '', location.pathname);
-  }
+  const startup = {state,libraryEntry,makeSlot,applySettings,saveSlots,maxSlots:MAX_SLOTS,
+    clearQuery: () => history.replaceState(null, '', location.pathname)};
+  const pendingImport = initializeRemoteImport(params, startup);
   // ?load=imp.red,dwarf.red opens library warriors (used by the encyclopedia).
   const requested = (new URLSearchParams(location.search).get('load') || '')
     .split(',').map((f) => f.trim()).filter((f) => libraryEntry(f)).slice(0, MAX_SLOTS);
-  if (pendingImport) {
-    // slots set above
-  } else if (requested.length) {
-    if (requested.length === 1) requested.push(requested[0] === 'dwarf.red' ? 'imp.red' : 'dwarf.red');
-    state.slots = requested.map((f) => makeSlot(f));
-    saveSlots();
-    history.replaceState(null, '', location.pathname);
-    // The first warrior's battlefield: a plane or 3D warrior opens on its own.
-    const field = libraryEntry(requested[0]).battlefield ?? 'ring';
-    if (fieldKey(state.settings) !== field || state.settings.rulesName || state.settings.dialect) applySettings(battlefieldSettings(field));
-  } else if (Array.isArray(saved) && saved.length) {
-    state.slots = saved.slice(0, MAX_SLOTS).map((s) => ({ ...makeSlot(null), ...s, compiled: null }));
-  } else {
-    state.slots = [makeSlot('dwarf.red'), makeSlot('mice.red')];
-  }
+  if (!pendingImport) initializeLocalSlots(saved, requested, startup);
   renderEditor();
   if (pendingImport) {
     try {

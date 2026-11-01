@@ -1,0 +1,3355 @@
+{
+  "baselineCommit": "9ec91fbd639cae1102a732b8e82924a6ca0c5290",
+  "inputs": "e108dd41cc199f9eedcb9d2e7706daa180f9a53fb0d86fdf5e2da879837c1cec",
+  "goalMaximum": 100,
+  "goalMet": true,
+  "threshold": 30,
+  "before": {
+    "methods": 2118,
+    "aboveThreshold": 123,
+    "unknownCoverage": 716,
+    "maxRisk": 240
+  },
+  "after": {
+    "methods": 2150,
+    "aboveThreshold": 91,
+    "unknownCoverage": 701,
+    "maxRisk": 99.23896222121073
+  },
+  "baseline": {
+    "methods": 2037,
+    "aboveThreshold": 165,
+    "unknownCoverage": 673,
+    "maxRisk": 4830
+  },
+  "tests": {
+    "passed": 544,
+    "skipped": 7,
+    "failed": 0
+  },
+  "coverage": {
+    "lines": {
+      "total": 38213,
+      "covered": 28009,
+      "skipped": 0,
+      "pct": 73.29
+    },
+    "statements": {
+      "total": 38213,
+      "covered": 28009,
+      "skipped": 0,
+      "pct": 73.29
+    },
+    "functions": {
+      "total": 2448,
+      "covered": 2192,
+      "skipped": 0,
+      "pct": 89.54
+    },
+    "branches": {
+      "total": 14488,
+      "covered": 13186,
+      "skipped": 0,
+      "pct": 91.01
+    },
+    "branchesTrue": {
+      "total": 0,
+      "covered": 0,
+      "skipped": 0,
+      "pct": 100
+    }
+  },
+  "targets": [
+    {
+      "before": {
+        "file": "src/engine/gpu/live.js",
+        "method": "createSession",
+        "line": 18,
+        "endLine": 74,
+        "complexity": 15,
+        "coverage": null,
+        "coverageStatus": "unknown",
+        "unknownReason": "statement_unattributed",
+        "crap": null,
+        "risk": 240,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "src/engine/gpu/live.js",
+        "method": "createSession",
+        "line": 18,
+        "endLine": 67,
+        "complexity": 9,
+        "coverage": 93.75,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 9.019775390625,
+        "risk": 9.019775390625,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "web/app.js",
+        "method": "convertActive",
+        "line": 542,
+        "endLine": 577,
+        "complexity": 15,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 240,
+        "risk": 240,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/app.js",
+        "method": "convertActive",
+        "line": 541,
+        "endLine": 564,
+        "complexity": 7,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 56,
+        "risk": 56,
+        "aboveThreshold": true
+      }
+    },
+    {
+      "before": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.drawFlying",
+        "line": 1154,
+        "endLine": 1186,
+        "complexity": 15,
+        "coverage": null,
+        "coverageStatus": "unknown",
+        "unknownReason": "branch_unattributed",
+        "crap": null,
+        "risk": 240,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.drawFlying",
+        "line": 1155,
+        "endLine": 1187,
+        "complexity": 15,
+        "coverage": 95.23809523809523,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 15.024295432458699,
+        "risk": 15.024295432458699,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "cli/tree-evolution.js",
+        "method": "cmdEvolveTrees",
+        "line": 43,
+        "endLine": 120,
+        "complexity": 50,
+        "coverage": 59.57446808510638,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 215.1608988374445,
+        "risk": 215.1608988374445,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "cli/tree-evolution.js",
+        "method": "cmdEvolveTrees",
+        "line": 43,
+        "endLine": 89,
+        "complexity": 20,
+        "coverage": 50,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 70,
+        "risk": 70,
+        "aboveThreshold": true
+      }
+    },
+    {
+      "before": {
+        "file": "src/engine/gpu/live.js",
+        "method": "session.advance",
+        "line": 46,
+        "endLine": 69,
+        "complexity": 14,
+        "coverage": null,
+        "coverageStatus": "unknown",
+        "unknownReason": "statement_unattributed",
+        "crap": null,
+        "risk": 210,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "src/engine/gpu/live.js",
+        "method": "session.advance",
+        "line": 39,
+        "endLine": 62,
+        "complexity": 14,
+        "coverage": 80.95238095238095,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 15.354497354497354,
+        "risk": 15.354497354497354,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "web/editor.js",
+        "method": "redcodeMode.token",
+        "line": 50,
+        "endLine": 71,
+        "complexity": 14,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 210,
+        "risk": 210,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/redcode-language.js",
+        "method": "redcodeMode.token",
+        "line": 13,
+        "endLine": 34,
+        "complexity": 14,
+        "coverage": 96,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 14.012544,
+        "risk": 14.012544,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "examples/experimental-94x/lifeboat/lifeboat-ga-4247.js",
+        "method": "emitAirbag",
+        "line": 5,
+        "endLine": 58,
+        "complexity": 13,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 182,
+        "risk": 182,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "examples/experimental-94x/lifeboat/lifeboat-ga-4247.js",
+        "method": "emitAirbag",
+        "line": 5,
+        "endLine": 57,
+        "complexity": 8,
+        "coverage": 100,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 8,
+        "risk": 8,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "examples/experimental-94x/lifeboat/lifeboat.js",
+        "method": "emitAirbag",
+        "line": 5,
+        "endLine": 58,
+        "complexity": 13,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 182,
+        "risk": 182,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "examples/experimental-94x/lifeboat/lifeboat.js",
+        "method": "emitAirbag",
+        "line": 5,
+        "endLine": 57,
+        "complexity": 8,
+        "coverage": 100,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 8,
+        "risk": 8,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.trackOnMap",
+        "line": 620,
+        "endLine": 673,
+        "complexity": 13,
+        "coverage": null,
+        "coverageStatus": "unknown",
+        "unknownReason": "branch_unattributed",
+        "crap": null,
+        "risk": 182,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.trackOnMap",
+        "line": 621,
+        "endLine": 674,
+        "complexity": 13,
+        "coverage": 88.46153846153845,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 13.259615384615385,
+        "risk": 13.259615384615385,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.draw",
+        "line": 793,
+        "endLine": 843,
+        "complexity": 13,
+        "coverage": null,
+        "coverageStatus": "unknown",
+        "unknownReason": "branch_unattributed",
+        "crap": null,
+        "risk": 182,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.draw",
+        "line": 794,
+        "endLine": 844,
+        "complexity": 15,
+        "coverage": 53.333333333333336,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 37.86666666666667,
+        "risk": 37.86666666666667,
+        "aboveThreshold": true
+      }
+    },
+    {
+      "before": {
+        "file": "cli/evolution.js",
+        "method": "cmdEvolve",
+        "line": 13,
+        "endLine": 108,
+        "complexity": 44,
+        "coverage": 60.3448275862069,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 164.7271310836853,
+        "risk": 164.7271310836853,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "cli/evolution.js",
+        "method": "cmdEvolve",
+        "line": 13,
+        "endLine": 88,
+        "complexity": 29,
+        "coverage": 66.66666666666666,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 60.148148148148195,
+        "risk": 60.148148148148195,
+        "aboveThreshold": true
+      }
+    },
+    {
+      "before": {
+        "file": "cli/zorewars.js",
+        "method": "cmdCompile",
+        "line": 360,
+        "endLine": 382,
+        "complexity": 16,
+        "coverage": 16.666666666666664,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 164.14814814814818,
+        "risk": 164.14814814814818,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "cli/zorewars.js",
+        "method": "cmdCompile",
+        "line": 360,
+        "endLine": 382,
+        "complexity": 16,
+        "coverage": 61.111111111111114,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 31.05624142661179,
+        "risk": 31.05624142661179,
+        "aboveThreshold": true
+      }
+    },
+    {
+      "before": {
+        "file": "src/engine/convert.js",
+        "method": "emitNodes",
+        "line": 253,
+        "endLine": 324,
+        "complexity": 45,
+        "coverage": 62,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 156.1158,
+        "risk": 156.1158,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "src/engine/convert.js",
+        "method": "emitNodes",
+        "line": 253,
+        "endLine": 291,
+        "complexity": 25,
+        "coverage": 72.72727272727273,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 37.67843726521412,
+        "risk": 37.67843726521412,
+        "aboveThreshold": true
+      }
+    },
+    {
+      "before": {
+        "file": "cli/zorewars.js",
+        "method": "cmdTrace",
+        "line": 414,
+        "endLine": 441,
+        "complexity": 12,
+        "coverage": null,
+        "coverageStatus": "unknown",
+        "unknownReason": "branch_unattributed",
+        "crap": null,
+        "risk": 156,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "cli/zorewars.js",
+        "method": "cmdTrace",
+        "line": 414,
+        "endLine": 441,
+        "complexity": 12,
+        "coverage": 61.53846153846154,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 20.19299044151115,
+        "risk": 20.19299044151115,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "scripts/import-planar-history.js",
+        "method": "obtain",
+        "line": 33,
+        "endLine": 61,
+        "complexity": 12,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 156,
+        "risk": 156,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "scripts/archive-cache.js",
+        "method": "obtain",
+        "line": 9,
+        "endLine": 37,
+        "complexity": 12,
+        "coverage": 100,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 12,
+        "risk": 12,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "web/app.js",
+        "method": "compileSlot",
+        "line": 262,
+        "endLine": 286,
+        "complexity": 12,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 156,
+        "risk": 156,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/app.js",
+        "method": "compileSlot",
+        "line": 265,
+        "endLine": 285,
+        "complexity": 7,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 56,
+        "risk": 56,
+        "aboveThreshold": true
+      }
+    },
+    {
+      "before": {
+        "file": "web/app.js",
+        "method": "replayEnd",
+        "line": 762,
+        "endLine": 797,
+        "complexity": 12,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 156,
+        "risk": 156,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/app.js",
+        "method": "replayEnd",
+        "line": 720,
+        "endLine": 745,
+        "complexity": 7,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 56,
+        "risk": 56,
+        "aboveThreshold": true
+      }
+    },
+    {
+      "before": {
+        "file": "web/encyclopedia.js",
+        "method": "splitComment",
+        "line": 26,
+        "endLine": 38,
+        "complexity": 12,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 156,
+        "risk": 156,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/encyclopedia-content.js",
+        "method": "splitComment",
+        "line": 14,
+        "endLine": 30,
+        "complexity": 12,
+        "coverage": 100,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 12,
+        "risk": 12,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "cli/block-devtools.js",
+        "method": "cmdEvolveBlocks",
+        "line": 11,
+        "endLine": 93,
+        "complexity": 42,
+        "coverage": 62.71186440677966,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 133.45566002366357,
+        "risk": 133.45566002366357,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "cli/block-devtools.js",
+        "method": "cmdEvolveBlocks",
+        "line": 11,
+        "endLine": 67,
+        "complexity": 15,
+        "coverage": 56.52173913043478,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 33.492644037149674,
+        "risk": 33.492644037149674,
+        "aboveThreshold": true
+      }
+    },
+    {
+      "before": {
+        "file": "examples/experimental-94x/compass/default.js",
+        "method": "emitCompass",
+        "line": 5,
+        "endLine": 57,
+        "complexity": 11,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 132,
+        "risk": 132,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "examples/experimental-94x/compass/default.js",
+        "method": "emitCompass",
+        "line": 5,
+        "endLine": 54,
+        "complexity": 6,
+        "coverage": 96.55172413793103,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 6.0014760752798395,
+        "risk": 6.0014760752798395,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "scripts/fuzz-pmars.js",
+        "method": "mutated",
+        "line": 112,
+        "endLine": 125,
+        "complexity": 11,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 132,
+        "risk": 132,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "scripts/pmars-programs.js",
+        "method": "mutated",
+        "line": 97,
+        "endLine": 110,
+        "complexity": 11,
+        "coverage": 83.33333333333334,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 11.560185185185183,
+        "risk": 11.560185185185183,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "tools/experimental-88.js",
+        "method": "riptide",
+        "line": 88,
+        "endLine": 107,
+        "complexity": 11,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 132,
+        "risk": 132,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "tools/experimental-88.js",
+        "method": "riptide",
+        "line": 88,
+        "endLine": 107,
+        "complexity": 11,
+        "coverage": 100,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 11,
+        "risk": 11,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "web/app.js",
+        "method": "stepVM",
+        "line": 667,
+        "endLine": 686,
+        "complexity": 11,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 132,
+        "risk": 132,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/app.js",
+        "method": "stepVM",
+        "line": 654,
+        "endLine": 654,
+        "complexity": 1,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 2,
+        "risk": 2,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.updateSpace",
+        "line": 564,
+        "endLine": 583,
+        "complexity": 11,
+        "coverage": null,
+        "coverageStatus": "unknown",
+        "unknownReason": "branch_unattributed",
+        "crap": null,
+        "risk": 132,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.updateSpace",
+        "line": 565,
+        "endLine": 584,
+        "complexity": 11,
+        "coverage": 76.92307692307693,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 12.487027765134272,
+        "risk": 12.487027765134272,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.updateMap",
+        "line": 585,
+        "endLine": 616,
+        "complexity": 11,
+        "coverage": null,
+        "coverageStatus": "unknown",
+        "unknownReason": "branch_unattributed",
+        "crap": null,
+        "risk": 132,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.updateMap",
+        "line": 586,
+        "endLine": 617,
+        "complexity": 11,
+        "coverage": 76.92307692307693,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 12.487027765134272,
+        "risk": 12.487027765134272,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.impact",
+        "line": 1189,
+        "endLine": 1214,
+        "complexity": 11,
+        "coverage": null,
+        "coverageStatus": "unknown",
+        "unknownReason": "branch_unattributed",
+        "crap": null,
+        "risk": 132,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.impact",
+        "line": 1190,
+        "endLine": 1215,
+        "complexity": 11,
+        "coverage": 100,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 11,
+        "risk": 11,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.drawHover",
+        "line": 1260,
+        "endLine": 1274,
+        "complexity": 11,
+        "coverage": null,
+        "coverageStatus": "unknown",
+        "unknownReason": "branch_unattributed",
+        "crap": null,
+        "risk": 132,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.drawHover",
+        "line": 1261,
+        "endLine": 1275,
+        "complexity": 11,
+        "coverage": 88.23529411764706,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 11.197028292285772,
+        "risk": 11.197028292285772,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.direct",
+        "line": 1289,
+        "endLine": 1318,
+        "complexity": 11,
+        "coverage": null,
+        "coverageStatus": "unknown",
+        "unknownReason": "branch_unattributed",
+        "crap": null,
+        "risk": 132,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.direct",
+        "line": 1290,
+        "endLine": 1319,
+        "complexity": 11,
+        "coverage": 100,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 11,
+        "risk": 11,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "web/arena3d.js",
+        "method": "CoreView3D.track",
+        "line": 221,
+        "endLine": 247,
+        "complexity": 13,
+        "coverage": 16.666666666666664,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 110.80092592592594,
+        "risk": 110.80092592592594,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/arena3d.js",
+        "method": "CoreView3D.track",
+        "line": 221,
+        "endLine": 247,
+        "complexity": 13,
+        "coverage": 100,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 13,
+        "risk": 13,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "scripts/pmars-compare.js",
+        "method": "loadWarriors",
+        "line": 47,
+        "endLine": 78,
+        "complexity": 10,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 110,
+        "risk": 110,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "scripts/pmars-inputs.js",
+        "method": "loadComparisonWarriors",
+        "line": 3,
+        "endLine": 34,
+        "complexity": 10,
+        "coverage": 100,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 10,
+        "risk": 10,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "scripts/replay-evolution-gpu.js",
+        "method": "difference",
+        "line": 33,
+        "endLine": 41,
+        "complexity": 10,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 110,
+        "risk": 110,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "scripts/replay-difference.js",
+        "method": "difference",
+        "line": 2,
+        "endLine": 10,
+        "complexity": 10,
+        "coverage": 100,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 10,
+        "risk": 10,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "web/app.js",
+        "method": "pickLibrary",
+        "line": 230,
+        "endLine": 244,
+        "complexity": 10,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 110,
+        "risk": 110,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/app.js",
+        "method": "pickLibrary",
+        "line": 235,
+        "endLine": 247,
+        "complexity": 6,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 42,
+        "risk": 42,
+        "aboveThreshold": true
+      }
+    },
+    {
+      "before": {
+        "file": "web/app.js",
+        "method": "finishRound",
+        "line": 698,
+        "endLine": 717,
+        "complexity": 10,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 110,
+        "risk": 110,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/app.js",
+        "method": "finishRound",
+        "line": 666,
+        "endLine": 675,
+        "complexity": 1,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 2,
+        "risk": 2,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "web/app.js",
+        "method": "finishFast",
+        "line": 823,
+        "endLine": 835,
+        "complexity": 10,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 110,
+        "risk": 110,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/app.js",
+        "method": "finishFast",
+        "line": 776,
+        "endLine": 776,
+        "complexity": 1,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 2,
+        "risk": 2,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "web/avatars3d.js",
+        "method": "spine3",
+        "line": 70,
+        "endLine": 96,
+        "complexity": 10,
+        "coverage": null,
+        "coverageStatus": "unknown",
+        "unknownReason": "branch_unattributed",
+        "crap": null,
+        "risk": 110,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/avatars3d.js",
+        "method": "spine3",
+        "line": 70,
+        "endLine": 96,
+        "complexity": 10,
+        "coverage": 81.81818181818183,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 10.601051840721261,
+        "risk": 10.601051840721261,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.addressAt",
+        "line": 728,
+        "endLine": 750,
+        "complexity": 10,
+        "coverage": null,
+        "coverageStatus": "unknown",
+        "unknownReason": "branch_unattributed",
+        "crap": null,
+        "risk": 110,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.addressAt",
+        "line": 729,
+        "endLine": 751,
+        "complexity": 10,
+        "coverage": 70,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 12.700000000000001,
+        "risk": 12.700000000000001,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.floorCellAt",
+        "line": 753,
+        "endLine": 773,
+        "complexity": 10,
+        "coverage": null,
+        "coverageStatus": "unknown",
+        "unknownReason": "branch_unattributed",
+        "crap": null,
+        "risk": 110,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/avatars3d.js",
+        "method": "AvatarView3D.floorCellAt",
+        "line": 754,
+        "endLine": 774,
+        "complexity": 10,
+        "coverage": 83.33333333333334,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 10.462962962962962,
+        "risk": 10.462962962962962,
+        "aboveThreshold": false
+      }
+    },
+    {
+      "before": {
+        "file": "web/encyclopedia.js",
+        "method": "card",
+        "line": 82,
+        "endLine": 120,
+        "complexity": 10,
+        "coverage": 0,
+        "coverageStatus": "unexecuted",
+        "unknownReason": null,
+        "crap": 110,
+        "risk": 110,
+        "aboveThreshold": true
+      },
+      "after": {
+        "file": "web/encyclopedia-content.js",
+        "method": "card",
+        "line": 74,
+        "endLine": 112,
+        "complexity": 10,
+        "coverage": 100,
+        "coverageStatus": "measured",
+        "unknownReason": null,
+        "crap": 10,
+        "risk": 10,
+        "aboveThreshold": false
+      }
+    }
+  ],
+  "comparison": {
+    "before": {
+      "methods": 2118,
+      "aboveThreshold": 123,
+      "unknownCoverage": 716,
+      "maxRisk": 240
+    },
+    "after": {
+      "methods": 2150,
+      "aboveThreshold": 91,
+      "unknownCoverage": 701,
+      "maxRisk": 99.23896222121073
+    },
+    "improved": [
+      {
+        "method": "src/engine/assembler.js:assemble",
+        "before": 78.782958984375,
+        "after": 78.47469094219389
+      },
+      {
+        "method": "cli/tree-evolution.js:cmdEvolveTrees",
+        "before": 215.1608988374445,
+        "after": 70
+      },
+      {
+        "method": "cli/evolution.js:cmdEvolve",
+        "before": 164.7271310836853,
+        "after": 60.148148148148195
+      },
+      {
+        "method": "web/app.js:compileSlot",
+        "before": 156,
+        "after": 56
+      },
+      {
+        "method": "web/app.js:convertActive",
+        "before": 240,
+        "after": 56
+      },
+      {
+        "method": "web/app.js:replayEnd",
+        "before": 156,
+        "after": 56
+      },
+      {
+        "method": "web/app.js:pickLibrary",
+        "before": 110,
+        "after": 42
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.draw",
+        "before": 182,
+        "after": 37.86666666666667
+      },
+      {
+        "method": "src/engine/convert.js:emitNodes",
+        "before": 156.1158,
+        "after": 37.67843726521412
+      },
+      {
+        "method": "cli/block-devtools.js:cmdEvolveBlocks",
+        "before": 133.45566002366357,
+        "after": 33.492644037149674
+      },
+      {
+        "method": "cli/zorewars.js:cmdCompile",
+        "before": 164.14814814814818,
+        "after": 31.05624142661179
+      },
+      {
+        "method": "cli/zorewars.js:loadWarrior",
+        "before": 74.58892128279884,
+        "after": 26.666002013701068
+      },
+      {
+        "method": "cli/zorewars.js:cmdTrace",
+        "before": 156,
+        "after": 20.19299044151115
+      },
+      {
+        "method": "src/engine/gpu/live-layout.js:applyLiveVM",
+        "before": 26.03906249999999,
+        "after": 20.05761316872428
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.positionWarriorPart",
+        "before": 17.16724537037037,
+        "after": 17.147968
+      },
+      {
+        "method": "src/engine/gpu/live.js:session.advance",
+        "before": 210,
+        "after": 15.354497354497354
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.drawFlying",
+        "before": 240,
+        "after": 15.024295432458699
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.drawWarrior",
+        "before": 14.196,
+        "after": 14.021164021164022
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.trackOnMap",
+        "before": 182,
+        "after": 13.259615384615385
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.track",
+        "before": 110.80092592592594,
+        "after": 13
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.addressAt",
+        "before": 110,
+        "after": 12.700000000000001
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.updateSpace",
+        "before": 132,
+        "after": 12.487027765134272
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.updateMap",
+        "before": 132,
+        "after": 12.487027765134272
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.build",
+        "before": 72,
+        "after": 12.14334705075446
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.drawHover",
+        "before": 132,
+        "after": 11.197028292285772
+      },
+      {
+        "method": "tools/experimental-88.js:riptide",
+        "before": 132,
+        "after": 11
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.impact",
+        "before": 132,
+        "after": 11
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.direct",
+        "before": 132,
+        "after": 11
+      },
+      {
+        "method": "web/avatars3d.js:spine3",
+        "before": 110,
+        "after": 10.601051840721261
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.floorCellAt",
+        "before": 110,
+        "after": 10.462962962962962
+      },
+      {
+        "method": "src/engine/vm.js:VM.resolve",
+        "before": 10.036443148688047,
+        "after": 10.0244140625
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.setupSpace",
+        "before": 90,
+        "after": 9.888888888888888
+      },
+      {
+        "method": "src/engine/gpu/live.js:createSession",
+        "before": 240,
+        "after": 9.019775390625
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.endPoint",
+        "before": 72,
+        "after": 8.296296296296296
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.stepParticles",
+        "before": 56,
+        "after": 8.142857142857142
+      },
+      {
+        "method": "examples/experimental-94x/lifeboat/lifeboat-ga-4247.js:emitAirbag",
+        "before": 182,
+        "after": 8
+      },
+      {
+        "method": "examples/experimental-94x/lifeboat/lifeboat.js:emitAirbag",
+        "before": 182,
+        "after": 8
+      },
+      {
+        "method": "src/engine/assembler.js:listing",
+        "before": 8.384673178061608,
+        "after": 8
+      },
+      {
+        "method": "examples/experimental-94x/compass/default.js:emitCompass",
+        "before": 132,
+        "after": 6.0014760752798395
+      },
+      {
+        "method": "web/app.js:cancelled",
+        "before": 12,
+        "after": 6
+      },
+      {
+        "method": "src/engine/gpu/live-layout.js:encodeLiveVM",
+        "before": 5.150262960180315,
+        "after": 5
+      },
+      {
+        "method": "src/engine/gpu/live.js:createGpuLiveEngine",
+        "before": 20,
+        "after": 4.128
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.moveStage",
+        "before": 12,
+        "after": 4.125
+      },
+      {
+        "method": "cli/block-devtools.js:integer",
+        "before": 4.5925925925925934,
+        "after": 4
+      },
+      {
+        "method": "cli/tree-evolution.js:integer",
+        "before": 4.5925925925925934,
+        "after": 4
+      },
+      {
+        "method": "web/avatars3d.js:gearGeometry",
+        "before": 20,
+        "after": 4
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.stepFlashes",
+        "before": 20,
+        "after": 4
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.setupMap",
+        "before": 12,
+        "after": 3.140625
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.drawRings",
+        "before": 12,
+        "after": 3.140625
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.drawLabels",
+        "before": 12,
+        "after": 3.021333333333333
+      },
+      {
+        "method": "web/avatars3d.js:shardGeometry",
+        "before": 12,
+        "after": 3
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.drawCycle",
+        "before": 12,
+        "after": 3
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.placeArena",
+        "before": 6,
+        "after": 2.864
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.gap",
+        "before": 6,
+        "after": 2.5
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.put",
+        "before": 6,
+        "after": 2.5
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.drawTethers",
+        "before": 6,
+        "after": 2.0054869684499312
+      },
+      {
+        "method": "cli/tree-evolution.js:printCounters",
+        "before": 6,
+        "after": 2
+      },
+      {
+        "method": "scripts/fuzz-pmars.js:mutated",
+        "before": 132,
+        "after": 2
+      },
+      {
+        "method": "src/engine/constants.js:roundPoints",
+        "before": 2.5,
+        "after": 2
+      },
+      {
+        "method": "src/engine/gpu/live-layout.js:liveLayout",
+        "before": 2.5,
+        "after": 2
+      },
+      {
+        "method": "web/app.js:stepVM",
+        "before": 132,
+        "after": 2
+      },
+      {
+        "method": "web/app.js:finishRound",
+        "before": 110,
+        "after": 2
+      },
+      {
+        "method": "web/app.js:finishFast",
+        "before": 110,
+        "after": 2
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.cellFloor",
+        "before": 6,
+        "after": 2
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.finish",
+        "before": 6,
+        "after": 2
+      },
+      {
+        "method": "src/engine/gpu/live.js:buffer",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "tools/experimental-88.js:stream",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "tools/experimental-88.js:clear",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/avatar-model.js:AvatarModel.build",
+        "before": 1.008,
+        "after": 1
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.buildShapes",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.batch",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.spawn",
+        "before": 2,
+        "after": 1
+      }
+    ],
+    "worsened": [
+      {
+        "method": "web/avatars3d.js:AvatarView3D.get animating",
+        "before": 56,
+        "after": 90
+      },
+      {
+        "method": "web/library-fit.js:scanLibraryFit",
+        "before": 25.580374631824842,
+        "after": 26.133544202782893
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.applyMap",
+        "before": 18,
+        "after": 20
+      }
+    ],
+    "added": [
+      "src/engine/convert.js:emitLoop",
+      "cli/block-devtools.js:blockCommandOptions",
+      "cli/tree-evolution.js:treeCommandOptions",
+      "web/conversion-slots.js:clearConversionStatus",
+      "cli/evolution.js:prepareInstructionField",
+      "web/redcode-language.js:redcodeMode.token",
+      "scripts/archive-cache.js:obtain",
+      "web/conversion-slots.js:conversionStatus",
+      "web/encyclopedia-content.js:fieldOf",
+      "web/encyclopedia-content.js:splitComment",
+      "web/round-actions.js:cancelled",
+      "scripts/pmars-programs.js:mutated",
+      "web/round-actions.js:step",
+      "web/round-outcome.js:roundOutcome",
+      "scripts/pmars-inputs.js:loadComparisonWarriors",
+      "scripts/replay-difference.js:difference",
+      "web/encyclopedia-content.js:card",
+      "web/round-actions.js:finish",
+      "src/engine/gpu/live.js:validateLiveVM",
+      "web/compile-source.js:publishCompilation",
+      "web/library-choice.js:librarySwitchPrompt",
+      "web/replay.js:prepareReplay",
+      "examples/experimental-94x/compass/default.js:validateCompassParameters",
+      "examples/experimental-94x/lifeboat/lifeboat-ga-4247.js:validateAirbagParameters",
+      "examples/experimental-94x/lifeboat/lifeboat.js:validateAirbagParameters",
+      "web/encyclopedia-content.js:fieldLabel",
+      "web/encyclopedia-content.js:cell",
+      "web/encyclopedia-content.js:matchups",
+      "cli/tree-evolution.js:printTreeResults",
+      "web/encyclopedia-content.js:annotated",
+      "web/redcode-language.js:definedNames",
+      "web/conversion-slots.js:installConversion",
+      "scripts/archive-cache.js:safeUrl",
+      "src/engine/gpu/live.js:sessionResources",
+      "web/conversion-slots.js:conversionTarget",
+      "scripts/archive-cache.js:relative",
+      "web/app.js:isCurrent",
+      "web/app.js:resetHighlights",
+      "web/app.js:setStepDisabled",
+      "web/app.js:setFinishDisabled",
+      "web/app.js:onError",
+      "web/encyclopedia-content.js:settingsFor",
+      "web/encyclopedia-content.js:flush",
+      "web/encyclopedia-content.js:portraitOf",
+      "web/redcode-language.js:redcodeMode.startState",
+      "web/round-actions.js:cancelFinish",
+      "web/round-outcome.js:log",
+      "web/round-outcome.js:showOverlay",
+      "scripts/archive-cache.js:createArchiveCache",
+      "web/round-actions.js:createRoundActions"
+    ],
+    "removed": [
+      "web/editor.js:redcodeMode.token",
+      "scripts/import-planar-history.js:obtain",
+      "web/encyclopedia.js:splitComment",
+      "scripts/pmars-compare.js:loadWarriors",
+      "scripts/replay-evolution-gpu.js:difference",
+      "web/encyclopedia.js:card",
+      "web/editor.js:definedNames",
+      "web/encyclopedia.js:annotated",
+      "web/encyclopedia.js:matchups",
+      "scripts/import-planar-history.js:safeUrl",
+      "web/encyclopedia.js:fieldOf",
+      "web/encyclopedia.js:settingsFor",
+      "web/encyclopedia.js:fieldLabel",
+      "web/encyclopedia.js:flush",
+      "web/encyclopedia.js:cell",
+      "web/editor.js:redcodeMode.startState",
+      "web/encyclopedia.js:portraitOf"
+    ]
+  },
+  "baselineComparison": {
+    "before": {
+      "methods": 2037,
+      "aboveThreshold": 165,
+      "unknownCoverage": 673,
+      "maxRisk": 4830
+    },
+    "after": {
+      "methods": 2150,
+      "aboveThreshold": 91,
+      "unknownCoverage": 701,
+      "maxRisk": 99.23896222121073
+    },
+    "improved": [
+      {
+        "method": "web/app.js:pickRenderer",
+        "before": 756,
+        "after": 90
+      },
+      {
+        "method": "web/app.js:renderEditorStatus",
+        "before": 552,
+        "after": 90
+      },
+      {
+        "method": "web/app.js:boot",
+        "before": 552,
+        "after": 90
+      },
+      {
+        "method": "src/engine/assembler.js:assemble",
+        "before": 78.94445130622547,
+        "after": 78.47469094219389
+      },
+      {
+        "method": "cli/zorewars.js:cmdConvert",
+        "before": 272,
+        "after": 77.27272727272725
+      },
+      {
+        "method": "web/app.js:frame",
+        "before": 420,
+        "after": 72
+      },
+      {
+        "method": "cli/tree-evolution.js:cmdEvolveTrees",
+        "before": 215.1608988374445,
+        "after": 70
+      },
+      {
+        "method": "src/engine/convert.js:emitProgram",
+        "before": 70.4631928896126,
+        "after": 68.68269230769236
+      },
+      {
+        "method": "cli/evolution.js:cmdEvolve",
+        "before": 273.1050991398163,
+        "after": 60.148148148148195
+      },
+      {
+        "method": "web/app.js:compileSlot",
+        "before": 702,
+        "after": 56
+      },
+      {
+        "method": "web/app.js:convertActive",
+        "before": 240,
+        "after": 56
+      },
+      {
+        "method": "web/app.js:replayEnd",
+        "before": 156,
+        "after": 56
+      },
+      {
+        "method": "web/app.js:pickLibrary",
+        "before": 110,
+        "after": 42
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.draw",
+        "before": 812,
+        "after": 37.86666666666667
+      },
+      {
+        "method": "src/engine/convert.js:emitNodes",
+        "before": 156.1158,
+        "after": 37.67843726521412
+      },
+      {
+        "method": "cli/block-devtools.js:cmdEvolveBlocks",
+        "before": 133.45566002366357,
+        "after": 33.492644037149674
+      },
+      {
+        "method": "cli/zorewars.js:cmdCompile",
+        "before": 164.14814814814818,
+        "after": 31.05624142661179
+      },
+      {
+        "method": "tools/evolution/instructions/options.js:validateInstructionSearch",
+        "before": 38.397725615979006,
+        "after": 30.35257758883359
+      },
+      {
+        "method": "scripts/fuzz-pmars.js:differ",
+        "before": 342,
+        "after": 30
+      },
+      {
+        "method": "src/engine/gpu/pool.js:runBatch",
+        "before": 552,
+        "after": 30
+      },
+      {
+        "method": "web/arena.js:CoreRenderer.draw",
+        "before": 380,
+        "after": 28.747000000000003
+      },
+      {
+        "method": "cli/zorewars.js:loadWarrior",
+        "before": 74.58892128279884,
+        "after": 26.666002013701068
+      },
+      {
+        "method": "tools/refine.js:refine",
+        "before": 31.65237273584986,
+        "after": 25.19810058226897
+      },
+      {
+        "method": "src/engine/gpu/pool.js:config",
+        "before": 132,
+        "after": 20.524781341107875
+      },
+      {
+        "method": "cli/zorewars.js:cmdTrace",
+        "before": 156,
+        "after": 20.19299044151115
+      },
+      {
+        "method": "src/engine/gpu/live-layout.js:applyLiveVM",
+        "before": 26.03906249999999,
+        "after": 20.05761316872428
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.applyMap",
+        "before": 342,
+        "after": 20
+      },
+      {
+        "method": "src/engine/gpu/kernel.js:gpuKernel",
+        "before": 380,
+        "after": 19
+      },
+      {
+        "method": "src/engine/gpu/pool.js:flush",
+        "before": 182,
+        "after": 17.563000000000002
+      },
+      {
+        "method": "web/avatars.js:AvatarView.drawAvatar",
+        "before": 1482,
+        "after": 17.036125
+      },
+      {
+        "method": "src/engine/geometry.js:makeGeometry",
+        "before": 16.22114242522406,
+        "after": 16.14814814814815
+      },
+      {
+        "method": "web/avatars.js:AvatarView.draw",
+        "before": 272,
+        "after": 16.104049179494996
+      },
+      {
+        "method": "web/avatars.js:AvatarView.drawFlying",
+        "before": 240,
+        "after": 16
+      },
+      {
+        "method": "src/engine/gpu/live.js:session.advance",
+        "before": 210,
+        "after": 15.354497354497354
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.drawFlying",
+        "before": 240,
+        "after": 15.024295432458699
+      },
+      {
+        "method": "src/engine/report.js:formatPostMortem",
+        "before": 306,
+        "after": 15.01849264403715
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.drawWarrior",
+        "before": 4830,
+        "after": 14.021164021164022
+      },
+      {
+        "method": "src/engine/gpu/pool.js:createGpuMatchPool",
+        "before": 42,
+        "after": 13.776
+      },
+      {
+        "method": "cli/zorewars.js:cmdBattle",
+        "before": 306,
+        "after": 13.271484375
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.trackOnMap",
+        "before": 182,
+        "after": 13.259615384615385
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.track",
+        "before": 182,
+        "after": 13
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.addressAt",
+        "before": 110,
+        "after": 12.700000000000001
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.updateSpace",
+        "before": 132,
+        "after": 12.487027765134272
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.updateMap",
+        "before": 132,
+        "after": 12.487027765134272
+      },
+      {
+        "method": "src/engine/gpu/pool.js:releaseRuntime",
+        "before": 30,
+        "after": 12.407407407407408
+      },
+      {
+        "method": "web/avatar-model.js:AvatarModel.status",
+        "before": 17.33333333333334,
+        "after": 12.341333333333333
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.build",
+        "before": 72,
+        "after": 12.14334705075446
+      },
+      {
+        "method": "src/engine/report.js:summarize",
+        "before": 12.018,
+        "after": 12.015549076773567
+      },
+      {
+        "method": "src/engine/pushoff.js:pushOff",
+        "before": 40.34978060011858,
+        "after": 12
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.drawPart",
+        "before": 156,
+        "after": 12
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.drawHover",
+        "before": 132,
+        "after": 11.197028292285772
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.drawHeadEyes",
+        "before": 132,
+        "after": 11.035851851851852
+      },
+      {
+        "method": "tools/experimental-88.js:riptide",
+        "before": 132,
+        "after": 11
+      },
+      {
+        "method": "web/avatars.js:AvatarView.drawPart",
+        "before": 132,
+        "after": 11
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.impact",
+        "before": 132,
+        "after": 11
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.direct",
+        "before": 132,
+        "after": 11
+      },
+      {
+        "method": "web/avatars3d.js:spine3",
+        "before": 110,
+        "after": 10.601051840721261
+      },
+      {
+        "method": "tools/tune.js:tune",
+        "before": 110,
+        "after": 10.462962962962962
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.floorCellAt",
+        "before": 110,
+        "after": 10.462962962962962
+      },
+      {
+        "method": "web/arena3d.js:shapePositions",
+        "before": 110,
+        "after": 10.237037037037037
+      },
+      {
+        "method": "src/engine/vm.js:VM.resolve",
+        "before": 10.036443148688047,
+        "after": 10.0244140625
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.setupSpace",
+        "before": 90,
+        "after": 9.888888888888888
+      },
+      {
+        "method": "src/engine/gpu/live.js:createSession",
+        "before": 240,
+        "after": 9.019775390625
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.endPoint",
+        "before": 72,
+        "after": 8.296296296296296
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.stepParticles",
+        "before": 56,
+        "after": 8.142857142857142
+      },
+      {
+        "method": "web/avatars.js:AvatarView.drawEyes",
+        "before": 72,
+        "after": 8.0480841472577
+      },
+      {
+        "method": "web/avatars.js:AvatarView.drawImpact",
+        "before": 72,
+        "after": 8.037037037037038
+      },
+      {
+        "method": "cli/devtools.js:cmdTune",
+        "before": 182,
+        "after": 8.032768
+      },
+      {
+        "method": "examples/experimental-94x/lifeboat/lifeboat-ga-4247.js:emitAirbag",
+        "before": 182,
+        "after": 8
+      },
+      {
+        "method": "examples/experimental-94x/lifeboat/lifeboat.js:emitAirbag",
+        "before": 182,
+        "after": 8
+      },
+      {
+        "method": "src/engine/assembler.js:listing",
+        "before": 9.298271975957926,
+        "after": 8
+      },
+      {
+        "method": "web/arena.js:gridLayout",
+        "before": 72,
+        "after": 8
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.drawBox",
+        "before": 72,
+        "after": 8
+      },
+      {
+        "method": "src/engine/convert.js:textLiteral",
+        "before": 7.993989481592787,
+        "after": 7.765625
+      },
+      {
+        "method": "tools/algebra/link.js:iface",
+        "before": 412.6818984848952,
+        "after": 7.178425125170687
+      },
+      {
+        "method": "web/avatars.js:AvatarView.get animating",
+        "before": 56,
+        "after": 7
+      },
+      {
+        "method": "web/highlights.js:Highlights.draw",
+        "before": 56,
+        "after": 7
+      },
+      {
+        "method": "tools/algebra/blocks/torus2.js:torusLeap.mismatches",
+        "before": 7.333333333333335,
+        "after": 6.166666666666666
+      },
+      {
+        "method": "src/engine/match-backend.js:createMatchBackend",
+        "before": 6.036,
+        "after": 6.027047332832457
+      },
+      {
+        "method": "examples/experimental-94x/compass/default.js:emitCompass",
+        "before": 132,
+        "after": 6.0014760752798395
+      },
+      {
+        "method": "web/app.js:cancelled",
+        "before": 12,
+        "after": 6
+      },
+      {
+        "method": "web/avatar-model.js:AvatarModel.update",
+        "before": 6.166666666666666,
+        "after": 6
+      },
+      {
+        "method": "web/avatars.js:AvatarView.drawFloor",
+        "before": 42,
+        "after": 6
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.layout",
+        "before": 30,
+        "after": 5.925925925925927
+      },
+      {
+        "method": "src/engine/gpu/pool.js:close",
+        "before": 12,
+        "after": 5.666666666666668
+      },
+      {
+        "method": "web/arena.js:CoreRenderer.layout",
+        "before": 12,
+        "after": 5.666666666666668
+      },
+      {
+        "method": "tools/refine.js:tools.battle",
+        "before": 5.150262960180315,
+        "after": 5.1157407407407405
+      },
+      {
+        "method": "cli/devtools-context.js:hillOpponents",
+        "before": 5.390625,
+        "after": 5
+      },
+      {
+        "method": "src/engine/gpu/live-layout.js:encodeLiveVM",
+        "before": 5.150262960180315,
+        "after": 5
+      },
+      {
+        "method": "web/avatars.js:AvatarView.ingest",
+        "before": 30,
+        "after": 5
+      },
+      {
+        "method": "src/engine/gpu/live.js:createGpuLiveEngine",
+        "before": 20,
+        "after": 4.128
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.draw",
+        "before": 1640,
+        "after": 4.125
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.moveStage",
+        "before": 12,
+        "after": 4.125
+      },
+      {
+        "method": "web/avatars.js:AvatarView.endPoint",
+        "before": 20,
+        "after": 4.0740740740740735
+      },
+      {
+        "method": "src/engine/gpu/pool.js:enqueue",
+        "before": 20,
+        "after": 4.0466472303206995
+      },
+      {
+        "method": "cli/block-devtools.js:integer",
+        "before": 4.5925925925925934,
+        "after": 4
+      },
+      {
+        "method": "cli/tree-evolution.js:integer",
+        "before": 4.5925925925925934,
+        "after": 4
+      },
+      {
+        "method": "web/avatars.js:AvatarView.addressAt",
+        "before": 20,
+        "after": 4
+      },
+      {
+        "method": "web/avatars3d.js:gearGeometry",
+        "before": 20,
+        "after": 4
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.stepFlashes",
+        "before": 20,
+        "after": 4
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.stepFall",
+        "before": 12,
+        "after": 3.512061902594447
+      },
+      {
+        "method": "cli/devtools-context.js:battlePool",
+        "before": 4.125,
+        "after": 3.333333333333334
+      },
+      {
+        "method": "web/avatars.js:AvatarView.drawLabel",
+        "before": 12,
+        "after": 3.333333333333334
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.startFall",
+        "before": 12,
+        "after": 3.333333333333334
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.setupMap",
+        "before": 12,
+        "after": 3.140625
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.drawRings",
+        "before": 12,
+        "after": 3.140625
+      },
+      {
+        "method": "cli/zorewars.js:printTable",
+        "before": 12,
+        "after": 3.0262390670553936
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.drawLabels",
+        "before": 12,
+        "after": 3.021333333333333
+      },
+      {
+        "method": "web/avatars.js:AvatarView.layout",
+        "before": 12,
+        "after": 3
+      },
+      {
+        "method": "web/avatars.js:AvatarView.drawLegs",
+        "before": 12,
+        "after": 3
+      },
+      {
+        "method": "web/avatars.js:AvatarView.drawWeb",
+        "before": 12,
+        "after": 3
+      },
+      {
+        "method": "web/avatars.js:AvatarView.drawGhost",
+        "before": 12,
+        "after": 3
+      },
+      {
+        "method": "web/avatars3d.js:shardGeometry",
+        "before": 12,
+        "after": 3
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.drawCycle",
+        "before": 12,
+        "after": 3
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.placeArena",
+        "before": 6,
+        "after": 2.864
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.gap",
+        "before": 6,
+        "after": 2.5
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.inSlice",
+        "before": 6,
+        "after": 2.5
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.put",
+        "before": 6,
+        "after": 2.5
+      },
+      {
+        "method": "src/engine/gpu/pool.js:unpackSolo",
+        "before": 6,
+        "after": 2.2560000000000002
+      },
+      {
+        "method": "tools/refine.js:lostRound",
+        "before": 6,
+        "after": 2.1481481481481484
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.drawTethers",
+        "before": 6,
+        "after": 2.0054869684499312
+      },
+      {
+        "method": "cli/tree-evolution.js:printCounters",
+        "before": 6,
+        "after": 2
+      },
+      {
+        "method": "scripts/fuzz-pmars.js:mutated",
+        "before": 132,
+        "after": 2
+      },
+      {
+        "method": "src/engine/constants.js:roundPoints",
+        "before": 2.5,
+        "after": 2
+      },
+      {
+        "method": "src/engine/gpu/live-layout.js:liveLayout",
+        "before": 2.5,
+        "after": 2
+      },
+      {
+        "method": "src/engine/pushoff.js:dist",
+        "before": 19.011016845703125,
+        "after": 2
+      },
+      {
+        "method": "tools/refine.js:draft",
+        "before": 3.072,
+        "after": 2
+      },
+      {
+        "method": "web/app.js:stepVM",
+        "before": 132,
+        "after": 2
+      },
+      {
+        "method": "web/app.js:finishRound",
+        "before": 110,
+        "after": 2
+      },
+      {
+        "method": "web/app.js:finishFast",
+        "before": 110,
+        "after": 2
+      },
+      {
+        "method": "web/app.js:renderInspector",
+        "before": 380,
+        "after": 2
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.project",
+        "before": 6,
+        "after": 2
+      },
+      {
+        "method": "web/avatars.js:AvatarView.build",
+        "before": 6,
+        "after": 2
+      },
+      {
+        "method": "web/avatars.js:AvatarView.drawBombed",
+        "before": 6,
+        "after": 2
+      },
+      {
+        "method": "web/avatars.js:AvatarView.drawChips",
+        "before": 6,
+        "after": 2
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.cellFloor",
+        "before": 6,
+        "after": 2
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.finish",
+        "before": 6,
+        "after": 2
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.attach",
+        "before": 2,
+        "after": 1.3587075375419158
+      },
+      {
+        "method": "tools/tune.js:sample",
+        "before": 2,
+        "after": 1.0370370370370372
+      },
+      {
+        "method": "web/avatars.js:AvatarView.attach",
+        "before": 2,
+        "after": 1.0013717421124828
+      },
+      {
+        "method": "src/engine/gpu/live-kernel.js:liveKernel",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "src/engine/gpu/live.js:buffer",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "src/engine/gpu/pool.js:packSolo",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "src/engine/gpu/solo-kernel.js:soloKernel",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "src/engine/vm.js:VM.disassemble",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "tools/experimental-88.js:stream",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "tools/experimental-88.js:clear",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/arena.js:hexToRgb",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/arena.js:mix",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/arena.js:makePalettes",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/arena.js:CoreRenderer.constructor",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.constructor",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.followWarriorIndex",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.setSlice",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/arena3d.js:CoreView3D.at",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/avatar-model.js:AvatarModel.build",
+        "before": 1.008,
+        "after": 1
+      },
+      {
+        "method": "web/avatars.js:rgba",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/avatars.js:AvatarView.constructor",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/avatars.js:AvatarView.project",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.buildShapes",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.batch",
+        "before": 2,
+        "after": 1
+      },
+      {
+        "method": "web/avatars3d.js:AvatarView3D.spawn",
+        "before": 2,
+        "after": 1
+      }
+    ],
+    "worsened": [
+      {
+        "method": "web/avatars3d.js:AvatarView3D.get animating",
+        "before": 56,
+        "after": 90
+      },
+      {
+        "method": "web/library-fit.js:scanLibraryFit",
+        "before": 25.580374631824842,
+        "after": 26.133544202782893
+      },
+      {
+        "method": "tools/algebra/blocks/papers88.js:antiImpSilk.mismatches",
+        "before": 9.583984375,
+        "after": 13.125
+      },
+      {
+        "method": "tools/algebra/blocks/hillopen.js:decoyMaker.mismatches",
+        "before": 3,
+        "after": 3.333333333333334
+      }
+    ],
+    "added": [
+      "src/engine/convert.js:emitLoop",
+      "cli/block-devtools.js:blockCommandOptions",
+      "tools/algebra/contracts.js:combinatorContract",
+      "cli/tree-evolution.js:treeCommandOptions",
+      "scripts/pmars-programs.js:block",
+      "src/engine/gpu/packing.js:appendWarrior",
+      "scripts/pmars-programs.js:expr",
+      "tools/algebra/contracts.js:checkParallelBoot",
+      "web/conversion-slots.js:clearConversionStatus",
+      "src/engine/diversity.js:dist",
+      "cli/search-options.js:refineOptions",
+      "tools/algebra/contracts.js:checkTrigger",
+      "web/avatars3d.js:AvatarView3D.positionWarriorPart",
+      "cli/evolution.js:prepareInstructionField",
+      "cli/zorewars.js:printBattleRounds",
+      "src/engine/diversity.js:createDiversity",
+      "cli/evolution-options.js:evolutionOptions",
+      "web/rules-hint.js:battlefieldHint",
+      "tools/algebra/contracts.js:leafContract",
+      "web/avatars3d.js:AvatarView3D.paintWarriorPart",
+      "web/redcode-language.js:redcodeMode.token",
+      "tools/algebra/contracts.js:checkClassifier",
+      "web/avatars.js:AvatarView.drawBodyParts",
+      "web/highlight-model.js:candidateOffsets",
+      "tools/algebra/contracts.js:checkRestart",
+      "scripts/pmars-comparison.js:compareAssembly",
+      "scripts/pmars-programs.js:instruction",
+      "tools/algebra/contracts.js:checkCopies",
+      "web/rules-hint.js:limitsHint",
+      "cli/refinement.js:reportRefinement",
+      "src/engine/gpu/pool.js:dispatchBatch",
+      "src/engine/diversity.js:distances",
+      "web/inspector.js:paintInspector",
+      "cli/pushoff-record.js:validateRecord",
+      "cli/pushoff.js:requestFrom",
+      "cli/refinement.js:defaultProposer",
+      "scripts/archive-cache.js:obtain",
+      "tools/algebra/contracts.js:hasRelocate",
+      "web/arena3d.js:CoreView3D.collectCells",
+      "web/conversion-slots.js:conversionStatus",
+      "web/encyclopedia-content.js:fieldOf",
+      "web/encyclopedia-content.js:splitComment",
+      "web/round-actions.js:cancelled",
+      "scripts/pmars-programs.js:mutated",
+      "web/round-actions.js:step",
+      "web/avatars3d.js:AvatarView3D.warriorPartAppearance",
+      "web/editor-status.js:compileStatusMarkup",
+      "web/renderer-choice.js:selectRenderer",
+      "web/avatars3d.js:AvatarView3D.drawWarriorSupports",
+      "web/startup-slots.js:initializeLocalSlots",
+      "tools/algebra/contracts.js:checkBoot",
+      "web/avatars3d.js:AvatarView3D.drawWarriorProcesses",
+      "web/round-outcome.js:roundOutcome",
+      "scripts/pmars-inputs.js:loadComparisonWarriors",
+      "scripts/replay-difference.js:difference",
+      "web/avatar-layout.js:spine",
+      "web/avatars3d.js:AvatarView3D.takeBlows",
+      "web/compile-source.js:compileSource",
+      "web/encyclopedia-content.js:card",
+      "web/round-actions.js:finish",
+      "tools/algebra/contracts.js:checkRelocation",
+      "scripts/pmars-programs.js:operand",
+      "tools/refinement/proposals.js:screenProposals",
+      "web/avatar-layout.js:positionAvatar",
+      "web/renderer-choice.js:updateRendererControls",
+      "web/arena3d.js:CoreView3D.drawProcesses",
+      "cli/pushoff.js:cmdPushoff",
+      "cli/pushoff-record.js:validateResults",
+      "web/arena3d.js:CoreView3D.updateCamera",
+      "web/editor-status.js:generatedListing",
+      "web/frame-policy.js:sceneNeedsDraw",
+      "tools/algebra/contracts.js:initialContract",
+      "src/engine/gpu/live.js:validateLiveVM",
+      "tools/algebra/contracts.js:protectPartners",
+      "web/avatars3d.js:AvatarView3D.faceOpponents",
+      "web/compile-source.js:publishCompilation",
+      "web/library-choice.js:librarySwitchPrompt",
+      "web/replay.js:prepareReplay",
+      "web/arena3d.js:CoreView3D.paintCells",
+      "cli/conversion-output.js:writeConversionResult",
+      "web/startup-slots.js:initializeRemoteImport",
+      "cli/pushoff.js:integer",
+      "examples/experimental-94x/compass/default.js:validateCompassParameters",
+      "examples/experimental-94x/lifeboat/lifeboat-ga-4247.js:validateAirbagParameters",
+      "examples/experimental-94x/lifeboat/lifeboat.js:validateAirbagParameters",
+      "tools/algebra/contracts.js:value",
+      "tools/algebra/contracts.js:landsOnSelf",
+      "web/app.js:onPythonLoading",
+      "web/encyclopedia-content.js:fieldLabel",
+      "web/encyclopedia-content.js:cell",
+      "web/frame-policy.js:advanceFrame",
+      "web/highlight-model.js:canAnimate",
+      "web/inspector.js:inspectorRows",
+      "web/arena3d.js:CoreView3D.drawFollowTrail",
+      "tools/refine.js:lossReports",
+      "tools/algebra/contracts.js:checkImage",
+      "web/encyclopedia-content.js:matchups",
+      "web/arena3d.js:CoreView3D.drawOverlays",
+      "cli/refinement.js:cmdRefine",
+      "cli/pushoff-record.js:validResult",
+      "cli/tree-evolution.js:printTreeResults",
+      "scripts/pmars-programs.js:generated",
+      "web/compile-source.js:canStartEditedRound",
+      "web/encyclopedia-content.js:annotated",
+      "web/highlight-model.js:pickOffsets",
+      "web/highlight-model.js:HighlightModel.ingest",
+      "web/redcode-language.js:definedNames",
+      "src/engine/gpu/pool.js:preparePipeline",
+      "cli/evolution-options.js:integer",
+      "cli/search-options.js:positiveInteger",
+      "cli/search-options.js:tuneOptions",
+      "src/engine/diversity.js:validateDiversityOptions",
+      "tools/refinement/proposals.js:requestProposal",
+      "web/battlefield.js:fieldKey",
+      "web/conversion-slots.js:installConversion",
+      "web/highlight-model.js:decayHeat",
+      "web/rules-hint.js:rulesHint",
+      "cli/pushoff-record.js:square",
+      "cli/pushoff.js:showRanking",
+      "scripts/archive-cache.js:safeUrl",
+      "src/engine/gpu/live.js:sessionResources",
+      "src/engine/pushoff.js:validatePushOffOptions",
+      "src/engine/report.js:ownerDescription",
+      "tools/algebra/contracts.js:checkSequence",
+      "tools/algebra/contracts.js:checkSwitch",
+      "web/conversion-slots.js:conversionTarget",
+      "web/highlight-model.js:HighlightModel.hottest",
+      "web/inspector.js:cellOrigin",
+      "cli/pushoff-record.js:loadPushoffRecord",
+      "cli/pushoff.js:onProgress",
+      "cli/refinement.js:onProgress",
+      "cli/search-options.js:integer",
+      "scripts/archive-cache.js:relative",
+      "scripts/pmars-programs.js:r",
+      "scripts/pmars-programs.js:pick",
+      "scripts/pmars-programs.js:chance",
+      "src/engine/disassembly.js:signed",
+      "src/engine/disassembly.js:formatInstruction",
+      "src/engine/diversity.js:FEATURES.points",
+      "src/engine/diversity.js:FEATURES.wlt",
+      "src/engine/diversity.js:FEATURES.wl",
+      "src/engine/gpu/packing.js:norm",
+      "tools/algebra/contracts.js:checkParallel",
+      "tools/algebra/contracts.js:w",
+      "web/app.js:getSettings",
+      "web/app.js:isCurrent",
+      "web/app.js:resetHighlights",
+      "web/app.js:setStepDisabled",
+      "web/app.js:setFinishDisabled",
+      "web/app.js:onError",
+      "web/app.js:startup.clearQuery",
+      "web/avatar-layout.js:hash",
+      "web/battlefield.js:fieldSettings",
+      "web/battlefield.js:battlefieldSettings",
+      "web/encyclopedia-content.js:settingsFor",
+      "web/encyclopedia-content.js:flush",
+      "web/encyclopedia-content.js:portraitOf",
+      "web/highlight-model.js:HighlightModel.constructor",
+      "web/highlight-model.js:HighlightModel.get active",
+      "web/redcode-language.js:redcodeMode.startState",
+      "web/round-actions.js:cancelFinish",
+      "web/round-outcome.js:log",
+      "web/round-outcome.js:showOverlay",
+      "cli/pushoff-record.js:savePushoffRecord",
+      "scripts/archive-cache.js:createArchiveCache",
+      "scripts/pmars-programs.js:createProgramGenerator",
+      "tools/algebra/contracts.js:requireEndless",
+      "web/editor-status.js:escapeHtml",
+      "web/highlight-model.js:HighlightModel.reset",
+      "web/round-actions.js:createRoundActions"
+    ],
+    "removed": [
+      "web/app.js:rulesHint",
+      "cli/devtools.js:cmdRefine",
+      "scripts/fuzz-pmars.js:block",
+      "src/engine/gpu/pool.js:appendWarrior",
+      "web/highlights.js:Highlights.ingest",
+      "scripts/fuzz-pmars.js:expr",
+      "web/editor.js:redcodeMode.token",
+      "scripts/fuzz-pmars.js:instruction",
+      "scripts/import-planar-history.js:obtain",
+      "web/encyclopedia.js:splitComment",
+      "cli/devtools.js:cmdPushoff",
+      "scripts/pmars-compare.js:loadWarriors",
+      "scripts/replay-evolution-gpu.js:difference",
+      "web/avatars.js:spine",
+      "web/encyclopedia.js:card",
+      "scripts/fuzz-pmars.js:operand",
+      "scripts/fuzz-pmars.js:generated",
+      "web/editor.js:definedNames",
+      "web/encyclopedia.js:annotated",
+      "web/encyclopedia.js:matchups",
+      "cli/devtools.js:integer",
+      "web/app.js:fieldKey",
+      "scripts/import-planar-history.js:safeUrl",
+      "tools/algebra/link.js:hasRelocate",
+      "web/encyclopedia.js:fieldOf",
+      "web/highlights.js:Highlights.hottest",
+      "tools/algebra/link.js:landsOnSelf",
+      "tools/algebra/link.js:value",
+      "web/app.js:fieldSettings",
+      "web/app.js:battlefieldSettings",
+      "web/encyclopedia.js:settingsFor",
+      "web/encyclopedia.js:fieldLabel",
+      "web/encyclopedia.js:flush",
+      "web/encyclopedia.js:cell",
+      "cli/devtools.js:show",
+      "cli/evolution.js:integer",
+      "scripts/fuzz-pmars.js:r",
+      "scripts/fuzz-pmars.js:pick",
+      "scripts/fuzz-pmars.js:chance",
+      "src/engine/gpu/pool.js:norm",
+      "src/engine/pushoff.js:FEATURES.points",
+      "src/engine/pushoff.js:FEATURES.wlt",
+      "src/engine/pushoff.js:FEATURES.wl",
+      "src/engine/report.js:signed",
+      "tools/algebra/link.js:w",
+      "web/app.js:escapeHtml",
+      "web/avatars.js:hash",
+      "web/editor.js:redcodeMode.startState",
+      "web/encyclopedia.js:portraitOf",
+      "web/highlights.js:Highlights.constructor",
+      "web/highlights.js:Highlights.reset",
+      "web/highlights.js:Highlights.get active",
+      "src/engine/report.js:formatInstruction"
+    ]
+  },
+  "addedMethods": [
+    {
+      "file": "src/engine/convert.js",
+      "method": "emitLoop",
+      "line": 293,
+      "endLine": 326,
+      "complexity": 21,
+      "coverage": 55.172413793103445,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 60.72598302513428,
+      "risk": 60.72598302513428,
+      "aboveThreshold": true
+    },
+    {
+      "file": "cli/block-devtools.js",
+      "method": "blockCommandOptions",
+      "line": 70,
+      "endLine": 99,
+      "complexity": 28,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 28,
+      "risk": 28,
+      "aboveThreshold": false
+    },
+    {
+      "file": "cli/tree-evolution.js",
+      "method": "treeCommandOptions",
+      "line": 151,
+      "endLine": 178,
+      "complexity": 27,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 27,
+      "risk": 27,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/conversion-slots.js",
+      "method": "clearConversionStatus",
+      "line": 12,
+      "endLine": 12,
+      "complexity": 4,
+      "coverage": null,
+      "coverageStatus": "unknown",
+      "unknownReason": "statement_unattributed",
+      "crap": null,
+      "risk": 20,
+      "aboveThreshold": false
+    },
+    {
+      "file": "cli/evolution.js",
+      "method": "prepareInstructionField",
+      "line": 120,
+      "endLine": 143,
+      "complexity": 16,
+      "coverage": 91.30434782608695,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 16.16832415550259,
+      "risk": 16.16832415550259,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/redcode-language.js",
+      "method": "redcodeMode.token",
+      "line": 13,
+      "endLine": 34,
+      "complexity": 14,
+      "coverage": 96,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 14.012544,
+      "risk": 14.012544,
+      "aboveThreshold": false
+    },
+    {
+      "file": "scripts/archive-cache.js",
+      "method": "obtain",
+      "line": 9,
+      "endLine": 37,
+      "complexity": 12,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 12,
+      "risk": 12,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/conversion-slots.js",
+      "method": "conversionStatus",
+      "line": 11,
+      "endLine": 11,
+      "complexity": 3,
+      "coverage": null,
+      "coverageStatus": "unknown",
+      "unknownReason": "statement_unattributed",
+      "crap": null,
+      "risk": 12,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/encyclopedia-content.js",
+      "method": "fieldOf",
+      "line": 10,
+      "endLine": 10,
+      "complexity": 3,
+      "coverage": null,
+      "coverageStatus": "unknown",
+      "unknownReason": "statement_unattributed",
+      "crap": null,
+      "risk": 12,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/encyclopedia-content.js",
+      "method": "splitComment",
+      "line": 14,
+      "endLine": 30,
+      "complexity": 12,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 12,
+      "risk": 12,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/round-actions.js",
+      "method": "cancelled",
+      "line": 9,
+      "endLine": 9,
+      "complexity": 3,
+      "coverage": null,
+      "coverageStatus": "unknown",
+      "unknownReason": "statement_unattributed",
+      "crap": null,
+      "risk": 12,
+      "aboveThreshold": false
+    },
+    {
+      "file": "scripts/pmars-programs.js",
+      "method": "mutated",
+      "line": 97,
+      "endLine": 110,
+      "complexity": 11,
+      "coverage": 83.33333333333334,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 11.560185185185183,
+      "risk": 11.560185185185183,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/round-actions.js",
+      "method": "step",
+      "line": 3,
+      "endLine": 22,
+      "complexity": 11,
+      "coverage": 93.33333333333333,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 11.035851851851852,
+      "risk": 11.035851851851852,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/round-outcome.js",
+      "method": "roundOutcome",
+      "line": 3,
+      "endLine": 21,
+      "complexity": 10,
+      "coverage": 94.73684210526315,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 10.014579384749963,
+      "risk": 10.014579384749963,
+      "aboveThreshold": false
+    },
+    {
+      "file": "scripts/pmars-inputs.js",
+      "method": "loadComparisonWarriors",
+      "line": 3,
+      "endLine": 34,
+      "complexity": 10,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 10,
+      "risk": 10,
+      "aboveThreshold": false
+    },
+    {
+      "file": "scripts/replay-difference.js",
+      "method": "difference",
+      "line": 2,
+      "endLine": 10,
+      "complexity": 10,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 10,
+      "risk": 10,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/encyclopedia-content.js",
+      "method": "card",
+      "line": 74,
+      "endLine": 112,
+      "complexity": 10,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 10,
+      "risk": 10,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/round-actions.js",
+      "method": "finish",
+      "line": 24,
+      "endLine": 36,
+      "complexity": 10,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 10,
+      "risk": 10,
+      "aboveThreshold": false
+    },
+    {
+      "file": "src/engine/gpu/live.js",
+      "method": "validateLiveVM",
+      "line": 72,
+      "endLine": 75,
+      "complexity": 7,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 7,
+      "risk": 7,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/compile-source.js",
+      "method": "publishCompilation",
+      "line": 37,
+      "endLine": 44,
+      "complexity": 7,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 7,
+      "risk": 7,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/library-choice.js",
+      "method": "librarySwitchPrompt",
+      "line": 2,
+      "endLine": 8,
+      "complexity": 7,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 7,
+      "risk": 7,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/replay.js",
+      "method": "prepareReplay",
+      "line": 3,
+      "endLine": 20,
+      "complexity": 7,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 7,
+      "risk": 7,
+      "aboveThreshold": false
+    },
+    {
+      "file": "examples/experimental-94x/compass/default.js",
+      "method": "validateCompassParameters",
+      "line": 58,
+      "endLine": 63,
+      "complexity": 6,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 6,
+      "risk": 6,
+      "aboveThreshold": false
+    },
+    {
+      "file": "examples/experimental-94x/lifeboat/lifeboat-ga-4247.js",
+      "method": "validateAirbagParameters",
+      "line": 61,
+      "endLine": 64,
+      "complexity": 6,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 6,
+      "risk": 6,
+      "aboveThreshold": false
+    },
+    {
+      "file": "examples/experimental-94x/lifeboat/lifeboat.js",
+      "method": "validateAirbagParameters",
+      "line": 61,
+      "endLine": 64,
+      "complexity": 6,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 6,
+      "risk": 6,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/encyclopedia-content.js",
+      "method": "fieldLabel",
+      "line": 11,
+      "endLine": 11,
+      "complexity": 2,
+      "coverage": null,
+      "coverageStatus": "unknown",
+      "unknownReason": "statement_unattributed",
+      "crap": null,
+      "risk": 6,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/encyclopedia-content.js",
+      "method": "cell",
+      "line": 61,
+      "endLine": 61,
+      "complexity": 2,
+      "coverage": null,
+      "coverageStatus": "unknown",
+      "unknownReason": "statement_unattributed",
+      "crap": null,
+      "risk": 6,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/encyclopedia-content.js",
+      "method": "matchups",
+      "line": 55,
+      "endLine": 68,
+      "complexity": 5,
+      "coverage": 85.71428571428571,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 5.072886297376093,
+      "risk": 5.072886297376093,
+      "aboveThreshold": false
+    },
+    {
+      "file": "cli/tree-evolution.js",
+      "method": "printTreeResults",
+      "line": 181,
+      "endLine": 190,
+      "complexity": 5,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 5,
+      "risk": 5,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/encyclopedia-content.js",
+      "method": "annotated",
+      "line": 34,
+      "endLine": 53,
+      "complexity": 5,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 5,
+      "risk": 5,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/redcode-language.js",
+      "method": "definedNames",
+      "line": 39,
+      "endLine": 46,
+      "complexity": 5,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 5,
+      "risk": 5,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/conversion-slots.js",
+      "method": "installConversion",
+      "line": 6,
+      "endLine": 10,
+      "complexity": 4,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 4,
+      "risk": 4,
+      "aboveThreshold": false
+    },
+    {
+      "file": "scripts/archive-cache.js",
+      "method": "safeUrl",
+      "line": 5,
+      "endLine": 8,
+      "complexity": 3,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 3,
+      "risk": 3,
+      "aboveThreshold": false
+    },
+    {
+      "file": "src/engine/gpu/live.js",
+      "method": "sessionResources",
+      "line": 76,
+      "endLine": 94,
+      "complexity": 3,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 3,
+      "risk": 3,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/conversion-slots.js",
+      "method": "conversionTarget",
+      "line": 2,
+      "endLine": 5,
+      "complexity": 3,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 3,
+      "risk": 3,
+      "aboveThreshold": false
+    },
+    {
+      "file": "scripts/archive-cache.js",
+      "method": "relative",
+      "line": 4,
+      "endLine": 4,
+      "complexity": 1,
+      "coverage": null,
+      "coverageStatus": "unknown",
+      "unknownReason": "statement_unattributed",
+      "crap": null,
+      "risk": 2,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/app.js",
+      "method": "isCurrent",
+      "line": 728,
+      "endLine": 728,
+      "complexity": 1,
+      "coverage": 0,
+      "coverageStatus": "unexecuted",
+      "unknownReason": null,
+      "crap": 2,
+      "risk": 2,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/app.js",
+      "method": "resetHighlights",
+      "line": 729,
+      "endLine": 729,
+      "complexity": 1,
+      "coverage": 0,
+      "coverageStatus": "unexecuted",
+      "unknownReason": null,
+      "crap": 2,
+      "risk": 2,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/app.js",
+      "method": "setStepDisabled",
+      "line": 771,
+      "endLine": 771,
+      "complexity": 1,
+      "coverage": 0,
+      "coverageStatus": "unexecuted",
+      "unknownReason": null,
+      "crap": 2,
+      "risk": 2,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/app.js",
+      "method": "setFinishDisabled",
+      "line": 772,
+      "endLine": 772,
+      "complexity": 1,
+      "coverage": 0,
+      "coverageStatus": "unexecuted",
+      "unknownReason": null,
+      "crap": 2,
+      "risk": 2,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/app.js",
+      "method": "onError",
+      "line": 774,
+      "endLine": 774,
+      "complexity": 1,
+      "coverage": 0,
+      "coverageStatus": "unexecuted",
+      "unknownReason": null,
+      "crap": 2,
+      "risk": 2,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/encyclopedia-content.js",
+      "method": "settingsFor",
+      "line": 5,
+      "endLine": 9,
+      "complexity": 2,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 2,
+      "risk": 2,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/encyclopedia-content.js",
+      "method": "flush",
+      "line": 37,
+      "endLine": 40,
+      "complexity": 2,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 2,
+      "risk": 2,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/encyclopedia-content.js",
+      "method": "portraitOf",
+      "line": 72,
+      "endLine": 72,
+      "complexity": 1,
+      "coverage": null,
+      "coverageStatus": "unknown",
+      "unknownReason": "statement_unattributed",
+      "crap": null,
+      "risk": 2,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/redcode-language.js",
+      "method": "redcodeMode.startState",
+      "line": 12,
+      "endLine": 12,
+      "complexity": 1,
+      "coverage": null,
+      "coverageStatus": "unknown",
+      "unknownReason": "statement_unattributed",
+      "crap": null,
+      "risk": 2,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/round-actions.js",
+      "method": "cancelFinish",
+      "line": 38,
+      "endLine": 38,
+      "complexity": 1,
+      "coverage": null,
+      "coverageStatus": "unknown",
+      "unknownReason": "statement_unattributed",
+      "crap": null,
+      "risk": 2,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/round-outcome.js",
+      "method": "log",
+      "line": 5,
+      "endLine": 5,
+      "complexity": 1,
+      "coverage": null,
+      "coverageStatus": "unknown",
+      "unknownReason": "statement_unattributed",
+      "crap": null,
+      "risk": 2,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/round-outcome.js",
+      "method": "showOverlay",
+      "line": 6,
+      "endLine": 6,
+      "complexity": 1,
+      "coverage": null,
+      "coverageStatus": "unknown",
+      "unknownReason": "statement_unattributed",
+      "crap": null,
+      "risk": 2,
+      "aboveThreshold": false
+    },
+    {
+      "file": "scripts/archive-cache.js",
+      "method": "createArchiveCache",
+      "line": 3,
+      "endLine": 39,
+      "complexity": 1,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 1,
+      "risk": 1,
+      "aboveThreshold": false
+    },
+    {
+      "file": "web/round-actions.js",
+      "method": "createRoundActions",
+      "line": 2,
+      "endLine": 39,
+      "complexity": 1,
+      "coverage": 100,
+      "coverageStatus": "measured",
+      "unknownReason": null,
+      "crap": 1,
+      "risk": 1,
+      "aboveThreshold": false
+    }
+  ],
+  "audit": {
+    "sourceAndTestSignature": true,
+    "coverageArtifactHash": true,
+    "jsonFixtureHashes": {
+      "test/fixtures/avatar3d-commands.json": "93d9b8042f8b5040004fe7117734b1e781132dd6b085801f92ac92e90d4eefef",
+      "test/fixtures/core3d-commands.json": "c146134d004fe28dc22bff4b8e81e36c791af00c903159aa63a5ef9d46abed3a",
+      "test/fixtures/gpu-kernels.json": "11651aaacf1184040b329292edcc6a297e2a3763352bdafdec98a7ae68c54d46",
+      "test/fixtures/pmars-mutations.json": "36870a35b26c00b481484b9ca413775d43a4c5a6b51a03271842504bae446e8b",
+      "test/fixtures/pmars-programs.json": "e6cd8df4410477812d6ba376a3b482e83812feab86d070ec0bcf5a7d69b47d2c",
+      "test/fixtures/pushoff-before-cache.json": "c704401ada5ece4fcc23ede8f56f35dd30c1bc7e5180dfcbfc81f5b2dc9ab19b"
+    },
+    "reportedMethods": 2150,
+    "above100": 0,
+    "maximumRisk": 99.23896222121073,
+    "originalPolicyRetained": true,
+    "unsupportedFiles": [
+      "examples/carpet.py",
+      "examples/dwarf.cpp",
+      "examples/dwarf.py",
+      "lang/cpp/zorewars.hpp",
+      "lang/python/zorewars.py",
+      "modelwar/arena.sh",
+      "modelwar/eval.sh",
+      "warriors/dwarf.py"
+    ]
+  },
+  "notes": [
+    "All 38 initial above-goal hotspots are mapped to their current methods; moved functions are explicitly mapped rather than counted as eliminated risk.",
+    "The first full run failed one subprocess startup timeout. Its coverage was diagnostic only. A separate ready-signal processing deadline and explicit synchronous-hang test fix the guard; the second full run passed.",
+    "Two script imports were moved back below their shebangs. All 264 selected source files parse, and both browser entries bundle.",
+    "AvatarView3D animating risk rises from 56 to a labelled unknown estimate of 90, and applyMap rises from 18 to a measured 20, following the injected-clock fallback. Unchanged scanLibraryFit rises from 25.58 to 26.13 through a coverage difference.",
+    "The highest risk is evolution onRound at 99.24. VM.execute scores 93.13. Unknown attribution is retained for 701 rows and included in the goal.",
+    "Canvas/Three.js checks validate scene data and commands, not browser pixels. Recording GPU adapters and CPU-produced snapshots validate host behavior, not native WGSL execution. Seven optional tests remain skipped.",
+    "The original baseline, source roots and 30-point advisory threshold remain. Eight non-JavaScript files and anonymous/embedded code retain the documented analysis limits. The strict 30-point check still has a 91-function backlog.",
+    "Changes remain uncommitted on codex/crap-repo."
+  ]
+}

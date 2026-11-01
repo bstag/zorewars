@@ -1,0 +1,74 @@
+[
+  {
+    "rules": "88",
+    "coreSize": 80,
+    "seed": 1,
+    "digest": "9a0911aab04b3bc3c577cb448fa80c21f2a5574e249fa705c54865fd311516ee"
+  },
+  {
+    "rules": "88",
+    "coreSize": 80,
+    "seed": 7,
+    "digest": "50b7f9929b61730e0da3cd9c213b5c9f3f6c68545ffe158321b1dbbdacfc1e83"
+  },
+  {
+    "rules": "88",
+    "coreSize": 80,
+    "seed": 999,
+    "digest": "cb38aba6ff5d78d326eaf183ec0fea336a3073c3a9b8609c7114fac85faf844c"
+  },
+  {
+    "rules": "88",
+    "coreSize": 8000,
+    "seed": 1,
+    "digest": "335fab443bf3285d131af939c6b22138d1b6667cb54cec6310207035fbf0634b"
+  },
+  {
+    "rules": "88",
+    "coreSize": 8000,
+    "seed": 7,
+    "digest": "efb87b639331ebeffaf18b5aa16a70ae99f1ea8d881d95edce1bf5bdc1669020"
+  },
+  {
+    "rules": "88",
+    "coreSize": 8000,
+    "seed": 999,
+    "digest": "2b3d169a64e151c7c134580d47add0ce5614aa25394fcb7e3b82f4443ac7fbc4"
+  },
+  {
+    "rules": "94",
+    "coreSize": 80,
+    "seed": 1,
+    "digest": "4b0c5924a943106ca0f2c275c516bf7a67e461fe589cf7c1564baf643aa7c6d5"
+  },
+  {
+    "rules": "94",
+    "coreSize": 80,
+    "seed": 7,
+    "digest": "97f5ef2e097d2a37c9d2a6c0cc0e077ad15130afeba8dca00b5ba84ca4bd1bef"
+  },
+  {
+    "rules": "94",
+    "coreSize": 80,
+    "seed": 999,
+    "digest": "c8ad25fd99b96e317b47d36bfb54a805d5cc3951ed72974d52f0d31b008c0db7"
+  },
+  {
+    "rules": "94",
+    "coreSize": 8000,
+    "seed": 1,
+    "digest": "c32a80d7f70be225d3b1a81531562b8bfa5628314f68fe342423a0688ce9af85"
+  },
+  {
+    "rules": "94",
+    "coreSize": 8000,
+    "seed": 7,
+    "digest": "5e5999637580bf66cf1e2fc0b68fbd814ecca9849fbfd51615f289bc1ba2121e"
+  },
+  {
+    "rules": "94",
+    "coreSize": 8000,
+    "seed": 999,
+    "digest": "0f0d676d43f6eb9a62921e9f0e374d8b1228b37e0fa3c6ec14cddb3b3857f3be"
+  }
+]

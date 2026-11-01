@@ -3,10 +3,7 @@
 const P = {"BOOT":1,"HOP":18000,"STEP":997,"GAP":7,"START":512,"SCANS":64,"PHASE":1,"STUN":32,"DECOYS":12,"DECOY":1};
 const compassSpace = {"BOOT":[0,1],"HOP":[256,54000],"STEP":[1,55439],"GAP":[1,31],"START":[128,54000],"SCANS":[8,256],"PHASE":[0,2],"STUN":[1,512],"DECOYS":[0,18],"DECOY":[0,2]};
 function emitCompass(P) {
-  if (Object.keys(P).length !== Object.keys(compassSpace).length) throw new Error('Unexpected Compass parameters');
-  for (const [key, [lo, hi]] of Object.entries(compassSpace)) {
-    if (!Number.isSafeInteger(P[key]) || P[key] < lo || P[key] > hi) throw new Error(`Invalid ${key}`);
-  }
+  validateCompassParameters(P);
   const lines = [';name Compass', ';author ZoreWars', ';strategy Comparison scan, explicit clear phases, independent boot/decoy layout',
     `;recipe ${JSON.stringify(P)}`, ';assert CORESIZE==55440', `ORG ${P.BOOT ? 'boot' : 'scan'}`];
   const labels = {}, sections = []; let pc = 0;
@@ -57,3 +54,10 @@ function emitCompass(P) {
 }
 if (CORESIZE!==55440 || SIZEY!==1 || SIZEZ!==1) throw new Error('Compass requires the 94x ring');
 raw(emitCompass(P).source);
+
+function validateCompassParameters(P) {
+  if (Object.keys(P).length !== Object.keys(compassSpace).length) throw new Error('Unexpected Compass parameters');
+  for (const [key, [lo, hi]] of Object.entries(compassSpace)) {
+    if (!Number.isSafeInteger(P[key]) || P[key] < lo || P[key] > hi) throw new Error(`Invalid ${key}`);
+  }
+}
