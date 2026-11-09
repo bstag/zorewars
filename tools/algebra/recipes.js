@@ -410,6 +410,12 @@ export const recipes = {
     purpose: 'A MUL quickscan picks the body (docs/hill-recipe-book.md): a hit gets the One Shot pointer-overwrite clear from the found cell, nothing found gets a silk paper with a backward tail. 1.05 points a round against the 94nop top 50.',
     tree: () => ({ id: 'fork', kids: [{ id: 'opening-qscan-mul' }, { id: 'finisher-overwrite' }, { id: 'tail-silk' }] }),
   },
+  'hill-fork-stream': {
+    rules: ['94nop', '94x'],
+    length: 100,
+    purpose: 'hill-fork with King Cobra\'s self-switching clear on a hit: a DJN stream from its SPL pump turns the clear\'s SPL bombs into DATs. 1.02-1.04 points a round against the 94nop top 50 at 100 rounds, about 0.03 above hill-fork on the same seeds.',
+    tree: () => ({ id: 'fork', kids: [{ id: 'opening-qscan-mul' }, { id: 'finisher-twopass-stream' }, { id: 'tail-silk' }] }),
+  },
   'spread-stone-spiral': {
     rules: ['94nop'],
     purpose: 'A stone, with an imp spiral started 4000 cells away from it.',
