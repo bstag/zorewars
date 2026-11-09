@@ -6,6 +6,7 @@
 // docs/block-algebra.md. All Redcode here is written from scratch.
 
 import { modInverse } from '../util.js';
+import {observeMulQuickscan} from '../observation-roles.js';
 
 const MARKER = { op: 'DAT', mod: 'F', aMode: '#', a: 1, bMode: '#', b: 123 };
 const mod = (x, core) => ((x % core) + core) % core;
@@ -330,8 +331,9 @@ const qscanMul = {
   id: 'opening-qscan-mul',
   kind: 'opening', exit: 'next', processes: 1, writes: 'sparse', link: 'fall', dialects: '94',
   purpose: 'MUL-decoding quickscan: UNITS unrolled units of three instructions test two pair locations each (an SNE, and an SEQ whose predecrement of a table entry records which location fired); on a hit one MUL turns that entry into the location, a JMN picks the occupied cell of the pair and hands it on, or the image boundary.',
-  params: { QFAC: [1, 54000], GAP: [1, 2000], UNITS: [4, 13], SHARE: [0, 1] },
+  params: { QFAC: [1, 54000], GAP: [1, 2000], UNITS: [1, 13], SHARE: [0, 1] },
   defaults: { QFAC: 349, GAP: 197, UNITS: 8, SHARE: 0 },
+  observationRole:'quickscan',observe:observeMulQuickscan,
   entry: 'qScan',
   provides: { probe: 'probe' },
   mutable: (P) => [['probe', ['a', 'b']], ['sel', ['a']], ...Array.from({ length: P.UNITS }, (_, k) => [`t${k}`, ['b']])],

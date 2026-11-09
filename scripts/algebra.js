@@ -25,7 +25,7 @@ function report(built) {
 
 if (command === 'build') {
   const text = args[0] === '-' || !args[0] ? fs.readFileSync(0, 'utf8') : fs.readFileSync(args[0], 'utf8');
-  report(buildTree(JSON.parse(text), { rules, length }));
+  report(buildTree(JSON.parse(text), { rules, length, verification: flags.verification }));
 } else if (command === 'random') {
   const settings = recipeSettings(rules, length), random = mulberry32(Number(flags.seed ?? 1));
   for (let i = 0; ; i++) {
@@ -36,9 +36,9 @@ if (command === 'build') {
 } else if (command === 'recipe') {
   const r = recipes[args[0]];
   if (!r) { console.error(`recipes: ${Object.keys(recipes).join(', ')}`); process.exit(2); }
-  report(buildTree(r.tree(rules), { rules, length: Number(flags.length ?? r.length ?? 50), name: args[0] }));
+  report(buildTree(r.tree(rules), { rules, length: Number(flags.length ?? r.length ?? 50), name: args[0], verification: flags.verification ?? r.verification }));
 } else if (command === 'catalog') {
-  const range = (p) => Object.entries(p).map(([k, [lo, hi]]) => `${k} ${lo}–${hi}`).join(', ') || 'none';
+  const range = (p = {}) => Object.entries(p).map(([k, [lo, hi]]) => `${k} ${lo}–${hi}`).join(', ') || 'none';
   const val = (v) => (typeof v === 'function' ? 'depends on parameters' : v ?? '');
   const caps = (b) => [...(b.needs ?? []).map((c) => `needs ${c}`), ...(typeof b.provides === 'function' ? ['provides bomb cells (depends on parameters)'] : Object.keys(b.provides ?? {}).map((c) => `provides ${c}`))].join('; ');
   const rows = Object.values(leaves).map((b) => `| \`${b.id}\` | ${b.kind} | ${b.purpose} | ${range(b.params)} | ${val(b.processes)}${b.grows ? ', grows' : ''} | ${b.exit} | ${b.dialects === '94' ? "'94 only" : "'88 and '94"} | ${caps(b)} |`);

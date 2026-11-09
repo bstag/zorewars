@@ -2,7 +2,7 @@ import { RULESETS, compile, fitsBattlefield, inLibraryFor } from '../src/engine/
 import { buildTree } from '../tools/algebra/build.js';
 import { combinators } from '../tools/algebra/link.js';
 import { leaves } from '../tools/algebra/leaves.js';
-import { recipes } from '../tools/algebra/recipes.js';
+import { recipes } from '../tools/algebra/public-recipes.js';
 import { createCpuMatchPool } from '../web/cpu-matches.js';
 
 // This entry is bundled into web/vendor, two levels below the warrior library.
@@ -18,8 +18,8 @@ function catalog() {
     kids: def.kids, dialect: def.dialects, topologies: def.topologies ?? ['ring'], testedProfiles: def.testedProfiles ?? [],
     roles: def.knowledge?.parameterRoles ?? {},
   }));
-  const starters = Object.entries(recipes).map(([id, { rules, purpose, length }]) =>
-    ({ id, rules, purpose, length }));
+  const starters = Object.entries(recipes).map(([id, { rules, purpose, length, verification }]) =>
+    ({ id, rules, purpose, length, verification }));
   return { blocks, starters, rules: RULESETS };
 }
 

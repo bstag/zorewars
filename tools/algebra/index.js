@@ -8,3 +8,5 @@ export { gate, shapeOf } from './gate.js';
 export { comboToTree } from './combo-tree.js';
 export { recipes } from './recipes.js';
 export * from './genome.js';
+export { configureStoneImp, stoneImpLayout } from './stone-imp-options.js';
+export { linkedCompactPumpSeed, linkedCompactPumpSeeds, shiftCompactPumpKeepingSeed, withSeededCompactPump, withSeparateLauncherPath } from './pump-placement.js';

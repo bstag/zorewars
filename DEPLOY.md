@@ -19,6 +19,8 @@ ZoreWars has no build step: the repository root *is* the website. The browser lo
 
 The [Block Workbench](web/blocks.html) runs the algebra and VM in a browser worker. After changing blocks, recipes, or their engine dependencies, run `npm run build:workbench` and include the regenerated `web/vendor/block-workbench.js` in the change. Hosts serve the checked-in worker as a static asset.
 
+Build the public worker from the release checkout. Review block modules before adding them to `scripts/workbench-blocks.json` and use independently configured starter trees in `tools/algebra/public-recipes.js`. Keep tuned entry trees and generated contest Redcode in the private contest repository. Review the Git commit range before pushing public releases.
+
 ## Cloudflare
 
 Configuration lives in `wrangler.jsonc`. `.assetsignore` keeps the CLI, tests, scripts, `node_modules` and docs out of the upload, so only the 68 website files are published.

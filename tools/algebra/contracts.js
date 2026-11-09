@@ -180,21 +180,39 @@ const [o, a, b] = parts;
 
 function checkFanBoot({node,settings,parts,out,kids,old,torus,core}) {
 const P = node.P;
+      if(P.PATH&&(!P.SPLIT||!P.MOREA||P.CHECK||kids.some(k=>!leaves[k.id]||leaves[k.id].entryFirst===false)))out.mismatches.push('fanboot: separate PATH requires two entry-first leaf bodies, SPLIT1/MOREA1 and no CHECK');
+      if (P.CHECK) {
+        out.needs.add('probe');
+        const cold = leaves[kids[0].id]?.coldStart;
+        if (!cold?.entry || !cold.feeder || !cold.gate) out.mismatches.push('fanboot: CHECK needs a cold-clear contract in its first member');
+      }
       if (old) out.mismatches.push("fanboot needs ICWS'94 (A-field pointers)");
       if (torus) out.mismatches.push('fanboot is ring-only');
       if (!fanLines(P.N)) out.mismatches.push('fanboot: N must be 2, 3, 4, 6, 8, 12 or 16');
+      if (P.MOREA && !P.SPLIT) out.mismatches.push('fanboot: MOREA requires SPLIT 1');
       parts.forEach((p, i) => { if (p.exit !== 'never') out.mismatches.push(`fanboot: ${kids[i].id} must run forever`); });
       const hasRelocate = (n) => n.id === 'relocate' || n.id === 'boot' || n.id === 'parboot' || n.id === 'fanboot' || (n.kids ?? []).some(hasRelocate);
       if (kids.some(hasRelocate)) out.mismatches.push('one relocation per warrior: fanboot moves both members');
-      if (!torus) {
+      if (!torus && !P.EXACT) {
         if (landsOnSelf(node,settings,P.HOPA)) out.mismatches.push('HOPA lands on the warrior itself');
         if (landsOnSelf(node,settings,P.HOPB)) out.mismatches.push('HOPB lands on the warrior itself');
         if (Math.min((P.HOPA - P.HOPB + 2 * core) % core, (P.HOPB - P.HOPA + 2 * core) % core) < 256) out.mismatches.push('fanboot: the two copies would land on each other');
       }
       const [a, b] = [parts[0]?.processes ?? 0, parts[1]?.processes ?? 0];
-      out.processes = Math.max(P.N, P.SPLIT ? (P.N - 1) * a + b : P.K * P.N * a + P.N * b);
+      out.processes = Math.max(P.N, P.SPLIT ? (P.N - 1 + (P.MOREA || 0)) * a + b : P.K * P.N * a + P.N * b);
 }
+function checkFanBoot3({node,settings,parts,out,kids,old,torus}){
+ if(node.P.PATH)out.mismatches.push('fanboot3 does not support separate PATH');
+ if(node.P.SPLIT!==1||node.P.K!==1||node.P.CHECK)out.mismatches.push('fanboot3 uses fixed SPLIT1/K1 routing without CHECK');
+ if(old)out.mismatches.push("fanboot3 needs ICWS'94");if(torus)out.mismatches.push('fanboot3 is ring-only');
+ if(!fanLines(node.P.N))out.mismatches.push('fanboot3: N must be 2, 3, 4, 6, 8, 12 or 16');
+ if(kids.some(k=>!leaves[k.id]))out.mismatches.push('fanboot3 currently accepts three leaf bodies only');
+ requireEndless(node,kids,parts,out);
+ out.processes=Math.max(node.P.N,(node.P.N-1+node.P.MOREA)*(parts[0]?.processes??0)+(parts[1]?.processes??0)+(parts[2]?.processes??0));
+}
+
 const checks = {
+  fanboot3:checkFanBoot3,
   fork: checkFork, fanboot: checkFanBoot, seq: checkSequence, par: checkParallel, relocate: checkRelocation, boot: checkBoot,
   trigger: checkTrigger, apart: checkCopies, copies: checkCopies, switch: checkSwitch,
   restart: checkRestart, parboot: checkParallelBoot, classify: checkClassifier, image: checkImage,
@@ -211,7 +229,6 @@ export function combinatorContract(node, settings, parts, out) {
   if (!torus && (node.P?.HOPY || node.P?.HOPZ || node.P?.DY || node.P?.DZ || node.P?.HOP2Y || node.P?.HOP2Z)) out.mismatches.push(`${node.id}: y and z parts only mean something on a torus`);
   checks[node.id]({ node, settings, parts, out, kids, old, core, torus });
   if (node.id === 'image' || node.id === 'boot') out.exit = parts[0]?.exit ?? 'never';
-  if (['trigger', 'apart', 'copies', 'switch', 'restart', 'classify', 'parboot', 'fanboot'].includes(node.id) && !out.mismatches.length) out.exit = 'never';
+  if (['trigger', 'apart', 'copies', 'switch', 'restart', 'classify', 'parboot', 'fanboot','fanboot3'].includes(node.id) && !out.mismatches.length) out.exit = 'never';
   return out;
 }
-

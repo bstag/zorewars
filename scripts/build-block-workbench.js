@@ -1,18 +1,23 @@
 #!/usr/bin/env node
 // Package the shared algebra for the buildless website. The CLI discovers
-// blocks from disk; the browser worker gets the same supported files as imports.
-import { readdirSync } from 'node:fs';
+// blocks from disk; the public browser worker imports reviewed files only.
+import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { build } from 'esbuild';
-import { isLeafFile } from '../tools/algebra/leaf-registry.js';
 
 const algebra = new URL('../tools/algebra/', import.meta.url);
-const files = readdirSync(new URL('blocks/', algebra)).filter((file) => isLeafFile(file)).sort();
+const files = JSON.parse(readFileSync(new URL('./workbench-blocks.json', import.meta.url), 'utf8'));
+if (!Array.isArray(files) || files.some((file) => !/^[\w-]+\.js$/.test(file)) || new Set(files).size !== files.length) {
+  throw new Error('Expected a unique list of block module filenames in workbench-blocks.json');
+}
+const allowed = new Set(files.map((file) => `tools/algebra/blocks/${file}`));
 
-await build({
+const result = await build({
   entryPoints: [fileURLToPath(new URL('./block-workbench-worker.js', import.meta.url))],
   outfile: fileURLToPath(new URL('../web/vendor/block-workbench.js', import.meta.url)),
   bundle: true,
+  metafile: true,
+  write: false,
   format: 'esm',
   minify: true,
   target: 'es2022',
@@ -32,3 +37,12 @@ await build({
     },
   }],
 });
+
+for (const input of Object.keys(result.metafile.inputs)) {
+  const path = input.replaceAll('\\', '/');
+  if (path === 'scripts/block-workbench-worker.js' || path === 'web/cpu-matches.js' || path === 'web/simulation.js'
+    || path === 'tools/blocks/recipes.js' || path.startsWith('src/engine/') || allowed.has(path)
+    || /^(?:browser-leaves:)?tools\/algebra\/(?!blocks\/|recipes\.js$)[\w-]+\.js$/.test(path)) continue;
+  throw new Error(`Unexpected Workbench dependency: ${path}`);
+}
+for (const output of result.outputFiles) writeFileSync(output.path, output.contents);

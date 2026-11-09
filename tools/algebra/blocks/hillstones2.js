@@ -33,6 +33,7 @@
 // single process would fall through and die.
 
 import { modInverse } from '../util.js';
+import {observeArmadillo,verifyArmadillo} from '../observation-roles.js';
 
 const gcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) [a, b] = [b, a % b]; return a; };
 const mod = (x, n) => ((x % n) + n) % n;
@@ -55,11 +56,14 @@ const mod = (x, n) => ((x % n) + n) % n;
 const armadilloSwitch = {
   id: 'armadillo-switch', kind: 'body', exit: 'never', writes: 'core', roams: false,
   grows: true, processes: 8, dialects: '94',
-  purpose: 'A self-copying stone whose A-trail copies its own SPL over its DJN after a few thousand cycles, dropping every process into a two-line gated forward clear (MOV bomb, >GATE / DJN.F -1, >GATE) whose HOP+1 bomb B-field resets the pointer past the code each lap, so it clears the core forever without writing itself.',
-  params: { STEP: [1, 4000], HOP: [8, 400] },
-  defaults: { STEP: 3510, HOP: 56 },
+  purpose: 'A self-copying stone whose A-trail copies its own SPL over its DJN, dropping processes into a two-line gated forward clear. The HOP+1 bomb B-field resets the pointer past its code each lap. STREAM0 uses the original folded B-predecrement DJN stream; STREAM1 uses A-indirect *-3 through the moving trail pointer. ANTISTEP sets the DAT bomb\'s remote B-predecrement distance; default1 preserves the original bomb.',
+  params: { STEP: [1, 4000], HOP: [8, 400], STREAM:[0,1], ANTISTEP:[1,7999] },
+  defaults: { STEP: 3510, HOP: 56, STREAM:0, ANTISTEP:1 },
+  observationRole:'stone-clear',observe:observeArmadillo,verifyObservation:verifyArmadillo,
+  phaseContract:{minimumClearWrites:100,requiresNaturalHandoff:true,requiresHealthyClearProcessAtEnd:true},
   entry: 'asInc', loop: 'asLoop',
   provides: { datBomb: 'asBomb' },
+  coldStart: { entry: 'asLoop', feeder: 'asInc', gate: 'asInc-6' },
   mutable: [['asAmov', ['a', 'b']], ['asInc', ['b']], ['asLoop', ['a', 'b']], ['asCmov', ['b']], ['asCdjn', ['b']]],
   mismatches(P, settings) {
     const out = [];
@@ -80,12 +84,15 @@ const armadilloSwitch = {
     // Step both trails by STEP each pass (add the feeder's A and B into asAmov).
     ctx.ins('asAdd', 'ADD', 'F', L('asInc'), '-2');
     // The loop: back to the A-trail line, plus a folded decrement stream.
-    ctx.ins('asLoop', 'DJN', 'F', '@-1', `<${L('asInc')}-${P.STEP}`);
+    ctx.ins('asLoop', 'DJN', 'F', '@-1', P.STREAM?'*-3':`<${L('asInc')}-${P.STEP}`);
     // The forward clear the processes fall into once the SPL overwrites the DJN.
     ctx.ins('asCmov', 'MOV', 'I', L('asBomb'), `>${L('asInc')}-6`);
     ctx.ins('asCdjn', 'DJN', 'F', '-1', `>${L('asInc')}-6`);
     // The bomb: B = HOP + 1 resets the clear pointer past the code on each lap.
-    ctx.ins('asBomb', 'DAT', 'F', '<1', `${P.HOP}+1`);
+    // DAT still resolves its operands before killing a process. A remote
+    // predecrement can damage another imp leg, including a friendly one.
+    // This is relative to each executed bomb, not to the original template.
+    ctx.ins('asBomb', 'DAT', 'F', `<${P.ANTISTEP??1}`, `${P.HOP}+1`);
   },
   watch(api) {
     const incAt = api.at('asInc'), loopAt = api.at('asLoop'), cmovAt = api.at('asCmov');

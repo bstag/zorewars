@@ -271,6 +271,7 @@ function loadStarter() {
   const starter = starters.get($('starter').value);
   if (!starter.rules.includes($('rules').value)) $('rules').value = starter.rules[0];
   $('topology').value = '';
+  $('verification').value = starter.verification ?? 'quick';
   setBudget(starter.length);
   $('workbench-controls').disabled = true;
   send('starter', { recipe: starter.id, rules: $('rules').value });
@@ -286,7 +287,7 @@ function buildWarrior() {
     $('workbench-controls').disabled = true;
     send('build', { tree: stack, options: {
       rules: $('rules').value, length: $('budget').valueAsNumber, name: 'Workbench warrior',
-      torus: $('topology').value || null,
+      torus: $('topology').value || null, verification: $('verification').value,
     } });
   } catch (error) { buildStatus(error.message, 'error'); }
 }
@@ -389,7 +390,7 @@ function download(name, data, type) {
 $('block-search').addEventListener('input', renderPalette);
 $('category').addEventListener('change', renderPalette);
 for (const id of ['rules', 'topology']) $(id).addEventListener('change', () => { setBudget(); renderPalette(); invalidateBuild(); });
-$('budget').addEventListener('input', invalidateBuild);
+for (const id of ['budget', 'verification']) $(id).addEventListener('input', invalidateBuild);
 $('load-starter').addEventListener('click', loadStarter);
 $('new-tree').addEventListener('click', () => setTree(null));
 $('build-warrior').addEventListener('click', buildWarrior);

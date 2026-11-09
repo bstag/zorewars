@@ -5,8 +5,11 @@ export {fanLines} from './fan-lines.js';
 import { leaves } from './leaves.js';
 import { initialContract, leafContract, combinatorContract } from './contracts.js';
 import { makeGeometry } from '../../src/engine/geometry.js';
+import { resolveChecksums } from './checksum.js';
 
 export const combinators = {
+  fanboot3: { kids:[3,3],params:{N:[2,16],MOREA:[0,1],HOPA:[0,54000],HOPB:[0,54000],HOPC:[0,54000],EXACT:[1,1]},defaults:{N:4,MOREA:1,HOPA:2000,HOPB:4000,HOPC:6000,EXACT:1,SPLIT:1,K:1},
+    purpose:'A three-member lockstep fan boot. N-1+MOREA processes enter the first body and one enters each of the other two. Runtime copies are independent; the opening and copy fan are shared. Exact linked rounded-copy overlap checks are mandatory; ring-only and unshifted.' },
   seq: { kids: [2, 8], purpose: 'Members run one after another; each hands control to the next.' },
   par: { kids: [2, 4], purpose: 'Members launched side by side with SPL.' },
   relocate: { kids: [1, 1], params: { HOP: [256, 54000] }, defaults: { HOP: 4096 }, purpose: 'Copies its member to probe + HOP and runs it there.' },
@@ -28,8 +31,8 @@ export const combinators = {
     params: { K: [1, 4], HOP: [0, 54000], HOPY: [0, 200], HOPZ: [0, 200], STAY: [0, 1], REACT: [0, 2], HOP2: [0, 54000], HOP2Y: [0, 200], HOP2Z: [0, 200], CARPET: [1, 20] },
     defaults: { K: 2, HOP: 4000, HOPY: 0, HOPZ: 0, STAY: 0, REACT: 0, HOP2: 2000, HOP2Y: 0, HOP2Z: 0, CARPET: 8 },
     purpose: 'A boot by K independent copy loops, each copying its member to + HOP, so a bomb on one loop doesn\'t stop the copy; the first loop to finish starts the copy. STAY 1 keeps a process running the original too. REACT: the other loops stay on as watchers of the copy\'s loop; when it is hit they make a new copy at + HOP2 (1), first stunning CARPET cells either side of the hit (2).' },
-  fanboot: { kids: [2, 2], params: { N: [2, 16], K: [1, 4], SPLIT: [0, 1], HOPA: [0, 54000], HOPB: [0, 54000] }, defaults: { N: 8, K: 2, SPLIT: 0, HOPA: 2000, HOPB: 5000 },
-    purpose: 'The hill fan boot of two bodies: a fan of SPLs makes N processes that copy both members in lockstep (each copy line copies N cells), the first to + HOPA and the second to + HOPB. The copy pointers are the jump vectors, so the launch happens the moment the copy is done. SPLIT 0: K*N processes enter the first member and N the second; SPLIT 1: N-1 the first and one the second. N is 2, 3, 4, 6, 8, 12 or 16.' },
+  fanboot: { kids: [2, 2], params: { N: [2, 16], K: [1, 4], SPLIT: [0, 1], MOREA: [0, 1], HOPA: [0, 54000], HOPB: [0, 54000], EXACT: [0, 1], CHECK: [0, 3], C0: [0, 199], C1: [0, 199], C2: [0, 199], BYPASS: [0, 1], PATH:[0,2], PUMPWAIT:[0,12], PUMPORDER:[0,1] }, defaults: { N: 8, K: 2, SPLIT: 0, MOREA: 0, HOPA: 2000, HOPB: 5000, EXACT: 0, CHECK: 0, C0: 0, C1: 1, C2: 2, BYPASS: 0, PATH:0, PUMPWAIT:0, PUMPORDER:0 },
+    purpose: 'The hill fan boot of two bodies: a fan of SPLs makes N processes that copy both members in lockstep (each copy line copies N cells), the first to + HOPA and the second to + HOPB. The copy pointers are the jump vectors, so the launch happens the moment the copy is done. SPLIT 0: K*N processes enter the first member and N the second; SPLIT 1: N-1 the first and one the second; MOREA 1 adds one first-member worker with a final SPL. N is 2, 3, 4, 6, 8, 12 or 16. Experimental CHECK: 1 sums both numeric fields of the source and padded tail; 2 sums C0..C2; 3 rejects zero-field bombs at C0/C1. Failure starts the first member\'s cold clear. BYPASS retains the cost while disabling rejection.' },
   classify: { kids: [3, 3], params: { MARKS: [1, 10], DIST: [256, 27000], SPREAD: [1, 2000] }, defaults: { MARKS: 6, DIST: 2000, SPREAD: 800 }, purpose: 'Runs its first member (a block with a loop) beside MARKS tripwire cells scattered DIST away, SPREAD apart, so an attacker out in the core trips one before it reaches the body. When a tripwire is overwritten it reads what hit it: both fields zero (a clear\'s or stone\'s DAT) hands over to the second member; anything else (copied code, a scanner\'s bomb) to the third.' },
 };
 
@@ -41,10 +44,12 @@ export function switchChoice(policy, n, result, choice, losses) {
   if (policy === 1) return result === 0 && losses + 1 >= 2 ? (choice + 1) % n : choice;
   return result === -1 ? choice : (choice + 1) % n;
 }
+combinators.fanboot.purpose += ' PATH1 and PATH2 give the second member a separate copy path. They require SPLIT1, MOREA1, two entry-first leaf members and no integrity check.';
 for (const [id, c] of Object.entries(combinators)) { c.id = id; c.combinator = true; c.params ??= {}; c.defaults ??= {}; }
 
 export const definition = (id) => leaves[id] ?? combinators[id];
 const isLeaf = (node) => Object.hasOwn(leaves, node.id);
+const seedDescriptors=node=>[].concat(leaves[node.id]?.bootSeed?.(node.P)??[]);
 
 // Give every node its own label namespace, in a deterministic order.
 export function annotate(tree) {
@@ -60,7 +65,7 @@ export function annotate(tree) {
 export function entryOf(node) {
   if (isLeaf(node)) return node.ns + leaves[node.id].entry;
   if (node.id === 'seq' || node.id === 'image' || node.id === 'fork') return entryOf(node.kids[0]);
-  return node.ns + { par: 'split', relocate: 'transition', boot: 'boot', trigger: 'start', apart: 'start', copies: 'start', switch: 'start', restart: 'start', classify: 'start', parboot: 'start', fanboot: 'start' }[node.id];
+  return node.ns + { par: 'split', relocate: 'transition', boot: 'boot', trigger: 'start', apart: 'start', copies: 'start', switch: 'start', restart: 'start', classify: 'start', parboot: 'start', fanboot: 'start', fanboot3:'start' }[node.id];
 }
 
 // par lays out members that write ahead of themselves (a spiral's imps) last.
@@ -154,7 +159,7 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
   };
   const op = (opcode, mod) => (old ? opcode : `${opcode}.${mod}`);
   function pass(sizes) {
-    const lines = [], labels = {}, spans = {};
+    const lines = [], labels = {}, spans = {}, checksums = [];
     let pc = 0;
     const total = sizes?.total ?? 0;
     const scopes = [];
@@ -481,33 +486,97 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
             emit(x, env);
             break;
           }
+          case 'fanboot3':
           case 'fanboot': {
             // The fan, then every process runs each copy line once: MOV <v,{v copies one
             // cell per process, from v's B pointer to v's A pointer. Each member is copied
             // from its first cell (or from a JMP to its entry put in front of it), M cells
             // in all, so after the last copy v's A points at the copy's first cell and the
             // same cell, run as SPL / DJN / JMP, sends the processes there.
-            const [a, b] = kids, N = P.N;
+            const [a, b] = kids, N = P.N, triple=node.id==='fanboot3';
+            const seeded=kids.flatMap((kid,i)=>seedDescriptors(kid).map(seed=>({kid,i,seed})));
+            // A standalone fanboot must keep seed templates out of the copied spans too.
+            for (const { kid } of seeded) emitState(kid, env);
             const tramp = kids.map((k) => entryOffset(k) > 0);
             const M = kids.map((k, i) => Math.ceil((spanOf(k).size + tramp[i]) / N) * N);
+            if(P.PATH&&!triple){M[1]=spanOf(b).size;node.fan={M,tramp};
+              seeded.forEach(({kid,i,seed},k)=>ctx.ins(k?'':'start','MOV','I',kid.ns+seed.source,`${kid.ns+seed.entry}+${[P.HOPA,P.HOPB][i]}+${seed.offset}`));
+              ctx.ins(seeded.length?'':'start','SPL','B',L(P.PATH===1?'pumpStart':'stoneStart'));
+              const stonePath=()=>{
+                fanLines(N).forEach((d,i)=>ctx.free('fan',i,i?'':'stoneStart','SPL','B',d,'0'));
+                for(let i=0;i<M[0]/N;i++)ctx.ins('','MOV','I',`<${L('sa')}`,`{${L('va')}`);
+                ctx.ins('va','JMP','B',`${L('c0')}+${P.HOPA}+${M[0]}-${L('va')}`);
+              };
+              const pumpPath=()=>{
+                for(let i=0;i<P.PUMPWAIT;i++)ctx.ins(i?'':'pumpStart','NOP','F','0','0');
+                const order=Array.from({length:M[1]},(_,i)=>P.PUMPORDER?M[1]-1-i:i);
+                order.forEach((k,i)=>ctx.ins(!P.PUMPWAIT&&!i?'pumpStart':'','MOV','I',`${L('c1')}+${k}`,`${L('c1')}+${P.HOPB}+${k}`));
+                ctx.ins('vb','JMP','B',`${entryOf(b)}+${P.HOPB}`);
+              };
+              if(P.PATH===1){stonePath();pumpPath();}else{pumpPath();stonePath();}
+              ctx.ins('sa','DAT','F','#0',`${L('c0')}+${M[0]}-${L('sa')}`);
+              kids.forEach((k,i)=>{ctx.mark('c'+i);emit(k,env);});break;
+            }
             node.fan = { M, tramp };
             const [va, vb, sa] = [L('va'), L('vb'), P.SPLIT ? L('sa') : L('va')];
-            fanLines(N).forEach((d, i) => ctx.free('fan', i, i ? '' : 'start', 'SPL', 'B', d, '0'));
+            if (P.CHECK) {
+              const acc = ctx.ref('probe'), count = `${L('c1')}+${M[1]}-${L('c0')}`;
+              const targets = [P.C0, P.C1, P.C2].map(c => c < spanOf(a).size
+                ? [L('c0'), Number(tramp[0]) + c] : [L('c1'), Number(tramp[1]) + c - spanOf(a).size]);
+              const record = { acc, init: L('start'), cmp: L('check'), initLine: lines.length,
+                range: P.CHECK === 1, start: L('c0'), end: L('c1'), extra: M[1], cells: targets };
+              const coldSource = `${a.ns}${leaves[a.id].coldStart.feeder}`, coldEntry = `${a.ns}${leaves[a.id].coldStart.entry}`;
+              if (P.CHECK === 3) {
+                targets.slice(0, 2).forEach(([label, offset], i) => ctx.ins(i ? '' : 'start', 'JMZ', 'F', P.BYPASS ? L('fanStart') : L('cold'), `${label}+${offset}`));
+                ctx.ins('', 'JMP', 'B', L('fanStart'));
+                ctx.ins('cold', 'MOV', 'AB', '#0', `${a.ns}${leaves[a.id].coldStart.gate}`);
+                ctx.ins('', 'MOV', 'I', coldSource, coldEntry);
+                ctx.ins('reject', 'JMP', 'B', coldEntry);
+              } else {
+                ctx.ins('start', 'MOV', 'F', '#0', acc);
+                if (P.CHECK === 1) {
+                  ctx.ins('sum', 'ADD', 'F', `<${vb}`, acc);
+                  ctx.ins('', 'DJN', 'B', L('sum'), `#${count}`);
+                  ctx.ins('', 'ADD', 'AB', `#${count}`, vb);
+                } else for (const [label, offset] of targets) ctx.ins('', 'ADD', 'F', `${label}+${offset}`, acc);
+                record.cmpLine = lines.length;
+                ctx.ins('check', 'SEQ', 'F', acc, '#0');
+                ctx.ins('reject', 'JMP', 'B', P.BYPASS ? L('fanStart') : L('cold'));
+                checksums.push(record);
+              }
+              node.checkCells = targets;
+            }
+            // Seed once, before creating copy workers. The seed source can be
+            // state outside a four-cell runtime span; its target is in the
+            // member's deployed frame, not its original source frame.
+            seeded.forEach(({kid,i,seed},k)=>ctx.ins(k?'':'start','MOV','I',kid.ns+seed.source,`${kid.ns+seed.entry}+${[P.HOPA,P.HOPB,P.HOPC][i]}+${seed.offset}`));
+            fanLines(N).forEach((d, i) => ctx.free('fan', i, i ? '' : P.CHECK||seeded.length ? 'fanStart' : 'start', 'SPL', 'B', d, '0'));
             for (let i = 0; i < M[0] / N; i++) ctx.ins('', 'MOV', 'I', `<${sa}`, `{${va}`);
-            for (let i = 0; i < M[1] / N; i++) ctx.ins('', 'MOV', 'I', `<${vb}`, `{${vb}`);
-            const dst = (i, v) => `${L('c' + i)}+${[P.HOPA, P.HOPB][i]}+${M[i]}-${v}`, src = (i, v) => `${L('c' + i)}+${M[i]}-${v}`;
-            if (P.SPLIT) ctx.ins('va', 'DJN', 'B', dst(0, va), `#${N}`);   // N-1 processes to a, the last falls through to b
+            for(let member=1;member<kids.length;member++){const v=L(member===1?'vb':'vc');for(let i=0;i<M[member]/N;i++)ctx.ins('','MOV','I',`<${v}`,`{${v}`);}
+            const dst = (i, v) => `${L('c' + i)}+${[P.HOPA, P.HOPB,P.HOPC][i]}+${M[i]}-${v}`, src = (i, v) => `${L('c' + i)}+${M[i]}-${v}`;
+            if (P.SPLIT) {
+              ctx.ins('va', 'DJN', 'B', dst(0, va), `#${N}`);   // N-1 processes to a, the last falls through to b
+              // Only the final worker reaches this fork, adding exactly one
+              // entrant to a while its continuation still launches b.
+              if (P.MOREA) ctx.ins('', 'SPL', 'B', `*${va}`);
+            }
             else {
               ctx.ins('va', 'SPL', 'B', dst(0, va), src(0, va));
               for (let k = 1; k < P.K; k++) ctx.free('spk', k - 1, '', 'SPL', 'B', `*${va}`, '0');
             }
-            ctx.ins('vb', 'JMP', 'B', dst(1, vb), src(1, vb));
+            ctx.ins('vb', triple?'SPL':'JMP', 'B', dst(1, vb), src(1, vb));
+            if(triple)ctx.ins('vc','JMP','B',dst(2,L('vc')),src(2,L('vc')));
             if (P.SPLIT) ctx.ins('sa', 'DAT', 'F', '#0', src(0, sa));
             kids.forEach((k, i) => {
               if (tramp[i]) ctx.ins('c' + i, 'JMP', 'B', entryOf(k));
               else ctx.mark('c' + i);
               emit(k, env);
             });
+            if (P.CHECK && P.CHECK !== 3) {
+              ctx.ins('cold', 'MOV', 'AB', '#0', `${a.ns}${leaves[a.id].coldStart.gate}`);
+              ctx.ins('', 'MOV', 'I', `${a.ns}${leaves[a.id].coldStart.feeder}`, `${a.ns}${leaves[a.id].coldStart.entry}`);
+              ctx.ins('', 'JMP', 'B', `${a.ns}${leaves[a.id].coldStart.entry}`);
+            }
             break;
           }
           case 'classify': {
@@ -556,7 +625,7 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
       spans[node.ns] = { start, size: pc - start };
     }
     emit(root, { next: null });
-    return { lines, labels, spans, total: pc };
+    return { lines, labels, spans, total: pc, checksums };
   }
   // Lay out until the sizes stop changing: a block can depend on another's size
   // (restart's backup is as long as its member), so two passes aren't always enough.
@@ -569,14 +638,37 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
   }
   // Checks a block can make only once it knows where everything landed.
   const misfits = [];
-  const check = (node) => {
+  const check = (node, shiftedFrame=false, parent=null) => {
     const def = leaves[node.id];
+    const seeds=seedDescriptors(node);
+    if(seeds.length&&!['fanboot','fanboot3'].includes(parent?.id))misfits.push(`${node.id}: separately seeded mode requires a direct fanboot parent`);
+    if(seeds.length&&[1,4,5].includes(node.P.SEED)&&seeds.some(seed=>out.labels[node.ns+seed.source]>=out.spans[node.ns].start&&out.labels[node.ns+seed.source]<out.spans[node.ns].start+out.spans[node.ns].size))misfits.push(`${node.id}: four-cell seeding requires template state outside the copied span`);
+    const hasSeeds=['fanboot','fanboot3'].includes(node.id)&&node.kids.some(k=>seedDescriptors(k).length);
+    if(node.id==='fanboot'&&node.P.PATH&&shiftedFrame)misfits.push('fanboot: separate PATH requires an unshifted linked frame');
+    if(node.id==='fanboot'&&node.P.PATH&&node.fan.tramp.some(Boolean))misfits.push('fanboot: separate PATH requires members whose entry is the first copied cell');
+    if(hasSeeds&&(shiftedFrame||node.P.CHECK))misfits.push(`${node.id}: separate seed initialization requires an unshifted frame without CHECK`);
     if (def?.linked) misfits.push(...def.linked(node.P, settings, (l) => out.labels[node.ns + l], { span: node.span }));
-    for (const k of node.kids ?? []) check(k);
+    if (['fanboot','fanboot3'].includes(node.id) && node.P.EXACT && shiftedFrame) misfits.push(`${node.id}: EXACT requires an unshifted linked frame; nested relocation is not supported`);
+    if (['fanboot','fanboot3'].includes(node.id) && !shiftedFrame) {
+      // Only the linked copy vectors describe the true destination spans.
+      // M includes entry trampolines and copy-fan rounding, not just live code.
+      const segments=(start,size)=>{const a=((start%core)+core)%core;if(size>=core)return [[0,core]];return a+size<=core?[[a,a+size]]:[[a,core],[0,a+size-core]];};
+      const overlaps=(a,b)=>segments(a.start,a.size).some(([lo,hi])=>segments(b.start,b.size).some(([x,y])=>lo<y&&x<hi));
+      const copies=[node.P.HOPA,node.P.HOPB,...(node.id==='fanboot3'?[node.P.HOPC]:[])].map((hop,i)=>({start:out.labels[node.ns+'c'+i]+hop,size:node.fan.M[i]}));
+      for(let i=0;i<copies.length;i++)for(let j=i+1;j<copies.length;j++)if(overlaps(copies[i],copies[j]))misfits.push(`${node.id}: linked rounded copies land on each other`);
+      copies.forEach((copy,i)=>{if(overlaps(copy,{start:0,size:out.total}))misfits.push(`${node.id}: linked copy ${i} lands on the original image`);});
+      if(hasSeeds){const targets=node.kids.flatMap((k,i)=>seedDescriptors(k).map(seed=>({start:out.labels[k.ns+seed.entry]+[node.P.HOPA,node.P.HOPB,node.P.HOPC][i]+seed.offset,size:1})));for(const target of targets){if(copies.some(copy=>overlaps(target,copy)))misfits.push(`${node.id}: separate seed overlaps a rounded copy`);if(overlaps(target,{start:0,size:out.total}))misfits.push(`${node.id}: separate seed overlaps the original image`);}for(let i=0;i<targets.length;i++)for(let j=i+1;j<targets.length;j++)if(overlaps(targets[i],targets[j]))misfits.push(`${node.id}: seed initializers overlap each other`);}
+    }
+    if (node.id === 'fanboot' && node.P.CHECK >= 2) {
+      const size = node.kids.reduce((s, k) => s + out.spans[k.ns].size, 0);
+      if ([node.P.C0, node.P.C1, node.P.C2].some(c => c >= size)) misfits.push('fanboot: checksum sample is outside its members');
+    }
+    for (const k of node.kids ?? []) check(k,shiftedFrame||['boot','relocate','apart','copies','parboot','fanboot','fanboot3'].includes(node.id),node);
   };
   check(root);
   const entry = entryOf(root);
   const header = [`;name ${name}`, ';author ZoreWars', `;strategy ${shape(tree)}`, `;assert CORESIZE==${core}`];
+  if (!misfits.length) out.lines = resolveChecksums(out.lines, out.checksums, out.labels, header, entry, settings);
   const source = [...header, ...(old ? [] : [`ORG ${entry}`]), ...out.lines, old ? `END ${entry}` : 'END'].join('\n') + '\n';
   return { source, root, labels: out.labels, spans: out.spans, total: out.total, entry, misfits };
 }
