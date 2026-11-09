@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Stack ZoreWars blocks, tune their parameters, build Redcode and battle the built-in library.">
+  <link rel="canonical" href="https://zorewar.app/web/blocks">
+  <meta name="theme-color" content="#070b16">
+  <title>Block Workbench | ZoreWars</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="block-workbench.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="../" aria-label="ZoreWars home">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span class="brand-name">ZORE<b>WARS</b></span>
+    </a>
+    <nav class="nav" aria-label="Workbench navigation">
+      <a href="./">Arena</a>
+      <a href="docs.html">Learn</a>
+      <a href="#workbench-guide">Workbench guide</a>
+    </nav>
+  </header>
+
+  <main class="workbench">
+    <div class="workbench-intro">
+      <div>
+        <p class="workbench-kicker">WARRIOR LAB <span>Experimental</span></p>
+        <h1>Block Workbench</h1>
+        <p>Stack reusable parts, tune how they run, and see what your warrior can beat.</p>
+      </div>
+      <div class="row">
+        <a class="btn ghost" href="#workbench-guide">How to use it ↓</a>
+        <a class="btn ghost" href="#build-and-battle">Build &amp; battle ↓</a>
+      </div>
+    </div>
+
+    <noscript><p>This workbench needs JavaScript to build and battle warriors.</p></noscript>
+    <p id="workbench-message" role="status">Loading the block catalog…</p>
+    <fieldset id="workbench-controls" disabled>
+      <legend class="visually-hidden">Warrior workspace</legend>
+      <div class="panel workbench-toolbar">
+        <label class="field">Starter recipe<select id="starter"></select></label>
+        <button class="btn" id="load-starter">Load recipe</button>
+        <label class="field">Rules<select id="rules"></select></label>
+        <label class="field">Battlefield<select id="topology">
+          <option value="">Ring</option><option>100x80</option><option>125x64</option>
+          <option>40x20x10</option><option>80x10x10</option><option>41x20x9</option><option>20x20x20</option>
+        </select></label>
+        <label class="field">Length limit<input id="budget" type="number" min="1" step="1"></label>
+        <div class="workbench-files">
+          <button class="btn ghost" id="new-tree">New stack</button>
+          <button class="btn ghost" id="import-tree">Import JSON</button>
+          <input id="tree-file" type="file" accept=".json,application/json" hidden>
+          <button class="btn ghost" id="export-tree" disabled>Save JSON</button>
+        </div>
+      </div>
+
+      <div class="workbench-grid">
+        <section class="panel" aria-labelledby="palette-heading">
+          <p class="workbench-step">01 / Choose</p>
+          <h2 id="palette-heading">Block library</h2>
+          <label class="field">Search blocks<input id="block-search" type="search" placeholder="Try scan, imp, or boot"></label>
+          <label class="field">Category<select id="category">
+            <option value="">All categories</option><option value="group">Groups</option><option value="opening">Openings</option>
+            <option value="body">Bodies</option><option value="finisher">Finishers</option><option value="data">Data</option>
+          </select></label>
+          <p id="palette-count" class="small workbench-note"></p>
+          <div id="palette" class="workbench-palette"></div>
+        </section>
+
+        <section class="panel" aria-labelledby="stack-heading">
+          <p class="workbench-step">02 / Assemble</p>
+          <h2 id="stack-heading">Warrior stack</h2>
+          <p id="destination" class="small workbench-note"></p>
+          <div id="stack" class="workbench-stack"></div>
+        </section>
+
+        <section class="panel" aria-labelledby="tune-heading">
+          <p class="workbench-step">03 / Tune</p>
+          <h2 id="tune-heading">Block inspector</h2>
+          <div id="inspector"></div>
+        </section>
+      </div>
+
+      <div class="workbench-output" id="build-and-battle">
+        <section class="panel" aria-labelledby="build-heading">
+          <p class="workbench-step">04 / Build</p>
+          <h2 id="build-heading">Redcode</h2>
+          <div class="row workbench-actions">
+            <button class="btn primary" id="build-warrior">Build warrior</button>
+            <button class="btn ghost" id="save-redcode" disabled>Save .red</button>
+          </div>
+          <p id="build-status" class="workbench-note" role="status">Build to check the stack and generate Redcode.</p>
+          <pre id="redcode" tabindex="0" aria-label="Generated Redcode">; Your build will appear here.</pre>
+        </section>
+
+        <section class="panel" aria-labelledby="benchmark-heading">
+          <p class="workbench-step">05 / Battle</p>
+          <h2 id="benchmark-heading">Library benchmark</h2>
+          <div class="row workbench-actions">
+            <label class="field workbench-opponent">Opponent<select id="opponent" disabled><option value="">All compatible opponents</option></select></label>
+            <label class="field">Rounds each<input id="rounds" type="number" min="1" max="50" step="1" value="5"></label>
+            <label class="field">Seed<input id="seed" type="number" min="0" max="4294967295" step="1" value="1"></label>
+          </div>
+          <div class="row"><button class="btn primary" id="run-benchmark" disabled>Run benchmark</button></div>
+          <p id="field-note" class="small workbench-note" role="status">Build a warrior to find compatible library opponents.</p>
+          <div class="workbench-table" id="results" hidden>
+            <table>
+              <caption id="score"></caption>
+              <thead><tr><th scope="col">Opponent</th><th scope="col">Win</th><th scope="col">Tie</th><th scope="col">Loss</th><th scope="col">Pts/round</th></tr></thead>
+              <tbody id="match-rows"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </fieldset>
+    <div class="workbench-run-status" id="run-status" hidden>
+      <p id="run-progress" role="status"></p>
+      <button class="btn" id="stop-benchmark">Stop benchmark</button>
+    </div>
+
+    <section class="panel workbench-guide" id="workbench-guide" aria-labelledby="guide-heading">
+      <h2 id="guide-heading">Build your first warrior</h2>
+      <ol>
+        <li>Start with <strong>one-shot</strong>. Its <code>seq</code> group runs the comparison scanner first, then hands the position it found to a core clear.</li>
+        <li>Select a block to read what it does and edit its parameters. To add a block, select a <strong>+</strong> slot and click a block from the library. On desktop, you can also drag blocks onto the slots. To move a block by touch or keyboard, select it, choose <strong>Move to slot</strong>, then choose a slot.</li>
+        <li>Try a different structure with <strong>New stack</strong>. An opening hands off to the next member in <code>seq</code>. A body keeps running, so use <code>par</code> for bodies that can safely run side by side. <code>boot</code> copies a body away from its starting location. Groups can contain other groups.</li>
+        <li>Choose <strong>Build warrior</strong>. The linker checks that the blocks fit and the simulator runs behavior checks. A successful check means the design does what the checked contracts expect in those scenarios. The library benchmark measures how it fights.</li>
+        <li>Try one opponent or the whole compatible library. Use the same seed and round count to compare two edits. A win is worth 3 points and a tie is worth 1. Increase rounds for a closer comparison.</li>
+      </ol>
+      <p>The selected battlefield, rules and length budget affect which blocks and library warriors can run.</p>
+      <p>Save JSON to keep editing your stack or pass it to <code>node scripts/algebra.js build</code> with the same rules and length. Save the <code>.red</code> file to drop into the <a href="./">Arena</a>. Keep a JSON copy before loading another recipe or closing the page.</p>
+      <p><a href="https://github.com/bstag/zorewars/blob/main/docs/block-algebra.md">Algebra design</a> · <a href="https://github.com/bstag/zorewars/blob/main/docs/block-algebra-catalog.md">Repository catalog</a></p>
+    </section>
+  </main>
+  <script type="module" src="block-workbench.js"></script>
+</body>
+</html>

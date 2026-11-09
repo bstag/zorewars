@@ -97,6 +97,7 @@
       <a href="#strategies">Classic strategies</a>
       <a href="#exercises">Exercises</a>
       <a href="warriors.html">Warrior encyclopedia ↗</a>
+      <a href="blocks.html">Block Workbench ↗</a>
       <h4>Competition</h4>
       <a href="#cli">CLI &amp; AI agents</a>
       <a href="#rules">Rules &amp; scoring</a>
@@ -449,6 +450,7 @@ label(<span class="lbl">"bomb"</span>); dat.f(imm(0), imm(0))</code></pre>
       <div class="exercise"><b>6. Hill climbing.</b> Run <code>zorewars tournament warriors</code> and get your warrior to the top of the table.</div>
 
       <h2 id="cli">CLI &amp; AI agents</h2>
+      <p>The experimental <a href="blocks.html">Block Workbench</a> lets you stack reusable parts, tune them, and test the generated warrior against the built-in library. Export the stack as JSON to build it with <code>node scripts/algebra.js build</code> using the same rules and length.</p>
       <p>The CLI runs the same engine as the arena, so results match exactly. Every command takes <code>--json</code>, so scripts and AI agents can write a warrior, test it, read the score and iterate.</p>
       <pre><code>node cli/zorewars.js list                                <span class="cmt"># built-in warriors and their @refs</span>
 node cli/zorewars.js check mine.red                      <span class="cmt"># compile only</span>
