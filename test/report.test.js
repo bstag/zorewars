@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { compile, VM, DEFAULT_SETTINGS, postMortem, formatPostMortem } from '../src/engine/index.js';
+import { createRound } from '../src/engine/battle.js';
 
 const ring = { ...DEFAULT_SETTINGS, coreSize: 80, maxCycles: 10, maxLength: 10, minDistance: 10, maxProcesses: 8 };
 
@@ -94,4 +95,24 @@ test('loaded and written context cells retain their different provenance labels'
   const written = load([';name Zero\nDIV.A #0, 0']);
   written.run();
   assert.match(formatPostMortem(postMortem(written)), /> 0000\s+DIV.A #0, \$0\s+Zero @0/);
+});
+
+test('score-only execution keeps core writes and round results without recording history', () => {
+  const warriors = [
+    'MOV.I bomb, >ptr\nJMP 0\nptr DAT #0, #8\nbomb DAT #0, #0',
+    'JMP 0',
+  ].map(source => compile(source, 'redcode', ring));
+  assert.ok(warriors.every(w => w.ok));
+  const options = { positions: [0, 10] };
+  const full = createRound(warriors, ring, options);
+  const lean = createRound(warriors, ring, { ...options, executionHistory: false });
+  full.vm.run();
+  lean.vm.run();
+  assert.equal(full.vm.winner, 0);
+  assert.deepEqual(lean.finish(), full.finish());
+  for (const key of ['op', 'mod', 'aMode', 'bMode', 'a', 'b']) assert.deepEqual(lean.vm[key], full.vm[key]);
+  for (const key of ['owner', 'lastWrite', 'lastExec', 'writerPc', 'writeCycle']) assert.equal(lean.vm[key], null);
+  assert.throws(() => postMortem(lean.vm), /requires? execution history/);
+  assert.throws(() => lean.vm.enableTrace(1), /require execution history/);
+  assert.throws(() => lean.vm.enableEvents(), /require execution history/);
 });

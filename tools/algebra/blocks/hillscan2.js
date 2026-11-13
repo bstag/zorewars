@@ -78,8 +78,12 @@ function scanTarget(api, lo, hi, nth = 3) {
 // unless it is the JMP of one of our own traps. A non-empty cell in the image
 // counts down SELF; HITS traps or SELF self-finds start the clear: DAT from the
 // image's end round to its start, again and again.
+// As oneshot-cobra-imp: under a boot inside a seq the block lies past `span`,
+// so it protects up to its own end instead (unchanged where span covers it).
+const TRAP_SIZE = 31;
 function emitTrap(ctx) {
-  const { L, P, span } = ctx, ptr = L('ptr'), tp = L('tp'), cp = L('cp');
+  const start = ctx.pc(), span = Math.max(ctx.span, start + TRAP_SIZE);
+  const { L, P } = ctx, ptr = L('ptr'), tp = L('tp'), cp = L('cp');
   ctx.ins('sLoop', 'ADD', 'AB', `#${P.STEP}`, ptr);
   ctx.ins('sLook', 'JMZ', 'F', L('sLoop'), `@${ptr}`);           // empty (or our SPL): keep scanning
   ctx.ins('sHit', 'SLT', 'AB', `#(${span}-${idxOf(ctx, 'ptr')}-1)`, ptr);
@@ -113,6 +117,7 @@ function emitTrap(ctx) {
   ctx.ins('tSpl', 'SPL', 'B', '#0', '#0');
   ctx.ins('tJmp', 'JMP', 'B', '-2', '0');
   ctx.ins('dbomb', 'DAT', 'F', '#0', '#0');
+  if (ctx.pc() - start !== TRAP_SIZE) throw new Error(`trap-scanner: emitted ${ctx.pc() - start} cells, declared ${TRAP_SIZE}`);
 }
 
 const trapTarget = (api) => scanTarget(api, -4, api.P.ROOM + 4);
@@ -128,6 +133,8 @@ function watchTrap(api) {
   };
   return {
     before(pc) {
+      // A branch not taken never runs: whatever runs in its cells later (a paper's copy) is not this block.
+      if (!api.entered()) return null;
       if (pc === api.at('sLook')) looks++;
       if (clearAt === null && pc === api.at('cGo')) {
         clearAt = vm.cycle;
@@ -149,6 +156,7 @@ function watchTrap(api) {
       }
     },
     final() {
+      if (!api.entered()) return;                // a switch branch not taken
       if (planted) {
         const cells = [0, 1, 2].map((k) => laid.get(mod(target + k, core)));
         if (cells[0] !== 'tSpl' || cells[1] !== 'tSpl' || cells[2] !== 'tJmp') throw new Error('trap-scanner did not lay SPL, SPL, JMP over the planted target');
@@ -177,7 +185,10 @@ function watchTrap(api) {
 function bombChain(P) { return [...Array(P.SPLS).keys()].map((k) => `b${k}`).concat('bd'); }
 
 function emitOverwrite(ctx) {
-  const { L, P, span } = ctx, probe = ctx.ref('probe');
+  // As oneshot-cobra-imp: under a boot inside a seq the block lies past `span`, so its wrap
+  // resets the pointer to its own end instead (unchanged where span covers it).
+  const size = 6 + (ctx.P.PUMP ? 1 : 0) + ctx.P.SPLS + 1, start = ctx.pc(), span = Math.max(ctx.span, start + size);
+  const { L, P } = ctx, probe = ctx.ref('probe');
   const idx = () => `(${probe}+${ctx.pc()})`;   // the probe's global index, on the current line
   const chain = bombChain(P);
   ctx.mark('payload');
@@ -193,11 +204,14 @@ function emitOverwrite(ctx) {
     const isDat = b === 'bd';
     ctx.ins(b, isDat ? 'DAT' : 'SPL', isDat ? 'F' : 'B', `#(${L(nextBomb)}-${probe})`, `#(${span}-${idx()})`);
   });
+  if (ctx.pc() - start !== size) throw new Error(`finisher-overwrite: emitted ${ctx.pc() - start} cells, declared ${size}`);
 }
 
 function watchOverwrite(api) {
   const { vm, core, P } = api, chain = bombChain(P);
-  const probe = api.ref('probe'), skip = api.code(chain[0]).b;
+  // The probe this copy was linked to, read from its own first instruction (SLT #.., probe):
+  // api.ref finds the tree's first probe, which is another opening's when two openings provide one.
+  const probe = api.add(api.at('payload'), api.code('payload').b), skip = api.code(chain[0]).b;
   const written = new Int32Array(core).fill(-1);
   let enteredAt = null, wraps = 0, writes = 0;
   const w1 = api.at('w1'), w2 = api.at('w2');
@@ -247,8 +261,14 @@ function watchOverwrite(api) {
 // DAT. A SPL front would stun the imp, and the stunned process would follow
 // the front into its fresh SPL carpet, multiplying until the clear starves
 // (seen with a timer: ~2% of the turns left to the clear).
+// The end of what it protects. Normally span. Under a boot inside a seq, span is
+// the booted member's size, but the member starts further on in the frame, so the
+// block's own code would lie past `span`: then it protects up to its own end.
+// (Where span already covers the block, nothing changes.)
+const COBRA_SIZE = 28;
 function emitCobraImp(ctx) {
-  const { L, P, span } = ctx, ptr = L('ptr'), cptr = L('cptr'), tp = L('tp');
+  const start = ctx.pc(), span = Math.max(ctx.span, start + COBRA_SIZE);
+  const { L, P } = ctx, ptr = L('ptr'), cptr = L('cptr'), tp = L('tp');
   const lo = `#(${span}-${idxOf(ctx, 'ptr')}-1)`;
   ctx.ins('sLoop', 'ADD', 'F', L('inc'), ptr);
   ctx.ins('sLook', 'SNE', 'I', `*${ptr}`, `@${ptr}`);
@@ -281,6 +301,7 @@ function emitCobraImp(ctx) {
   ctx.ins('sbomb', 'SPL', 'B', `#(${L('dbomb')}-${cptr})`, `#(${span}-${idxOf(ctx, 'cptr')})`);
   ctx.ins('dbomb', 'DAT', 'F', `#(${L('dbomb')}-${cptr})`, `#(${span}-${idxOf(ctx, 'cptr')})`);
   ctx.ins('imp', 'MOV', 'I', '#0', '$1');
+  if (ctx.pc() - start !== COBRA_SIZE) throw new Error(`oneshot-cobra-imp: emitted ${ctx.pc() - start} cells, declared ${COBRA_SIZE}`);
 }
 
 // Planted body: two adjacent cells at a B cell the scan reaches, room around.
@@ -295,6 +316,8 @@ function watchCobraImp(api) {
   let looks = 0, committed = null, found = -1, dat = 0, writes = 0, wraps = 0, hitBody = false, impRan = false, impSteps = 0;
   return {
     before(pc) {
+      // A branch not taken never runs: whatever runs in its cells later (a paper's copy) is not this block.
+      if (!api.entered()) return null;
       if (pc === api.at('sLook')) looks++;
       if (committed === null && pc === api.at('commit')) {
         committed = vm.cycle;
@@ -323,6 +346,7 @@ function watchCobraImp(api) {
       if (t === target || t === mod(target + 1, core)) hitBody = true;
     },
     final() {
+      if (!api.entered()) return;                // a switch branch not taken
       if (planted) {
         if (committed === null) throw new Error('oneshot-cobra-imp did not commit to the planted body');
         if (!impRan || impSteps < 4) throw new Error('oneshot-cobra-imp did not spin off its imp at the find');

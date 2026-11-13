@@ -70,7 +70,7 @@ export async function cmdEvolveBlocks(args, h, { quiet, battlePool, hillOpponent
 export function blockCommandOptions(f,h) {
   const supported = new Set(['representation', 'rules', 'length', 'genome', 'families', 'generations', 'population', 'batch', 'batches',
     'eval-rounds', 'rounds', 'local-steps', 'seed', 'objective', 'ties', 'algorithm', 'selection', 'hill', 'top', 'king', 'classics',
-    'out', 'json', 'backend', 'threads', 'gpu-batch', 'validate', 'seeds', 'check-rounds', 'finalists', 'partner', 'field-rounds']);
+    'out', 'json', 'backend', 'threads', 'gpu-batch', 'gpu-adapter', 'validate', 'seeds', 'check-rounds', 'finalists', 'partner', 'field-rounds']);
   for (const key of Object.keys(f)) if (!supported.has(key)) h.usage(`--${key} is not supported with --representation blocks`);
   if (f.algorithm && f.algorithm !== 'ga') h.usage('Block recipes currently use --algorithm ga');
   if (f.selection && !['default', 'lexicase'].includes(f.selection)) h.usage('Block recipes use lexicase selection');

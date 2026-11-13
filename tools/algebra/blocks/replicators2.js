@@ -138,8 +138,8 @@ const RP_WIPE = 6000;
 // one more imp; by then every cell is imp code, so kills no longer cascade.
 const impFeeder = {
   kind: 'body', exit: 'never', grows: true, writes: 'sparse', roams: true, layout: 'last',
-  purpose: 'Vector-launched N-point spiral of 2^K imps plus a feeder that adds one imp every WAIT + 4 passes at the spiral\'s current position, so imps killed by bombs or a clear are replaced, up to the process limit.',
-  params: { N: [3, 31], K: [1, 6], WAIT: [1, 200] }, entry: 'vStart',
+  purpose: 'Vector-launched N-point spiral of 2^K imps plus a feeder that adds one imp every WAIT + 4 passes at the spiral\'s current position. RETIRE 1 permits a partner to overwrite the launcher after it has fed the spiral, provided at least N imp processes survive; the default requires refilling after damage.',
+  params: { N: [3, 31], K: [1, 6], WAIT: [1, 200], RETIRE: [0, 1] }, entry: 'vStart',
   processes: (P) => 2 ** (P.K + 1),          // 2^K jumpers and 2^K adders; all but one adder die
   mutable: [['fCnt', ['b']], ['fPtr', ['b']], ['vVec', ['b']]],
   mismatches(P, settings) {
@@ -217,6 +217,17 @@ const impFeeder = {
         if ((api.alone || planted) && onImp < feeds * (api.alone ? 1 : 0.9)) throw new Error(`imp-feeder fed ${feeds - onImp} of ${feeds} imps off the spiral`);
         const n = imps(), full = api.vm.processes(0).length >= api.settings.maxProcesses;
         if (api.alone && n < 2 ** api.P.K + 2 && !full) throw new Error(`imp-feeder: the spiral did not grow (${n} imps)`);
+        // Some coordinated stone/imp designs deliberately let the stone or
+        // clear retire a launcher after deployment. That differs from a feeder
+        // that merely stops executing: require an actual friendly overwrite
+        // from outside this block, and at least N surviving imp processes.
+        const retired = api.P.RETIRE && !api.alone && !feeding() && feeder.some(([c, x]) =>
+          !api.same(api.vm.peek(c), x) && api.vm.owner[c] === 0 && api.vm.writerPc[c] >= 0 && !api.inSelf(api.vm.writerPc[c]));
+        if (retired) {
+          const remaining = api.vm.processes(0).filter(isImp).length;
+          if (remaining < api.P.N) throw new Error(`imp-feeder: retired launcher left only ${remaining} imps (needs ${api.P.N})`);
+          return;
+        }
         if (!planted) return;
         if (!killed || !(low < before)) throw new Error('imp-feeder: the planted kill took no imps');
         if (n < before && !full) throw new Error(`imp-feeder did not refill its spiral (${before} imps, ${low} after the kill, ${n} at the end)`);
@@ -229,6 +240,6 @@ const IF_KILL = 8000;
 const blocks = { 'relaunch-paper': relaunchPaper, 'imp-feeder': impFeeder };
 for (const [id, b] of Object.entries(blocks)) b.id = id;
 relaunchPaper.defaults = { N: 8 };
-impFeeder.defaults = { N: 13, K: 4, WAIT: 8 };
+impFeeder.defaults = { N: 13, K: 4, WAIT: 8, RETIRE: 0 };
 
 export default Object.values(blocks);

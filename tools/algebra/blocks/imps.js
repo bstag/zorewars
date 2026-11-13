@@ -29,12 +29,13 @@ function pointMismatches(n, m, settings) {
 }
 
 // The tail both launchers end in: interleaved jumpers and adders, the vector, the imp.
-function vectorTail(ctx, p) {
+function vectorTail(ctx, p, beforeImp) {
   const { L, core } = ctx, step = modInverse(ctx.P.N, core);
   ctx.ins(`${p}Split`, 'SPL', 'B', L(`${p}Add`));           // a jumper, then an adder
   ctx.ins(`${p}Jump`, 'JMP', 'B', `@${L(`${p}Vec`)}`);
   ctx.ins(`${p}Add`, 'ADD', 'AB', `#${step}`, L(`${p}Vec`));
   ctx.ins(`${p}Vec`, 'DAT', 'F', '#0', `#${L(`${p}Imp`)}-${L(`${p}Vec`)}`);   // adders die here
+  beforeImp?.();
   ctx.ins(`${p}Imp`, 'MOV', 'I', '0', `${step}`);
 }
 
@@ -62,13 +63,23 @@ const imps = {
   },
   'vector-spiral': {
     ...IMP,
-    purpose: 'An N-point imp spiral of 2^K imps, STEP = modInverse(N, core): K SPLs, then a vector jump whose adders step it by STEP. Ten cells whatever the imp count.',
-    params: { N: [3, 31], K: [1, 6] }, entry: 'vStart',
-    processes: (P) => 2 ** (P.K + 1),             // 2^K jumpers and 2^K adders; the adders die
-    mismatches: (P, settings) => pointMismatches(P.N, 2 ** P.K, settings),
+    purpose: 'An N-point imp spiral of 2^K imps. K SPLs feed a vector jump whose adders advance by modInverse(N, core). A nonzero TAIL starts a separate one-step imp that far ahead of the spiral.',
+    params: { N: [3, 31], K: [1, 6], TAIL: [0, 256] }, entry: 'vStart',
+    processes: (P) => 2 ** (P.K + 1) + Number(!!P.TAIL), // Jumpers and adders, plus the optional one-step imp.
+    mismatches(P, settings) {
+      const out = pointMismatches(P.N, 2 ** P.K, settings);
+      if (P.TAIL && settings.topology === 'torus') out.push('vector-spiral: TAIL needs a ring');
+      return out;
+    },
     emit(ctx) {
-      for (let i = 0; i < ctx.P.K; i++) ctx.ins(i ? '' : 'vStart', 'SPL', 'B', '1');
-      vectorTail(ctx, 'v');
+      const { ins, L, P } = ctx;
+      const tail = `${L('vImp')}+${P.TAIL}`;
+      if (P.TAIL) {
+        ins('vStart', 'MOV', 'I', L('vTail'), tail);
+        ins('', 'SPL', 'B', tail);
+      }
+      for (let i = 0; i < P.K; i++) ins(i || P.TAIL ? '' : 'vStart', 'SPL', 'B', '1');
+      vectorTail(ctx, 'v', P.TAIL ? () => ins('vTail', 'MOV', 'I', '0', '1') : undefined);
     },
   },
   'imp-gate': {
@@ -99,7 +110,7 @@ Object.assign(imps['imp-gate'].defaults, { GATE: 3, GK: 0 });
 const runsImp = (label) => (api) => api.vm.processes(0).some((q) => api.same(api.vm.peek(q), api.code(label)));
 imps.imp.running = runsImp('imp');
 imps['imp-ring'].running = runsImp('rImp');
-imps['vector-spiral'].running = runsImp('vImp');
+imps['vector-spiral'].running = (api) => runsImp('vImp')(api) || (!!api.P.TAIL && runsImp('vTail')(api));
 
 imps.imp.watch = (api) => ({
   final: () => {
@@ -128,7 +139,20 @@ function ringWatch(label, count) {
   });
 }
 imps['imp-ring'].watch = ringWatch('rImp', (P) => P.N);
-imps['vector-spiral'].watch = ringWatch('vImp', (P) => 2 ** P.K);
+imps['vector-spiral'].watch = (api) => {
+  if (!api.P.TAIL) return ringWatch('vImp', (P) => 2 ** P.K)(api);
+  const start = api.norm(api.at('vImp') + api.P.TAIL);
+  const checks = new Map([[start, 'vTail'], [api.at('vImp'), 'vImp']]);
+  const launched = new Set();
+  return {
+    before(pc) {
+      if (checks.has(pc) && api.same(api.vm.peek(pc), api.code(checks.get(pc)))) launched.add(pc);
+    },
+    final() {
+      if (api.alone && launched.size !== checks.size) throw new Error('vector-spiral: the spiral and reserve imp did not both launch');
+    },
+  };
+};
 
 // The gate: every pass of the loop decrements the gate cell. In the planted
 // scenario an imp (MOV 0, 1) heads at the gate and is played as the opponent,

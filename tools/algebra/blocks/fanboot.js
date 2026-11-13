@@ -50,8 +50,22 @@ function emitStone(ctx) {
   ctx.ins('stop', 'MOV', 'I', L('pt'), L('lp'));
   ctx.ins('pt', 'DAT', 'F', `#${mod(P.START + P.STEP, core)}`, `#${mod(P.START, core)}`);
 }
-// Stone cells as offsets from pt, and the m-th lattice cell.
-const stoneOffsets = () => Array.from({ length: STONE }, (_, i) => i - (STONE - 1));
+function emitStoneClear(ctx) {
+  const { L, P, core } = ctx, step = mod(2 * P.STEP, core);
+  ctx.ins('st', 'SPL', 'B', `#${step}`, `#${step}`);
+  ctx.ins('lp', 'MOV', 'I', L('pt'), `@${L('pt')}`);
+  ctx.ins('', 'MOV', 'I', L('pt'), `*${L('pt')}`);
+  ctx.ins('', 'ADD', 'F', L('st'), L('pt'));
+  ctx.ins('cnt', 'DJN', 'B', L('lp'), `#${P.TIME}`);
+  ctx.ins('stop', 'MOV', 'I', L('redirect'), L('lp'));
+  ctx.ins('wipe', 'MOV', 'I', L('kill'), `>${L('st')}`);
+  ctx.ins('', 'JMP', 'B', L('wipe'));
+  ctx.ins('redirect', 'JMP', 'B', `${L('wipe')}-${L('lp')}`);
+  ctx.ins('pt', 'DAT', 'F', `#${mod(P.START + P.STEP, core)}`, `#${mod(P.START, core)}`);
+  ctx.ins('kill', 'DAT', 'F', '#0', `#${L('ps')}-${L('st')}`);
+}
+
+// The m-th lattice cell, relative to the bomb pointer.
 const lattice = (P, core, m) => mod(P.START + m * P.STEP, core);
 // Writes before the counter runs out: two a pass, plus the passes other
 // processes are part-way through when it does (bounded by SLACK).
@@ -87,7 +101,7 @@ function emitPump(ctx) {
 }
 
 // Checks shared by the two blocks' contracts.
-function commonMismatches(P, settings, hops) {
+function commonMismatches(P, settings, hops, stoneSize = STONE, pointer = STONE - 1) {
   const core = settings.coreSize, room = settings.maxLength, out = [];
   if (!FANS[P.N]) out.push(`the fan makes 4, 6 or 8 processes, not ${P.N}`);
   if (settings.maxProcesses < 64) out.push(`a fan boot's bodies need hundreds of processes; this hill allows ${settings.maxProcesses}`);
@@ -99,7 +113,7 @@ function commonMismatches(P, settings, hops) {
   }
   // The stone must not bomb itself before its counter runs out.
   for (let m = 0; m < 2 * (P.TIME + SLACK); m++) {
-    if (stoneOffsets().some((o) => mod(o, core) === lattice(P, core, m))) { out.push(`the stone's bomb ${m} lands on the stone before its counter runs out`); break; }
+    if (mod(lattice(P, core, m) + pointer, core) < stoneSize) { out.push(`the stone's bomb ${m} lands on the stone before its counter runs out`); break; }
   }
   return out;
 }
@@ -112,9 +126,10 @@ function emitFan(ctx, b0 = '0') {
 
 // Where things are, as offsets from the block's first cell.
 function layoutPS(P) {
-  const fan = FANS[P.N]?.length ?? 3, ms = copies(STONE, P.N), mp = copies(PAPER, P.N);
-  const sv = fan + mp + ms, pv = sv + P.K, st = pv + 1, ps = st + STONE;
-  return { fan, ms, mp, sv, pv, st, ps, size: ps + PAPER };
+  const stone = P.CLEAR ? 11 : STONE, pointer = P.CLEAR ? 9 : STONE - 1;
+  const fan = FANS[P.N]?.length ?? 3, ms = copies(stone, P.N), mp = copies(PAPER, P.N);
+  const sv = fan + mp + ms, pv = sv + P.K, st = pv + 1, ps = st + stone;
+  return { fan, ms, mp, sv, pv, st, ps, stone, pointer, size: ps + PAPER };
 }
 function layoutSI(P) {
   const fan = FANS[P.N]?.length ?? 3, ms = copies(STONE, P.N), mi = copies(PUMP, P.N);
@@ -131,17 +146,17 @@ function bootCell(api, pc, label, A, B) {
 // The boot as it runs, seen from the gate: which processes go where, whether
 // each copy is complete when its first process arrives, and the stone's
 // writes and switch-off. `routes(pc)` names where a boot cell sends a process.
-function fanWatch(api, { bodies, routes, expect, bootLen }) {
+function fanWatch(api, { bodies, routes, expect, bootLen, pointer = STONE - 1, clear = false }) {
   const { vm, core } = api;
   const copyAt = Object.fromEntries(Object.entries(bodies).map(([k, b]) => [k, api.add(api.at(b.label), b.hop)]));
   const sent = Object.fromEntries(Object.keys(bodies).map((k) => [k, 0]));
   const arrived = new Set();
   const movRuns = new Map();
-  const st = copyAt.stone, pt = api.add(st, STONE - 1);
-  const inStone = (c) => api.rel(c, st) < STONE;
+  const st = copyAt.stone, pt = api.add(st, pointer), stoneSize = bodies.stone.size;
+  const inStone = (c) => api.rel(c, st) < stoneSize;
   let stopped = null, writes = new Set(), stopToken = false;
   // The stone copy still holds the stone (its counter and pointers change, and its loop is bombed when it stops).
-  const stoneIntact = () => Array.from({ length: STONE }, (_, i) => i).every((i) => {
+  const stoneIntact = () => Array.from({ length: stoneSize }, (_, i) => i).every((i) => {
     const c = vm.peek(api.add(st, i)), x = api.code('st', i);
     return i === 1 || (c.op === x.op && c.mod === x.mod);
   });
@@ -180,11 +195,15 @@ function fanWatch(api, { bodies, routes, expect, bootLen }) {
         writes.add(t.write);
       } else if (t.lastPass) stopToken = true;
       else if (t.stop) {
-        if (vm.peek(api.add(st, 1)).op !== 'DAT' || vm.writerPc[api.add(st, 1)] !== api.add(st, 5)) throw new Error('fan boot: the stone\'s counter ran out but its loop was not bombed');
+        const want = clear ? 'JMP' : 'DAT';
+        if (vm.peek(api.add(st, 1)).op !== want || vm.writerPc[api.add(st, 1)] !== api.add(st, 5)) {
+          throw new Error(clear ? 'fan boot: the stone did not redirect to the clear' : "fan boot: the stone's counter ran out but its loop was not bombed");
+        }
         stopped = vm.cycle;
       }
     },
     final() {
+      if (api.entered && !api.entered()) return;   // a switch's branch not taken
       const N = api.P.N;
       for (const [pc, n] of movRuns) if (n !== N) throw new Error(`fan boot: a copy line ran ${n} times, not once per process (${N})`);
       for (const [k, n] of Object.entries(expect)) if (sent[k] !== n) throw new Error(`fan boot: ${sent[k]} processes went to the ${k}, not ${n}`);
@@ -213,9 +232,9 @@ function fanWatch(api, { bodies, routes, expect, bootLen }) {
 const paperStone = {
   id: 'fanboot-paper-stone',
   kind: 'body', exit: 'never', grows: true, writes: 'sparse', roams: true, dialects: '94',
-  purpose: 'Paper/stone fan boot: a fan of N lockstep processes copies a counted stone SHOP away and a silk PHOP away one cell per process, the copy pointers then serving as the launch vectors; each process spawns K into the stone and enters the paper. The stone switches itself off after TIME passes.',
-  params: { N: [4, 8], K: [1, 4], SHOP: [256, 54000], PHOP: [256, 54000], STEP: [1, 54000], START: [1, 54000], TIME: [16, 4000], PSTEP: [100, 54000], PDELTA: [1, 54000] },
-  defaults: { N: 8, K: 2, SHOP: 3360, PHOP: 860, STEP: 2377, START: 2332, TIME: 1200, PSTEP: 1777, PDELTA: 1013 },
+  purpose: 'Paper/stone fan boot: N lockstep processes copy a counted stone SHOP away and a silk PHOP away. Each worker spawns K into the stone and enters the paper. After TIME passes the stone switches off, or replaces its bombing loop with a jump into a DAT clear (CLEAR 1).',
+  params: { N: [4, 8], K: [1, 4], SHOP: [256, 54000], PHOP: [256, 54000], STEP: [1, 54000], START: [1, 54000], TIME: [16, 4000], PSTEP: [100, 54000], PDELTA: [1, 54000], CLEAR: [0, 1] },
+  defaults: { N: 8, K: 2, SHOP: 3360, PHOP: 860, STEP: 2377, START: 2332, TIME: 1200, PSTEP: 1777, PDELTA: 1013, CLEAR: 0 },
   entry: 'fan',
   processes: (P) => P.N * (P.K + 1),
   mutable: [['sv', ['a', 'b']], ['pv', ['a', 'b']]],
@@ -223,10 +242,10 @@ const paperStone = {
     const out = [];
     if (P.N < PAPER) out.push(`the silk copies one cell per process, so it needs N of at least ${PAPER}`);
     const l = layoutPS(P);
-    out.push(...commonMismatches(P, settings, [l.st + P.SHOP, l.ps + P.PHOP]));
+    out.push(...commonMismatches(P, settings, [l.st + P.SHOP, l.ps + P.PHOP], l.stone, l.pointer));
     // While the boot runs, the stone's first bombs must miss the boot cells and the paper copy.
     const core = settings.coreSize, early = 4 * P.N * (P.K + 1);
-    const ptAt = l.st + STONE - 1 + P.SHOP;
+    const ptAt = l.st + l.pointer + P.SHOP;
     for (let m = 0; m < early; m++) {
       const c = mod(ptAt + lattice(P, core, m), core);
       if (mod(c, core) < l.st) { out.push('the stone\'s first bombs hit the boot while it runs'); break; }
@@ -240,16 +259,17 @@ const paperStone = {
     emitFan(ctx);
     for (let i = 0; i < l.mp; i++) ctx.ins('', 'MOV', 'I', `<${L('pv')}`, `{${L('pv')}`);
     for (let i = 0; i < l.ms; i++) ctx.ins('', 'MOV', 'I', `<${L('sv')}`, `{${L('sv')}`);
-    ctx.ins('sv', 'SPL', 'B', `${L('st')}-${L('sv')}+${P.SHOP + M(STONE)}`, `${L('st')}-${L('sv')}+${M(STONE)}`);
+    ctx.ins('sv', 'SPL', 'B', `${L('st')}-${L('sv')}+${P.SHOP + M(l.stone)}`, `${L('st')}-${L('sv')}+${M(l.stone)}`);
     for (let k = 1; k < P.K; k++) ctx.ins('', 'SPL', 'B', `*${L('sv')}`, '0');
     ctx.ins('pv', 'JMP', 'B', `${L('ps')}-${L('pv')}+${P.PHOP + M(PAPER)}`, `${L('ps')}-${L('pv')}+${M(PAPER)}`);
-    emitStone(ctx);
+    if (P.CLEAR) emitStoneClear(ctx);
+    else emitStone(ctx);
     emitPaper(ctx);
   },
   // Running: a process in the stone copy, or in any copy of the silk.
   running(api) {
     const st = api.add(api.at('st'), api.P.SHOP), code = [1, 2, 3, 4].map((i) => api.code('ps', i));
-    return api.vm.processes(0).some((q) => api.rel(q, st) < STONE || code.some((y) => api.same(api.vm.peek(q), y)));
+    return api.vm.processes(0).some((q) => api.rel(q, st) < layoutPS(api.P).stone || code.some((y) => api.same(api.vm.peek(q), y)));
   },
   watch(api) {
     const { P } = api, sv = api.at('sv'), pv = api.at('pv'), movs = new Set();
@@ -257,7 +277,9 @@ const paperStone = {
     for (let i = l.fan; i < l.sv; i++) movs.add(api.add(api.at('fan'), i));
     const vec = (cell) => api.add(cell, api.vm.peek(cell).a);
     const w = fanWatch(api, {
-      bodies: { stone: { label: 'st', hop: P.SHOP, size: STONE }, paper: { label: 'ps', hop: P.PHOP, size: PAPER } },
+      bodies: { stone: { label: 'st', hop: P.SHOP, size: l.stone }, paper: { label: 'ps', hop: P.PHOP, size: PAPER } },
+      pointer: l.pointer,
+      clear: !!P.CLEAR,
       expect: { stone: P.N * P.K, paper: P.N },
       bootLen: l.st,
       routes(pc) {

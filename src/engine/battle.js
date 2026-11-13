@@ -5,6 +5,7 @@ import { DEFAULT_SETTINGS, roundPoints, separationFor } from './constants.js';
 import { mulberry32 } from './random.js';
 import { topologyFor } from './topology.js';
 import { postMortem } from './report.js';
+import { createRingDuel } from './ring-duel.js';
 
 // Score per round with two warriors: a win is worth 3 points, a tie 1.
 // In general each survivor scores (W*W-1)/S, as in pMARS.
@@ -12,11 +13,12 @@ export const WIN_POINTS = 3;
 export const TIE_POINTS = 1;
 
 // `report` adds a post-mortem (see report.js); `traceSize` keeps the last
-// that many executed instructions.
+// that many executed instructions. Both require execution history.
 // Preparing and finishing are shared by synchronous tools and the browser's
 // sliced runner. A cancelled browser round is discarded without recording it.
-export function createRound(warriors, settings = {}, { seed, positions: fixedPositions, firstTurn = 0, pspaces, report = false, traceSize = 0 } = {}) {
-  const vm = new VM(settings);
+export function createRound(warriors, settings = {}, { seed, positions: fixedPositions, firstTurn = 0, pspaces, report = false, traceSize = 0, executionHistory = true } = {}) {
+  if (report && !executionHistory) throw new Error('Post-mortems require execution history');
+  const vm = new VM(settings, { executionHistory });
   if (traceSize) vm.enableTrace(traceSize);
   const positions = vm.load(warriors, { seed, positions: fixedPositions, firstTurn, pspaces });
   return {
@@ -43,6 +45,31 @@ export function runRound(warriors, settings = {}, options = {}) {
   return round.finish();
 }
 
+function* matchRounds(count, cfg, seed, fixed) {
+  const rng = mulberry32(seed);
+  const topology = topologyFor(cfg);
+  let pSeed = fixed !== undefined ? fixed - separationFor(cfg) : seed;
+  for (let r = 0; r < cfg.rounds; r++) {
+    const seed = Math.floor(rng() * 2 ** 32);
+    let positions;
+    [positions, pSeed] = topology.place(count, pSeed);
+    yield { seed, positions, firstTurn: r % count };
+  }
+}
+
+// Prepare the selected round for either interpreter. Only P-space can carry
+// execution results across rounds; placement and the first mover always rotate.
+export function createTraceRound(warriors, settings, { seed = 1, fixed, round, traceSize }) {
+  const cfg = { ...DEFAULT_SETTINGS, ...settings, rounds: round };
+  const pspaces = warriors.map(() => VM.freshPSpace(cfg));
+  let r = 0;
+  for (const plan of matchRounds(warriors.length, cfg, seed, fixed)) {
+    const options = { ...plan, pspaces };
+    if (++r === round) return createRound(warriors, cfg, { ...options, report: true, traceSize });
+    if (cfg.pSpace !== false) runRound(warriors, cfg, { ...options, executionHistory: false });
+  }
+}
+
 // Run a match between 2+ compiled warriors over several rounds. The first
 // mover rotates each round. Load positions come from the battlefield's
 // topology (topology.js), driven by `seed`; `fixed` works like pMARS's -F
@@ -51,21 +78,18 @@ export function runRound(warriors, settings = {}, options = {}) {
 // pMARS exactly.
 // `report`: true for a post-mortem of every round, or a round number.
 // `traceRound` / `traceSize`: keep the last traceSize instructions of that round.
-export function runMatch(warriors, settings = {}, { seed = 1, fixed, onRound, report = false, traceRound = 0, traceSize = 0 } = {}) {
+export function runMatch(warriors, settings = {}, { seed = 1, fixed, onRound, report = false, traceRound = 0, traceSize = 0, executionHistory = true } = {}) {
   const cfg = { ...DEFAULT_SETTINGS, ...settings };
-  const rng = mulberry32(seed);
-  const topology = topologyFor(cfg);
-  let pSeed = fixed !== undefined ? fixed - separationFor(cfg) : seed;
   const stats = warriors.map((w) => ({ name: w.name, author: w.author, wins: 0, losses: 0, ties: 0, score: 0, smooth: 0 }));
   const rounds = [];
+  const duel = !executionHistory && !report && !(traceRound && traceSize) && !onRound
+    ? createRingDuel(cfg, warriors) : null;
   // P-space persists for the whole match, so warriors can adapt between rounds.
-  const pspaces = warriors.map(() => VM.freshPSpace(cfg));
-  for (let r = 0; r < cfg.rounds; r++) {
-    const roundSeed = Math.floor(rng() * 2 ** 32);
-    let positions;
-    [positions, pSeed] = topology.place(warriors.length, pSeed);
-    const res = runRound(warriors, cfg, {
-      seed: roundSeed, positions, firstTurn: r % warriors.length, pspaces,
+  const pspaces = duel ? null : warriors.map(() => VM.freshPSpace(cfg));
+  let r = 0;
+  for (const plan of matchRounds(warriors.length, cfg, seed, fixed)) {
+    const res = duel ? duel.round(plan.positions, plan.firstTurn) : runRound(warriors, cfg, {
+      ...plan, pspaces, executionHistory,
       report: report === true || report === r + 1,
       traceSize: traceRound === r + 1 ? traceSize : 0,
     });
@@ -78,6 +102,7 @@ export function runMatch(warriors, settings = {}, { seed = 1, fixed, onRound, re
     });
     addSmooth(stats, res, points, cfg.maxCycles);
     onRound?.(rounds.at(-1), stats);
+    r++;
   }
   return { settings: cfg, seed, warriors: stats, rounds };
 }
@@ -95,12 +120,12 @@ function addSmooth(stats, res, points, maxCycles) {
 }
 
 // Every pair of warriors plays a match; ranked by total score.
-export function runTournament(warriors, settings = {}, { seed = 1, onMatch } = {}) {
+export function runTournament(warriors, settings = {}, { seed = 1, onMatch, executionHistory = true } = {}) {
   const table = warriors.map((w) => ({ name: w.name, author: w.author, wins: 0, losses: 0, ties: 0, score: 0, smooth: 0, played: 0 }));
   const matches = [];
   for (let i = 0; i < warriors.length; i++) {
     for (let j = i + 1; j < warriors.length; j++) {
-      const m = runMatch([warriors[i], warriors[j]], settings, { seed: seed + i * 1000 + j });
+      const m = runMatch([warriors[i], warriors[j]], settings, { seed: seed + i * 1000 + j, executionHistory });
       [i, j].forEach((k, side) => {
         const s = m.warriors[side];
         table[k].wins += s.wins; table[k].losses += s.losses; table[k].ties += s.ties;

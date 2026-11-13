@@ -26,14 +26,32 @@ const gcd = (a, b) => (b ? gcd(b, a % b) : Math.abs(a));
 const idxOf = (ctx, label) => `(${ctx.L(label)}+${ctx.pc()})`;
 const live = (api, t) => api.vm.processes(0).some((q) => mod(t - q + api.settings.maxLength, api.core) < 2 * api.settings.maxLength);
 const ownCell = (api, t) => api.inSelf(t) || (api.inImage(t) && live(api, t));
+// For the clear: the original image a boot left behind is dead (and a decoy), so the clear may
+// write it; the warrior is this block's own cells and live image cells near a running process.
+const ownLive = (api, t) => api.inSelf(t) || (api.inImage(t) && !api.inDead(t) && live(api, t));
+
+// What the block protects, as cells [base, base + size) of the image frame.
+// Normally the whole of what it is told to protect, [0, span). Under a boot
+// inside a seq, span is the booted member's size but the member does not start
+// at the frame's first cell, so [0, span) would leave the block's own code out
+// of it: then the block protects its own cells instead. (Where [0, span)
+// already holds the block, nothing changes.) `size` is the block's length.
+function frame(ctx, size) {
+  const start = ctx.pc();
+  return ctx.span >= start + size ? { base: 0, size: ctx.span, start } : { base: start, size, start };
+}
+// Every emitter checks it emitted the length it declared.
+function emitted(ctx, f, size, id) {
+  if (ctx.pc() - f.start !== size) throw new Error(`${id}: emitted ${ctx.pc() - f.start} cells, declared ${size}`);
+}
 
 // The d-clear: an SPL stream DGAP cells ahead of a DAT stream, both walking
-// down from the cell below the image to its end, then again. wp (the wipe's
-// pointer) carries the SPL stream.
-function dclear(ctx, spl) {
-  const { L, span } = ctx, n = `(CORESIZE-${span})`;
-  ctx.ins('cGo', 'MOV', 'AB', `#(CORESIZE-${idxOf(ctx, 'wp')}-${DGAP})`, L('wp'));
-  ctx.ins('', 'MOV', 'AB', `#(CORESIZE-${idxOf(ctx, 'dp')})`, L('dp'));
+// down from the cell below the protected cells to their end, then again. wp
+// (the wipe's pointer) carries the SPL stream.
+function dclear(ctx, spl, f) {
+  const { L } = ctx, n = `(CORESIZE-${f.size})`, below = f.base ? `+${f.base}` : '';
+  ctx.ins('cGo', 'MOV', 'AB', `#(CORESIZE-${idxOf(ctx, 'wp')}-${DGAP}${below})`, L('wp'));
+  ctx.ins('', 'MOV', 'AB', `#(CORESIZE-${idxOf(ctx, 'dp')}${below})`, L('dp'));
   ctx.ins('', 'MOV', 'AB', `#(${n}-${DGAP})`, L('cnt'));
   ctx.ins('cBoth', 'MOV', 'I', L(spl), `<${L('wp')}`);
   ctx.ins('cKill', 'MOV', 'I', L('dbomb'), `<${L('dp')}`);
@@ -43,7 +61,7 @@ function dclear(ctx, spl) {
   ctx.ins('', 'DJN', 'B', L('cTail'), L('cnt'));
   ctx.ins('', 'JMP', 'B', L('cGo'));
 }
-function tailCells(ctx) {
+function tailCells(ctx, f) {
   const { P } = ctx;
   ctx.ins('wp', 'DAT', 'F', '#0', '#0');
   ctx.ins('cnt', 'DAT', 'F', '#0', '#0');
@@ -52,37 +70,45 @@ function tailCells(ctx) {
     ctx.ins('dbomb', 'DAT', 'F', '#0', '#0');
   }
   // The stream's first decrement is the cell just below the image.
-  if (P.STREAM) ctx.ins('sptr', 'DAT', 'F', '#0', `#(0-${idxOf(ctx, 'sptr')})`);
+  if (P.STREAM) ctx.ins('sptr', 'DAT', 'F', '#0', `#(${f.base}-${idxOf(ctx, 'sptr')})`);
 }
 // The compare's first pair, one STEP before the first one looked at: the
 // first run then starts right after the image.
-const firstPair = (ctx, extra = 0) => `(${ctx.span}+${ctx.P.BACK}+${extra}-${idxOf(ctx, 'cmp')}-${ctx.P.STEP})`;
+const firstPair = (ctx, f, extra = 0) => `(${f.base + f.size}+${ctx.P.BACK}+${extra}-${idxOf(ctx, 'cmp')}-${ctx.P.STEP})`;
+// The safety test's constants for a run ending at frame index g + LEN - 1: shift it so the
+// protected cells are [0, size), test, and shift back.
+const shiftIn = (f) => (f.base ? `-${f.base}` : '');
+const shiftOut = (f) => (f.base ? `+${f.base}` : '');
+const pairWipeSize = (P) => 5 + 9 + (P.CLEAR ? 10 : 0) + 1 + 2 + (P.CLEAR ? 2 : 0) + (P.STREAM ? 1 : 0);
+const pairWipe88Size = (P) => 4 + 9 + (P.CLEAR ? 10 : 0) + 1 + 2 + (P.CLEAR ? 2 : 0) + (P.STREAM ? 1 : 0);
+const carpetSize = (P, old) => (old ? 1 : 0) + 4 + 16 + 5;
 
 // ---------------------------------------------------------------------------
 // pair-wipe-scanner ('94)
 function emitPairWipe(ctx) {
-  const { L, P, span } = ctx, cmp = L('cmp'), wp = L('wp'), cnt = L('cnt');
+  const { L, P } = ctx, cmp = L('cmp'), wp = L('wp'), cnt = L('cnt'), f = frame(ctx, pairWipeSize(P));
   const own = P.CLEAR ? 'cGo' : 'sLoop';
   ctx.ins('sLoop', 'ADD', 'F', L('step'), cmp);
-  ctx.ins('cmp', 'SNE', 'I', `$${firstPair(ctx)}`, `$${firstPair(ctx, P.GAP)}`);
+  ctx.ins('cmp', 'SNE', 'I', `$${firstPair(ctx, f)}`, `$${firstPair(ctx, f, P.GAP)}`);
   ctx.ins('', 'ADD', 'F', L('step'), cmp);
   ctx.ins('cmp2', 'SNE', 'I', `*${cmp}`, `@${cmp}`);
   // A difference at the first SNE skips the step, so the second sees the same pair.
   if (P.STREAM) ctx.ins('sTick', 'DJN', 'F', L('sLoop'), `<${L('sptr')}`);
   else ctx.ins('sTick', 'JMP', 'B', L('sLoop'));
   ctx.ins('hit', 'MOV', 'AB', cmp, wp);
-  ctx.ins('', 'ADD', 'AB', `#(${idxOf(ctx, 'cmp')}-${P.BACK}+${P.WIPE}-1)`, wp);
-  ctx.ins('', 'SLT', 'AB', `#(${span}+${P.WIPE}-2)`, wp);
+  ctx.ins('', 'ADD', 'AB', `#(${idxOf(ctx, 'cmp')}-${P.BACK}+${P.WIPE}-1${shiftIn(f)})`, wp);
+  ctx.ins('', 'SLT', 'AB', `#(${f.size}+${P.WIPE}-2)`, wp);
   ctx.ins('', 'JMP', 'B', L(own));
-  ctx.ins('', 'ADD', 'AB', `#(1-${P.WIPE}-${idxOf(ctx, 'wp')})`, wp);
+  ctx.ins('', 'ADD', 'AB', `#(1-${P.WIPE}-${idxOf(ctx, 'wp')}${shiftOut(f)})`, wp);
   ctx.ins('', 'MOV', 'AB', `#${P.WIPE}`, cnt);
   ctx.ins('wipe', 'MOV', 'I', L('step'), `>${wp}`);
   ctx.ins('', 'DJN', 'B', L('wipe'), cnt);
   ctx.ins('', 'JMP', 'B', L('sLoop'));
-  if (P.CLEAR) dclear(ctx, 'step');
+  if (P.CLEAR) dclear(ctx, 'step', f);
   // The step is also the stun bomb.
   ctx.ins('step', 'SPL', 'B', `#${P.STEP}`, `#${P.STEP}`);
-  tailCells(ctx);
+  tailCells(ctx, f);
+  emitted(ctx, f, pairWipeSize(P), 'pair-wipe-scanner');
 }
 
 // ---------------------------------------------------------------------------
@@ -90,25 +116,26 @@ function emitPairWipe(ctx) {
 // of the step cell moves both); MOV copies the CMP into wp, whose B (the
 // pair's second cell) becomes the run's pointer, walking down with <wp.
 function emitPairWipe88(ctx) {
-  const { L, P, span } = ctx, cmp = L('cmp'), wp = L('wp'), cnt = L('cnt');
+  const { L, P } = ctx, cmp = L('cmp'), wp = L('wp'), cnt = L('cnt'), f = frame(ctx, pairWipe88Size(P));
   const own = P.CLEAR ? 'cGo' : 'sLoop';
   ctx.ins('sLoop', 'ADD', 'F', L('step'), cmp);
-  ctx.ins('cmp', 'CMP', 'I', `$${firstPair(ctx)}`, `$${firstPair(ctx, P.GAP)}`);
+  ctx.ins('cmp', 'CMP', 'I', `$${firstPair(ctx, f)}`, `$${firstPair(ctx, f, P.GAP)}`);
   ctx.ins('', 'JMP', 'B', L('hit'));
   if (P.STREAM) ctx.ins('sTick', 'DJN', 'B', L('sLoop'), `<${L('sptr')}`);
   else ctx.ins('sTick', 'JMP', 'B', L('sLoop'));
   ctx.ins('hit', 'MOV', 'I', cmp, wp);
-  ctx.ins('', 'ADD', 'AB', `#(${idxOf(ctx, 'cmp')}-${P.GAP}-${P.BACK}+${P.WIPE}-1)`, wp);
-  ctx.ins('', 'SLT', 'AB', `#(${span}+${P.WIPE}-2)`, wp);
+  ctx.ins('', 'ADD', 'AB', `#(${idxOf(ctx, 'cmp')}-${P.GAP}-${P.BACK}+${P.WIPE}-1${shiftIn(f)})`, wp);
+  ctx.ins('', 'SLT', 'AB', `#(${f.size}+${P.WIPE}-2)`, wp);
   ctx.ins('', 'JMP', 'B', L(own));
-  ctx.ins('', 'ADD', 'AB', `#(1-${idxOf(ctx, 'wp')})`, wp);
+  ctx.ins('', 'ADD', 'AB', `#(1-${idxOf(ctx, 'wp')}${shiftOut(f)})`, wp);
   ctx.ins('', 'MOV', 'AB', `#${P.WIPE}`, cnt);
   ctx.ins('wipe', 'MOV', 'I', L('step'), `<${wp}`);
   ctx.ins('', 'DJN', 'B', L('wipe'), cnt);
   ctx.ins('', 'JMP', 'B', L('sLoop'));
-  if (P.CLEAR) dclear(ctx, 'step');
+  if (P.CLEAR) dclear(ctx, 'step', f);
   ctx.ins('step', 'SPL', 'B', `$${P.STEP}`, `$${P.STEP}`);
-  tailCells(ctx);
+  tailCells(ctx, f);
+  emitted(ctx, f, pairWipe88Size(P), 'pair-wipe-scanner-88');
 }
 
 // ---------------------------------------------------------------------------
@@ -116,12 +143,12 @@ function emitPairWipe88(ctx) {
 // the occupied cell is the second if it isn't empty, else the first. A cell
 // that is its own carpet bomb is passed over, so it never re-carpets itself.
 function emitCarpet(ctx) {
-  const { L, P, old, core, span } = ctx, cmp = L('cmp'), wp = L('wp'), cnt = L('cnt');
+  const { L, P, old, core } = ctx, cmp = L('cmp'), wp = L('wp'), cnt = L('cnt'), f = frame(ctx, carpetSize(P, old));
   // '88 can't write DAT $0, $0: copy an empty cell from far away first.
   if (old) ctx.ins('sInit', 'MOV', 'I', `${L('empty')}+${Math.floor(core / 2)}`, L('empty'));
   else ctx.mark('sInit');
   ctx.ins('sLoop', 'ADD', 'F', L('step'), cmp);
-  ctx.ins('cmp', 'CMP', 'I', `$${firstPair(ctx)}`, `$${firstPair(ctx, P.GAP)}`);
+  ctx.ins('cmp', 'CMP', 'I', `$${firstPair(ctx, f)}`, `$${firstPair(ctx, f, P.GAP)}`);
   ctx.ins('', 'JMP', 'B', L('hit'));
   ctx.ins('', 'JMP', 'B', L('sLoop'));
   ctx.ins('hit', 'MOV', 'I', cmp, wp);
@@ -132,10 +159,10 @@ function emitCarpet(ctx) {
   ctx.ins('occ', 'CMP', 'I', `@${wp}`, L('bomb'));
   ctx.ins('', 'JMP', 'B', L('chk'));
   ctx.ins('', 'JMP', 'B', L('sLoop'));                       // our own carpet
-  ctx.ins('chk', 'ADD', 'AB', `#(${idxOf(ctx, 'wp')}-${P.BACK}+${P.CARPET}-1)`, wp);
-  ctx.ins('', 'SLT', 'AB', `#(${span}+${P.CARPET}-2)`, wp);
+  ctx.ins('chk', 'ADD', 'AB', `#(${idxOf(ctx, 'wp')}-${P.BACK}+${P.CARPET}-1${shiftIn(f)})`, wp);
+  ctx.ins('', 'SLT', 'AB', `#(${f.size}+${P.CARPET}-2)`, wp);
   ctx.ins('', 'JMP', 'B', L('sLoop'));                       // the carpet would reach the image
-  ctx.ins('', 'ADD', 'AB', `#(1-${idxOf(ctx, 'wp')})`, wp);
+  ctx.ins('', 'ADD', 'AB', `#(1-${idxOf(ctx, 'wp')}${shiftOut(f)})`, wp);
   ctx.ins('', 'MOV', 'AB', `#${P.CARPET}`, cnt);
   ctx.ins('lay', 'MOV', 'I', L('bomb'), `<${wp}`);
   ctx.ins('', 'DJN', 'B', L('lay'), cnt);
@@ -146,6 +173,7 @@ function emitCarpet(ctx) {
   ctx.ins('bomb', 'SPL', 'B', '$0', '$0');
   if (old) ctx.ins('empty', 'DAT', 'F', '#0', '#0');
   else ctx.ins('empty', 'DAT', 'F', '$0', '$0');
+  emitted(ctx, f, carpetSize(P, old), 'cmp-carpet-scanner');
 }
 
 // ---------------------------------------------------------------------------
@@ -191,6 +219,8 @@ function watchPairWipe(api, { id, looks: lookLabels, post }) {
   let looks = 0, cur = null, lastHit = null, clearAt = null, sole = false;
   return {
     before(pc) {
+      // A branch not taken never runs: whatever runs in its cells later (a paper's copy) is not this block.
+      if (!api.entered()) return null;
       if (lookAt.has(pc)) looks++;
       if (pc === api.at('hit')) {
         const x = mod(cmpAt + vm.peek(cmpAt).a, core), y = mod(cmpAt + vm.peek(cmpAt).b, core);
@@ -215,13 +245,14 @@ function watchPairWipe(api, { id, looks: lookLabels, post }) {
         if (clearAt === null && api.inImage(t)) throw new Error(`${id}'s stream decremented its own warrior`);
         return;
       }
-      if (w.kind === 'wipe' ? ownCell(api, t) : api.inImage(t)) throw new Error(`${id} bombed its own warrior`);
+      if (w.kind === 'wipe' ? ownCell(api, t) : ownLive(api, t)) throw new Error(`${id} bombed its own warrior`);
       const want = w.kind === 'dat' ? api.code('dbomb') : api.code('step');
       if (!api.same(vm.peek(t), want) || vm.writerPc[t] !== tok.pc) throw new Error(`${id} dropped something other than its bomb`);
       if (w.kind === 'wipe') cur?.cells.push(t);
       else if (w.kind === 'dat') killed[t] = vm.cycle;
     },
     final() {
+      if (!api.entered()) return;                // a switch branch not taken
       if (planted) {
         if (!targets.length) throw new Error(`${id}: no room to plant a target`);
         const [a, b] = targets, first = runs.find((r) => r.cells.length);
@@ -255,6 +286,8 @@ function watchCarpet(api) {
   let looks = 0, cur = null;
   return {
     before(pc) {
+      // A branch not taken never runs: whatever runs in its cells later (a paper's copy) is not this block.
+      if (!api.entered()) return null;
       if (pc === cmpAt) looks++;
       if (pc === api.at('hit')) {
         const x = mod(cmpAt + vm.peek(cmpAt).a, core), y = mod(cmpAt + vm.peek(cmpAt).b, core);
@@ -269,6 +302,7 @@ function watchCarpet(api) {
       cur?.cells.push(tok.t);
     },
     final() {
+      if (!api.entered()) return;                // a switch branch not taken
       if (planted) {
         if (!targets.length) throw new Error(`${id}: no room to plant a target`);
         for (const tg of targets) {

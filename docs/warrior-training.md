@@ -52,6 +52,9 @@ node cli/zorewars.js evolve --backend gpu --rules 94nop --seed 4242 --out evolve
 node cli/zorewars.js train --backend gpu --profiles volume --seed 4242
 node cli/zorewars.js hill @silk --backend gpu --rounds 20
 
+# Select a GPU by name or partial name. Use the full name if several match.
+node cli/zorewars.js hill @silk --gpu-adapter Radeon --rounds 20
+
 # Prefer GPU, but retry on CPU if it is unavailable or the device fails.
 # Limit fallback CPU workers when other evolution campaigns are running.
 node cli/zorewars.js evolve --backend auto --threads 1 --seed 4242
@@ -98,7 +101,11 @@ applies results in birth order. Scratch initialization awaits its checks in
 the original draw order to preserve the seeded random sequence. `--threads` controls the CPU backend only; GPU mode
 does not start battle worker threads. `--gpu-batch N` caps concurrent matches
 (default 1024), further limited by the GPU's buffer capacity. Lower it if GPU
-memory is needed by other applications. Explicit `--backend gpu` requires a
+memory is needed by other applications. Integrated AMD Radeon and Intel
+graphics can use the same backend when their drivers expose a hardware
+WebGPU adapter. `--gpu-adapter NAME` selects the adapter for local developer
+commands and defaults to strict GPU mode. Pair it with `--backend auto` to
+allow CPU fallback. Explicit `--backend gpu` requires a
 hardware adapter and reports device errors. `--backend auto` prefers GPU and
 falls back to CPU on missing support, device loss or backend failure. Failed
 matches restart from their original seed and fresh P-space; scores are never

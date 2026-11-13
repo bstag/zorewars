@@ -25,8 +25,12 @@ A missing GPU, device/readback failure, or a GPU operation that does not
 return within 15 seconds selects CPU. The last confirmed
 VM snapshot is authoritative, including all queue and forensic state. Failed
 unpublished work is discarded and the requested slice executes on CPU from
-that snapshot. The next round can try GPU again. Explicit instruction
-tracing uses CPU; existing CLI trace behavior is unchanged.
+that snapshot. The next round can try GPU again.
+
+The CLI can capture the instruction tail and post-mortem with
+`zorewars trace <warrior> [warrior...] --backend gpu --round N --last 60`.
+The same round placement and P-space preparation are used for both backends.
+CPU is the CLI default. `--backend auto` falls back to CPU if the GPU fails.
 
 Replay reconstructs the original positions, first mover and starting P-space
 on the CPU in yielding slices, then resumes GPU execution from that exact
@@ -40,9 +44,12 @@ second time. GPU snapshots support ICWS'88 checkpoints as well as '94.
   supplies its own scheduler and forensic hooks.
 - `src/engine/gpu/live-kernel.js` handles 1–4 warrior queues, headings, deaths,
   termination and the CPU VM's death-time instruction-budget rescaling.
+  When tracing is enabled, it captures the instruction before execution and
+  adds the process death cause afterward, using a bounded circular buffer.
 - `src/engine/gpu/live.js` retains device buffers and caches compiled
   pipelines across rounds. Each advance runs at most 4096 instructions and
-  reads one complete snapshot.
+  reads one complete snapshot. Headless finish checks a small completion
+  status between groups of dispatches and reads the full snapshot once.
 - `src/engine/gpu/live-layout.js` transfers instruction fields, owners,
   execution/write timestamps, write provenance, complete FIFO buffers,
   headings, P-space, counters, contacts, conversions and process-death records.

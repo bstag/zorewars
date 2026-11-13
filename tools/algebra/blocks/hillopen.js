@@ -6,6 +6,7 @@
 // docs/block-algebra.md. All Redcode here is written from scratch.
 
 import { modInverse } from '../util.js';
+import {observeMulQuickscan} from '../observation-roles.js';
 
 const MARKER = { op: 'DAT', mod: 'F', aMode: '#', a: 1, bMode: '#', b: 123 };
 const mod = (x, core) => ((x % core) + core) % core;
@@ -330,8 +331,18 @@ const qscanMul = {
   id: 'opening-qscan-mul',
   kind: 'opening', exit: 'next', processes: 1, writes: 'sparse', link: 'fall', dialects: '94',
   purpose: 'MUL-decoding quickscan: UNITS unrolled units of three instructions test two pair locations each (an SNE, and an SEQ whose predecrement of a table entry records which location fired); on a hit one MUL turns that entry into the location, a JMN picks the occupied cell of the pair and hands it on, or the image boundary.',
-  params: { QFAC: [1, 54000], GAP: [1, 2000], UNITS: [4, 13], SHARE: [0, 1] },
+  params: { QFAC: [1, 54000], GAP: [1, 2000], UNITS: [1, 13], SHARE: [0, 1] },
   defaults: { QFAC: 349, GAP: 197, UNITS: 8, SHARE: 0 },
+  observationRole:'quickscan',observe:observeMulQuickscan,
+  knowledge:{parameterRoles:{QFAC:'invertible geometry/decoder factor',GAP:'pair spacing',UNITS:'structural probe and instruction count',SHARE:'table-layout choice'},
+    derived:{decoder:'1+inverse(QFAC,coreSize)',probeLocations:'linked table offsets, QFAC and GAP'},
+    tuningGroups:[{name:'scan-and-burst',parameters:['QFAC','GAP','next.COUNT','next.STEP','next.OFFSET','next.GAP'],requires:'invertible factor; distinct safe linked probes; safe nonaliasing burst window'}],
+    tuning:['Recompute probe geometry after linking shared tables.','Distinct safe probe locations are required; more even spacing alone does not prove better combat coverage.','Tune hit geometry together with the following burst and boot latency.'],
+    failures:['Source layout changes can move a shared table so probes hit our own image.','Frozen-marker coverage is not battle win rate.','The 2026-11-04 36-cell boot/scan/burst grid selected QFAC243/GAP138/six units with shared SEED1 and the original burst. Its two fresh40-round full-field gains were +0.101% and +0.688%; the first opponent-sensitivity bound crossed zero, so current was retained. QFAC243 is a scoped challenger, not a new default or independently confirmed gain.'],
+    replicationKnowledge:['The fixed shared-SEED1/QFAC243 challenger subsequently passes six fresh40-round full-field seeds: gain0.4137%,5/6 positive, across-seed95% interval0.1128 to0.7146 percent. This does not overwrite the earlier inconclusive confirmation record.','Scan-only averages0.1776% with an interval spanning zero; adding scan243 to shared-SEED1 averages0.0054%, also spanning zero. Combined strength is not proof of an incremental scanning benefit. Keep QFAC349 as current default pending a separate decision.','Four-arm placement replays include a Rascal win at35 with scan-only/combined versus later losses for current/seed-only, and an Ick placement where both singles win but the combination loses. These examples demonstrate useful coverage and regressions without establishing their whole-field prevalence.'],
+    freshFamilyKnowledge:['In the fresh2026-11-04 source comparison, Armadillo has selected opening wins at cycles35 and52 against The Bloodhound and CrazyShot where current does not attack in its opening. Its bombs replace control instructions later executed as DAT.','Most reference-win/current-loss pairs in the preselected three-advantage-opponent cohorts have no opening attack from either warrior:58/72 for Tolypeutes and42/54 for Armadillo. Scan improvements address a real subset, not the entire remaining gap.','Compare coverage and response geometry separately, then together. Keep no-hit delay, actual target use, burst cost, regressions and full-field points; restoring one selected opening write can preserve a win through later redundant attack.'],
+    placementKnowledge:['In six later fresh ten-round frozen-archive placements, combined SEED1/QFAC243 has median56.5 versus current89 and SEED1-only69. All-nine medians including historical anchors are90/68/68. Broad ranges and unchanged added-scan uncertainty in the40-round study prevent attributing this median rank difference solely to better scanning. No default or current snapshot changes.'],
+    evidence:[]},
   entry: 'qScan',
   provides: { probe: 'probe' },
   mutable: (P) => [['probe', ['a', 'b']], ['sel', ['a']], ...Array.from({ length: P.UNITS }, (_, k) => [`t${k}`, ['b']])],

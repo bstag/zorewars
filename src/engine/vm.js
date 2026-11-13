@@ -9,9 +9,25 @@ import { mulberry32 } from './random.js';
 import { topologyFor } from './topology.js';
 import { makeGeometry } from './geometry.js';
 import { formatInstruction } from './disassembly.js';
+import { createTraceStorage, PackedTrace } from './trace.js';
 
 const { DAT, MOV, ADD, SUB, MUL, DIV, MOD: MODOP, JMP, JMZ, JMN, DJN, SPL, SLT, SEQ, SNE, NOP, LDP, STP, TRN } = OP;
 const { A, B, AB, BA, F, X, I } = MOD;
+
+// A null result leaves that field untouched and kills the process.
+function arithmeticValue(op, destination, source, size, geometry) {
+  switch (op) {
+    case ADD: return geometry ? geometry.add(destination, source) : (destination + source) % size;
+    case SUB: return geometry ? geometry.sub(destination, source) : (destination - source + size) % size;
+    case MUL: return geometry ? geometry.mul(destination, source) : (destination * source) % size;
+    case DIV:
+      if (geometry) return geometry.div(destination, source);
+      return source === 0 ? null : Math.floor(destination / source);
+    case MODOP:
+      if (geometry) return geometry.mod(destination, source);
+      return source === 0 ? null : destination % source;
+  }
+}
 
 // Each process is a program counter and, on a torus, a heading: the axis
 // and direction its code flows in (0..5 = +x -x +y -y +z -z; always 0 on the
@@ -48,7 +64,7 @@ class ProcessQueue {
 }
 
 export class VM {
-  constructor(settings = {}) {
+  constructor(settings = {}, { executionHistory = true } = {}) {
     this.settings = { ...DEFAULT_SETTINGS, ...settings };
     const n = this.settings.coreSize;
     this.size = n;
@@ -66,11 +82,14 @@ export class VM {
     this.b = new Int32Array(n);
     // Forensics for the arena and post-mortems: who last wrote each cell,
     // when (step and cycle), and which instruction did it (-1: loaded).
-    this.owner = new Int8Array(n);
-    this.lastWrite = new Float64Array(n);
-    this.lastExec = new Float64Array(n);
-    this.writerPc = new Int32Array(n);
-    this.writeCycle = new Int32Array(n);
+    this.owner = executionHistory ? new Int8Array(n) : null;
+    this.lastWrite = executionHistory ? new Float64Array(n) : null;
+    this.lastExec = executionHistory ? new Float64Array(n) : null;
+    this.writerPc = executionHistory ? new Int32Array(n) : null;
+    this.writeCycle = executionHistory ? new Int32Array(n) : null;
+    // Reserve the event fields so enabling events keeps the VM's object layout.
+    this.events = undefined;
+    this.eventLimit = undefined;
     this.clear();
   }
 
@@ -81,15 +100,17 @@ export class VM {
     this.bMode.fill(MODE.DIRECT);
     this.a.fill(0);
     this.b.fill(0);
-    this.owner.fill(-1);
-    this.lastWrite.fill(-Infinity);
-    this.lastExec.fill(-Infinity);
-    this.writerPc.fill(-1);
-    this.writeCycle.fill(-1);
+    if (this.owner) {
+      this.owner.fill(-1);
+      this.lastWrite.fill(-Infinity);
+      this.lastExec.fill(-Infinity);
+      this.writerPc.fill(-1);
+      this.writeCycle.fill(-1);
+    }
     this.curPc = -1;
     this.contacts = [];          // first write by each warrior into another's memory
     this.contactSeen = new Set();
-    this._trace = this.traceSize ? [] : null;
+    this._trace = this.traceSize ? createTraceStorage(this.traceSize, this.geo) : null;
     this._traceExposed = false;
     this.warriors = [];
     this.turn = 0;
@@ -186,7 +207,7 @@ export class VM {
     this.bMode[p] = typeof ins.bMode === 'number' ? ins.bMode : MODES.indexOf(ins.bMode);
     this.a[p] = this.norm(ins.a);
     this.b[p] = this.norm(ins.b);
-    this.owner[p] = owner;
+    if (this.owner) this.owner[p] = owner;
   }
 
   peek(addr) {
@@ -222,34 +243,44 @@ export class VM {
     this.steps++;
     this.curPc = pc;
 
-    // Running code another warrior wrote: the classic "conversion".
-    const codeOwner = this.owner[pc];
-    if (codeOwner >= 0 && codeOwner !== w) {
-      warrior.foreignSteps++;
-      if (!warrior.foreignFirst) warrior.foreignFirst = { cycle: this.cycle, pc, owner: codeOwner, instruction: this.disassemble(pc) };
+    let codeOwner, writerPc, writeCycle;
+    if (this.owner) {
+      // Running code another warrior wrote: the classic "conversion".
+      codeOwner = this.owner[pc];
+      if (codeOwner >= 0 && codeOwner !== w) {
+        warrior.foreignSteps++;
+        if (!warrior.foreignFirst) warrior.foreignFirst = { cycle: this.cycle, pc, owner: codeOwner, instruction: this.disassemble(pc) };
+      }
+      const trace = this._trace;
+      if (trace) {
+        if (trace instanceof PackedTrace) {
+          trace.record(this, pc, w, warrior.queue.size + 1);
+        } else {
+          trace.push(this._traceExposed
+            ? { step: this.steps, cycle: this.cycle, warrior: w, pc, instruction: this.disassemble(pc), processes: warrior.queue.size + 1 }
+            : {
+              step: this.steps, cycle: this.cycle, warrior: w, pc,
+              op: this.op[pc], mod: this.mod[pc], am: this.aMode[pc], bm: this.bMode[pc], a: this.a[pc], b: this.b[pc],
+              format: this.geo?.format, size: this.size, processes: warrior.queue.size + 1,
+            });
+          if (trace.length > this.traceSize) trace.shift();
+        }
+      }
+      writerPc = this.writerPc[pc];
+      writeCycle = this.writeCycle[pc];
     }
-    if (this._trace) {
-      this._trace.push(this._traceExposed
-        ? { step: this.steps, cycle: this.cycle, warrior: w, pc, instruction: this.disassemble(pc), processes: warrior.queue.size + 1 }
-        : {
-          step: this.steps, cycle: this.cycle, warrior: w, pc,
-          op: this.op[pc], mod: this.mod[pc], am: this.aMode[pc], bm: this.bMode[pc], a: this.a[pc], b: this.b[pc],
-          format: this.geo?.format, size: this.size, processes: warrior.queue.size + 1,
-        });
-      if (this._trace.length > this.traceSize) this._trace.shift();
-    }
-    const writerPc = this.writerPc[pc], writeCycle = this.writeCycle[pc];
 
     const killed = this.execute(w, pc, warrior.queue);
 
-    if (killed) {
+    if (killed && this.owner) {
       const isDat = this.op[pc] === DAT;
       const cause = !isDat ? 'divideByZero' : codeOwner === w ? 'ownCode' : codeOwner < 0 ? 'emptyCore' : 'enemyCode';
       warrior.deaths.total++;
       warrior.deaths[cause]++;
       warrior.lastDeath = { cycle: this.cycle, step: this.steps, pc, instruction: this.disassemble(pc), cause, codeOwner, writerPc, writeCycle };
       if (this.events && cause === 'enemyCode' && this.events.length < this.eventLimit) this.events.push(pc, codeOwner, w, 1);
-      if (this._trace) this._trace.at(-1).died = cause;
+      if (this._trace instanceof PackedTrace) this._trace.markDeath(cause);
+      else if (this._trace?.length) this._trace.at(-1).died = cause;
     }
     if (warrior.queue.size > warrior.peak) warrior.peak = warrior.queue.size;
 
@@ -270,9 +301,14 @@ export class VM {
     // Pass the turn to the next living warrior; a full lap is one cycle.
     const n = this.warriors.length;
     let next = w;
-    for (let k = 1; k <= n; k++) {
-      const c = (w + k) % n;
-      if (this.warriors[c].alive) { next = c; break; }
+    if (n === 2) {
+      // A two-warrior round finishes as soon as either warrior is eliminated.
+      next = 1 - w;
+    } else {
+      for (let k = 1; k <= n; k++) {
+        const c = (w + k) % n;
+        if (this.warriors[c].alive) { next = c; break; }
+      }
     }
     if (next <= w) this.cycle++;
     this.turn = next;
@@ -363,6 +399,7 @@ export class VM {
   // 0 is an override (a warrior writing into another's cell) and 1 a kill (a
   // process dying on an enemy's bomb). takeEvents() hands them over.
   enableEvents(limit = 4096) {
+    if (!this.owner) throw new Error('Battle events require execution history');
     this.events = [];
     this.eventLimit = limit * 4;
   }
@@ -374,6 +411,7 @@ export class VM {
   }
 
   touch(addr, w) {
+    if (!this.owner) return;
     const prev = this.owner[addr];
     if (this.events && prev >= 0 && prev !== w && this.events.length < this.eventLimit) this.events.push(addr, w, prev, 0);
     if (prev >= 0 && prev !== w && !this.contactSeen.has(w * 64 + prev)) {
@@ -388,8 +426,9 @@ export class VM {
 
   // Keep the last `size` executed instructions (see the CLI's trace command).
   enableTrace(size) {
+    if (!this.owner) throw new Error('Traces require execution history');
     this.traceSize = size;
-    this._trace = [];
+    this._trace = createTraceStorage(size, this.geo);
     this._traceExposed = false;
   }
 
@@ -399,6 +438,7 @@ export class VM {
   // for callers that retain its reference while the VM continues running.
   get trace() {
     if (this._trace && !this._traceExposed) {
+      if (this._trace instanceof PackedTrace) this._trace = this._trace.unpack(this.size);
       for (let i = 0; i < this._trace.length; i++) {
         const { step, cycle, warrior, pc, op, mod, am, bm, a, b, format, size, processes, died } = this._trace[i];
         const sa = format ? format(a) : a > size / 2 ? a - size : a;
@@ -412,15 +452,15 @@ export class VM {
   }
 
   set trace(entries) {
+    if (entries && !this.owner) throw new Error('Traces require execution history');
     this._trace = entries;
     this._traceExposed = true;
   }
 
   execute(w, pc, queue) {
     const n = this.size;
-    const core = this;
     const opA = this.op, modA = this.mod, amA = this.aMode, bmA = this.bMode, fa = this.a, fb = this.b;
-    this.lastExec[pc] = this.steps;
+    if (this.lastExec) this.lastExec[pc] = this.steps;
 
     // Snapshot of the instruction register.
     const op = opA[pc], mod = modA[pc], am = amA[pc], bm = bmA[pc], ia = fa[pc], ib = fb[pc];
@@ -441,24 +481,6 @@ export class VM {
     const next = g ? g.add(pc, step) : (pc + 1) % n;
     const skipTo = g ? g.add(next, step) : (pc + 2) % n;
     let killed = false;
-
-    const arith = (fn) => {
-      // fn returns null for division by zero: that field is left unchanged
-      // and the process dies.
-      let ok = true;
-      const setA = (v) => { if (v === null) ok = false; else fa[bPtr] = v; };
-      const setB = (v) => { if (v === null) ok = false; else fb[bPtr] = v; };
-      switch (mod) {
-        case A: setA(fn(bA, aA)); break;
-        case B: setB(fn(bB, aB)); break;
-        case AB: setB(fn(bB, aA)); break;
-        case BA: setA(fn(bA, aB)); break;
-        case X: setA(fn(bA, aB)); setB(fn(bB, aA)); break;
-        default: setA(fn(bA, aA)); setB(fn(bB, aB)); break; // F, I
-      }
-      core.touch(bPtr, w);
-      if (ok) queue.push(next); else killed = true;
-    };
 
     switch (op) {
       case DAT:
@@ -482,11 +504,24 @@ export class VM {
         queue.push(next);
         break;
 
-      case ADD: arith(g ? g.add : (x, y) => (x + y) % n); break;
-      case SUB: arith(g ? g.sub : (x, y) => (x - y + n) % n); break;
-      case MUL: arith(g ? g.mul : (x, y) => (x * y) % n); break;
-      case DIV: arith(g ? g.div : (x, y) => (y === 0 ? null : Math.floor(x / y))); break;
-      case MODOP: arith(g ? g.mod : (x, y) => (y === 0 ? null : x % y)); break;
+      case ADD:
+      case SUB:
+      case MUL:
+      case DIV:
+      case MODOP: {
+        const useA = mod !== B && mod !== AB;
+        const useB = mod !== A && mod !== BA;
+        const sourceA = mod === BA || mod === X ? aB : aA;
+        const sourceB = mod === AB || mod === X ? aA : aB;
+        const valueA = useA ? arithmeticValue(op, bA, sourceA, n, g) : 0;
+        const valueB = useB ? arithmeticValue(op, bB, sourceB, n, g) : 0;
+        if (useA && valueA !== null) fa[bPtr] = valueA;
+        if (useB && valueB !== null) fb[bPtr] = valueB;
+        this.touch(bPtr, w);
+        killed = (useA && valueA === null) || (useB && valueB === null);
+        if (!killed) queue.push(next);
+        break;
+      }
 
       case JMP:
         queue.push(aPtr);
@@ -507,17 +542,23 @@ export class VM {
 
       case DJN: {
         let nonZero;
-        const dec = (v) => (v + n - 1) % n;
         switch (mod) {
           case A: case BA: {
-            const v = dec(bA); fa[bPtr] = dec(fa[bPtr]); nonZero = v !== 0; break;
+            const v = (bA + n - 1) % n;
+            fa[bPtr] = (fa[bPtr] + n - 1) % n;
+            nonZero = v !== 0;
+            break;
           }
           case B: case AB: {
-            const v = dec(bB); fb[bPtr] = dec(fb[bPtr]); nonZero = v !== 0; break;
+            const v = (bB + n - 1) % n;
+            fb[bPtr] = (fb[bPtr] + n - 1) % n;
+            nonZero = v !== 0;
+            break;
           }
           default: {
-            const va = dec(bA), vb = dec(bB);
-            fa[bPtr] = dec(fa[bPtr]); fb[bPtr] = dec(fb[bPtr]);
+            const va = (bA + n - 1) % n, vb = (bB + n - 1) % n;
+            fa[bPtr] = (fa[bPtr] + n - 1) % n;
+            fb[bPtr] = (fb[bPtr] + n - 1) % n;
             nonZero = va !== 0 || vb !== 0;
           }
         }

@@ -2,6 +2,7 @@ import { OPCODES, MODIFIERS, MODES, OP, MOD } from '../constants.js';
 import { assemble } from '../assembler.js';
 
 export const LIVE_STEPS = 4096;
+export const LIVE_TRACE_WORDS = 6;
 const NONE = 0xffffffff;
 const CAUSES = ['ownCode', 'enemyCode', 'emptyCore', 'divideByZero'];
 export function liveLayout(vm) {
@@ -10,7 +11,10 @@ export function liveLayout(vm) {
   const contacts = ps + count * vm.warriors[0].pspace.length;
   const events = contacts + count * count * 9;
   const eventCapacity = Math.max(1, (vm.eventLimit ?? 16384) / 4);
-  return { count, core, queues, ps, contacts, events, eventCapacity, words: events + eventCapacity * 4 };
+  const end = events + eventCapacity * 4;
+  const traceCapacity = vm.traceSize ?? 0;
+  return { count, core, queues, ps, contacts, events, eventCapacity,
+    ...(traceCapacity ? { trace: end, traceCapacity } : {}), words: end + traceCapacity * LIVE_TRACE_WORDS };
 }
 const header = (i) => OP[i.op] | MOD[i.mod] << 5 | MODES.indexOf(i.aMode) << 8 | MODES.indexOf(i.bMode) << 11;
 function captured(text, vm) {
@@ -21,6 +25,23 @@ function captured(text, vm) {
 function instruction(vm, h, a, b) {
   const signed = vm.geo ? vm.geo.format : (v) => v > vm.size / 2 ? v - vm.size : v;
   return `${OPCODES[h & 31]}.${MODIFIERS[(h >>> 5) & 7]} ${MODES[(h >>> 8) & 7]}${signed(a)}, ${MODES[(h >>> 11) & 7]}${signed(b)}`;
+}
+
+// The GPU stores only steps taken since upload. Keep the earlier CPU tail
+// until new steps overwrite it, including when a caller holds the trace array.
+function appendTrace(vm, raw, l) {
+  const start = Math.max(vm.steps + 1, raw[0] - l.traceCapacity + 1);
+  if (start > raw[0]) return;
+  const entries = vm.trace;
+  const excess = Math.max(0, entries.length + raw[0] - start + 1 - l.traceCapacity);
+  if (excess) entries.splice(0, excess);
+  for (let step = start; step <= raw[0]; step++) {
+    const at = l.trace + ((step - 1) % l.traceCapacity) * LIVE_TRACE_WORDS;
+    const [cycle, pc, word, a, b, processes] = raw.subarray(at, at + LIVE_TRACE_WORDS);
+    const died = CAUSES[(word >>> 16) - 1];
+    entries.push({ step, cycle, warrior: (word >>> 14) & 3, pc,
+      instruction: instruction(vm, word, a, b), processes, ...(died ? { died } : {}) });
+  }
 }
 
 export function encodeLiveVM(vm, l = liveLayout(vm)) {
@@ -63,6 +84,7 @@ export function applyLiveVM(vm, raw, l = liveLayout(vm)) {
     const m = 32 + side * 32;
     if (raw[m] >= P || raw[m + 1] > P) throw new Error('Invalid live GPU queue');
   }
+  if (l.traceCapacity) appendTrace(vm, raw, l);
   vm.steps = raw[0]; vm.cycle = raw[1]; vm.turn = raw[2]; vm.budget = raw[3] | 0;
   vm.aliveCount = raw[4]; vm.done = !!raw[5]; vm.winner = raw[6] === NONE ? null : raw[6];
   vm.curPc = raw[7] | 0; vm.curH = raw[8];

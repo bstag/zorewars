@@ -1,0 +1,35 @@
+{
+  "leaves": [
+    "bomb-dodger", "airbag-stone", "fang-gate", "finisher-dclear", "finisher-twopass",
+    "finisher-gated", "vampire-trap", "opening-none", "opening-bomber", "opening-bscan",
+    "opening-cmpscan", "finisher-counted", "finisher-guarded", "stone", "spiral", "paper",
+    "vampire", "decoys", "leap", "sentinel-stone", "worker-refresher", "mutual-repair",
+    "numeric-disruptor", "report-bomb", "opening-cmpscan-88", "opening-quickscan-88",
+    "opening-sne-88", "finisher-guarded-88", "fanboot-paper-stone", "fanboot-stone-imp",
+    "carpet-stone", "stream-swarm", "fed-stream-swarm", "knight-pump-stream",
+    "finisher-overwrite-antiimp", "knight-pump", "capped-pump", "moving-imp-silk",
+    "opening-qscan-qz", "probe-burst", "decoy-maker", "opening-qscan-lattice",
+    "opening-qscan-mul", "opening-qscan-mul45", "opening-qscan-qi", "airbag-vampire",
+    "djn-vampire", "scanner-pendulum", "oneshot-cobra", "trap-scanner", "finisher-overwrite",
+    "oneshot-cobra-imp", "blur-carpet", "twin-storm", "scanner-mul", "elf", "finisher-multi",
+    "hill-stone", "scan-vampire", "timed-stone", "armadillo-switch", "self-add-stone",
+    "delayed-pump", "fang-vampire", "probe-verdict", "imp", "imp-ring", "vector-spiral",
+    "imp-gate", "probe-burst2", "boot-stone", "decoys-mixed", "decoy-mirror",
+    "pair-wipe-scanner", "pair-wipe-scanner-88", "cmp-carpet-scanner", "mice", "silk3",
+    "bomb-paper", "boot-paper", "bomb-mice", "silk-88", "dual-launcher", "anti-imp-silk",
+    "relaunch-paper", "imp-feeder", "opening-quickscan", "opening-sne", "scanner",
+    "bscan-body", "blur-scanner", "mirror-scanner", "opening-qscan-decode",
+    "finisher-outward", "silk-imps", "silk-cc", "lp-paper", "tail-silk", "mod-stone",
+    "spl-stone", "jmp-bomber", "carpet-bomber", "incendiary", "djn-stream", "vector-stone",
+    "row-sweeper", "plane-clear", "volume-paper", "torus-scanner", "column-imp",
+    "vector-silk", "backward-clear", "multi-plane-clear", "torus-leap"
+  ],
+  "combinators": [
+    "seq", "par", "relocate", "boot", "image", "trigger", "apart", "copies", "switch",
+    "fork", "restart", "parboot", "fanboot", "classify"
+  ],
+  "recipes": [
+    "compass", "one-shot", "bomber-clear", "stone-imp", "paper-stone", "distributed-stones",
+    "stone-then-clear", "watchdog", "waveboot", "hill-fork", "spread-stone-spiral"
+  ]
+}

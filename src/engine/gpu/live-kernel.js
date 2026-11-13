@@ -1,8 +1,13 @@
 import { gpuKernel } from './kernel.js';
-import { LIVE_STEPS } from './live-layout.js';
+import { LIVE_STEPS, LIVE_TRACE_WORDS } from './live-layout.js';
 
 export function liveKernel(settings, layout) {
   const { count: W, contacts: C, events: E } = layout;
+  const captureTrace = layout.traceCapacity ? `
+    let trace = ${layout.trace}u + ((steps - 1u) % ${layout.traceCapacity}u) * ${LIVE_TRACE_WORDS}u;
+    memory[trace] = cycle; memory[trace + 1u] = pc; memory[trace + 2u] = memory[c] | (turn << 14u);
+    memory[trace + 3u] = memory[c + 1u]; memory[trace + 4u] = memory[c + 2u]; memory[trace + 5u] = sizes[turn] + 1u;` : '';
+  const traceDeath = layout.traceCapacity ? '\n      memory[trace + 2u] |= (cause + 1u) << 16u;' : '';
   const helpers = `
 const W = ${W}u;
 fn war(w: u32) -> u32 { return 32u + w * 32u; }
@@ -50,7 +55,7 @@ fn main() {
         memory[m + 12u] = memory[c]; memory[m + 13u] = memory[c + 1u]; memory[m + 14u] = memory[c + 2u];
       }
     }
-    let writer = memory[c + 6u]; let written = memory[c + 7u];
+    let writer = memory[c + 6u]; let written = memory[c + 7u];${captureTrace}
     let killed = execute(pc, heading);
     if (killed) {
       var cause = 3u;
@@ -58,7 +63,7 @@ fn main() {
         cause = 1u;
         if (owner == turn) { cause = 0u; } else if (owner >= W) { cause = 2u; }
       }
-      memory[m + 15u]++; memory[m + 16u + cause]++;
+      memory[m + 15u]++; memory[m + 16u + cause]++;${traceDeath}
       memory[m + 20u] = 1u; memory[m + 21u] = cycle; memory[m + 22u] = steps; memory[m + 23u] = pc;
       memory[m + 24u] = memory[c]; memory[m + 25u] = memory[c + 1u]; memory[m + 26u] = memory[c + 2u];
       memory[m + 27u] = cause; memory[m + 28u] = owner; memory[m + 29u] = writer; memory[m + 30u] = written;

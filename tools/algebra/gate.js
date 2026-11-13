@@ -10,9 +10,15 @@ import { compile, VM } from '../../src/engine/index.js';
 import { leaves } from './leaves.js';
 import { link, iface, entryOf, switchChoice } from './link.js';
 import { makeGeometry } from '../../src/engine/geometry.js';
+import {blockInstances as instances} from './layout.js';
+import {createObservation,observeTree,verifyPhases} from './observe.js';
+import {createPumpLineageObservation} from './pump-lineage.js';
+import { packedPlan, tableChoice } from './switch-table.js';
+import { scoreScenarios } from './switch-score.js';
 
 const isLeaf = (node) => Object.hasOwn(leaves, node.id);
 const parOrder = (kids) => [...kids].sort((a, b) => (leaves[a.id]?.layout === 'last') - (leaves[b.id]?.layout === 'last'));
+const gcd = (a, b) => b ? gcd(b, a % b) : a;
 
 // The running part of a tree, and the boot around it, if any.
 function unwrap(root) {
@@ -34,11 +40,16 @@ export function shapeOf(root) {
   return 'generic';
 }
 
-export function gate(built) {
+export function gate(built,{verification='quick'}={}) {
+  if (!['quick','full'].includes(verification)) throw new Error('verification must be quick or full');
   const shape = shapeOf(built.root);
-  if (shape === 'chain') return checkChain(built);
-  if (shape === 'bodies') return checkBodiesTree(built);
-  return checkGeneric(built);
+  const full=verification==='full';
+  if (shape === 'generic') return checkGeneric(built,{full});
+  const result=shape==='chain'?checkChain(built):checkBodiesTree(built,{full});
+  if (full) {
+    result.phaseObservations=[0,built.settings.coreSize-7].map(base=>{const {observation}=observeTree(built,{positions:[base]}),phaseVerification=verifyPhases(observation);if(!phaseVerification.ok)throw new Error(`Full phase verification failed: ${phaseVerification.issues.join('; ')}`);return {observation,phaseVerification};});
+  }
+  return {...result,profile:verification};
 }
 
 const sameIns = (core) => {
@@ -162,7 +173,7 @@ function checkChain(built) {
 }
 
 // Bodies: each one alone first (when there are several), then all together.
-function checkBodiesTree(built) {
+function checkBodiesTree(built,{full=false}={}) {
   const { root, settings } = built;
   const { main } = unwrap(root);
   const observations = [];
@@ -170,22 +181,23 @@ function checkBodiesTree(built) {
     const alone = link({ id: kid.id, P: kid.P }, settings);
     const w = compile(alone.source, 'redcode', settings);
     if (!w.ok) throw new Error(JSON.stringify(w.errors));
-    observations.push({ alone: kid.id, ...checkBodies({ ...alone, w, settings }).observations[0] });
+    observations.push({ alone: kid.id, ...checkBodies({ ...alone, w, settings,full }).observations[0] });
   }
-  observations.push(...checkBodies(built).observations);
-  return { ok: true, shape: 'bodies', scope: 'each body alone, then together; two load positions; full solo rounds (20,000 cycles with paper)', observations };
+  observations.push(...checkBodies({...built,full}).observations);
+  return { ok: true, shape: 'bodies', scope: full?'each body alone, then together; full setting horizon':'each body alone, then together; two load positions; bounded solo rounds (20,000 cycles with paper)', observations };
 }
 
-function checkBodies({ w, settings, root, labels, spans }) {
+function checkBodies({ w, settings, root, labels, spans,full=false }) {
   if (!w?.ok) throw new Error('Bodies did not assemble');
   const core = settings.coreSize, norm = (x) => ((x % core) + core) % core, same = sameIns(core);
   const { main, boot } = unwrap(root);
   const parts = main.id === 'par' ? parOrder(main.kids) : [main];
-  const alone = parts.length === 1, checkpoint = 1000, hop = boot ? boot.P.HOP : 0;
+  const alone = parts.length === 1, hop = boot ? boot.P.HOP : 0;
   const L = (node, local) => labels[node.ns + local];
   // Paper fills the process table; simulating it to the cycle limit costs minutes
   // on 94x. By this horizon it has spread over hundreds of copies.
-  const horizon = parts.some((p) => p.id === 'paper') ? Math.min(settings.maxCycles, 20000) : settings.maxCycles;
+  const horizon = !full&&parts.some((p) => p.id === 'paper') ? Math.min(settings.maxCycles, 20000) : settings.maxCycles;
+  const checkpoint = Math.min(1000, horizon);
   const observations = [];
   for (const base of [0, core - 7]) {
     const vm = new VM(settings); vm.load([w], { positions: [base] });
@@ -229,7 +241,10 @@ function checkBodies({ w, settings, root, labels, spans }) {
     if (alone) {
       const p = parts[0];
       if ((p.id === 'stone' || p.id === 'vampire') && vm.warriors[0].peak !== 1 + (boot && (boot.P.WIPE || boot.P.EARLY) ? 1 : 0)) throw new Error('A one-process body split');
-      if (p.id === 'stone' && stoneCells[0].size < 100) throw new Error('The stone bombs too few cells');
+      if (p.id === 'stone') {
+        const required = core < 100 ? core / gcd(core, p.P.TSTEP) : 100;
+        if (stoneCells[0].size < required) throw new Error('The stone bombs too few cells');
+      }
       if (p.id === 'vampire' && fangs[0] < 100) throw new Error('The vampire drops too few fangs');
       if (p.id === 'spiral' && vm.processes(0).length !== 2 ** p.P.SK - 1) throw new Error('The spiral lost processes on its own');
       if (p.id === 'paper') {
@@ -250,65 +265,6 @@ function checkBodies({ w, settings, root, labels, spans }) {
 
 // Where each block runs: one entry per copy, as an offset from the load address,
 // with what the gate expects of it.
-function instances(root, labels, spans, settings) {
-  const out = [];
-  // The cells each copying combinator lays down: its member's span at the new
-  // shift. A copy holds only that member, not the whole warrior.
-  const regions = out.regions = [];
-  const copied = (kid, shifts) => { for (const shift of shifts) regions.push({ shift, start: spans[kid.ns].start, size: spans[kid.ns].size }); return shifts; };
-  const geo = makeGeometry(settings);
-  const vec = (x, y = 0, z = 0) => (geo ? geo.encode(x, y, z) : x);
-  const plus = (a, b) => (geo ? geo.add(a, b) : a + b);
-  const walk = (node, shifts, flags) => {
-    if (isLeaf(node)) { for (const shift of shifts) out.push({ node, shift, ...flags }); return; }
-    const k = node.kids;
-    switch (node.id) {
-      case 'boot': walk(k[0], copied(k[0], shifts.map((s) => plus(s, vec(node.P.HOP, node.P.HOPY, node.P.HOPZ)))), flags); if (k[1]) walk(k[1], shifts, flags); break;
-      case 'relocate': {
-        const probe = labels[node.probeLabel];
-        walk(k[0], copied(k[0], shifts.map((s) => s + probe + node.P.HOP - spans[k[0].ns].start)), flags);
-        break;
-      }
-      case 'apart': walk(k[0], shifts, flags); walk(k[1], shifts.map((s) => plus(s, vec(node.P.D, node.P.DY, node.P.DZ))), flags); break;
-      case 'copies': walk(k[0], copied(k[0], shifts.flatMap((s) => Array.from({ length: node.P.N }, (_, i) => plus(s, vec(i * node.P.D, i * node.P.DY, i * node.P.DZ))))), flags); break;
-      case 'trigger':
-        walk(k[0], shifts, { ...flags, mayStop: true });
-        walk(k[1], shifts, { ...flags, ...(node.P.MODE ? { optional: true, triggered: node.ns } : {}) });
-        break;
-      case 'switch': k.forEach((kid, i) => walk(kid, shifts, { ...flags, optional: true, branch: `${node.ns}:${i}` })); break;
-      case 'fork':
-        walk(k[0], shifts, flags);
-        walk(k[1], shifts, { ...flags, optional: true, branch: `${node.ns}:1` });
-        walk(k[2], shifts, { ...flags, optional: true, branch: `${node.ns}:2` });
-        break;
-      case 'parboot': {
-        const { HOP, HOPY, HOPZ, STAY, REACT, HOP2, HOP2Y, HOP2Z } = node.P;
-        walk(k[0], copied(k[0], shifts.map((s) => plus(s, vec(HOP, HOPY, HOPZ)))), REACT ? { ...flags, mayStop: true } : flags);   // the copy (a REACT scenario hits it)
-        if (STAY) walk(k[0], shifts, flags);                                  // the original, still running
-        if (REACT) walk(k[0], copied(k[0], shifts.map((s) => plus(s, vec(HOP2, HOP2Y, HOP2Z)))), { ...flags, optional: true, triggered: `${node.ns}:react` });
-        break;
-      }
-      case 'fanboot':
-        // Each member's copy starts at its copy label and holds M cells (the copy lines copy
-        // whole rounds of N, so a little of what follows the member comes along).
-        k.forEach((kid, i) => {
-          const hop = i ? node.P.HOPB : node.P.HOPA, moved = shifts.map((s) => s + hop);
-          for (const shift of moved) regions.push({ shift, start: labels[node.ns + 'c' + i], size: node.fan.M[i] });
-          walk(kid, moved, flags);
-        });
-        break;
-      case 'classify':
-        walk(k[0], shifts, { ...flags, mayStop: true });
-        walk(k[1], shifts, { ...flags, optional: true, branch: `${node.ns}:1` });
-        walk(k[2], shifts, { ...flags, optional: true, branch: `${node.ns}:2` });
-        break;
-      default: for (const kid of k) walk(kid, shifts, flags);
-    }
-  };
-  walk(root, [0], {});
-  return out;
-}
-
 // What the combinators and blocks promise, as runs with something planted.
 function scenarios(root, labels, settings) {
   const out = [{ name: 'alone' }];
@@ -329,6 +285,27 @@ function scenarios(root, labels, settings) {
         const p = VM.freshPSpace(settings); p[0] = result; p[CELL] = choice; p[CELL + 1] = losses;
         const pick = switchChoice(POLICY, n, result, choice, losses);
         out.push({ name: `switch: result ${result}, choice ${choice}, losses ${losses}`, pspace: p, branch: `${node.ns}:${pick}` });
+      }
+    }
+    if (node.id === 'switch-table') {
+      const { CELL, PACKED } = node.P;
+      const plan = PACKED ? packedPlan(node.P, settings.coreSize) : null;
+      for (const [result, states] of [[-1, [0]], [0, [0, 1, 2, 3]], [1, [0, 1, 2, 3]], [2, [0, 1, 2, 3, 13]]]) {
+        for (const state of states) {
+          const pspace = VM.freshPSpace(settings);
+          pspace[0] = result;
+          const unused = plan && state === 13;
+          pspace[CELL] = unused ? plan.moduli[2] - 1 : (plan?.states[state] ?? state);
+          const { branch, next } = tableChoice(node.P, unused ? -1 : result, state);
+          out.push({ name: `switch-table: result ${result}, state ${state}`, pspace,
+            branch: `${node.ns}:${branch}`, stored: [CELL, plan?.states[next] ?? next] });
+        }
+      }
+    }
+    if (node.id === 'switch-score') {
+      // Every path of the emitted code against its model: the branch and every P-space cell it writes.
+      for (const s of scoreScenarios(node.P, node.kids.length, settings.coreSize, () => VM.freshPSpace(settings))) {
+        out.push({ name: s.name, pspace: s.pspace, branch: `${node.ns}:${s.branch}`, storedAll: s.writes });
       }
     }
     if (node.id === 'fork') {
@@ -367,7 +344,7 @@ function scenarios(root, labels, settings) {
   return out;
 }
 
-function checkGeneric(built) {
+function checkGeneric(built,{full=false}={}) {
   const { w, settings, root, labels, spans, total } = built;
   const core = settings.coreSize, norm = (x) => ((x % core) + core) % core, same = sameIns(core);
   const found = instances(root, labels, spans, settings), regions = found.regions;
@@ -385,7 +362,7 @@ function checkGeneric(built) {
   const shifts = [...new Set([0, ...all.map((x) => x.shift)])];
   const limit = iface(root, settings);
   const caps = limit.provides;
-  const horizon = limit.grows ? Math.min(settings.maxCycles, 20000) : settings.maxCycles;
+  const horizon = !full&&limit.grows ? Math.min(settings.maxCycles, 20000) : settings.maxCycles;
   const alone = all.length === 1;
   const maxShift = Math.max(...shifts.map(norm));
   const bases = geo ? [0, geo.encode(geo.X - 7, Math.floor(geo.Y / 2), 0), geo.encode(-3, geo.Y - 1, (geo.Z || 1) - 1)]
@@ -395,6 +372,12 @@ function checkGeneric(built) {
   function run(base, scenario) {
     const vm = new VM(settings);
     vm.load([w], { positions: [base], ...(scenario.pspace ? { pspaces: [scenario.pspace] } : {}) });
+    const observer=full?createObservation(built,vm):null;
+    // A three-member deployment with two pump leaves promises independent
+    // insurance. Shared-template compatibility must not count one pool twice.
+    const hasTriple=n=>n.id==='fanboot3'||(n.kids??[]).some(hasTriple);
+    const lineage=full&&hasTriple(root)&&all.filter(x=>x.node.id==='compact-imp-pump').length>1?createPumpLineageObservation(built,vm):null;
+    try {
     const watchedBy = new Map();
     // Once a fork, switch or classify has entered one branch, the branches it didn't take
     // are dead code: a body may attack them.
@@ -407,6 +390,7 @@ function checkGeneric(built) {
     const picks = new Set(Object.keys(labels).filter((l) => l.endsWith('pick') && all.some((x) => x.branch?.startsWith(l.slice(0, -4) + ':')))
       .flatMap((l) => shifts.map((s) => add(add(base, s), labels[l]))));
     let pickedAt = null;
+    const decided = new Map();   // branch group -> the branch it took first, and when
     // A copy counts as the warrior's once a process has run in it: before that its cells are
     // still to be written, and anything that lands there will be copied over.
     const occupied = regions.map(() => false);
@@ -472,16 +456,28 @@ function checkGeneric(built) {
         const at = add(base, scenario.carpet.at), n = scenario.carpet.n;
         for (let k = -n; k <= n; k++) if (vm.peek(norm(at + k)).op === 'SPL') stunned++;
       }
-      const pc = vm.processes(0)[0];
+      // Inspect the head without copying a growing queue on every cycle.
+      const queue=vm.warriors[0].queue,pc=queue.buf[queue.head];
       regions.forEach((r, i) => { if (!occupied[i] && rel(pc, regionAt(r)) < r.size) occupied[i] = true; });
       if (pickedAt === null && picks.has(pc)) pickedAt = vm.cycle;
-      for (const v of byEntry.get(pc) ?? []) if (!v.entered) { v.entered = true; v.enteredAt = vm.cycle; }
+      for (const v of byEntry.get(pc) ?? []) {
+        if (v.entered) continue;
+        // A switch, switch-table, switch-score or fork takes one branch, once. After that, a roaming
+        // process (a paper's copy, an imp) that runs another branch's entry has not entered it:
+        // that branch stays dead code, and its watch is not asked to account for it.
+        const g = v.x.branch ? group(v.x.branch) : null, took = g ? decided.get(g) : null;
+        if (took && took.branch !== v.x.branch && vm.cycle > took.at + 2) continue;
+        v.entered = true; v.enteredAt = vm.cycle;
+        if (g && !took) decided.set(g, { branch: v.x.branch, at: vm.cycle });
+      }
       const tokens = watched.map((v) => v.hooks.before?.(pc) ?? null);
+      lineage?.before();observer?.before();
       vm.step();
+      observer?.after();lineage?.after();
       watched.forEach((v, i) => v.hooks.after?.(tokens[i]));
-      // A block that runs forever must still be running 1,000 cycles after it was entered.
+      // Check after 1,000 cycles, or before the round ends on a compact hill.
       for (const v of watched) {
-        if (v.checked || !v.entered || vm.cycle !== v.enteredAt + 1000) continue;
+        if (v.checked || !v.entered || vm.cycle !== Math.min(v.enteredAt + 1000, horizon)) continue;
         v.checked = true;
         if (v.def.exit === 'never' && !v.x.mayStop) {
           const running = v.def.running ? v.def.running(v.api) : vm.processes(0).some((q) => v.api.inSelf(q));
@@ -490,6 +486,13 @@ function checkGeneric(built) {
       }
     }
     if (!vm.warriors[0].alive || vm.cycle !== horizon) throw new Error(`The warrior did not survive alone (${scenario.name})`);
+    if (scenario.stored && vm.warriors[0].pspace[scenario.stored[0]] !== scenario.stored[1]) {
+      throw new Error(`switch-table: wrong next state (${scenario.name})`);
+    }
+    for (const [cell, want] of scenario.storedAll ?? []) {
+      const got = vm.warriors[0].pspace[cell];
+      if (got !== want) throw new Error(`switch-score: P-space cell ${cell} holds ${got}, expected ${want} (${scenario.name})`);
+    }
     if (scenario.restored !== undefined && !same(vm.peek(add(base, scenario.restored)), w.instructions[scenario.restored])) throw new Error('restart: the damaged loop was not restored');
     if (scenario.carpet && stunned < scenario.carpet.n) throw new Error(`parboot: only ${stunned} cells around the hit were stunned`);
     if (!limit.grows && vm.warriors[0].peak > limit.processes) throw new Error(`More processes than the blocks declare (${vm.warriors[0].peak} > ${limit.processes})`);
@@ -502,10 +505,14 @@ function checkGeneric(built) {
       if (scenario.branch && x.branch && x.branch !== scenario.branch && v.entered && !(scenario.decideBy && pickedAt !== null && v.enteredAt > pickedAt + 2)) throw new Error(`ran the wrong branch (${scenario.name})`);
       v.hooks.final?.();
     }
-    return { base, scenario: scenario.name, cycles: vm.cycle, peak: vm.warriors[0].peak };
+    const pumpLineage=lineage?.finish();if(pumpLineage)for(const e of pumpLineage.engines)if(e.launches<2*e.N||e.arithmeticDeviations||e.firstImpExecution===null||e.compatibleImps<e.N)throw Error(`Independent pump lineage ${e.namespace} fails (${scenario.name}): ${e.launches} launches, ${e.compatibleImps}/${e.N} compatible descendants`);
+    let observation,phaseVerification;
+    if(observer){observation=observer.finish();phaseVerification=verifyPhases(observation);if(!phaseVerification.ok)throw new Error(`Full phase verification failed (${scenario.name}): ${phaseVerification.issues.join('; ')}`);}
+    return { base, scenario: scenario.name, cycles: vm.cycle, peak: vm.warriors[0].peak,...(observer?{observation,phaseVerification}:{}),...(pumpLineage?{pumpLineage}:{}) };
+    } finally {observer?.dispose();}
   }
   for (const scenario of scenarios(root, labels, settings)) {
     for (const base of scenario.name === 'alone' ? bases : [0]) observations.push(run(base, scenario));
   }
-  return { ok: true, shape: 'generic', scope: 'every copy of every block watched with its own checks; three load positions; full solo rounds; combinator scenarios', observations };
+  return { ok: true, shape: 'generic',profile:full?'full':'quick',horizon,scope:full?'full solo horizon, intrinsic checks, declared phase contracts and read-only useful work observations':'bounded solo runs and intrinsic block/combinator checks', observations };
 }

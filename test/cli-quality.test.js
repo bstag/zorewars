@@ -15,6 +15,14 @@ test('battle CLI retains solo, tie and report text plus JSON output',()=>{
  assert.match(cli('battle','@imp','@dwarf',...common,'--report'),/Post-mortem of round 1/);
  assert.equal(JSON.parse(cli('battle','@imp','@imp',...common,'--json')).ok,true);
 });
+test('score-only CLI preserves battle and tournament JSON', () => {
+  const args = ['@imp', '@dwarf', '--rules', '94x', '--cycles', '200', '--rounds', '3', '--seed', '42', '--json'];
+  for (const command of ['battle', 'tournament']) {
+    assert.equal(cli(command, ...args, '--no-execution-history'), cli(command, ...args));
+  }
+  assert.throws(() => cli('battle', ...args, '--report', '--no-execution-history'),
+    error => error.status === 2 && /--report requires execution history/.test(error.stderr));
+});
 test('conversion CLI writes the same verified code that JSON reports',()=>{
  const folder=fs.mkdtempSync(path.join(os.tmpdir(),'zorewars-conversion-'));const out=path.join(folder,'warrior.js');
  try{const result=JSON.parse(cli('convert','@dwarf','--to','js','--json','--out',out));assert.ok(result.ok&&result.verified);assert.equal(fs.readFileSync(out,'utf8'),result.code);assert.equal(cli('convert','@dwarf','--to','js'),result.code);}finally{fs.rmSync(folder,{recursive:true,force:true});}

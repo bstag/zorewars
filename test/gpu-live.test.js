@@ -6,6 +6,7 @@ import { encodeLiveVM, applyLiveVM, liveLayout } from '../src/engine/gpu/live-la
 import { createGpuLiveEngine } from '../src/engine/gpu/live.js';
 import { createLiveController } from '../src/engine/live.js';
 import { GpuBackendError } from '../src/engine/gpu/errors.js';
+import { createTraceRound, runMatch } from '../src/engine/battle.js';
 import { randomGenome, toWarrior } from '../tools/genes.js';
 
 const cfg = { ...DEFAULT_SETTINGS, coreSize: 80, maxCycles: 700, maxLength: 5, minDistance: 5, maxProcesses: 8, pSpaceSize: 7 };
@@ -36,6 +37,19 @@ test('live snapshot codec retains core, FIFO state, P-space and complete forensi
     applyLiveVM(copy, encodeLiveVM(original), liveLayout(original));
     assert.deepEqual(state(copy), state(original));
     assert.deepEqual(postMortem(copy), postMortem(original));
+  }
+});
+
+test('selected trace replay preserves match placement and P-space', () => {
+  const programs = ['LDP.AB #0, #0\nJMZ.B 2, -1\nDAT 0, 0\nJMP 0', 'JMP 0'];
+  for (const pSpace of [true, false]) {
+    const settings = { ...cfg, pSpace, rounds: 4 };
+    const warriors = (pSpace ? programs : ['DAT 0, 0', 'JMP 0']).map((source) => compile(source, 'redcode', settings));
+    const options = { seed: 4242, fixed: 27, round: 4, traceSize: 6 };
+    const replay = createTraceRound(warriors, settings, options);
+    replay.vm.run();
+    const expected = runMatch(warriors, settings, { ...options, report: 4, traceRound: 4 }).rounds[3];
+    assert.deepEqual({ round: 4, ...replay.finish() }, expected);
   }
 });
 
@@ -100,6 +114,42 @@ test('persistent live GPU exactly matches CPU at instruction boundaries', { skip
     } finally { session.close(); }
   };
   try {
+    await t.test('packed trace survives CPU handoff, wraps, and records death before the next turn', async () => {
+      const settings = { ...cfg, topology: 'torus', sizeX: 10, sizeY: 8, sizeZ: 1 };
+      const programs = ['SPL 2\nJMP 0\nDAT >0, $[0,1]'];
+      const actual = makeVM(settings, 1, programs), expected = makeVM(settings, 1, programs);
+      actual.enableTrace(3); expected.enableTrace(3);
+      actual.run(2); expected.run(2);
+      const trace = actual.trace, session = await engine.createSession(actual);
+      try {
+        await session.advance(1); expected.run(1);
+        assert.equal(actual.trace, trace);
+        assert.deepEqual(trace, expected.trace);
+        assert.equal(trace.at(-1).instruction, 'DAT.F >0, $[0,1]');
+        assert.equal(trace.at(-1).died, 'ownCode');
+        await session.advance(5); expected.run(5);
+        assert.deepEqual(trace, expected.trace);
+        assert.ok(trace.every((entry) => entry.died === undefined));
+      } finally { session.close(); }
+      actual.run(1); expected.run(1);
+      assert.deepEqual(trace, expected.trace);
+    });
+    await t.test('headless finish reads the full traced round once and preserves the post-mortem', async () => {
+      const settings = { ...cfg, maxCycles: 75000 };
+      const programs = ['JMP 0', 'DJN 0, #0\nJMP -1'];
+      const actual = makeVM(settings, 2, programs), expected = makeVM(settings, 2, programs);
+      actual.events = null; expected.events = null;
+      actual.enableTrace(6); expected.enableTrace(6);
+      const session = await engine.createSession(actual);
+      const before = { ...engine.stats };
+      try {
+        assert.equal(await session.finish(), expected.run());
+        assert.deepEqual(actual.trace, expected.trace);
+        assert.deepEqual(postMortem(actual), postMortem(expected));
+        assert.equal(engine.stats.advances - before.advances, 1);
+        assert.equal(engine.stats.readbackBytes - before.readbackBytes, liveLayout(actual).words * 4 + 48);
+      } finally { session.close(); }
+    });
     await t.test('1–4 warriors on rings, planes and volumes, including deaths and budget rescaling', async () => {
       for (const shape of [{}, { topology: 'torus', sizeX: 10, sizeY: 8, sizeZ: 1 }, { topology: 'torus', sizeX: 10, sizeY: 4, sizeZ: 2 }]) {
         for (const count of [1, 2, 3, 4]) await check({ ...cfg, ...shape }, count);

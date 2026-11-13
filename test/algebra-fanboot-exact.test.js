@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {leaves,link,buildTree,treeSettings,fits} from '../tools/algebra/index.js';
+const s=treeSettings('94nop',100);
+leaves['exact-fixture-loop']={id:'exact-fixture-loop',file:'test',kind:'body',exit:'never',processes:1,writes:'none',params:{},defaults:{},entry:'loop',purpose:'tiny nonmoving copy-overlap fixture',emit(c){c.ins('loop','JMP','B','0','0');}};
+function tree(a=2000,b=2004,EXACT=1){const t={id:'fanboot',P:{N:4,SPLIT:1,MOREA:1,EXACT,HOPA:2000,HOPB:5000},kids:[{id:'exact-fixture-loop'},{id:'exact-fixture-loop'}]},l=link(t,s);t.P.HOPA=a-l.labels[l.root.ns+'c0'];t.P.HOPB=b-l.labels[l.root.ns+'c1'];return t;}
+test('exact fanboot placement admits adjacent disjoint rounded copies and executes them',()=>{const t=tree(),b=buildTree(t,{rules:'94nop',length:100});assert.ok(b.verification.ok);assert.equal(b.root.fan.M[0],4);assert.equal(b.root.fan.M[1],4);});
+test('exact fanboot rejects a one-cell overlap in padded tails',()=>{const b=link(tree(2000,2003),s);assert.match(b.misfits.join('; '),/rounded copies land on each other/);assert.throws(()=>buildTree(tree(2000,2003),{rules:'94nop',length:100}),/copies land on each other/);});
+test('the cheap mutation fit check also rejects linked copy collisions',()=>{assert.equal(fits(tree(2000,2003),s),false);assert.equal(fits(tree(2000,2004),s),true);});
+test('exact fanboot rejects wrapping copied tails over the original image',()=>{assert.match(link(tree(7998,2000),s).misfits.join('; '),/original image/);assert.equal(link(tree(7996,2000),s).misfits.length,0);});
+test('exact placement refuses a nested relocation frame it cannot resolve',()=>{const t={id:'boot',P:{HOP:4000},kids:[tree()]};assert.match(link(t,s).misfits.join('; '),/EXACT requires an unshifted linked frame/);});
+test('exact placement is validation-only and the conservative default remains',()=>{const a=tree(2000,2012,0),b=tree(2000,2012,1);assert.equal(link(a,s).source,link(b,s).source);assert.throws(()=>buildTree(a,{rules:'94nop',length:100}),/land on each other/);assert.ok(buildTree(b,{rules:'94nop',length:100}).verification.ok);});
+test('exact placement accounts for entry trampolines in the copied span',()=>{leaves['exact-fixture-tramp']={...leaves['exact-fixture-loop'],id:'exact-fixture-tramp',emit(c){c.ins('data','DAT','F','0','0');c.ins('loop','JMP','B','0','0');}};const t=tree();t.P.N=2;t.kids[0]={id:'exact-fixture-tramp'};const l=link(t,s);assert.equal(l.root.fan.tramp[0],true);assert.equal(l.root.fan.M[0],4);t.P.HOPA=2000-l.labels[l.root.ns+'c0'];t.P.HOPB=2003-l.labels[l.root.ns+'c1'];assert.match(link(t,s).misfits.join('; '),/rounded copies land on each other/);});

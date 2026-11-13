@@ -47,6 +47,17 @@ test('trace: snapshots code before addressing side effects and later overwrites'
   assert.equal(vm.trace.at(-1).died, 'ownCode');
 });
 
+test('trace: reusing a slot clears the previous process death', () => {
+  const source = 'SPL 2\nJMP 0\nDAT 0, 0';
+  const afterDeath = boot(source, {}, 2);
+  afterDeath.run(3);
+  assert.equal(afterDeath.trace.at(-1).died, 'ownCode');
+
+  const afterWrap = boot(source, {}, 2);
+  afterWrap.run(5);
+  assert.deepEqual(afterWrap.trace.map(({ step, died }) => [step, died]), [[4, undefined], [5, undefined]]);
+});
+
 test('trace: preserves torus vectors and starts a fresh array when reloaded', () => {
   const vm = boot('TRN $[0,-5]', plane);
   vm.step();

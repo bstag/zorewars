@@ -1,13 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import { compile, RULESETS } from '../src/engine/index.js';
+import { compile } from '../src/engine/index.js';
 import { buildRecipe, emitRecipe, verifyRecipe, recipeDefaults, recipeGenerator } from '../tools/blocks/recipes.js';
 import { inspectSource } from '../tools/blocks/inventory.js';
 import { blocks, instructionCatalog } from '../tools/blocks/catalog.js';
 import { parseTunable, withConstants } from '../tools/tune.js';
+import { recipeFamilies } from '../tools/blocks/registry.js';
 
-for (const rules of Object.keys(RULESETS)) {
+for (const rules of recipeFamilies.clear.rules) {
   test(`block contracts: ${rules}, both directions, every phase and opening`, () => {
     for (const BACKWARD of [0, 1]) for (const PHASE of [0, 1, 2]) for (const OPENING of [0, 1, 2]) {
       const built = buildRecipe({ ...recipeDefaults, BACKWARD, PHASE, OPENING }, { rules });

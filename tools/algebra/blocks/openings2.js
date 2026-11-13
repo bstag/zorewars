@@ -6,6 +6,7 @@
 // own image far away as a decoy. How to write a block: docs/block-algebra.md.
 // All Redcode here is written from scratch.
 
+import {observeBurst} from '../observation-roles.js';
 const MARKER = { op: 'DAT', mod: 'F', aMode: '#', a: 1, bMode: '#', b: 123 };
 const mod = (x, core) => ((x % core) + core) % core;
 const gcd = (a, b) => (b ? gcd(b, a % b) : a);
@@ -37,8 +38,9 @@ const gcd = (a, b) => (b ? gcd(b, a % b) : a);
 
 // The planted found cell: half a core on, stepped on until none of the burst
 // touches the warrior (a boot's copy may sit half a core away).
+const burstBounds=P=>{const run=(P.COUNT-1)*P.STEP,side=(P.SIDE??-1)*P.GAP;return {lo:-P.OFFSET+Math.min(0,run)+Math.min(0,side),hi:-P.OFFSET+Math.max(0,run)+Math.max(0,side),width:P.GAP+Math.abs(run)};};
 const burstFound = (api) => {
-  const { P, core } = api, lo = -P.OFFSET - P.GAP - 2, hi = -P.OFFSET + P.COUNT * P.STEP + 2;
+  const { P, core } = api, bounds=burstBounds(P),lo=bounds.lo-2,hi=bounds.hi+2;
   let c = mod(api.image.start + Math.floor(core / 2) + 1, core);
   for (let tries = 0; tries < 16; tries++, c = mod(c + 1009, core)) {
     let clear = true;
@@ -48,41 +50,48 @@ const burstFound = (api) => {
   return c;
 };
 const burst2Cells = (P, found, core) => Array.from({ length: P.COUNT }, (_, k) => mod(found - P.OFFSET + k * P.STEP, core))
-  .flatMap((c) => [c, mod(c - P.GAP, core)]);
+  .flatMap((c) => [c, mod(c + (P.SIDE??-1)*P.GAP, core)]);
 
 const probeBurst2 = {
   id: 'probe-burst2',
   kind: 'opening', exit: 'next', processes: 1, writes: 'sparse', link: 'fall', dialects: '94',
-  purpose: 'Two-stream burst around the cell a probe found: each four-cycle loop drops a bomb (BOMB 0 DAT, 1 SPL) on the pointer and a second GAP cells behind it, addressed through the first bomb\'s A field; COUNT loops STEP apart from OFFSET before the hit. If any of it would reach the warrior\'s image (or the probe is at the image boundary) it hands on at once.',
-  params: { COUNT: [1, 40], STEP: [1, 100], OFFSET: [0, 200], GAP: [1, 200], BOMB: [0, 1] },
-  defaults: { COUNT: 16, STEP: 7, OFFSET: 0, GAP: 80, BOMB: 0 },
+  purpose: 'Two-stream burst around the cell a probe found: each four-cycle loop drops a bomb (BOMB 0 DAT, 1 SPL) on the pointer and another SIDE*GAP cells from it through the first bomb\'s A field. COUNT loops advance by signed STEP from OFFSET before the hit. SIDE -1 is behind, +1 ahead. The entire signed target hull must avoid the image; a boundary probe hands on immediately.',
+  params: { COUNT: [1, 40], STEP: [-100, 100], OFFSET: [0, 200], GAP: [1, 200], BOMB: [0, 1], SIDE:[-1,1] },
+  defaults: { COUNT: 16, STEP: 7, OFFSET: 0, GAP: 80, BOMB: 0, SIDE:-1 },
+  observationRole:'probe-burst',observe:observeBurst,
+  knowledge:{parameterRoles:{COUNT:'loop count and deployment delay',STEP:'signed nonzero stream stride',OFFSET:'offset before detected cell',GAP:'positive separation between streams',SIDE:'-1 behind or +1 ahead; independent of STEP sign',BOMB:'payload choice'},
+    derived:{writes:'2*COUNT',loopInstructions:'4*COUNT',window:'GAP+abs((COUNT-1)*STEP)',low:'-OFFSET+min(0,(COUNT-1)*STEP)+min(0,SIDE*GAP)',high:'-OFFSET+max(0,(COUNT-1)*STEP)+max(0,SIDE*GAP)'},
+    tuningGroups:[{name:'burst-window',parameters:['COUNT','STEP','OFFSET','GAP','SIDE'],requires:'entire signed target hull clear of own image and distinct target streams'}],
+    tuning:['Tune COUNT/STEP/OFFSET/GAP together around the detected location.','Keep streams distinct and the entire combined window clear of our image.','The following boot waits for the burst on a hit; no-hit behavior is separate.'],
+    failures:['Shorter bursts can save turns but lose opening kills.','Eight/four-loop diagnostic probes did not improve the selected hard-opponent panel; they were not full-field promotions.','The 2026-11-04 matched 36-cell grid tested reverse STEP-7/SIDE+1/GAP87 with COUNT16/10, alone and with scan/boot changes. Neither burst was in the selected fresh-confirmation challenger; retain the original burst. This is geometry evidence with our DAT payload, not an exact reference-payload transplant.'],evidence:[]},
   entry: 'burst',
   // As probe-burst: it needs an upstream probe and doesn't advertise one, so
   // the upstream probe (still pointing at the found cell) carries on through.
   needs: ['probe'],
   mutable: [['ptr', ['b']], ['cnt', ['b']]],
   mismatches(P, settings) {
-    const out = [], W = P.GAP + (P.COUNT - 1) * P.STEP;
+    const out = [], W = burstBounds(P).width;
+    if(!P.STEP)out.push('STEP must be nonzero');if(!P.SIDE)out.push('SIDE must be -1 or1');
     if (W + P.OFFSET >= Math.floor(settings.coreSize / 2)) out.push('the burst is wide enough to wrap into the warrior');
-    if (P.GAP % P.STEP === 0 && P.GAP / P.STEP < P.COUNT) out.push('GAP is a multiple of STEP, so the two streams bomb the same cells');
+    if (P.GAP % Math.abs(P.STEP) === 0 && P.GAP / Math.abs(P.STEP) < P.COUNT) out.push('GAP is a multiple of STEP, so the two streams bomb the same cells');
     return out;
   },
   emit(ctx) {
     const { L, P, span, core } = ctx, U = ctx.ref('probe'), ptr = L('ptr');
-    const W = P.GAP + (P.COUNT - 1) * P.STEP;
+    const bounds=burstBounds(P),W=bounds.width;
     ctx.ins('burst', 'SNE', 'AB', `#${span}`, U);               // boundary: nothing found
     ctx.ins('', 'JMP', 'B', ctx.next);
     ctx.ins('', 'MOV', 'B', U, ptr);                             // ptr.B = found - probe
-    ctx.ins('', 'ADD', 'AB', `#${mod(-P.OFFSET - P.GAP - span, core)}`, ptr);   // t
+    ctx.ins('', 'ADD', 'AB', `#${mod(bounds.lo - span, core)}`, ptr);   // t
     ctx.ins('', 'SLT', 'B', ptr, `#${core - span - W}`);        // t below the limit: safe
     ctx.ins('', 'JMP', 'B', ctx.next);
-    ctx.ins('', 'ADD', 'AB', `#(${span + P.GAP}+${U}-${ptr})`, ptr);   // ptr.B = found - OFFSET - ptr
+    ctx.ins('', 'ADD', 'AB', `#(${span-P.OFFSET-bounds.lo}+${U}-${ptr})`, ptr);   // ptr.B = found - OFFSET - ptr
     ctx.ins('loop', 'MOV', 'I', L('bomb'), `@${ptr}`);
     ctx.ins('ptr', 'MOV', 'I', L('bomb'), '*0');
     ctx.ins('', 'ADD', 'AB', `#${P.STEP}`, ptr);
     ctx.ins('cnt', 'DJN', 'B', L('loop'), `#${P.COUNT}`);
     ctx.ins('', 'JMP', 'B', ctx.next);
-    ctx.ins('bomb', P.BOMB ? 'SPL' : 'DAT', P.BOMB ? 'B' : 'F', `#${-P.GAP}`, '#0');
+    ctx.ins('bomb', P.BOMB ? 'SPL' : 'DAT', P.BOMB ? 'B' : 'F', `#${(P.SIDE??-1)*P.GAP}`, '#0');
   },
   plant(api) {
     const found = burstFound(api), U = api.ref('probe');
