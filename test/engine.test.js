@@ -174,6 +174,17 @@ test('DIV by zero kills the process but writes the other field', () => {
   assert.equal(vm.warriors[0].alive, false);
 });
 
+test('cross-field division and modulo preserve partial writes on zero divisors', () => {
+  for (const [opcode, expectedA] of [['DIV', 2], ['MOD', 0]]) {
+    const vm = boot(`${opcode}.X 2, 1\nDAT #10, #10\nDAT #0, #5`);
+    const result = vm.step();
+    assert.equal(result.killed, true);
+    assert.equal(vm.peek(1).a, expectedA);
+    assert.equal(vm.peek(1).b, 10);
+    assert.equal(vm.warriors[0].deaths.divideByZero, 1);
+  }
+});
+
 test('DJN decrements then jumps while non-zero', () => {
   const vm = boot('DJN.B 0, #3');
   vm.step(); vm.step();
@@ -338,6 +349,35 @@ test('cycle budget: 2 warriors that never die tie after maxCycles turns each', (
   vm.run();
   assert.equal(vm.steps, 1000);
   assert.equal(vm.winner, null);
+});
+
+test('two-warrior turn switching preserves cycle counts and fatal turns', () => {
+  const settings = { ...DEFAULT_SETTINGS, maxCycles: 3 };
+  const loop = compile('JMP 0');
+  const dying = compile('DAT #0, #0');
+  for (const executionHistory of [true, false]) {
+    for (const firstTurn of [0, 1]) {
+      const tie = new VM(settings, { executionHistory });
+      tie.load([loop, loop], { positions: [0, 4000], firstTurn });
+      tie.run();
+      assert.equal(tie.steps, 6);
+      assert.equal(tie.cycle, 3);
+      assert.equal(tie.turn, firstTurn);
+      assert.equal(tie.winner, null);
+      for (const victim of [0, 1]) {
+        const players = [loop, loop];
+        players[victim] = dying;
+        const vm = new VM(settings, { executionHistory });
+        vm.load(players, { positions: [0, 4000], firstTurn });
+        vm.run();
+        assert.equal(vm.steps, firstTurn === victim ? 1 : 2);
+        assert.equal(vm.winner, 1 - victim);
+        assert.equal(vm.turn, 1 - victim);
+        assert.equal(vm.cycle, firstTurn === 1 || victim === 1 ? 1 : 0);
+        assert.equal(vm.warriors[victim].diedAt, firstTurn === 1 && victim === 0 ? 1 : 0);
+      }
+    }
+  }
 });
 
 // ---- post-mortems ----

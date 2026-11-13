@@ -46,6 +46,16 @@ export const RULESETS = Object.freeze({
   lp:      { coreSize: 8000, maxProcesses: 8, maxCycles: 80000, maxLength: 100, minDistance: 200, pSpace: false, assertErrors: true },      // pmars -s 8000 -p 8 -c 80000 -d 200
   '94x':   { coreSize: 55440, maxProcesses: 10000, maxCycles: 500000, maxLength: 200, minDistance: 200, pSpace: false, assertErrors: true },  // pmars -s 55440 -p 10000 -c 500000 -l 200 -d 200
   '94x-hill': { coreSize: 55440, maxProcesses: 10000, maxCycles: 500000, maxLength: 200, minDistance: 200, pSpace: true, assertErrors: true },  // the same, with P-space
+  'lp-hill': { coreSize: 8000, maxProcesses: 8, maxCycles: 80000, maxLength: 200, minDistance: 200, pSpace: true, assertErrors: true, hillMaxLength: 200 },
+  pspace: { coreSize: 8000, maxProcesses: 8000, maxCycles: 80000, maxLength: 100, minDistance: 100, pSpace: true, assertErrors: true, hillMaxLength: 100 },
+  icws: { coreSize: 8192, maxProcesses: 8000, maxCycles: 100000, maxLength: 100, minDistance: 100, pSpace: false, dialect: '88', assertErrors: true, hillMaxLength: 100 },
+  icws64: { coreSize: 8192, maxProcesses: 64, maxCycles: 80000, maxLength: 100, minDistance: 100, pSpace: false, dialect: '88', assertErrors: true, hillMaxLength: 100 },
+  tiny: { coreSize: 800, maxProcesses: 800, maxCycles: 8000, maxLength: 20, minDistance: 20, pSpace: true, assertErrors: true, hillMaxLength: 20 },
+  tinylp: { coreSize: 800, maxProcesses: 8, maxCycles: 8000, maxLength: 50, minDistance: 50, pSpace: true, assertErrors: true, hillMaxLength: 50 },
+  nano: { coreSize: 80, maxProcesses: 80, maxCycles: 800, maxLength: 5, minDistance: 5, pSpace: true, assertErrors: true, hillMaxLength: 5 },
+  'sal-tourney': { coreSize: 8192, maxProcesses: 8000, maxCycles: 100000, maxLength: 300, minDistance: 300, pSpace: true, assertErrors: true, hillMaxLength: 300 },
+  'sal-mp': { coreSize: 8000, maxProcesses: 64, maxCycles: 80000, maxLength: 100, minDistance: 100, pSpace: true, pSpaceSize: 1, assertErrors: true, hillMaxLength: 100 },
+  'sal-msw': { coreSize: 8000, maxProcesses: 8000, maxCycles: 40000, maxLength: 100, minDistance: 100, pSpace: true, assertErrors: true, hillMaxLength: 100 },
 });
 
 export const MODE_NAMES = {

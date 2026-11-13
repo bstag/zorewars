@@ -16,6 +16,7 @@ const CAUSES = {
 const pad4 = (n) => String(n).padStart(4, '0');
 
 export function postMortem(vm) {
+  if (vm.owner === null) throw new Error('Post-mortems require execution history');
   const size = vm.size;
   const name = (i) => (i >= 0 ? vm.warriors[i]?.name ?? `warrior ${i + 1}` : 'nobody');
 

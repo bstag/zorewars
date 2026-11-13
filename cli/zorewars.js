@@ -11,6 +11,8 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { compile, detectLanguage, runMatch, runTournament, DEFAULT_SETTINGS, RULESETS, listing, formatPostMortem, generateFromJS, inLibraryFor, fitsBattlefield } from '../src/engine/index.js';
 import { convertWarrior, conversionCandidates } from '../src/engine/convert.js';
+import { MAX_TRACE_TAIL } from '../src/engine/trace.js';
+import { createTraceRound } from '../src/engine/battle.js';
 import {writeConversionResult} from './conversion-output.js';
 import { runPythonFile, pythonRunner } from './python.js';
 import { fetchWarriorText, nameFromUrl } from './remote.js';
@@ -23,7 +25,7 @@ const HELP = `ZoreWars — programs battle inside a simulated circular memory ar
 Usage:
   zorewars battle <warrior> [warrior...] [options]   (one warrior alone: does it survive?)
   zorewars battle ... --report [--round N]           explain how each round was won
-  zorewars trace <warrior> <warrior> [--round N] [--last 40]
+  zorewars trace <warrior> [warrior...] [--round N] [--last 40] [--backend cpu|gpu|auto]
                                                      the last instructions before a round ended
   zorewars tournament <warrior|dir> [more...] [options]
   zorewars compile <warrior> [--json]
@@ -47,7 +49,7 @@ Developer tools (use every CPU core):
                                                      breed warriors with MAP-Elites or a population GA
   zorewars train [warrior...] [--profiles 94nop,88,lp,94x|all] [--algorithm ga|map-elites] [--out evolved/training]
                                                      train and validate a separate warrior per profile
-  zorewars pushoff <entry...> --hill koenigstuhl:94nop|88|lp|94x [--rules NAME] [--length 50] [--top 50] [--save f]
+  zorewars pushoff <entry...> --hill koenigstuhl:94nop [--rules NAME] [--length 50] [--top 50] [--save f]
                                                      predict a tournament place: round robin with a hill's
                                                      top warriors, then the iterative diversity push-off
 
@@ -65,8 +67,8 @@ Warriors:
 Options:
   --rounds N         rounds per match            (default 1 for battle, 10 for tournament)
   --seed N           seed for load positions and evolution choices (default 1)
-  --rules NAME       a standard hill's settings: 94nop, 88 (with ICWS'88 checks), lp, 94x
-                     (no P-space); combine with e.g. --length 50 for a tournament
+  --rules NAME       named battlefield: ${Object.keys(RULESETS).join(', ')}
+                     combine with e.g. --length 50 for a tournament entry limit
   --coresize N       core size                   (default ${DEFAULT_SETTINGS.coreSize})
   --cycles N         max cycles before a tie     (default ${DEFAULT_SETTINGS.maxCycles})
   --processes N      max processes per warrior   (default ${DEFAULT_SETTINGS.maxProcesses})
@@ -79,6 +81,7 @@ Options:
   --fixed N          warrior 2 starts at N in round 1, like pmars -F;
                      later rounds follow pMARS's RNG, so results match pMARS
   --json             machine-readable output
+  --no-execution-history  battle/tournament: skip tracking for post-mortems and traces
   --classics         hill/tune/evolve: also play the Hall of Fame originals
                      (fetched from the public archives each run; needs network)
   --scratch          evolve: start from random programs, no library genes or opponents (the library is only held out)
@@ -105,6 +108,7 @@ Options:
   --finalists N      validation shortlist size (default 6)
   --threads N        evolve/train: battle worker threads (default: CPU count)
   --backend auto|cpu|gpu  local battle engine (default cpu; auto falls back to CPU)
+  --gpu-adapter NAME  choose a GPU by name or partial name (implies gpu unless --backend is set)
   --gpu-batch N      maximum matches per local GPU batch (default 1024)
   --profiles LIST    train: default,94nop,88,lp,94x,94x-hill,plane,volume,volume-wide,volume-coprime,volume-cube or all
 
@@ -124,7 +128,7 @@ function parseArgs(argv) {
     const a = argv[i];
     if (a.startsWith('--')) {
       const key = a.slice(2);
-      if (['json', 'help', 'report', 'classics', 'write', 'scratch', 'self', 'validate', 'league', 'tune'].includes(key)) args.flags[key] = true;
+      if (['json', 'help', 'report', 'classics', 'write', 'scratch', 'self', 'validate', 'league', 'tune', 'no-execution-history'].includes(key)) args.flags[key] = true;
       else args.flags[key] = argv[++i];
     } else if (a === '-h') args.flags.help = true;
     else if (/^-[A-Za-z]$/.test(a) && PMARS_FLAGS[a[1]]) args.flags[PMARS_FLAGS[a[1]]] = argv[++i];
@@ -293,7 +297,7 @@ async function cmdBattle(args) {
   const fixed = args.flags.fixed !== undefined ? parseInt(args.flags.fixed, 10) : undefined;
   const report = !!args.flags.report;
   const detailRound = Math.min(settings.rounds, Math.max(1, parseInt(args.flags.round ?? '1', 10)));
-  const result = runMatch(warriors, settings, { seed, fixed, report });
+  const result = runMatch(warriors, settings, { seed, fixed, report, executionHistory: !args.flags['no-execution-history'] });
 
   if (json) {
     console.log(JSON.stringify({
@@ -344,7 +348,7 @@ async function cmdTournament(args) {
   const warriors = await loadAll(refs, settings, json);
   const seed = parseInt(args.flags.seed ?? '1', 10);
   const result = runTournament(warriors, settings, {
-    seed,
+    seed, executionHistory: !args.flags['no-execution-history'],
     onMatch: json ? undefined : (m) => process.stderr.write(`  ${m.a} vs ${m.b}: ${m.result.map((r) => `${r.wins}-${r.losses}-${r.ties}`).join(' / ')}\n`),
   });
   if (json) {
@@ -415,15 +419,37 @@ async function cmdTrace(args) {
   const refs = args._;
   if (refs.length < 1) usage('trace needs at least one warrior');
   const round = Math.max(1, parseInt(args.flags.round ?? '1', 10));
-  const last = Math.max(1, Math.min(100000, parseInt(args.flags.last ?? '40', 10)));
+  const last = Math.max(1, Math.min(MAX_TRACE_TAIL, parseInt(args.flags.last ?? '40', 10)));
+  if (!Number.isSafeInteger(round) || !Number.isInteger(last)) usage('--round and --last must be numbers');
+  const adapter = args.flags['gpu-adapter'];
+  const backend = args.flags.backend ?? (adapter ? 'gpu' : 'cpu');
+  if (!['auto', 'cpu', 'gpu'].includes(backend)) usage('--backend takes auto, cpu or gpu');
+  if (adapter && backend === 'cpu') usage('--gpu-adapter requires --backend gpu or auto');
   const settings = { ...settingsFrom(args.flags), rounds: round };
   const json = !!args.flags.json;
   const warriors = await loadAll(refs, settings, json);
   const seed = parseInt(args.flags.seed ?? '1', 10);
   const fixed = args.flags.fixed !== undefined ? parseInt(args.flags.fixed, 10) : undefined;
-  // Earlier rounds are played too, so P-space and placement match the real match.
-  const result = runMatch(warriors, settings, { seed, fixed, report: round, traceRound: round, traceSize: last });
-  const r = result.rounds[round - 1];
+  const prepare = () => createTraceRound(warriors, settings, { seed, fixed, round, traceSize: last });
+  let replay = prepare();
+  if (backend !== 'cpu') {
+    let engine, failure;
+    try {
+      const { createLocalGpuLiveEngine } = await import('../tools/gpu.js');
+      engine = await createLocalGpuLiveEngine({ adapter });
+      const session = await engine.createSession(replay.vm);
+      await session.finish();
+    } catch (error) {
+      failure = error;
+    } finally { engine?.close(); }
+    if (failure) {
+      if (backend === 'gpu') usage(`GPU trace failed: ${failure.message}`);
+      console.error(`GPU trace unavailable, using CPU: ${failure.message}`);
+      replay = prepare();
+    }
+  }
+  if (!replay.vm.done) replay.vm.run();
+  const r = replay.finish();
   if (json) {
     console.log(JSON.stringify({ ok: true, round, positions: r.positions, firstTurn: r.firstTurn, trace: r.trace, report: r.report }, null, 2));
     return;
@@ -534,6 +560,10 @@ const devtools = async (module = './devtools.js') => [await import(module), { lo
 const args = parseArgs(process.argv.slice(2));
 const cmd = args._.shift();
 if (!cmd || args.flags.help) { console.log(HELP); process.exit(cmd || args.flags.help ? 0 : 2); }
+if (args.flags['no-execution-history']) {
+  if (!['battle', 'tournament'].includes(cmd)) usage('--no-execution-history applies to battle and tournament');
+  if (args.flags.report) usage('--report requires execution history');
+}
 switch (cmd) {
   case 'battle': await cmdBattle(args); break;
   case 'tournament': await cmdTournament(args); break;

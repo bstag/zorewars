@@ -6,7 +6,7 @@ import { appendWarrior } from './packing.js';
 import { topologyFor } from '../topology.js';
 import { makeGeometry } from '../geometry.js';
 import { matchPlan, summarizeMatch } from '../match.js';
-import { gpuKernel } from './kernel.js';
+import { gpuKernel, shaderKey, supportsPackedScores } from './kernel.js';
 import { soloKernel } from './solo-kernel.js';
 import { speciesFromStats } from '../species.js';
 import { GpuBackendError } from './errors.js';
@@ -29,9 +29,6 @@ function config(settings, solo = false) {
   return s;
 }
 
-// Only execution settings affect the shader; round counts can vary per match.
-const shaderKey = (s) => JSON.stringify([s.coreSize, s.maxCycles, s.maxProcesses, s.pSpaceSize, s.topology ?? 'ring', s.sizeX, s.sizeY, s.sizeZ]);
-
 function packSolo(tasks) {
   const input = new Array(1 + tasks.length * 3).fill(0); input[0] = tasks.length;
   tasks.forEach((task, i) => { const s = config(task.settings, true); appendWarrior(input, 1 + i * 3, task.warrior, s, makeGeometry(s)); });
@@ -42,7 +39,7 @@ function unpackSolo(tasks, raw) {
   tasks.forEach((task, i) => { const s = config(task.settings, true); if (raw[i * 4] < 1 || raw[i * 4] > s.maxProcesses || raw[i * 4 + 1] > s.coreSize || raw[i * 4 + 2] > 1 || raw[i * 4 + 3] < 1 || raw[i * 4 + 3] > 3) throw new GpuBackendError('GPU: invalid solo measurements'); });
   return tasks.map((task, i) => speciesFromStats({ processes: raw[i * 4], coverage: raw[i * 4 + 1], survives: !!raw[i * 4 + 2], shape: raw[i * 4 + 3] }, task.settings));
 }
-const memoryStride = (s, solo) => 32 + s.coreSize * (solo ? 5 : 4) + s.maxProcesses * (solo ? 1 : 2) + s.pSpaceSize * (solo ? 1 : 2);
+const memoryStride = (s, solo, packed) => 32 + s.coreSize * (solo ? 5 : packed ? 2 : 4) + s.maxProcesses * (solo ? 1 : 2) + s.pSpaceSize * (solo ? 1 : 2);
 
 function pack(tasks) {
   const input = new Array(1 + tasks.length * 9).fill(0);
@@ -99,9 +96,9 @@ export async function createGpuMatchPool({ gpu, batchSize = 1024, schedule = (fn
     schedule(() => { gpu = null; });
   }
 
-  async function preparePipeline(key, s, solo, stride) {
+  async function preparePipeline(key, s, solo, stride, packed) {
       if (!pipelines.has(key)) {
-        const module = device.createShaderModule({ code: solo ? soloKernel(s, stride, CHUNK_STEPS) : gpuKernel(s, stride, CHUNK_STEPS) });
+        const module = device.createShaderModule({ code: solo ? soloKernel(s, stride, CHUNK_STEPS) : gpuKernel(s, stride, CHUNK_STEPS, null, null, packed) });
         const info = await module.getCompilationInfo();
         const errors = info.messages.filter((m) => m.type === 'error');
         if (errors.length) throw new Error(errors.map((m) => `GPU shader ${m.lineNum}:${m.linePos}: ${m.message}`).join('\n'));
@@ -134,16 +131,16 @@ export async function createGpuMatchPool({ gpu, batchSize = 1024, schedule = (fn
       if (!complete) throw new Error('GPU interpreter exceeded its instruction budget');
   }
 
-  async function runBatch(tasks, s, solo) {
+  async function runBatch(tasks, s, solo, packed) {
     if (failure) throw failure;
     const start = performance.now();
-    const stride = memoryStride(s, solo);
-    const key = (solo ? 'solo:' : 'match:') + shaderKey(s);
+    const stride = memoryStride(s, solo, packed);
+    const key = (solo ? 'solo:' : packed ? 'score:' : 'match:') + shaderKey(s);
     const { input, totalRounds } = solo ? packSolo(tasks) : pack(tasks);
     const outputBytes = solo ? tasks.length * 16 : totalRounds * 20; // Bad input must not trigger CPU fallback.
     const buffers = [];
     try {
-      await preparePipeline(key, s, solo, stride);
+      await preparePipeline(key, s, solo, stride, packed);
       if (input.byteLength > limit || outputBytes > limit) throw new Error('GPU: match input or results exceed the device buffer limit; reduce rounds or GPU batch size');
       const buffer = (size, usage) => { const b = device.createBuffer({ size: Math.max(4, size), usage }); buffers.push(b); return b; };
       const programs = buffer(input.byteLength, STORAGE | COPY_DST);
@@ -176,13 +173,22 @@ export async function createGpuMatchPool({ gpu, batchSize = 1024, schedule = (fn
     try {
       while (pending.length && !closed) {
         const first = pending[0], solo = first.kind === 'solo', s = config(first.task.settings, solo);
-        const strideBytes = memoryStride(s, solo) * 4;
-        const capacity = Math.min(batchSize, Math.floor(limit / strideBytes));
+        const regularCapacity = Math.min(batchSize, Math.floor(limit / (memoryStride(s, solo, false) * 4)));
+        let packed = !solo && !first.task.diagnose && supportsPackedScores(s);
+        let capacity = packed ? Math.min(batchSize, Math.floor(limit / (memoryStride(s, solo, true) * 4))) : regularCapacity;
         if (capacity < 1) throw new GpuBackendError('GPU: this battlefield exceeds the device buffer limit');
         const group = [];
-        while (group.length < capacity && pending.length && pending[0].kind === first.kind && shaderKey(config(pending[0].task.settings, solo)) === shaderKey(s)) group.push(pending.shift());
+        while (group.length < capacity && pending.length && pending[0].kind === first.kind && shaderKey(config(pending[0].task.settings, solo)) === shaderKey(s)) {
+          // Keep mixed requests in one batch when the diagnostic layout fits.
+          if (packed && pending[0].task.diagnose) {
+            if (group.length >= regularCapacity) break;
+            packed = false;
+            capacity = regularCapacity;
+          }
+          group.push(pending.shift());
+        }
         try {
-          const results = await runBatch(group.map((p) => p.task), s, solo);
+          const results = await runBatch(group.map((p) => p.task), s, solo, packed);
           group.forEach((p, i) => p.resolve(results[i]));
         } catch (error) { group.forEach((p) => p.reject(error)); }
       }

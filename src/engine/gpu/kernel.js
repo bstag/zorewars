@@ -1,9 +1,20 @@
-// One invocation owns a match: its core, FIFO queues and persistent P-space.
-// Different matches can execute concurrently; instructions within one match
-// remain strictly ordered. Dispatches yield after a bounded instruction count.
-export function gpuKernel(s, stride, chunkSteps, live = null, solo = null) {
+export function supportsPackedScores(settings) {
+  // P-space can store a survivor count of two as an operand.
+  return settings.topology !== 'torus' && settings.coreSize >= 3 && settings.coreSize <= 65536;
+}
+
+// Match metadata such as the round count does not change the interpreter.
+export const shaderKey = (s) => JSON.stringify([s.coreSize, s.maxCycles, s.maxProcesses, s.pSpaceSize, s.topology ?? 'ring', s.sizeX, s.sizeY, s.sizeZ]);
+
+// One invocation owns a match, including its core, FIFO queues and P-space.
+// Different matches run concurrently. Each dispatch executes a bounded number of instructions.
+export function gpuKernel(s, stride, chunkSteps, live = null, solo = null, scoreOnly = false) {
   const torus = s.topology === 'torus';
-  const count = solo ? 1 : live?.count ?? 2, core = live?.core ?? 32, words = solo ? 5 : live ? 8 : 4;
+  const packed = scoreOnly && !live && !solo && supportsPackedScores(s);
+  const count = solo ? 1 : live?.count ?? 2, core = live?.core ?? 32;
+  const words = solo ? 5 : live ? 8 : packed ? 2 : 4;
+  const readField = (cell, part) => packed ? `getField(${cell}, ${part})` : `memory[${cell} + ${part}]`;
+  const writeField = (cell, part, value) => packed ? `setField(${cell}, ${part}, ${value})` : `memory[${cell} + ${part}] = ${value}`;
   return `
 const N = ${s.coreSize}u;
 const P = ${s.maxProcesses}u;
@@ -27,8 +38,7 @@ var<private> cycle: u32;
 var<private> turn: u32;
 var<private> heads: array<u32, ${count}>;
 var<private> sizes: array<u32, ${count}>;
-var<private> foreign: array<u32, ${count}>;
-var<private> postCell: i32;
+${packed ? '' : `var<private> foreign: array<u32, ${count}>;\n`}var<private> postCell: i32;
 var<private> postField: u32;
 
 fn wrap(v: i32, n: i32) -> i32 { return ((v % n) + n) % n; }
@@ -46,12 +56,10 @@ fn encode(v: vec3<i32>) -> u32 {
   return u32(wrap(b.x + DIMS.x * (b.y + DIMS.y * b.z), i32(N)));
 }
 fn add(a: u32, b: u32) -> u32 {
-  if (TORUS) { return encode(parts(a) + parts(b)); }
-  return (a + b) % N;
+  ${packed ? 'let sum = a + b;\n  return select(sum, sum - N, sum >= N);' : 'if (TORUS) { return encode(parts(a) + parts(b)); }\n  return (a + b) % N;'}
 }
 fn sub(a: u32, b: u32) -> u32 {
-  if (TORUS) { return encode(parts(a) - parts(b)); }
-  return (a + N - b) % N;
+  ${packed ? 'return select(a + N - b, a - b, a >= b);' : 'if (TORUS) { return encode(parts(a) - parts(b)); }\n  return (a + N - b) % N;'}
 }
 fn mulmod(a: u32, b: u32, n: u32) -> u32 {
   if (n <= 65536u) { return (a * b) % n; }
@@ -85,29 +93,36 @@ fn calc(op: u32, a: u32, b: u32) -> u32 {
   return a % b;
 }
 fn cell(pc: u32) -> u32 { return base + ${core}u + pc * ${words}u; }
-${live ? live.helpers : solo ? solo.helpers : 'fn touch(pc: u32) { memory[cell(pc) + 3u] = turn; }'}
-fn resolve(mode: u32, field: u32, pc: u32) -> u32 {
+${live ? live.helpers : solo ? solo.helpers : packed ? 'fn touch(pc: u32) {}' : 'fn touch(pc: u32) { memory[cell(pc) + 3u] = turn; }'}
+${packed ? `fn getField(cellOffset: u32, field: u32) -> u32 {
+  return (memory[cellOffset + 1u] >> ((field - 1u) * 16u)) & 65535u;
+}
+fn setField(cellOffset: u32, field: u32, value: u32) {
+  let shift = (field - 1u) * 16u;
+  let index = cellOffset + 1u;
+  memory[index] = (memory[index] & ~(65535u << shift)) | (value << shift);
+}
+` : ''}fn resolve(mode: u32, field: u32, pc: u32) -> u32 {
   postCell = -1;
   if (mode == 0u) { return pc; }
   let p = add(pc, field);
   if (mode == 1u) { return p; }
-  let f = select(2u, 1u, (mode & 1u) == 0u);
-  let idx = cell(p) + f;
+  let f = ${packed ? '1u + (mode & 1u)' : 'select(2u, 1u, (mode & 1u) == 0u)'};
+  ${packed ? 'let c = cell(p);\n  var value = getField(c, f);' : 'let idx = cell(p) + f;'}
   if (mode == 4u || mode == 5u) {
-    memory[idx] = (memory[idx] + N - 1u) % N; touch(p);
+    ${packed ? 'value = select(value - 1u, N - 1u, value == 0u);\n    setField(c, f, value);' : 'memory[idx] = (memory[idx] + N - 1u) % N; touch(p);'}
   }
   if (mode == 6u || mode == 7u) { postCell = i32(p); postField = f; }
-  return add(p, memory[idx]);
+  return add(p, ${packed ? 'value' : 'memory[idx]'});
 }
 fn post() {
   if (postCell >= 0) {
-    let p = u32(postCell); let idx = cell(p) + postField;
-    memory[idx] = (memory[idx] + 1u) % N; touch(p);
+    ${packed ? 'let c = cell(u32(postCell));\n    setField(c, postField, add(getField(c, postField), 1u));' : 'let p = u32(postCell); let idx = cell(p) + postField;\n    memory[idx] = (memory[idx] + 1u) % N; touch(p);'}
   }
 }
 fn push(pc: u32, heading: u32) {
   if (sizes[turn] >= P) { return; }
-  memory[base + QOFF + turn * P + (heads[turn] + sizes[turn]) % P] = pc + N * heading;
+  ${packed ? 'let tail = heads[turn] + sizes[turn];\n  memory[base + QOFF + turn * P + select(tail, tail - P, tail >= P)] = pc;' : 'memory[base + QOFF + turn * P + (heads[turn] + sizes[turn]) % P] = pc + N * heading;'}
   sizes[turn]++;
 }
 fn headingStep(h: u32) -> u32 {
@@ -120,7 +135,7 @@ ${live || solo ? '' : `
 fn initRound() {
   for (var p = 0u; p < N; p++) {
     let c = cell(p);
-    memory[c] = 2432u; memory[c + 1u] = 0u; memory[c + 2u] = 0u; memory[c + 3u] = 2u;
+    memory[c] = 2432u; memory[c + 1u] = 0u;${packed ? '' : ' memory[c + 2u] = 0u; memory[c + 3u] = 2u;'}
   }
   if (roundNo == 0u) {
     for (var p = 0u; p < 2u * PS; p++) { memory[base + PSOFF + p] = 0u; }
@@ -132,11 +147,11 @@ fn initRound() {
     let desc = t + side * 3u;
     let start = input[pos + side];
     for (var k = 0u; k < input[desc + 1u]; k++) {
-      let c = cell(add(start, k)); let src = input[desc] + k * 3u;
-      memory[c] = input[src]; memory[c + 1u] = input[src + 1u]; memory[c + 2u] = input[src + 2u];
-      memory[c + 3u] = side;
+      let c = cell(add(start, ${packed ? 'k % N' : 'k'})); let src = input[desc] + k * 3u;
+      memory[c] = input[src]; ${packed ? 'memory[c + 1u] = input[src + 1u] | (input[src + 2u] << 16u);' : `memory[c + 1u] = input[src + 1u]; memory[c + 2u] = input[src + 2u];
+      memory[c + 3u] = side;`}
     }
-    heads[side] = 0u; sizes[side] = 1u; foreign[side] = 0u;
+    heads[side] = 0u; sizes[side] = 1u;${packed ? '' : ' foreign[side] = 0u;'}
     memory[base + QOFF + side * P] = add(start, input[desc + 2u]);
   }
   cycle = 0u; steps = 0u; turn = input[pos + 2u]; initialized = 1u;
@@ -150,23 +165,23 @@ fn execute(pc: u32, h: u32) -> bool {
   let c = cell(pc); let ins = memory[c];
   let op = ins & 31u; let modifier = (ins >> 5u) & 7u;
   let am = (ins >> 8u) & 7u; let bm = (ins >> 11u) & 7u;
-  let ia = memory[c + 1u]; let ib = memory[c + 2u];
+  ${packed ? 'let fields = memory[c + 1u]; let ia = fields & 65535u; let ib = fields >> 16u;' : 'let ia = memory[c + 1u]; let ib = memory[c + 2u];'}
   let ap = resolve(am, ia, pc); let ac = cell(ap);
-  let ah = memory[ac]; let aa = memory[ac + 1u]; let ab = memory[ac + 2u]; post();
+  let ah = memory[ac]; ${packed ? 'let af = memory[ac + 1u]; let aa = af & 65535u; let ab = af >> 16u;' : 'let aa = memory[ac + 1u]; let ab = memory[ac + 2u];'} post();
   let bp = resolve(bm, ib, pc); let bc = cell(bp);
-  let ba = memory[bc + 1u]; let bb = memory[bc + 2u]; post();
-  let delta = select(1u, headingStep(h), TORUS);
-  let next = add(pc, delta); let skip = add(next, delta);
+  ${packed ? 'let bf = memory[bc + 1u]; let ba = bf & 65535u; let bb = bf >> 16u;' : 'let ba = memory[bc + 1u]; let bb = memory[bc + 2u];'} post();
+  ${packed ? 'let next = add(pc, 1u); let skip = add(next, 1u);' : `let delta = select(1u, headingStep(h), TORUS);
+  let next = add(pc, delta); let skip = add(next, delta);`}
   if (op == 0u) { return true; }
   if (op == 1u) {
     switch modifier {
-      case 0u: { memory[bc + 1u] = aa; }
-      case 1u: { memory[bc + 2u] = ab; }
-      case 2u: { memory[bc + 2u] = aa; }
-      case 3u: { memory[bc + 1u] = ab; }
-      case 5u: { memory[bc + 1u] = ab; memory[bc + 2u] = aa; }
+      case 0u: { ${writeField('bc', '1u', 'aa')}; }
+      case 1u: { ${writeField('bc', '2u', 'ab')}; }
+      case 2u: { ${writeField('bc', '2u', 'aa')}; }
+      case 3u: { ${writeField('bc', '1u', 'ab')}; }
+      case 5u: { ${packed ? 'memory[bc + 1u] = (af >> 16u) | (af << 16u);' : 'memory[bc + 1u] = ab; memory[bc + 2u] = aa;'} }
       default: {
-        memory[bc + 1u] = aa; memory[bc + 2u] = ab;
+        ${packed ? 'memory[bc + 1u] = af;' : 'memory[bc + 1u] = aa; memory[bc + 2u] = ab;'}
         if (modifier == 6u) { memory[bc] = ah; }
       }
     }
@@ -179,8 +194,8 @@ fn execute(pc: u32, h: u32) -> bool {
     let srcB = select(ab, aa, modifier == 2u || modifier == 5u);
     let okA = op < 5u || srcA != 0u;
     let okB = op < 5u || srcB != 0u;
-    if (useA && okA) { memory[bc + 1u] = calc(op, ba, srcA); }
-    if (useB && okB) { memory[bc + 2u] = calc(op, bb, srcB); }
+    if (useA && okA) { ${writeField('bc', '1u', 'calc(op, ba, srcA)')}; }
+    if (useB && okB) { ${writeField('bc', '2u', 'calc(op, bb, srcB)')}; }
     touch(bp);
     if ((useA && !okA) || (useB && !okB)) { return true; }
     push(next, h); return false;
@@ -196,11 +211,11 @@ fn execute(pc: u32, h: u32) -> bool {
     var nz = false;
     if (modifier != 1u && modifier != 2u) {
       nz = (ba + N - 1u) % N != 0u;
-      memory[bc + 1u] = (memory[bc + 1u] + N - 1u) % N;
+      ${writeField('bc', '1u', `(${readField('bc', '1u')} + N - 1u) % N`)};
     }
     if (modifier != 0u && modifier != 3u) {
       nz = nz || (bb + N - 1u) % N != 0u;
-      memory[bc + 2u] = (memory[bc + 2u] + N - 1u) % N;
+      ${writeField('bc', '2u', `(${readField('bc', '2u')} + N - 1u) % N`)};
     }
     touch(bp); push(select(next, ap, nz), h); return false;
   }
@@ -232,7 +247,7 @@ fn execute(pc: u32, h: u32) -> bool {
   if (op == 16u) {
     let fromB = modifier != 0u && modifier != 2u;
     let value = memory[base + PSOFF + turn * PS + select(aa, ab, fromB) % PS];
-    memory[bc + select(2u, 1u, modifier == 0u || modifier == 3u)] = value;
+    ${writeField('bc', 'select(2u, 1u, modifier == 0u || modifier == 3u)', 'value')};
     touch(bp); push(next, h); return false;
   }
   if (op == 17u) {
@@ -267,31 +282,33 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
   steps = memory[base + 2u]; cycle = memory[base + 3u]; turn = memory[base + 4u];
   for (var side = 0u; side < 2u; side++) {
     heads[side] = memory[base + 5u + side]; sizes[side] = memory[base + 7u + side];
-    foreign[side] = memory[base + 9u + side];
-  }
+${packed ? '' : '    foreign[side] = memory[base + 9u + side];\n'}  }
   for (var n = 0u; n < ${chunkSteps}u; n++) {
     if (initialized == 0u) { initRound(); }
     let q = base + QOFF + turn * P;
-    let encoded = memory[q + heads[turn]]; let pc = encoded % N; let heading = encoded / N;
+    ${packed ? `let pc = memory[q + heads[turn]];
+    heads[turn] = select(heads[turn] + 1u, 0u, heads[turn] + 1u == P); sizes[turn]--;
+    let deathCycle = cycle;
+    execute(pc, 0u);` : `let encoded = memory[q + heads[turn]]; let pc = encoded % N; let heading = encoded / N;
     heads[turn] = (heads[turn] + 1u) % P; sizes[turn]--;
     let owner = memory[cell(pc) + 3u];
     if (owner < 2u && owner != turn) { foreign[turn]++; }
     let deathCycle = cycle;
     let killed = execute(pc, heading);
     // VM.step classifies DAT after operand side effects and execution.
-    let enemy = killed && (memory[cell(pc)] & 31u) == 0u && owner < 2u && owner != turn;
+    let enemy = killed && (memory[cell(pc)] & 31u) == 0u && owner < 2u && owner != turn;`}
     steps++;
     let died = sizes[turn] == 0u;
     let other = 1u - turn;
-    var nextTurn = other;
+    ${packed ? 'cycle += turn;' : `var nextTurn = other;
     if (sizes[other] == 0u) { nextTurn = turn; }
-    if (nextTurn <= turn) { cycle++; }
+    if (nextTurn <= turn) { cycle++; }`}
     if (died || steps >= CYCLES * 2u) {
       let winner = select(2u, other, died);
       let out = (input[1u + lane * 9u + 8u] + roundNo) * 5u;
       output[out] = winner; output[out + 1u] = cycle;
       output[out + 2u] = select(0xffffffffu, deathCycle, died);
-      output[out + 3u] = select(0u, 1u, enemy); output[out + 4u] = foreign[0];
+      output[out + 3u] = ${packed ? '0u' : 'select(0u, 1u, enemy)'}; output[out + 4u] = ${packed ? '0u' : 'foreign[0]'};
       memory[base + PSOFF] = select(select(1u, 0u, turn == 0u), 2u, !died);
       memory[base + PSOFF + PS] = select(select(1u, 0u, turn == 1u), 2u, !died);
       roundNo++; initialized = 0u;
@@ -300,14 +317,13 @@ fn main(@builtin(global_invocation_id) id: vec3<u32>) {
       // initializes at most one core per invocation in each dispatch.
       break;
     }
-    turn = nextTurn;
+    turn = ${packed ? 'other' : 'nextTurn'};
   }
   memory[base] = roundNo; memory[base + 1u] = initialized;
   memory[base + 2u] = steps; memory[base + 3u] = cycle; memory[base + 4u] = turn;
   for (var side = 0u; side < 2u; side++) {
     memory[base + 5u + side] = heads[side]; memory[base + 7u + side] = sizes[side];
-    memory[base + 9u + side] = foreign[side];
-  }
+${packed ? '' : '    memory[base + 9u + side] = foreign[side];\n'}  }
 }
 `}
 `;

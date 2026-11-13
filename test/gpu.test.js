@@ -13,8 +13,12 @@ const enabled = process.env.ZOREWARS_GPU_TEST === '1';
 const cfg = { ...DEFAULT_SETTINGS, coreSize: 80, maxLength: 12, minDistance: 12, maxCycles: 300, maxProcesses: 8, rounds: 4 };
 const summary = (task) => {
   const m = runMatch([task.a, task.b], task.settings, { seed: task.seed, report: !!task.diagnose });
-  const a = m.warriors[0];
-  return { w: a.wins, l: a.losses, t: a.ties, smooth: a.smooth, ...(task.diagnose ? { d: diagnoseRounds(m.rounds) } : {}) };
+  const [a, b] = m.warriors;
+  return { w: a.wins, l: a.losses, t: a.ties, smooth: a.smooth,
+    ...(task.diagnose ? { d: diagnoseRounds(m.rounds) } : {}),
+    ...(task.details ? { opponent: { w: b.wins, l: b.losses, t: b.ties, smooth: b.smooth },
+      rounds: m.rounds.map(({ round, report, ...result }) => result) } : {}),
+  };
 };
 const warrior = (source, settings = cfg) => {
   const w = compile(source, 'redcode', settings);
@@ -65,11 +69,18 @@ test('local GPU agrees with the CPU interpreter and seeded evolution', { skip: !
         }
       }
       await verify(tasks);
+      await verify(tasks.map(task => ({ ...task, diagnose: false, details: true })));
     });
     await t.test('P-space persists between rounds; first mover rotates', async () => {
       const a = warrior('LDP.AB #0, 5\nJMZ 3, 4\nSTP.AB #42, #1\nSPL 0\nJMP -4\nDAT 0, 0');
       const b = warrior('LDP.AB #1, 4\nADD.AB #1, 3\nSTP.B 2, #1\nJMP -3\nDAT 0, 0');
-      await verify([1, 42, 2147483646].map((seed) => ({ a, b, settings: { ...cfg, rounds: 9, pSpaceSize: 7 }, seed, diagnose: true })));
+      const tasks = [1, 42, 2147483646].map((seed) => ({ a, b, settings: { ...cfg, rounds: 9, pSpaceSize: 7 }, seed, diagnose: true }));
+      await verify(tasks);
+      const scoreTasks = tasks.map(task => ({ ...task, diagnose: false, details: true }));
+      await verify(scoreTasks);
+      const before = gpu.stats.batches;
+      await verify([scoreTasks[0], tasks[1]]);
+      assert.equal(gpu.stats.batches - before, 1, 'A mixed batch retains diagnostics without splitting');
     });
     await t.test('legal entry points outside the body retain CPU wrapping semantics', async () => {
       const plane = { ...cfg, topology: 'torus', sizeX: 10, sizeY: 8, sizeZ: 1, maxLength: 5 };
@@ -111,6 +122,11 @@ test('local GPU agrees with the CPU interpreter and seeded evolution', { skip: !
       const settings = { ...cfg, coreSize: 100000, minDistance: 100, maxLength: 12, maxCycles: 200, rounds: 2 };
       const a = warrior('MUL.F #99999, 1\nSNE.AB #1, 0\nJMP -2\nMOV.I 0, 1', settings);
       await verify([{ a, b: warrior('MOV.I 0, 1', settings), settings, seed: 4242, diagnose: true }]);
+    });
+    await t.test('packed fields retain the full unsigned 16-bit range', async () => {
+      const settings = { ...cfg, coreSize: 65536, minDistance: 100, rounds: 3 };
+      const a = warrior('MOV.I 4, 3\nMUL.X 4, 2\nDJN.B -1, 1\nDAT #0, #65535\nDAT #65535, #65534', settings);
+      await verify([{ a, b: warrior('MOV.I 0, 1', settings), settings, seed: 4242, details: true }]);
     });
     await t.test('plane and volume geometry, headings, vector division and process queues', async () => {
       for (const [sizeX, sizeY, sizeZ] of [[10, 8, 1], [10, 4, 2], [11, 3, 3]]) {

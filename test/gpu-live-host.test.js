@@ -1,6 +1,6 @@
 import{test}from'node:test';import assert from'node:assert/strict';import{VM,compile}from'../src/engine/index.js';import{createGpuLiveEngine}from'../src/engine/gpu/live.js';import{encodeLiveVM}from'../src/engine/gpu/live-layout.js';
 const cfg={coreSize:80,maxLength:4,minDistance:4,maxProcesses:8,maxCycles:100};
-function vm(){const v=new VM(cfg);const w=compile('JMP 0','redcode',cfg);v.load([w,w],{positions:[0,40]});return v;}
+function vm(rounds=1){const v=new VM({...cfg,rounds});const w=compile('JMP 0','redcode',cfg);v.load([w,w],{positions:[0,40]});return v;}
 // CPU-produced snapshots emulate device responses; this tests the host, not WGSL execution.
 function host(options={}){
  const cpu=vm(),buffers=[],stats={destroyed:0,pipelines:0};let controls,release;
@@ -19,7 +19,7 @@ test('live GPU host publishes snapshots, reuses pipelines and frees sessions',as
  const h=host(),engine=await createGpuLiveEngine({gpu:h.gpu}),v=vm();
  try{const s=await engine.createSession(v);assert.equal(await s.advance(0),0);assert.equal(await s.advance(7),7);assert.deepEqual(encodeLiveVM(v),encodeLiveVM(h.cpu));assert.equal(s.lastStep,null);assert.equal(engine.stats.advances,1);assert.equal(engine.stats.steps,7);
  for(const n of [-1,NaN,1.5])await assert.rejects(s.advance(n),/nonnegative integer/);
- const second=await engine.createSession(vm());assert.equal(h.stats.pipelines,1);second.close();s.close();s.close();assert.equal(h.stats.destroyed,6);await assert.rejects(s.advance(1),/closed/);
+ const second=await engine.createSession(vm(50));assert.equal(h.stats.pipelines,1);second.close();s.close();s.close();assert.equal(h.stats.destroyed,6);await assert.rejects(s.advance(1),/closed/);
  }finally{engine.close();}await assert.rejects(engine.createSession(vm()),/closed/);
 });
 test('live GPU setup rolls back every partially allocated resource',async()=>{
@@ -33,5 +33,5 @@ test('live GPU readback failure and close during advance preserve the visible VM
 test('live GPU rejects unsupported rounds, shader errors and buffer capacity',async()=>{
  await assert.rejects(createGpuLiveEngine(),/unavailable/);
  const limited=host({limit:1}),limitedEngine=await createGpuLiveEngine({gpu:limited.gpu});try{await assert.rejects(limitedEngine.createSession(vm()),/buffer capacity/);}finally{limitedEngine.close();}
- const h=host({shaderError:true}),engine=await createGpuLiveEngine({gpu:h.gpu});try{await assert.rejects(engine.createSession(vm()),/shader 2: bad/);assert.equal(h.buffers.length,0);const traced=vm();traced.traceSize=1;await assert.rejects(engine.createSession(traced),/tracing uses CPU/);}finally{engine.close();}
+ const h=host({shaderError:true}),engine=await createGpuLiveEngine({gpu:h.gpu});try{await assert.rejects(engine.createSession(vm()),/shader 2: bad/);assert.equal(h.buffers.length,0);const traced=vm();traced.enableTrace(100001);await assert.rejects(engine.createSession(traced),/trace size/);}finally{engine.close();}
 });
