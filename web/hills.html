@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Core War hill evolution and warrior workshop | ZoreWars</title>
+  <meta name="description" content="Explore historical Core War hills, compare their published warriors, and reproduce a five-instruction Nano scanner in ZoreWars.">
+  <link rel="canonical" href="https://zorewar.app/web/hills">
+  <meta name="theme-color" content="#070b16">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .hill-study { max-width: 920px; margin: 0 auto; padding: 24px 20px 64px; color: var(--text-2); line-height: 1.65; }
+    .hill-study h1, .hill-study h2, .hill-study h3 { color: var(--text); line-height: 1.25; }
+    .hill-study h2 { margin-top: 42px; padding-top: 16px; border-top: 1px solid var(--line); scroll-margin-top: 72px; }
+    .hill-study a { color: var(--accent); }
+    .hill-study .table-scroll { overflow-x: auto; }
+    .hill-study table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .hill-study caption { text-align: left; padding: 6px 0; font-weight: 600; }
+    .hill-study th, .hill-study td { padding: 6px 9px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+    .hill-study pre { font: 13px/1.6 var(--mono); padding: 12px 16px; overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+    .hill-study .sources { font-size: 14px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="../" aria-label="ZoreWars home">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+      <span class="brand-name">ZORE<b>WARS</b></span>
+    </a>
+    <button class="icon-btn menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false" aria-controls="siteNav"><svg class="icon" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <nav class="nav" id="siteNav">
+      <a href="./">Arena</a>
+      <a href="docs.html">Learn</a>
+      <a href="warriors.html">Warriors</a>
+      <a href="history.html">History</a>
+      <a href="hills.html" aria-current="page">Hill study</a>
+    </nav>
+  </header>
+  <main class="hill-study">
+    <h1>How Core War hills evolve</h1>
+    <p>What wins under a five-instruction limit? What changes when only eight processes can run? Compare two kinds of archive, read the warriors that exploit those limits, then reproduce a small mechanism in the ZoreWars VM.</p>
+    <nav aria-label="Hill study contents">
+      <ul>
+        <li><a href="#sal">SAL challenge history</a></li>
+        <li><a href="#koenigstuhl">Koenigstuhl source census</a></li>
+        <li><a href="#blocks">Warrior anatomy and block gaps</a></li>
+        <li><a href="#build-blocks">Build the reusable mechanisms</a></li>
+        <li><a href="#workshop">Build and test a Nano scanner</a></li>
+      </ul>
+    </nav>
+
+    <h2 id="sal">Read a SAL hill through time</h2>
+    <p>SAL is a standing competition. The <code>t</code> parameter selects the standings after a particular challenge. Compare the same warriors across snapshots and open their individual matchup tables to see which opponents changed their results. Record challenge number, hill age, and standings view separately. A warrior page can record an eviction even when the warrior appears in that challenge's displayed standings.</p>
+    <p>On Nano, challenge 1 shows John Metcalf's <em>poor recollection</em> alone. At challenge 2 its score moves from 107.1 to 183.5 when <em>nanowkium fizmoxid</em> arrives. The scores describe different fields. The warrior did not have to change its program for its reported score to change.</p>
+    <p class="sources"><a href="https://sal.discontinuity.info/hill.php?key=nano&amp;t=1">Nano challenge 1</a> · <a href="https://sal.discontinuity.info/hill.php?key=nano&amp;t=2">Nano challenge 2</a> · <a href="https://sal.discontinuity.info/warrior.php?key=nano&amp;id=1&amp;t=1">Warrior record</a></p>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="SAL hill rules">
+      <table>
+        <caption>Nine public SAL hills and how much of each midpoint field was still visible on November 6, 2026</caption>
+        <thead><tr><th scope="col">Hill</th><th scope="col">Core</th><th scope="col">Length</th><th scope="col">Processes</th><th scope="col">Midpoint entries still listed</th><th scope="col">What to investigate</th></tr></thead>
+        <tbody>
+          <tr><th scope="row"><a href="https://sal.discontinuity.info/hill.php?key=94b&amp;t=2169&amp;how=late">Beginners</a></th><td>8,000</td><td>100</td><td>8,000</td><td>0 / 21</td><td>How long does a new design remain on the field?</td></tr>
+          <tr><th scope="row"><a href="https://sal.discontinuity.info/hill.php?key=94f&amp;t=199&amp;how=late">Fortress</a></th><td>8,000</td><td>400</td><td>80</td><td>3 / 10</td><td>Opposite starts and a 4,000-cell write limit. The VM lacks this limit.</td></tr>
+          <tr><th scope="row"><a href="https://sal.discontinuity.info/hill.php?key=94t&amp;t=203&amp;how=late">Tourney</a></th><td>8,192</td><td>300</td><td>8,000</td><td>10 / 25</td><td>Recalculate stride and imp arithmetic on the power-of-two ring.</td></tr>
+          <tr><th scope="row"><a href="https://sal.discontinuity.info/hill.php?key=lp&amp;t=566&amp;how=late">Limited Process</a></th><td>8,000</td><td>200</td><td>8</td><td>2 / 25</td><td>Which copies and attack workers actually enter the queue?</td></tr>
+          <tr><th scope="row"><a href="https://sal.discontinuity.info/hill.php?key=mp&amp;t=153&amp;how=late">Medium Process</a></th><td>8,000</td><td>100</td><td>64</td><td>5 / 20</td><td>Compare capped growth and a one-cell P-space.</td></tr>
+          <tr><th scope="row"><a href="https://sal.discontinuity.info/hill.php?key=msw&amp;t=105&amp;how=late">Metaswitch</a></th><td>8,000</td><td>100</td><td>8,000</td><td>6 / 25</td><td>Observe round-to-round choices within a 40,000-cycle limit.</td></tr>
+          <tr><th scope="row"><a href="https://sal.discontinuity.info/hill.php?key=nano&amp;t=9855&amp;how=late">Nano</a></th><td>80</td><td>5</td><td>80</td><td>0 / 50</td><td>Count the work done by every instruction and every mutable field.</td></tr>
+          <tr><th scope="row"><a href="https://sal.discontinuity.info/hill.php?key=tiny&amp;t=1643&amp;how=late">Tiny</a></th><td>800</td><td>20</td><td>800</td><td>0 / 25</td><td>Fit an opening and an attack in a 20-cell image.</td></tr>
+          <tr><th scope="row"><a href="https://sal.discontinuity.info/hill.php?key=tinylp&amp;t=195&amp;how=late">Tiny LP</a></th><td>800</td><td>50</td><td>8</td><td>11 / 15</td><td>Compare compact-core behavior with and without an eight-process cap.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Each comparison uses the first standings table from SAL's live-warrior view at two pinned challenges. The midpoint is half the final challenge number, rounded down. Every leader changed between the two samples. The challenge gaps differ widely, so the overlap counts cannot establish a turnover rate.</p>
+    <p>Tiny LP illustrates why the matchup tables matter. <em>KISS</em> went from rank 6 to 1 and <em>Master of the Wins</em> moved from rank 1 to 2, yet their listed matchup stayed the same to the displayed precision. <em>KISS</em> won 54.9%, lost 24.9%, and tied 20.1% against that one opponent.</p>
+    <p class="sources"><a href="https://sal.discontinuity.info/warrior.php?key=tinylp&amp;id=3&amp;t=97">Matchups at challenge 97</a> · <a href="https://sal.discontinuity.info/warrior.php?key=tinylp&amp;id=3&amp;t=195">Matchups at challenge 195</a> · <a href="https://github.com/bstag/zorewars/blob/main/docs/sal-hill-evolution.md">All 27 snapshot links and survey method</a></p>
+    <p>SAL pages can expose names, ranks, age, strategy prose, and head-to-head results. Keep entries with unavailable source in the history so their effect on the field remains visible. For <em>Reptiloid Conspiracy</em>, SAL and Koenigstuhl agree on the name, author, and description as an evolved clear. The published five-cell program is available for replay, while the public SAL page gives the historical results.</p>
+    <p class="sources"><a href="https://sal.discontinuity.info/warrior.php?key=nano&amp;id=9821&amp;t=9855">SAL entry</a> · <a href="https://asdflkj.net/COREWAR/NANO/HILL32/reptiloid_Conspiracy.red">Published Redcode</a></p>
+
+    <h2 id="koenigstuhl">Compare the published source fields</h2>
+    <p>Koenigstuhl is a published-program archive. Its recursive rankings reweight results against stronger subsets of the field. We assembled 5,401 of 5,447 ranked rows across ten fields under the selected profiles. The top 50 below means the first 50 positions of that listing. Koenigstuhl also publishes separate Top 50 competitions for some profiles.</p>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Koenigstuhl source census">
+      <table>
+        <caption>Archive census, November 2026</caption>
+        <thead><tr><th scope="col">Field</th><th scope="col">Ranked rows</th><th scope="col">Assembled</th><th scope="col">Median length, top 50 / rest</th><th scope="col">With a comparison instruction, top 50 / rest</th></tr></thead>
+        <tbody>
+          <tr><th scope="row">'88</th><td>683</td><td>683</td><td>73.5 / 15</td><td>88% / 23%</td></tr>
+          <tr><th scope="row">94nop</th><td>1,106</td><td>1,102</td><td>100 / 94</td><td>96% / 55%</td></tr>
+          <tr><th scope="row">P-space</th><td>206</td><td>205</td><td>100 / 99</td><td>60% / 68%</td></tr>
+          <tr><th scope="row">ICWS/64</th><td>475</td><td>475</td><td>38 / 13</td><td>50% / 18%</td></tr>
+          <tr><th scope="row">ICWS</th><td>482</td><td>482</td><td>62 / 13</td><td>64% / 18%</td></tr>
+          <tr><th scope="row">Limited Process</th><td>150</td><td>149</td><td>100 / 91</td><td>41% / 31%</td></tr>
+          <tr><th scope="row">X</th><td>214</td><td>214</td><td>192 / 64.5</td><td>54% / 35%</td></tr>
+          <tr><th scope="row">Tiny</th><td>436</td><td>436</td><td>20 / 18</td><td>48% / 37%</td></tr>
+          <tr><th scope="row">Nano</th><td>499</td><td>499</td><td>5 / 5</td><td>0% / 6%</td></tr>
+          <tr><th scope="row">Odd, flat ranking</th><td>1,196</td><td>1,156</td><td>85.5 / 19</td><td>80% / 34%</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>A comparison instruction is an observable feature. A scanner might instead use <code>JMZ</code> or <code>JMN</code>, and a comparison can serve other purposes. The differences suggest where to read the code. They do not establish that longer warriors or more comparisons improve rank. Few sources gave a usable four-digit year in a <code>;date</code> header, so the archive alone offers limited evidence for a timeline. Odd contains programs built for mixed settings.</p>
+    <p class="sources"><a href="https://asdflkj.net/COREWAR/koenigstuhl.html">Archive tables and settings</a> · <a href="https://github.com/bstag/zorewars/blob/main/docs/hill-archive-census.json">Census data and source hashes</a> · <a href="https://github.com/bstag/zorewars/blob/main/docs/hill-archive-census.md">Reproduce the census</a></p>
+
+    <h2 id="blocks">Read the interfaces between blocks</h2>
+    <ul>
+      <li><strong>'88 and 8,192-cell ICWS.</strong> <em>Talisman</em> and <em>Eye of the Storm T</em> use an ADD-based quickscan decoder for 36 probes. Our <code>opening-qscan-add-88</code> checks both sides of each pair and passes the decoded address to a following block. The 8,192-cell port of the original also changes the three-point imp step from 2,667 to 2,731.</li>
+      <li><strong>ICWS/64.</strong> <em>Twimp</em> launches two three-point imp formations with the same step and different phases. <code>binary-twin-imp</code> verifies eight ordered entrants from two seeds with no extra processes needed for arithmetic.</li>
+      <li><strong>94nop.</strong> In <em>Arvon</em> and <em>pst v4</em>, inspect the quickscan, the process fan that copies the payloads, and the stone and paper that run after boot. Try changing the opening while preserving the copy order and the starting state of the two bodies.</li>
+      <li><strong>Limited Process.</strong> <em>R.O.U.S.</em> gets copy scheduling and a remote scatter write into a small paper. <code>lp-paper</code> is an analogue. To measure the scatter write, replace it with a <code>NOP</code> that still advances both operand pointers. This holds the rest of the copy schedule steady.</li>
+      <li><strong>P-space and X.</strong> <em>Sunset</em> and <em>Fire and Ice II</em> use tables that select attacks from the previous result and a stored state. <code>switch-table</code> lets an author specify the payload and next state independently for each row. <em>CBD</em> also needs shared <code>PIN</code> semantics, which the engine does not implement.</li>
+      <li><strong>Tiny and Nano.</strong> Tiny still has space for short stages. Every cell spent on a probe on Nano leaves one less for the attack. In <em>Toy Soldier</em>, a single comparison decides whether to redirect the clear pointer. In the workshop below, the scanner and bomber share a pointer field.</li>
+      <li><strong>Odd.</strong> <em>Happy New Year</em> combines a decoy, an SPL blur, and a DAT clear. Use the source to study the handoff between them. For replay, check the original tournament's rules because Odd collects programs built for different events.</li>
+    </ul>
+    <p class="sources"><a href="https://github.com/bstag/zorewars/blob/main/docs/hill-block-review.md">Source-level block review</a> · <a href="https://github.com/bstag/zorewars/blob/main/docs/hill-recipe-book.md">Koenigstuhl recipe book</a> · <a href="https://corewar.co.uk/nano.htm">Nano source collection</a></p>
+
+    <h2 id="build-blocks">Build the reusable mechanisms</h2>
+    <p>From the ZoreWars checkout, these recipes emit Redcode only after passing their behavioral checks. Pick a profile and rerun against a saved opponent directory if you want to compare the same field later.</p>
+    <pre><code>node scripts/algebra.js recipe nano-lane --rules nano --out lane.red
+node scripts/algebra.js recipe nano-relay-clear --rules nano --out relay.red
+node scripts/algebra.js recipe tiny-copy-paper --rules tiny --out burst-paper.red
+node scripts/algebra.js recipe tiny-resonant-paper --rules tiny --out resonant.red
+node scripts/algebra.js recipe additive-clear-88 --rules icws64 --out scan-clear.red
+node scripts/algebra.js recipe twinned-stone --rules icws64 --out twin.red
+node scripts/algebra.js recipe table-stones --rules pspace --out switcher.red
+node scripts/algebra.js recipe packed-stones --rules tinylp --length 31 --out packed.red
+node scripts/algebra.js recipe paired-clear --rules tinylp --out paired.red
+node scripts/algebra.js recipe paired-clear-staged --rules tinylp --out staged.red
+node cli/zorewars.js hill lane.red --rules nano --hill koenigstuhl:nano --top 10 --rounds 71 --seed 124</code></pre>
+    <p>The strict ’88 scan and clear fit in 50 cells. The scan uses a separate reference cell to distinguish the two sides of a hit, so its side test assumes that cell is empty. The 39-cell P-space recipe makes its transitions explicit. The packed version uses residues to make the same choices in 31 cells. The eight saved cells can go to an attack body.</p>
+    <p class="sources"><a href="https://github.com/bstag/zorewars/blob/main/docs/hill-block-followup.md">Packed controller and replay results</a></p>
+    <p>Tiny LP's <em>KISS</em> sends one worker home and one to the remote copy after the boot. Against <em>Master of the Wins</em>, this split earned 708 wins in 1,402 starts, compared with 602 for both workers sent home and 627 for both sent away. Our <code>paired-clear</code> checks the same deployment pattern with a simpler attack. It averaged 0.254 points per round in the six-opponent study, compared with 1.776 for published KISS. The launch is reusable, and the difference tells us to investigate the clear payload and its process growth next.</p>
+    <p>Both leading Koenigstuhl Tiny sources in our captured table use the same two silk displacements and spend early turns on remote writes. Removing the second-ranked warrior's first ten writes while preserving its operands reduced its score against all four tested opponents. The detailed review includes the queue trace and a comparison with our shorter copy-burst recipe.</p>
+    <p>In <em>Consonance</em>, one Y hop and three X hops land a copy one cell past an earlier stage. The <code>tiny-resonant-paper</code> recipe lets you move that return by one cell and trace which instruction it overwrites. In our example, the return at +2 ended the original sweep sooner and still scored higher in seven of eight matched comparisons.</p>
+    <p>The staged Tiny LP recipe keeps the same two-site boot and gives each worker a bounded SPL pass followed by a faster DAT sweep. It raised the six-opponent average from 0.254 to 0.936 points per round. Packing the selector also lets this larger payload share a 45-cell image with a stone.</p>
+    <p>Giving each Tiny LP site four workers before it fires delayed the first attacks and lowered both measured panel scores. KISS starts attacking while its queue is still growing. The replay compares one, two, and four workers per site in the same image. <a href="https://github.com/bstag/zorewars/blob/main/docs/hill-block-followup.md#test-four-workers-at-each-tiny-lp-site">Worker allocation and replay results</a></p>
+    <p>The attack-first variant fires from both sites before splitting and still reaches four workers per site. It hits more cells early than the startup-only fan, but the 18-cell staged clear still leads on both opponent panels. <a href="https://github.com/bstag/zorewars/blob/main/docs/hill-block-followup.md#attack-while-the-queue-grows">Attack-first replay and control</a></p>
+    <p>In the decrement-stream experiment, the first pass switches from SPL to DAT by reaching its own bomb selector. The 21-cell build saves the explicit switch, but an occupied cell can make the stream exit before reaching the selector. The staged clear still scored higher on both panels. <a href="https://github.com/bstag/zorewars/blob/main/docs/hill-block-followup.md#let-the-decrement-stream-switch-bombs">Selector trace and replay results</a></p>
+    <h3 id="tiny-lp-top-ten">Time the Tiny LP top ten</h3>
+    <p>Five of the top ten at challenge 195 have matching public 800-cell sources. Their timings show different uses of the process cap. <em>KISS</em> attacks from two clear sites before filling its eight slots on turn 24. <em>tiny Roskilde</em> gets three stones running while its paper grows, reaching the cap on turn 217. <em>ugly redcode</em> stays at one process and turns a planted quickscan hit into a JMP trap on turn 5.</p>
+    <p>Try <code>paired-clear-feeder</code>, <code>tiny-lp-stone-paper</code> and <code>tiny-lp-trap-scan</code> with <code>node scripts/algebra.js recipe NAME --rules tinylp</code>. The 15-cell feeder starts its two attacks on the same turns as the published KISS. It scored 1.768 points per round against six opponents compared with 1.776 for KISS, and 2.068 against a separate five compared with 2.194. The study also traces the recurring stone launcher in <em>Master of the Wins</em> and the shared copy and entry pointer in <em>FragPaper 800</em>.</p>
+    <p>For entries known through their SAL strategy descriptions, the study separates the reported strategies from runnable models. The scan-and-paper and scan-and-stone-paper recipes both hit a planted marker on turn 14. In each case, firing the opening pushes the first full process queue back by 22 turns.</p>
+    <p class="sources"><a href="https://github.com/bstag/zorewars/blob/main/docs/tiny-lp-top-ten.md">Timings, block walkthroughs and replay commands</a> · <a href="https://github.com/bstag/zorewars/blob/main/docs/tiny-lp-top-ten-sources.md">Top-ten sources and matchup evidence</a></p>
+    <h3 id="lp-top-ten">Time full-size Limited Process</h3>
+    <p>The Koenigstuhl LP archive publishes all ten ranked sources. Its rules allow 200 loaded instructions and P-space, so use <code>--rules lp-hill</code> for the replay. The seven-cell <em>R.O.U.S.</em> starts executing its copy on turn 32. Two other seven-cell papers first execute remotely on turns 105 and 116. Their longer first copy counts give them a different opening.</p>
+    <p>Build <code>lp-scatter-paper</code> to trace a guarded backward copy and two doubling scatter offsets. The version with scatter scored 1.326 points per round against the ten archived leaders. Its same-layout control kept the transfer timing and scored 0.948. Build <code>lp-outcome-switch</code> to replay the three-state policy shared by the two LP Destroyers with our own paper and stone bodies.</p>
+    <p class="sources"><a href="https://github.com/bstag/zorewars/blob/main/docs/lp-top-ten.md">Full-size LP timings, blocks and replay commands</a> · <a href="https://github.com/bstag/zorewars/blob/main/docs/lp-top-ten-sources.md">SAL and Koenigstuhl source audit</a></p>
+    <h3 id="lp-bronze-paper">Follow two papers through eight process slots</h3>
+    <p><em>Bronze minotaur</em> and the compact <code>lp-bronze-paper</code> recipe both fill the queue on turn 412, with four processes descended from each paper. At the cap, a guarded jump can still carry a process into its next copy after SPL loses the optional child. The compact version ends the quiet round with eight descendants of A, while the published pair loses both lineages.</p>
+    <p class="sources"><a href="https://github.com/bstag/zorewars/blob/main/docs/lp-bronze-paper.md">Compact recipe, lineage trace and matchup controls</a> · <a href="https://github.com/bstag/zorewars/blob/main/docs/lp-bronze-source.md">Published Bronze minotaur walkthrough</a></p>
+    <h3 id="lp-mutation-stone">Turn a stone into a clear in one slot</h3>
+    <p>In a stone-only replay of <em>Distortion Energy</em>, the stone's scatter changes its own increment until it sweeps backwards. Build <code>lp-mutation-stone</code> for a controlled version. Its planned shot copies a jump onto the stride instruction, and the same process switches into a bounded DAT sweep. The <code>lp-mutation-paper</code> recipe completes that handoff with one stone process and seven paper descendants in the queue.</p>
+    <p class="sources"><a href="https://github.com/bstag/zorewars/blob/main/docs/lp-distortion-stone.md">Handoff walkthrough, controls and replay commands</a> · <a href="https://github.com/bstag/zorewars/blob/main/docs/lp-distortion-source.md">Published Distortion Energy walkthrough</a></p>
+    <p>Starting two of Distortion Energy's workers at ADD and JMP covers 299 distinct cells in a quiet round. Starting them at ADD and MOV produces 300 writes to only 150 cells. The six-cell <code>lp-phase-stone</code> isolates that scheduling effect by changing one jump. The compact modes tied on both Disciples matchup panels despite the difference in coverage.</p>
+    <p class="sources"><a href="https://github.com/bstag/zorewars/blob/main/docs/lp-distortion-workers.md">Worker counts, launch phases and matched battles</a></p>
+    <p>The 21-cell <code>lp-booted-phase-paper</code> moves the same two-worker stone before it starts. At hop 1,984 the paper copies DAT over the stone's loop jump and kills both workers. At hop 5,952 the quiet trace retains both workers with zero paper writes into the deployed body.</p>
+    <p class="sources"><a href="https://github.com/bstag/zorewars/blob/main/docs/lp-phase-deployment.md">Boot placements, friendly writes and Disciples replays</a></p>
+    <p>The <code>lp-sparse-phase-paper</code> recipe keeps hop 5,952 and the same two-worker phase. A 50-cell stone orbit cuts quiet overwrites of paper copies from 295 to 32. The first full FIFO is identical, and the hybrid spends 74,811 turns with two stone and six paper processes.</p>
+    <p class="sources"><a href="https://github.com/bstag/zorewars/blob/main/docs/lp-phase-lanes.md">Lane screening, process traces and matchup controls</a></p>
+    <p>The <code>lp-hidden-return-paper</code> recipe keeps the sparse lane and hides the stone's return jump from A-only probes. In one Disciples replay this delays the first executed trap from turn 7,481 to 11,929. The scanner still traps the exposed bombing instruction, and a DAT sweep later kills both workers.</p>
+    <p class="sources"><a href="https://github.com/bstag/zorewars/blob/main/docs/lp-phase-defense.md">Scan hits, traps, clear writes and defense controls</a></p>
+    <h3 id="lp-opposed-scanners">Coordinate four LP scanners</h3>
+    <p><em>Disciples of the Void</em> uses two loaders to start four scanners by turn 45. Opposite strides and A-field tests let the scanners operate for thousands of turns before the first hit on a live partner. Later, a scanner can lock processes in place with JMP and switch into a DAT clear.</p>
+    <p>Build <code>lp-opposed-scanners</code> to compare one, two or four probe lanes. The link check rejects a lane that intersects friendly code, and the quiet gate checks the complete orbit. On the six-opponent replay, the four-lane JMP version scored 0.452 points per round, compared with 0.158 for DAT at the same addresses.</p>
+    <p>The published warrior scored 1.621. Forcing its scan guards to jump back into the scan reduced that to 0.727. The replay also traces a case where a paper changes the guard's pointer, triggers the clear early, and turns a tie into a win for the scanner.</p>
+    <p>The <code>lp-opposed-handoff</code> experiment writes JMP on turn 93 and DAT on turn 101 against a planted target, then clears a 120-cell strip. Switching as soon as the first trap lands scored 0.102 points per round, compared with 0.385 for continuing to scan in the same layout.</p>
+    <p>The counted handoff gives each scanner its own strike counter while keeping the strip and deployment fixed. Waiting for 32 strikes raised the first panel score to 0.336. With fresh placements, the best counted variant waited for 64 strikes and scored 0.346, compared with 0.354 for continuing to scan.</p>
+    <p>Outward sweeps let the scanner pairs cover up to 1,800 tested cells without touching friendly code. With the handoff fixed at 64 strikes, widening the sweep gave no clear advantage. The 120-cell and 960-cell outward variants scored 0.191 and 0.186 against four separate published opponents, compared with 0.188 for continued scanning.</p>
+    <p>The aimed variant moves the 120-cell sweep to the last trap when the full strip fits inside a verified corridor. It tied the fixed-origin control on both panels. Against scatter paper, four of sixteen observed rounds used the aimed origin.</p>
+    <p>A shorter DAT follow-up still underperformed keeping the JMP locks. In one matched round, leaving the locks intact held up to five enemy processes and earned a tie. The <code>lp-dense-scanners</code> recipe keeps the locks and doubles each probe orbit from 100 to 200 cells. It improved the mean score against both tested fields.</p>
+    <p>The 26-cell <code>lp-transparent-pair</code> isolates a different idea from the published source. It tests only A fields, passes over its own zero-A JMP traps, and reaches its partner's probe on look 3,997. Its own probe triggers the clear on look 3,999. Changing only the probe modifier to B-only or both fields makes it keep striking its own traps.</p>
+    <p>The 54-cell <code>lp-transparent-quartet</code> starts two such pairs on opposite parities. At the eight-process cap, each clear has a feeder, a DAT writer, and a continuation queued to die. The two locked forward scanners occupy the remaining slots. A replay that restores only the four writes between the two clearing bodies keeps both writers alive through turn 80,000.</p>
+    <p>The 68-cell <code>lp-partitioned-quartet</code> keeps both writers active by giving them separate sectors. It keeps the feeder on the continuation that SPL queues first. A same-layout control puts the feeder on the optional child and loses one of its clears when the queue fills.</p>
+    <p class="sources"><a href="https://github.com/bstag/zorewars/blob/main/docs/lp-partitioned-quartet.md">Protected sectors, FIFO traces and reusable parts</a></p>
+    <p>The standalone <code>lp-sector-clear</code> lets multiple clears share the queue while the linker checks their sectors. In a four-clear trace, all four unpaced feeders survived, but the fourth made just four DAT writes. Adding one return turn per feeder brought each site to about 2,960 writes.</p>
+    <p class="sources"><a href="https://github.com/bstag/zorewars/blob/main/docs/lp-sector-clear.md">Compose and tune clear sectors</a></p>
+    <p>The <code>lp-quickscan-sector</code> recipe aims that clear at a decoded probe when the full strip fits inside its linked corridor. It improved on the fixed-origin control at three widths. In one matched round it put DAT on the paper's next execution site and won after 26 cycles.</p>
+    <p class="sources"><a href="https://github.com/bstag/zorewars/blob/main/docs/lp-probe-sector.md">Aimed-sector controls, timings and replay commands</a></p>
+    <p class="sources"><a href="https://github.com/bstag/zorewars/blob/main/docs/lp-transparent-pair.md">Transparent pair, phase controls and build commands</a></p>
+    <p class="sources"><a href="https://github.com/bstag/zorewars/blob/main/docs/lp-disciples.md">Probe geometry, timings and replay commands</a> · <a href="https://github.com/bstag/zorewars/blob/main/docs/lp-disciples-source.md">Published scanner and clear trace</a></p>
+    <p>The Nano relay clear lets a strike rewrite the cursor its next read will use. Across nine published opponents, priming the relay helped every matchup. A separate replay held only the cursor's B field steady after a strike. It changed individual results while leaving the panel average nearly even.</p>
+    <p class="sources"><a href="https://github.com/bstag/zorewars/blob/main/docs/hill-block-review.md#sal-leaders-with-separately-published-sources">SAL source matches, controls, and replay results</a> · <a href="https://github.com/bstag/zorewars/blob/main/docs/block-algebra-catalog.md">Full block catalog</a></p>
+
+    <h2 id="workshop">Build a five-instruction scanner</h2>
+    <p>Save this original ZoreWars example as <code>nano-lane.red</code>. The <code>look</code> instruction's B field is both the address to inspect and the address <code>attack</code> uses. Adding five makes a 16-cell orbit on an 80-cell ring. Its lane crosses only one of its own instructions, the zero-valued <code>DAT</code>, which the scan skips.</p>
+    <pre><code>;redcode-nano
+;name Nano Lane
+;author ZoreWars
+;strategy Scan one residue class, sharing the scan's B-field with the attack.
+;assert CORESIZE == 80 &amp;&amp; MAXLENGTH == 5
+
+        ORG     look
+advance ADD.AB  #5, look
+look    JMZ.F   advance, @43
+attack  MOV.I   bomb, @look
+        JMP.B   advance
+bomb    DAT.F   $0, $0
+        END</code></pre>
+    <pre><code>node cli/zorewars.js check nano-lane.red -s 80 -c 800 -p 80 -l 5 -d 5 -S 5 --json
+node examples/hill-study/replay-nano.mjs
+node examples/hill-study/replay-nano.mjs type1.red bombussylvestris.red</code></pre>
+    <p>The replay script checks the repository example at two load bases, including a wrap, and plants a target with a nonzero A field and zero B field. <code>JMZ.F</code> detects it. <code>JMZ.B</code> skips it. With published opponents supplied, the script runs both variants across all 71 legal relative starts and both first-mover orders. Nano Lane is a small test of a shared-pointer mechanism. In the measured sample it lost most rounds.</p>
+    <p>To study your own change, keep the opponent source, settings, placement order, and instruction budget fixed. Compare the intended mechanism first, then look at wins, losses, and ties against opponents from more than one era. Use full round traces to learn whether the change found an enemy earlier, wrote the wrong cell, or reached the attack too late.</p>
+    <p class="sources"><a href="https://asdflkj.net/COREWAR/NANO/HILL32/type1.red">Type-1 source</a> · <a href="https://asdflkj.net/COREWAR/NANO/HILL32/bombussylvestris.red">Bombus Sylvestris source</a> · <a href="https://github.com/bstag/zorewars/blob/main/docs/compact-hill-workshop.md">Full workshop and replay results</a></p>
+    <h3>Repeat the method on Tiny</h3>
+    <p><em>Little Fluffy Clouds</em> makes nine opening copies before deploying a paper. Replace the nine copy opcodes with <code>NOP.F</code>, leaving both predecrement operands in place. The original and ablation both deploy the same six-cell paper at offset 760 after 26 solo turns. Against <em>One Shot 'T'</em>, the original won 740 of 1,522 rounds, the ablation won 625, and our default <code>boot-paper</code> won 367. The first two variants isolate the opening writes. The catalog control is a different warrior and gives a reference score.</p>
+    <pre><code>node examples/hill-study/replay-tiny.mjs little_fluffy_clouds.red oneshott.red</code></pre>
+    <p class="sources"><a href="https://asdflkj.net/COREWAR/TINY/HILL32/little_fluffy_clouds.red">Little Fluffy Clouds source</a> · <a href="https://asdflkj.net/COREWAR/TINY/HILL32/oneshott.red">One Shot 'T' source</a></p>
+  </main>
+  <footer class="site-footer">ZoreWars · <a href="docs.html">Learn</a> · <a href="history.html">Core War history</a></footer>
+  <script type="module" src="nav.js"></script>
+</body>
+</html>

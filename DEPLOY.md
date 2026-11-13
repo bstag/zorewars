@@ -8,6 +8,7 @@ ZoreWars has no build step: the repository root *is* the website. The browser lo
 | --- | --- | --- | --- |
 | Arena, engine, tournaments, post-mortems, replay | yes | yes | yes |
 | Docs and warrior encyclopedia | yes | yes | yes |
+| Block Workbench and library benchmarks | yes | yes | yes |
 | Python warriors in the browser (Pyodide) | yes | yes | yes |
 | Converting to JavaScript / Python | yes | yes | yes |
 | Opening or dropping a `.red` file | yes | yes | yes |
@@ -15,6 +16,8 @@ ZoreWars has no build step: the repository root *is* the website. The browser lo
 | Cost | free tier: static files free and unlimited; the proxy uses Worker requests | free | — |
 
 **Cloudflare** serves the files with [Workers Static Assets](https://developers.cloudflare.com/workers/static-assets/). A Worker (`worker/index.js`) runs only for `/api/*`, and serving the site itself never invokes it. The Worker reuses `cli/remote.js`, so it has the same host allow-list, 512 KB limit and "Redcode only, never executed" rule as the CLI.
+
+The [Block Workbench](web/blocks.html) runs the algebra and VM in a browser worker. After changing blocks, recipes, or their engine dependencies, run `npm run build:workbench` and include the regenerated `web/vendor/block-workbench.js` in the change. Hosts serve the checked-in worker as a static asset.
 
 ## Cloudflare
 

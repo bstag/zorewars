@@ -19,6 +19,7 @@
     "deploy": "wrangler deploy",
     "build:editor": "node scripts/build-editor.js",
     "build:three": "node scripts/build-three.js",
+    "build:workbench": "node scripts/build-block-workbench.js",
     "fuzz": "node scripts/plane-fuzz.js"
   },
   "engines": {
