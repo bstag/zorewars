@@ -2,8 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { annotate, iface, combinators, treeMismatches } from '../tools/algebra/link.js';
-import { leaves, recipes, treeSettings } from '../tools/algebra/index.js';
+import { readFileSync } from 'node:fs';
+import { annotate, iface, treeMismatches } from '../tools/algebra/link.js';
+import { recipes, treeSettings } from '../tools/algebra/index.js';
 
 // Start the hang deadline after imports, separately from the startup deadline.
 function guardedChild(script, executionTimeout=3000) {
@@ -92,14 +93,17 @@ const snapshots = [
   ]
 ];
 
+// The historical pre-refactor corpus is ordered. New blocks and recipes have
+// focused tests and do not change the input to these hashes.
+const corpus = JSON.parse(readFileSync(new URL('./fixtures/algebra-contract-corpus.json', import.meta.url), 'utf8'));
 for (const [rules, torus, expected] of snapshots) test(`contracts preserve ${rules} ${torus ?? 'ring'} behavior`, () => {
   const settings = treeSettings(rules, 100, torus);
   const members = ['stone', 'finisher-counted', 'decoys', 'opening-none', 'paper', 'imp'];
-  const trees = Object.keys(leaves).map(id => ({ id }));
-  for (const id of Object.keys(combinators)) for (let n = 0; n <= 5; n++) {
+  const trees = corpus.leaves.map((id) => ({ id }));
+  for (const id of corpus.combinators) for (let n = 0; n <= 5; n++) {
     trees.push({ id, kids: Array.from({ length: n }, (_, i) => ({ id: members[i] })) });
   }
-  for (const recipe of Object.values(recipes)) trees.push(recipe.tree(rules));
+  for (const name of corpus.recipes) trees.push(recipes[name].tree(rules));
   const hash = createHash('sha256');
   for (const tree of trees) {
     let result;

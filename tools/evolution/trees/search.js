@@ -25,7 +25,7 @@ import { mulberry32, measureSpecies } from '../../../src/engine/index.js';
 import { evaluate, strip } from '../../hill.js';
 import { lexicase as selectLexicase } from '../../selection.js';
 import { buildTree, treeSettings } from '../../algebra/index.js';
-import { randomTree, mutate, crossover, id, shape, MUTATIONS } from '../../algebra/genome.js';
+import { randomTree, mutate, crossover, id, shape, MUTATIONS,COUPLED_MUTATIONS } from '../../algebra/genome.js';
 import { diagnose, describeDiagnosis, describeChange, weakestTag } from '../../algebra/counters.js';
 
 // A niche: what the warrior does alone, and how its tree is put together at the top.
@@ -38,12 +38,14 @@ export async function evolveTrees({
   counters = null, aim = true, aimTries = 6, aimExplore = 0.3, lexicase = false, lexEpsilon = 0.1,
 }) {
   if (!Number.isFinite(lexEpsilon) || lexEpsilon < 0) throw new Error('lexicase epsilon must be a nonnegative finite number');
-  const numericOnly = ops.length === 1 && ops[0] === 'tune';
-  if (numericOnly && !starts.length) throw new Error('numeric tuning needs starting trees');
+  const numericOnly = ops.length>0&&ops.every(op=>['tune','tune-placement'].includes(op));
+  const localOnly=numericOnly||ops.length>0&&ops.every(op=>op==='tune'||COUPLED_MUTATIONS.includes(op));
+  const verification=ops.some(op=>COUPLED_MUTATIONS.includes(op))?'full':'quick';
+  if (localOnly && !starts.length) throw new Error('numeric/coupled tuning needs starting trees');
   // The field may change by generation (a function of it), as the ladder's does.
   const fieldAt = typeof field === 'function' ? field : () => field;
   const settings = treeSettings(rules, length, torus);
-  const play = { ...settings, maxLength: Math.max(settings.maxLength, 200) };   // hill warriors may be longer
+  const play = { ...settings, maxLength: settings.hillMaxLength ?? Math.max(settings.maxLength, 200) };
   const random = mulberry32(seed);
   const pick = (xs) => xs[Math.floor(random() * xs.length)];
   const stats = { built: 0, refused: 0, scored: 0, battleRounds: 0, raced: 0, placed: 0 };
@@ -54,7 +56,7 @@ export async function evolveTrees({
     const key = id(tree);
     if (!builds.has(key)) {
       try {
-        const b = buildTree(tree, { rules, length, torus });
+        const b = buildTree(tree, { rules, length, torus,verification });
         const sp = measureSpecies(b.w, settings);
         builds.set(key, { ok: true, tree, w: strip(b.w), source: b.source, size: b.total, species: sp, niche: `${sp.key}|${topShape(tree)}` });
         stats.built++;
@@ -105,7 +107,7 @@ export async function evolveTrees({
 
   // Numeric tuning stays within the supplied structures, including generation 0.
   const seeds = [...starts];
-  for (let i = 0; !numericOnly && seeds.length < Math.max(batch, starts.length + 8) && i < batch * 20; i++) {
+  for (let i = 0; !localOnly && seeds.length < Math.max(batch, starts.length + 8) && i < batch * 20; i++) {
     try { seeds.push(randomTree(settings, random)); } catch { break; }
   }
   for (const t of seeds) { const b = build(t); if (b.ok) await place(b, 0); }
@@ -184,6 +186,6 @@ export async function evolveTrees({
   }
   const candidate = (e, fit = e.fit) => ({ shape: shape(e.tree), fit, tree: e.tree, size: e.build.size, species: e.build.species.hint, source: e.build.source, w: e.build.w });
   const final = [...archive.values()].sort((a, b) => b.fit - a.fit).map(e => candidate(e));
-  return { settings, ties, history, archive: final, finalists: finalists.map(({ e, fit }) => candidate(e, fit)),
+  return { settings, ties,verification,history, archive: final, finalists: finalists.map(({ e, fit }) => candidate(e, fit)),
     stats, best: history.at(-1)?.champion ?? null };
 }

@@ -176,12 +176,21 @@ const finisherMulti = {
 // warrior's length, and every pointer aims at an empty residue class (one that
 // holds no cell of the block). STEP is a multiple of g, so a pointer never
 // leaves its class: it bombs core/g cells, none of them the warrior's.
+//
+// FIT 0 (the default) asks for g of at least the length limit plus the bomb
+// classes, whatever the warrior turns out to be. FIT 1 asks only what the
+// layout needs, once it is known: the image (total cells) and the classes past
+// it must fit in g, so a 79-cell warrior can use g = 80 under a 100-cell limit.
+// With FIT 1 the stone also declares its classes (and, with ENDCLEAR, the
+// clear's window) as its `lattice`, so a fan boot refuses partners placed on them.
+const hsClasses = (P) => 2 + (P.WRITES === 3 ? 1 : 0) + (P.STREAM ? 1 : 0) + (P.REMOTE ? 1 : 0);
+const hsMargin = (P) => 6 * P.PROCS + 10;
 const hillStone = {
   id: 'hill-stone', kind: 'body', exit: 'never', writes: 'sparse', roams: false,
   processes: (P) => P.PROCS,
   purpose: 'A hill-style bomber: PROCS processes in one layout-safe bombing loop (two stepping pointers, WRITES writes a pass); STREAM folds a DJN decrement into the loop; REMOTE keeps the bomb cell far from the body; ENDCLEAR turns the loop into a core clear once it has bombed long enough.',
-  params: { STEP: [1, 4000], PROCS: [1, 64], WRITES: [2, 3], STREAM: [0, 1], REMOTE: [0, 1], ENDCLEAR: [0, 1], PASSES: [8, 4000] },
-  defaults: { STEP: 240, PROCS: 6, WRITES: 2, STREAM: 0, REMOTE: 0, ENDCLEAR: 0, PASSES: 400 },
+  params: { STEP: [1, 4000], PROCS: [1, 64], WRITES: [2, 3], STREAM: [0, 1], REMOTE: [0, 1], ENDCLEAR: [0, 1], PASSES: [8, 4000], FIT: [0, 1] },
+  defaults: { STEP: 240, PROCS: 6, WRITES: 2, STREAM: 0, REMOTE: 0, ENDCLEAR: 0, PASSES: 400, FIT: 0 },
   entry: 'hsEntry', loop: 'hsLoop',
   provides: { datBomb: 'hsBomb' },
   mutable: (P) => [['hsPtrA', ['a', 'b']], ['hsPtrB', ['b']], ['hsStr', ['b']], ['hsEnd', ['b']], ['hsCPtr', ['b']], ['hsCCnt', ['b']], ['hsSrc', ['b']]],
@@ -192,8 +201,24 @@ const hillStone = {
     // The bomb classes (one per stepping target, plus the stream) must be empty
     // residue classes; g must leave room for them beyond the warrior.
     const need = 2 + (P.WRITES === 3 ? 1 : 0) + (P.STREAM ? 1 : 0);
-    if (g < settings.maxLength + need) out.push(`hill-stone: gcd(STEP, core) = ${g} is too small to keep ${need} bomb classes clear of the warrior`);
+    if (!P.FIT && g < settings.maxLength + need) out.push(`hill-stone: gcd(STEP, core) = ${g} is too small to keep ${need} bomb classes clear of the warrior`);
+    if (P.FIT && g < hsClasses(P) + 8) out.push(`hill-stone: gcd(STEP, core) = ${g} leaves no room for the stone and its ${hsClasses(P)} bomb classes`);
     if (P.WRITES === 3 && settings.dialect === '88') out.push("hill-stone: a third write a pass uses A-field indirection, which needs ICWS'94");
+    return out;
+  },
+  // FIT 1: the image and the classes past it must fit in one residue period.
+  linked(P, settings, at, { total }) {
+    if (!P.FIT) return [];
+    const g = gcd(P.STEP, settings.coreSize), n = hsClasses(P);
+    return total + n > g ? [`hill-stone: the ${total}-cell warrior and its ${n} bomb classes do not fit in gcd(STEP, core) = ${g} cells: shorten the warrior or pick a STEP with a larger gcd`] : [];
+  },
+  // FIT 1: where it writes, from its first cell, for a fan boot to keep partners off.
+  lattice(P, settings, where) {
+    if (!P.FIT || !where) return null;
+    const core = settings.coreSize, g = gcd(P.STEP, core), mod2 = (x) => ((x % g) + g) % g;
+    const out = [{ step: g, residues: Array.from({ length: hsClasses(P) }, (_, j) => mod2(where.total + j - where.start)) }];
+    // The clear writes everything but [first, first + total + margin) of its frame.
+    if (P.ENDCLEAR) out.push({ from: where.at('hsEntry') - where.start + where.total + hsMargin(P), size: core - where.total - hsMargin(P) });
     return out;
   },
   emit(ctx) {

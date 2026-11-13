@@ -1,5 +1,6 @@
 import { OPCODES, MODES, MODIFIERS, MODE_NAMES, RULESETS } from '../../src/engine/constants.js';
 import { leaderPatterns } from './leader-reviews.js';
+import { recipeFamilies } from './registry.js';
 
 export const standaloneRecipes = [{
   id: 'lifeboat-94x', family: 'stone with watchdog clear',
@@ -30,7 +31,7 @@ export const standaloneRecipes = [{
 }];
 
 const contract = {
-  topology: 'ring', dialects: ['88', '94'], rules: Object.keys(RULESETS),
+  topology: 'ring', dialects: ['88', '94'], rules: recipeFamilies.clear.rules,
   entry: 'Exactly one process; private pointers and counters; pristine image.',
   processEffect: 'One process throughout; SPL is written as a bomb, never executed locally.',
   cost: 'Measured after assembly, including data and linking instructions.',

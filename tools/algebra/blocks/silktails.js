@@ -420,16 +420,37 @@ lpPaper.defaults = { D: 4829, CSTEP: 2580, A0: 2973, B0: 1950, EXTRA: 6 };
 // (backward stage), For John, minotaur and Electra (moving last stage), Burning
 // Metal, Electra and Ziggy (the anti-imp DAT), Froth and Fizzle, pdQscan and
 // SnowScan (the self-dropping line).
+//
+// FAN 1 (the default) starts it from one process with its own SPL fan. FAN 0
+// leaves the fan out: then it is a fan boot's member and needs its n = 2^k
+// processes to arrive together (fanboot N = n). A fan boot's N entrants into
+// the FAN 1 form would each run the fan, and the stages would then copy N
+// times too many cells.
 const tLen = (P) => 2 + 2 * P.BACK + 2 + 2 * P.MOVE + 1;
+// Where its stages' copies go, as { from, size } from its first cell (n cells each).
+function tailCopies(P, settings, where) {
+  const n = 2 ** log2up(tLen(P)), off = (l) => (where ? where.at(l) - where.start : 0), out = [{ from: off('t0') + P.STEP1, size: n }];
+  if (P.BACK) out.push({ from: off('t1') + P.STEP2 - n, size: n });
+  if (P.MOVE) out.push({ from: off('tMv') + P.STEP3 - n, size: n });
+  return out;
+}
 const tProcs = (P) => 2 ** log2up(tLen(P));
 const tailSilk = {
   id: 'tail-silk',
   kind: 'body', exit: 'never', grows: true, writes: 'sparse', roams: true, dialects: '94',
-  processes: (P) => tProcs(P),
-  purpose: 'Flow-through silk with an anti-imp tail: a forward stage, BACK 1 a backward stage, then each process drops a self-copying MOV.I #ISTEP, }ISTEP and an anti-imp DAT <ISTEP, <2*ISTEP (carpet BSTEP on); MOVE 1 ends with a moving stage that jumps every process into a new copy.',
-  params: { STEP1: [64, 54000], STEP2: [64, 54000], STEP3: [64, 54000], BSTEP: [64, 54000], BACK: [0, 1], MOVE: [0, 1], POINTS: [0, 31] },
+  processes: (P) => (P.FAN === 0 ? 1 : tProcs(P)),          // FAN 0: one per entrant
+  purpose: 'Flow-through silk with an anti-imp tail: a forward stage, BACK 1 a backward stage, then each process drops a self-copying MOV.I #ISTEP, }ISTEP and an anti-imp DAT <ISTEP, <2*ISTEP (carpet BSTEP on); MOVE 1 ends with a moving stage that jumps every process into a new copy. FAN 0 leaves out its own SPL fan, for a fan boot that delivers its 2^k processes together (fanboot N = 8 with the defaults).',
+  params: { STEP1: [64, 54000], STEP2: [64, 54000], STEP3: [64, 54000], BSTEP: [64, 54000], BACK: [0, 1], MOVE: [0, 1], POINTS: [0, 31], FAN: [0, 1] },
   entry: 'tStart',
   mutable: (P) => [['t0', ['a', 'b']], ...(P.BACK ? [['t1', ['a', 'b']]] : []), ...(P.MOVE ? [['tMv', ['a', 'b']]] : [])],
+  // For a fan boot: what the original writes (from its first cell). Its copies (forward, backward
+  // and moving stages), the self-dropping line's n cells ISTEP apart, and the carpet of n DATs.
+  // It flows through once, so these are all of the original's writes; later generations are not declared.
+  copies: (P, settings, where) => ({ cells: tailCopies(P, settings, where).flatMap(({ from, size }) => Array.from({ length: size }, (_, k) => from + k)) }),
+  lattice: (P, settings, where) => {
+    const n = tProcs(P), S = impStep(P, settings.coreSize), off = (l) => (where ? where.at(l) - where.start : 0);
+    return [...tailCopies(P, settings, where), ...Array.from({ length: n }, (_, k) => ({ from: off('tDrop') + (k + 1) * S, size: 1 })), { from: off('tCarpet') + P.BSTEP, size: n }];
+  },
   mismatches(P, settings) {
     const core = settings.coreSize, n = tProcs(P), len = tLen(P), out = [];
     const S = impStep(P, core);
@@ -449,7 +470,8 @@ const tailSilk = {
   },
   emit(ctx) {
     const { P, L, core } = ctx, S = impStep(P, core);
-    for (let i = 0; i < log2up(tLen(P)); i++) ctx.ins(i ? '' : 'tStart', 'SPL', 'B', '1');
+    if (P.FAN === 0) ctx.mark('tStart');
+    else for (let i = 0; i < log2up(tLen(P)); i++) ctx.ins(i ? '' : 'tStart', 'SPL', 'B', '1');
     silkStage(ctx, 't0', P.STEP1);
     if (P.BACK) {
       ctx.ins('', 'MOV', 'I', `<${L('t0')}`, `{${L('t1')}`);
@@ -480,9 +502,18 @@ const tailSilk = {
         if (k === 0 ? x.op !== 'SPL' : (!api.same(x, want) && !(P.BACK && k === 3) && !(P.MOVE && k === len - 2))) throw new Error(`tail-silk: ${what} made an incomplete copy (cell ${k})`);
       }
     };
-    let drops = 0, carpets = 0, jumped = 0, died = 0, split = 0;
+    let drops = 0, carpets = 0, jumped = 0, died = 0, split = 0, starts = 0, counted = false;
+    const t0Mov = api.norm(t0 + 1);
     return {
       before: (pc) => {
+        // Its n processes reach the forward stage together, from its own fan or a fan boot's.
+        if (!counted && api.entered()) {
+          if (pc === t0) starts++;
+          else if (pc === t0Mov) {
+            counted = true;
+            if (starts !== n) throw new Error(`tail-silk: ${starts} process${starts === 1 ? '' : 'es'} reached the forward stage together, not ${n} (FAN 0 needs a fan boot with N = ${n})`);
+          }
+        }
         if (pc === backMov) return { kind: 'back' };
         if (pc === mvMov) return { kind: 'move' };
         if (pc === dropAt && api.same(api.vm.peek(dropAt), drop)) {
@@ -529,7 +560,7 @@ const tailSilk = {
     };
   },
 };
-tailSilk.defaults = { STEP1: 3039, STEP2: 1607, STEP3: 5113, BSTEP: 2376, BACK: 1, MOVE: 0, POINTS: 0 };
+tailSilk.defaults = { STEP1: 3039, STEP2: 1607, STEP3: 5113, BSTEP: 2376, BACK: 1, MOVE: 0, POINTS: 0, FAN: 1 };
 
 const blocks = [silkImps, silkCc, lpPaper, tailSilk];
 export default blocks;

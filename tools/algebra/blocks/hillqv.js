@@ -80,6 +80,8 @@ const m45Units = (P, core) => {
   return out;
 };
 const m45Cells = (P, core) => m45Units(P, core).flatMap((u) => u.cells);
+// Its own cells: probe and table, three lines a unit, the mutation, two lines a second-half unit, the tail.
+const m45Size = (P) => 1 + P.UNITS + 3 * P.UNITS + 2 + 2 * P.UNITS2 + 2 + (Math.ceil(P.UNITS / 3) - 1) + 4;
 // The planted cell: the second cell of the second half's middle unit, so the
 // mutation, the ladder, the MUL by QDEC+1 and the pair choice all run.
 const m45Want = (P, core) => m45Units(P, core).filter((u) => u.half === 2)[Math.floor(P.UNITS2 / 2)].cells[1];
@@ -97,7 +99,18 @@ const qscanMul45 = {
     const core = settings.coreSize;
     if (gcd(P.QFAC, core) !== 1) return [`QFAC ${P.QFAC} has no inverse mod ${core}, so a hit can't be decoded`];
     if (P.UNITS2 > P.UNITS) return ['the second half reuses table entries, so UNITS2 must not exceed UNITS'];
+    // Long hills allow images much longer than the scan's nearest probe (169 cells at the defaults):
+    // there the image is checked in `linked`, against the length the warrior really has.
+    if (settings.maxLength > 100) return probeProblems('q^4.5 quickscan', { ...settings, maxLength: m45Size(P) }, m45Cells(P, core));
     return probeProblems('q^4.5 quickscan', settings, m45Cells(P, core));
+  },
+  linked(P, settings, label, { total, shiftedFrame }) {
+    if (settings.maxLength <= 100) return [];
+    const core = settings.coreSize, probe = label('probe');
+    // Moved by a boot, the copy can land anywhere: keep the whole length limit clear, as before.
+    if (shiftedFrame) return probeProblems('q^4.5 quickscan', settings, m45Cells(P, core));
+    return m45Cells(P, core).some((c) => mod(probe + c + 1, core) <= total + 1)
+      ? ['a q^4.5 quickscan probe lands on or next to the warrior itself'] : [];
   },
   // The probe (B = QDEC, the multiplier) and the table come first, so every
   // location is fixed relative to the probe whatever the rest of the warrior is.

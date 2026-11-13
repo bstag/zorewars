@@ -1,0 +1,54 @@
+{
+  "id": "seq",
+  "kids": [
+    {
+      "id": "opening-qscan-mul",
+      "P": {
+        "QFAC": 347,
+        "GAP": 138,
+        "UNITS": 6,
+        "SHARE": 0
+      }
+    },
+    {
+      "id": "probe-burst2",
+      "P": {
+        "COUNT": 17,
+        "STEP": 6,
+        "OFFSET": 0,
+        "GAP": 82,
+        "BOMB": 0
+      }
+    },
+    {
+      "id": "fanboot",
+      "P": {
+        "N": 4,
+        "K": 1,
+        "SPLIT": 1,
+        "HOPA": 3362,
+        "HOPB": 2391,
+        "MOREA": 1
+      },
+      "kids": [
+        {
+          "id": "armadillo-switch",
+          "P": {
+            "STEP": 3510,
+            "HOP": 56,
+            "STREAM": 1
+          }
+        },
+        {
+          "id": "compact-imp-pump",
+          "P": {
+            "N": 7,
+            "LEAD": 64,
+            "IMM": 1,
+            "RETIRE": 1
+          }
+        }
+      ]
+    }
+  ]
+}

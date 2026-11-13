@@ -3,6 +3,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { libraryOpponents, strip } from '../tools/hill.js';
 import { battlePool, hillOpponents, hillSettingsFor, progress, done } from './devtools-context.js';
+import {MUTATIONS,COUPLED_MUTATIONS} from '../tools/algebra/genome.js';
+import { RULESETS } from '../src/engine/index.js';
 
 // The counter table (tools/algebra/counters.js): --counters file (default
 // <out>/counters.json) is read if it exists, added to, and saved as we go.
@@ -54,7 +56,7 @@ export async function cmdEvolveTrees(args, h, { quiet = false } = {}) {
   const counters = await counterTable(f, out);
   try {
     await tagField(field, settings, json);
-    if (!json) console.log(`Evolving block trees on ${rules}${torus ? ` (torus ${torus})` : ''}, up to ${settings.maxLength} instructions, against ${field.length} ${f.hill ? 'hill' : 'library'} warriors: ${generations} generations of ${batch}${f.tune ? ', numbers only' : ''}, ${rounds} rounds on the screen, racing ${race}${ties !== 1 ? `, ties worth ${ties}` : ''}${aim && !f.tune ? ', mutations aimed by the counter table' : ''}.\n`);
+    if (!json) console.log(`Evolving block trees on ${rules}${torus ? ` (torus ${torus})` : ''}, up to ${settings.maxLength} instructions, against ${field.length} ${f.hill ? 'hill' : 'library'} warriors: ${generations} generations of ${batch}${f.tune ? ', numbers only' : ''}, ${rounds} rounds on the screen, racing ${race}${ties !== 1 ? `, ties worth ${ties}` : ''}${aim && !f.tune && !f['tree-ops'] ? ', mutations aimed by the counter table' : ''}.\n`);
     const r = await evolveTrees({ pool, field, rules, length, torus, starts, generations, batch, rounds, race, seed, archiveSize, ties, counters: counters.table, aim, aimTries, aimExplore, lexicase, lexEpsilon,
       ops,
       onLog: (t) => { done(json); if (!json) console.log(t); },
@@ -77,7 +79,7 @@ export async function cmdEvolveTrees(args, h, { quiet = false } = {}) {
       fs.writeFileSync(path.join(out, 'best.red'), best.source);
       fs.writeFileSync(path.join(out, 'best.json'), JSON.stringify(best.tree, null, 1));
     }
-    const report = { config: { rules, length, torus, generations, batch, rounds, race, seed, ties, tune: !!f.tune, hill: f.hill ?? 'library', opponents: field.length },
+    const report = { config: { rules, length, torus, generations, batch, rounds, race, seed, ties, tune: !!f.tune, ops:ops??MUTATIONS,verification:r.verification,hill: f.hill ?? 'library', opponents: field.length },
       stats: r.stats, history: r.history, placed: placed.map(({ w, ...e }) => e),
       finalists: r.finalists.map(({ w, source, ...e }) => e), archive: r.archive.map(({ w, source, ...e }) => e) };
     fs.writeFileSync(path.join(out, 'evolve-trees.json'), JSON.stringify(report, null, 1));
@@ -154,7 +156,7 @@ export function treeCommandOptions(f,h,{treeSettings,recipes}) {
     if (!Number.isInteger(n) || n < min) h.usage(`--${key} must be an integer of at least ${min}`);
     return n;
   };
-  const rules = f.rules ?? '94nop', length = integer('length', 100), torus = f.torus ?? null;
+  const rules = f.rules ?? '94nop', length = integer('length', Math.min(100, RULESETS[rules]?.maxLength ?? 100)), torus = f.torus ?? null;
   const settings = treeSettings(rules, length, torus);
   const generations = integer('generations', 10), batch = integer('batch', 30), rounds = integer('rounds', 10);
   const race = integer('race', 2, 0), seed = integer('seed', 1, 0), archiveSize = integer('archive-size', 48);
@@ -166,11 +168,14 @@ export function treeCommandOptions(f,h,{treeSettings,recipes}) {
   const lexEpsilon = Number(f['lex-epsilon'] ?? 0.1);
   if (f.select && !['lexicase', 'tournament'].includes(f.select)) h.usage('--select takes lexicase or tournament');
   if (!Number.isFinite(lexEpsilon) || lexEpsilon < 0) h.usage('--lex-epsilon must be a nonnegative finite number');
-  const ops = f.tune ? ['tune'] : undefined;
+  if(f.tune&&f['tree-ops'])h.usage('Choose --tune or --tree-ops; --tune keeps its numbers-only meaning');
+  const ops=f['tree-ops']?String(f['tree-ops']).split(',').map(op=>op.trim()):f.tune?['tune']:undefined;
+  if(ops?.some(op=>![...MUTATIONS,...COUPLED_MUTATIONS].includes(op)))h.usage('--tree-ops contains an unknown operator');
   // Starting trees: --start a.json[,b.json] (a tree or an array of trees), else the recipes for these rules.
   const starts = [];
   for (const file of f.start ? String(f.start).split(',') : []) starts.push(...[].concat(JSON.parse(fs.readFileSync(file, 'utf8'))));
   if (f.tune && (!f.start || !starts.length)) h.usage('--tune needs a nonempty --start tree.json');
+  if(ops?.every(op=>op==='tune'||COUPLED_MUTATIONS.includes(op))&&(!f.start||!starts.length))h.usage('Numeric/coupled operators need a nonempty --start tree.json');
   if (!starts.length) for (const r of Object.values(recipes)) if (r.rules.includes(rules) && !torus) starts.push(r.tree(rules));
   if (f.ladder && !f.hill) h.usage('--ladder needs --hill');
   const out = f.out ?? path.join('evolved', 'trees');

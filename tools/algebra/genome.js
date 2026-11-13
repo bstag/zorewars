@@ -4,6 +4,7 @@
 import { createHash } from 'node:crypto';
 import { leaves } from './leaves.js';
 import { combinators, definition, link, treeMismatches, shape } from './link.js';
+import {configureStoneImp} from './stone-imp-options.js';
 
 const pick = (xs, random) => xs[Math.floor(random() * xs.length)];
 const kinds = {};
@@ -27,7 +28,7 @@ const leaf = (id, random) => ({ id, P: sampleParams(id, random) });
 
 export function fits(tree, settings) {
   if (treeMismatches(tree, settings).length) return false;
-  try { return link(tree, settings).total <= settings.maxLength; } catch { return false; }
+  try { const built=link(tree,settings);return built.total<=settings.maxLength&&!built.misfits.length; } catch { return false; }
 }
 
 function randomShape(settings, random) {
@@ -100,6 +101,8 @@ function assemble({ main, boot, decoys }) {
 }
 
 export const MUTATIONS = ['tune', 'swap', 'boot', 'decoys', 'relocate', 'member', 'opening', 'wrap', 'unwrap', 'fan', 'fork'];
+// Opt-in family-aware operators; legacy mutation/search defaults stay unchanged.
+export const COUPLED_MUTATIONS = ['tune-placement','seed-mode','launcher-path'];
 const WRAPPERS = ['trigger', 'apart', 'copies', 'switch', 'restart', 'classify', 'parboot'];
 
 // One mutation that keeps the tree legal; returns { tree, op } or null.
@@ -108,8 +111,11 @@ export function mutate(tree, settings, random, tries = 60, ops = MUTATIONS) {
   onTorus = settings.topology === 'torus';
   for (let i = 0; i < tries; i++) {
     const op = pick(ops, random);
-    const t = mutation(op, tree, random);
-    if (t && fits(t, settings) && id(t) !== id(tree)) return { tree: t, op };
+    let t,configuration;
+    if(COUPLED_MUTATIONS.includes(op)){
+      try{const options=op==='tune-placement'?{[random()<0.7?'pumpShift':'stoneShift']:(random()<0.5?-1:1)*pick([1,2,4,8,16],random)}:op==='seed-mode'?{seedMode:pick([0,1,2,3],random)}:{path:pick([0,1,2],random),...(random()<0.5?{}:{wait:pick([0,1,2],random),reverse:pick([0,1],random)})};const proposal=configureStoneImp(tree,settings,options);t=proposal.tree;configuration={options,before:proposal.before,after:proposal.after,preserved:proposal.preserved,scope:proposal.scope};}catch{continue;}
+    }else t=mutation(op, tree, random);
+    if (t && fits(t, settings) && id(t) !== id(tree)) return { tree: t, op,...(configuration?{configuration}:{}) };
   }
   return null;
 }

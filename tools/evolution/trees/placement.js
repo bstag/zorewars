@@ -5,7 +5,7 @@ import { roundRobin } from '../../pushoff.js';
 // robin (once), plus the warrior against every hill warrior. `cache` keeps the
 // hill's round robin between calls.
 export async function placeOnHill({ pool, field, w, settings, rounds = 50, seed = 77, cache = {} }) {
-  const play = { ...settings, maxLength: Math.max(settings.maxLength, 200) };
+  const play = { ...settings, maxLength: settings.hillMaxLength ?? Math.max(settings.maxLength, 200) };
   cache.hill ??= await roundRobin(pool, field.map((x) => x.w), { rounds, seed, settings: play });
   const n = field.length, { scores } = cache.hill;
   const ours = await evaluate(pool, w, field, { rounds, seed: seed + 5003, settings: play });

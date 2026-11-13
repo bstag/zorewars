@@ -1,0 +1,753 @@
+{
+  "schema": "koenigstuhl-census-v1",
+  "hills": {
+    "88": {
+      "ranking": "https://asdflkj.net/COREWAR/88/hill32_rec.html",
+      "rankingSha256": "8ee79985a9f9a3fce4de9abef1e9eb7fd19ab2d1d06eb96779a3149ed7dfb5a0",
+      "matchedSourcesSha256": "53ddb89b441e45a635eb649900ae68919fdc408ae1680367ed2b01a6e3d4b122",
+      "settings": {
+        "coreSize": 8000,
+        "maxCycles": 80000,
+        "maxProcesses": 8000,
+        "maxLength": 100,
+        "minDistance": 100,
+        "pSpace": false,
+        "assertErrors": true,
+        "dialect": "88"
+      },
+      "ranks": 683,
+      "matched": 683,
+      "unmatchedArchiveFiles": 0,
+      "missingSources": 0,
+      "missingExamples": [],
+      "assemblyFailures": 0,
+      "failureExamples": [],
+      "all": {
+        "assembled": 683,
+        "medianLength": 17,
+        "split": 600,
+        "compare": 192,
+        "pSpace": 0,
+        "indirectSideEffects": 587
+      },
+      "top50": {
+        "assembled": 50,
+        "medianLength": 73.5,
+        "split": 50,
+        "compare": 44,
+        "pSpace": 0,
+        "indirectSideEffects": 50
+      },
+      "otherRanks": {
+        "assembled": 633,
+        "medianLength": 15,
+        "split": 550,
+        "compare": 148,
+        "pSpace": 0,
+        "indirectSideEffects": 537
+      },
+      "decades": {
+        "1990s": {
+          "assembled": 1,
+          "medianLength": 3,
+          "split": 1,
+          "compare": 0,
+          "pSpace": 0,
+          "indirectSideEffects": 1
+        },
+        "2000s": {
+          "assembled": 2,
+          "medianLength": 42.5,
+          "split": 2,
+          "compare": 0,
+          "pSpace": 0,
+          "indirectSideEffects": 1
+        },
+        "2020s": {
+          "assembled": 4,
+          "medianLength": 100,
+          "split": 4,
+          "compare": 4,
+          "pSpace": 0,
+          "indirectSideEffects": 4
+        },
+        "undated": {
+          "assembled": 676,
+          "medianLength": 16,
+          "split": 593,
+          "compare": 188,
+          "pSpace": 0,
+          "indirectSideEffects": 581
+        }
+      }
+    },
+    "94nop": {
+      "ranking": "https://asdflkj.net/COREWAR/94/hill32_rec.html",
+      "rankingSha256": "d179d9de2788cc879af9b51cd96fc6184cd4769f5df21551468ba7e7272325dd",
+      "matchedSourcesSha256": "9313b18110a50caea890ee0466ee334c57e49a6122b944777d80f57785bbbc8f",
+      "settings": {
+        "coreSize": 8000,
+        "maxCycles": 80000,
+        "maxProcesses": 8000,
+        "maxLength": 100,
+        "minDistance": 100,
+        "pSpace": false,
+        "assertErrors": true
+      },
+      "ranks": 1106,
+      "matched": 1106,
+      "unmatchedArchiveFiles": 0,
+      "missingSources": 0,
+      "missingExamples": [],
+      "assemblyFailures": 4,
+      "failureExamples": [
+        {
+          "name": "herbalavenger.red",
+          "reason": "unknown instruction '\u0000'"
+        },
+        {
+          "name": "notvery2.red",
+          "reason": "A-operand: unexpected 'addto'"
+        },
+        {
+          "name": "sptst4dp.red",
+          "reason": "B-operand: unexpected ','"
+        },
+        {
+          "name": "likerabbits.red",
+          "reason": "A-operand: unexpected '.I bomb' in expression"
+        }
+      ],
+      "all": {
+        "assembled": 1102,
+        "medianLength": 95,
+        "split": 1064,
+        "compare": 627,
+        "pSpace": 0,
+        "indirectSideEffects": 1083
+      },
+      "top50": {
+        "assembled": 50,
+        "medianLength": 100,
+        "split": 50,
+        "compare": 48,
+        "pSpace": 0,
+        "indirectSideEffects": 50
+      },
+      "otherRanks": {
+        "assembled": 1052,
+        "medianLength": 94,
+        "split": 1014,
+        "compare": 579,
+        "pSpace": 0,
+        "indirectSideEffects": 1033
+      },
+      "decades": {
+        "1990s": {
+          "assembled": 8,
+          "medianLength": 100,
+          "split": 8,
+          "compare": 4,
+          "pSpace": 0,
+          "indirectSideEffects": 8
+        },
+        "2000s": {
+          "assembled": 20,
+          "medianLength": 28,
+          "split": 15,
+          "compare": 8,
+          "pSpace": 0,
+          "indirectSideEffects": 19
+        },
+        "2010s": {
+          "assembled": 1,
+          "medianLength": 15,
+          "split": 1,
+          "compare": 1,
+          "pSpace": 0,
+          "indirectSideEffects": 1
+        },
+        "2020s": {
+          "assembled": 4,
+          "medianLength": 83.5,
+          "split": 4,
+          "compare": 4,
+          "pSpace": 0,
+          "indirectSideEffects": 4
+        },
+        "undated": {
+          "assembled": 1069,
+          "medianLength": 96,
+          "split": 1036,
+          "compare": 610,
+          "pSpace": 0,
+          "indirectSideEffects": 1051
+        }
+      }
+    },
+    "pspace": {
+      "ranking": "https://asdflkj.net/COREWAR/PSPACE/hill32_rec.html",
+      "rankingSha256": "c67f46a75d989d17734423943135398764f4930908b3f95d6358531e350db65c",
+      "matchedSourcesSha256": "44da4394ff0de4b00bc98cddc19bd0b769cd4e1f3ce7442b9743ae461fe88c0d",
+      "settings": {
+        "coreSize": 8000,
+        "maxCycles": 80000,
+        "maxProcesses": 8000,
+        "maxLength": 100,
+        "minDistance": 100,
+        "pSpace": true,
+        "assertErrors": true
+      },
+      "ranks": 206,
+      "matched": 206,
+      "unmatchedArchiveFiles": 0,
+      "missingSources": 0,
+      "missingExamples": [],
+      "assemblyFailures": 1,
+      "failureExamples": [
+        {
+          "name": "maybe.red",
+          "reason": "A-operand: unexpected 'z'"
+        }
+      ],
+      "all": {
+        "assembled": 205,
+        "medianLength": 99,
+        "split": 202,
+        "compare": 135,
+        "pSpace": 205,
+        "indirectSideEffects": 205
+      },
+      "top50": {
+        "assembled": 50,
+        "medianLength": 100,
+        "split": 50,
+        "compare": 30,
+        "pSpace": 50,
+        "indirectSideEffects": 50
+      },
+      "otherRanks": {
+        "assembled": 155,
+        "medianLength": 99,
+        "split": 152,
+        "compare": 105,
+        "pSpace": 155,
+        "indirectSideEffects": 155
+      },
+      "decades": {
+        "1990s": {
+          "assembled": 3,
+          "medianLength": 100,
+          "split": 3,
+          "compare": 3,
+          "pSpace": 3,
+          "indirectSideEffects": 3
+        },
+        "2000s": {
+          "assembled": 1,
+          "medianLength": 100,
+          "split": 1,
+          "compare": 1,
+          "pSpace": 1,
+          "indirectSideEffects": 1
+        },
+        "undated": {
+          "assembled": 201,
+          "medianLength": 99,
+          "split": 198,
+          "compare": 131,
+          "pSpace": 201,
+          "indirectSideEffects": 201
+        }
+      }
+    },
+    "icws64": {
+      "ranking": "https://asdflkj.net/COREWAR/ICWS64/hill32_rec.html",
+      "rankingSha256": "dcfd91ff0a06cbae94d85b754471dc7a0f727bf8e5648b70de29510ad7d3d912",
+      "matchedSourcesSha256": "2761c4cadc529bbbc8ecd130eaab0f348b18118c664c0aba394905135df939d3",
+      "settings": {
+        "coreSize": 8192,
+        "maxCycles": 80000,
+        "maxProcesses": 64,
+        "maxLength": 100,
+        "minDistance": 100,
+        "pSpace": false,
+        "assertErrors": true,
+        "dialect": "88"
+      },
+      "ranks": 475,
+      "matched": 475,
+      "unmatchedArchiveFiles": 0,
+      "missingSources": 0,
+      "missingExamples": [],
+      "assemblyFailures": 0,
+      "failureExamples": [],
+      "all": {
+        "assembled": 475,
+        "medianLength": 14,
+        "split": 400,
+        "compare": 100,
+        "pSpace": 0,
+        "indirectSideEffects": 382
+      },
+      "top50": {
+        "assembled": 50,
+        "medianLength": 38,
+        "split": 50,
+        "compare": 25,
+        "pSpace": 0,
+        "indirectSideEffects": 44
+      },
+      "otherRanks": {
+        "assembled": 425,
+        "medianLength": 13,
+        "split": 350,
+        "compare": 75,
+        "pSpace": 0,
+        "indirectSideEffects": 338
+      },
+      "decades": {
+        "1990s": {
+          "assembled": 1,
+          "medianLength": 3,
+          "split": 1,
+          "compare": 0,
+          "pSpace": 0,
+          "indirectSideEffects": 1
+        },
+        "undated": {
+          "assembled": 474,
+          "medianLength": 14,
+          "split": 399,
+          "compare": 100,
+          "pSpace": 0,
+          "indirectSideEffects": 381
+        }
+      }
+    },
+    "icws": {
+      "ranking": "https://asdflkj.net/COREWAR/ICWS/hill32_rec.html",
+      "rankingSha256": "3436fe5a006e22f5b5132b5c842f44aa0aa432ef20cc2e630ed76e77ed961c33",
+      "matchedSourcesSha256": "e01137f09074ba84bd62e02e3237a143b16b0855e4387d7d21946092aedb0117",
+      "settings": {
+        "coreSize": 8192,
+        "maxCycles": 100000,
+        "maxProcesses": 8000,
+        "maxLength": 100,
+        "minDistance": 100,
+        "pSpace": false,
+        "assertErrors": true,
+        "dialect": "88"
+      },
+      "ranks": 482,
+      "matched": 482,
+      "unmatchedArchiveFiles": 0,
+      "missingSources": 0,
+      "missingExamples": [],
+      "assemblyFailures": 0,
+      "failureExamples": [],
+      "all": {
+        "assembled": 482,
+        "medianLength": 13.5,
+        "split": 407,
+        "compare": 109,
+        "pSpace": 0,
+        "indirectSideEffects": 395
+      },
+      "top50": {
+        "assembled": 50,
+        "medianLength": 62,
+        "split": 50,
+        "compare": 32,
+        "pSpace": 0,
+        "indirectSideEffects": 50
+      },
+      "otherRanks": {
+        "assembled": 432,
+        "medianLength": 13,
+        "split": 357,
+        "compare": 77,
+        "pSpace": 0,
+        "indirectSideEffects": 345
+      },
+      "decades": {
+        "1990s": {
+          "assembled": 1,
+          "medianLength": 3,
+          "split": 1,
+          "compare": 0,
+          "pSpace": 0,
+          "indirectSideEffects": 1
+        },
+        "undated": {
+          "assembled": 481,
+          "medianLength": 14,
+          "split": 406,
+          "compare": 109,
+          "pSpace": 0,
+          "indirectSideEffects": 394
+        }
+      }
+    },
+    "lp": {
+      "ranking": "https://asdflkj.net/COREWAR/LP/hill32_rec.html",
+      "rankingSha256": "ab1cf2a21f20a4ccac0336f41a2436f9c49717bd7e72571428f7f4cd2548c363",
+      "matchedSourcesSha256": "3ba3f1f6800bd85715277df2e90c87a331afb70f49ef511c7d4bcc4802467ed2",
+      "settings": {
+        "coreSize": 8000,
+        "maxCycles": 80000,
+        "maxProcesses": 8,
+        "maxLength": 200,
+        "minDistance": 200,
+        "pSpace": true,
+        "assertErrors": true
+      },
+      "ranks": 150,
+      "matched": 149,
+      "unmatchedArchiveFiles": 0,
+      "missingSources": 1,
+      "missingExamples": [
+        "lpkd.red"
+      ],
+      "assemblyFailures": 0,
+      "failureExamples": [],
+      "all": {
+        "assembled": 149,
+        "medianLength": 97,
+        "split": 135,
+        "compare": 51,
+        "pSpace": 19,
+        "indirectSideEffects": 149
+      },
+      "top50": {
+        "assembled": 49,
+        "medianLength": 100,
+        "split": 47,
+        "compare": 20,
+        "pSpace": 9,
+        "indirectSideEffects": 49
+      },
+      "otherRanks": {
+        "assembled": 100,
+        "medianLength": 91,
+        "split": 88,
+        "compare": 31,
+        "pSpace": 10,
+        "indirectSideEffects": 100
+      },
+      "decades": {
+        "undated": {
+          "assembled": 149,
+          "medianLength": 97,
+          "split": 135,
+          "compare": 51,
+          "pSpace": 19,
+          "indirectSideEffects": 149
+        }
+      }
+    },
+    "94x": {
+      "ranking": "https://asdflkj.net/COREWAR/X/hill32_rec.html",
+      "rankingSha256": "350bc54dc308645b8a249438e8dd27f8c341f7314773b07cfbe1b1898a434ed2",
+      "matchedSourcesSha256": "9e80f436294152797ea9946204a3bf07e6d77d76f654b6a2e7de3ca3a2111522",
+      "settings": {
+        "coreSize": 55440,
+        "maxCycles": 500000,
+        "maxProcesses": 10000,
+        "maxLength": 200,
+        "minDistance": 200,
+        "pSpace": true,
+        "assertErrors": true
+      },
+      "ranks": 214,
+      "matched": 214,
+      "unmatchedArchiveFiles": 0,
+      "missingSources": 0,
+      "missingExamples": [],
+      "assemblyFailures": 0,
+      "failureExamples": [],
+      "all": {
+        "assembled": 214,
+        "medianLength": 91,
+        "split": 209,
+        "compare": 84,
+        "pSpace": 37,
+        "indirectSideEffects": 210
+      },
+      "top50": {
+        "assembled": 50,
+        "medianLength": 192,
+        "split": 50,
+        "compare": 27,
+        "pSpace": 17,
+        "indirectSideEffects": 50
+      },
+      "otherRanks": {
+        "assembled": 164,
+        "medianLength": 64.5,
+        "split": 159,
+        "compare": 57,
+        "pSpace": 20,
+        "indirectSideEffects": 160
+      },
+      "decades": {
+        "undated": {
+          "assembled": 214,
+          "medianLength": 91,
+          "split": 209,
+          "compare": 84,
+          "pSpace": 37,
+          "indirectSideEffects": 210
+        }
+      }
+    },
+    "tiny": {
+      "ranking": "https://asdflkj.net/COREWAR/TINY/hill32_rec.html",
+      "rankingSha256": "ac2ff98dec2567f5a8acf8d3ad18619ccbac6acdd3d35d660b8cdb5c29becae4",
+      "matchedSourcesSha256": "39683e0adef57ad57ac37356c24684142edd7de22977d23df33fb21a74e2989a",
+      "settings": {
+        "coreSize": 800,
+        "maxCycles": 8000,
+        "maxProcesses": 800,
+        "maxLength": 20,
+        "minDistance": 20,
+        "pSpace": true,
+        "assertErrors": true
+      },
+      "ranks": 436,
+      "matched": 436,
+      "unmatchedArchiveFiles": 0,
+      "missingSources": 0,
+      "missingExamples": [],
+      "assemblyFailures": 0,
+      "failureExamples": [],
+      "all": {
+        "assembled": 436,
+        "medianLength": 19,
+        "split": 423,
+        "compare": 168,
+        "pSpace": 7,
+        "indirectSideEffects": 433
+      },
+      "top50": {
+        "assembled": 50,
+        "medianLength": 20,
+        "split": 50,
+        "compare": 24,
+        "pSpace": 0,
+        "indirectSideEffects": 50
+      },
+      "otherRanks": {
+        "assembled": 386,
+        "medianLength": 18,
+        "split": 373,
+        "compare": 144,
+        "pSpace": 7,
+        "indirectSideEffects": 383
+      },
+      "decades": {
+        "2000s": {
+          "assembled": 1,
+          "medianLength": 20,
+          "split": 1,
+          "compare": 0,
+          "pSpace": 0,
+          "indirectSideEffects": 1
+        },
+        "2010s": {
+          "assembled": 2,
+          "medianLength": 20,
+          "split": 2,
+          "compare": 0,
+          "pSpace": 0,
+          "indirectSideEffects": 2
+        },
+        "2020s": {
+          "assembled": 10,
+          "medianLength": 20,
+          "split": 10,
+          "compare": 3,
+          "pSpace": 0,
+          "indirectSideEffects": 10
+        },
+        "undated": {
+          "assembled": 423,
+          "medianLength": 19,
+          "split": 410,
+          "compare": 165,
+          "pSpace": 7,
+          "indirectSideEffects": 420
+        }
+      }
+    },
+    "nano": {
+      "ranking": "https://asdflkj.net/COREWAR/NANO/hill32_rec.html",
+      "rankingSha256": "919d3f84ebaaf112d538e021346f0fad4ea0dbf76aa8f163d0e38e8c6eb045ab",
+      "matchedSourcesSha256": "29d806db01f1c4ba06a519b13f4be6c7d218561d55cbe81dbcce32fa617b0355",
+      "settings": {
+        "coreSize": 80,
+        "maxCycles": 800,
+        "maxProcesses": 80,
+        "maxLength": 5,
+        "minDistance": 5,
+        "pSpace": true,
+        "assertErrors": true
+      },
+      "ranks": 499,
+      "matched": 499,
+      "unmatchedArchiveFiles": 0,
+      "missingSources": 0,
+      "missingExamples": [],
+      "assemblyFailures": 0,
+      "failureExamples": [],
+      "all": {
+        "assembled": 499,
+        "medianLength": 5,
+        "split": 424,
+        "compare": 26,
+        "pSpace": 0,
+        "indirectSideEffects": 492
+      },
+      "top50": {
+        "assembled": 50,
+        "medianLength": 5,
+        "split": 49,
+        "compare": 0,
+        "pSpace": 0,
+        "indirectSideEffects": 50
+      },
+      "otherRanks": {
+        "assembled": 449,
+        "medianLength": 5,
+        "split": 375,
+        "compare": 26,
+        "pSpace": 0,
+        "indirectSideEffects": 442
+      },
+      "decades": {
+        "2000s": {
+          "assembled": 9,
+          "medianLength": 5,
+          "split": 9,
+          "compare": 0,
+          "pSpace": 0,
+          "indirectSideEffects": 9
+        },
+        "2020s": {
+          "assembled": 13,
+          "medianLength": 5,
+          "split": 11,
+          "compare": 1,
+          "pSpace": 0,
+          "indirectSideEffects": 13
+        },
+        "undated": {
+          "assembled": 477,
+          "medianLength": 5,
+          "split": 404,
+          "compare": 25,
+          "pSpace": 0,
+          "indirectSideEffects": 470
+        }
+      }
+    },
+    "odd": {
+      "ranking": "https://asdflkj.net/COREWAR/ODD/hill32.html",
+      "rankingSha256": "4f64d7f3da6be5cdfbc500025609f80c4f6e1eb3b6227080110764443df637c0",
+      "matchedSourcesSha256": "7891dcead1dbf8a6b7b8ca9d14cb65676e9745a215c9ce78dc0aad7286d99dd9",
+      "settings": {
+        "coreSize": 8000,
+        "maxCycles": 80000,
+        "maxProcesses": 8000,
+        "maxLength": 800,
+        "minDistance": 800,
+        "pSpace": true,
+        "assertErrors": true
+      },
+      "ranks": 1196,
+      "matched": 1162,
+      "unmatchedArchiveFiles": 0,
+      "missingSources": 33,
+      "missingExamples": [
+        "angelstrumpet94.red",
+        "holoshot.red",
+        "kudzu94.red",
+        "neith_2024.red",
+        "cliqclaq.red"
+      ],
+      "assemblyFailures": 7,
+      "failureExamples": [
+        {
+          "name": "hooliganr16.red",
+          "reason": "unknown instruction 'm.b'"
+        },
+        {
+          "name": "lotir3.red",
+          "reason": "unknown instruction 'M.I'"
+        },
+        {
+          "name": "laughall.red",
+          "reason": "unknown instruction 'for'"
+        },
+        {
+          "name": "fullmoon.red",
+          "reason": "B-operand: unexpected 'paper'"
+        },
+        {
+          "name": "rwitcher.red",
+          "reason": "unknown instruction 'M.i'"
+        }
+      ],
+      "all": {
+        "assembled": 1156,
+        "medianLength": 20,
+        "split": 935,
+        "compare": 413,
+        "pSpace": 170,
+        "indirectSideEffects": 1066
+      },
+      "top50": {
+        "assembled": 46,
+        "medianLength": 85.5,
+        "split": 46,
+        "compare": 37,
+        "pSpace": 12,
+        "indirectSideEffects": 46
+      },
+      "otherRanks": {
+        "assembled": 1110,
+        "medianLength": 19,
+        "split": 889,
+        "compare": 376,
+        "pSpace": 158,
+        "indirectSideEffects": 1020
+      },
+      "decades": {
+        "1990s": {
+          "assembled": 5,
+          "medianLength": 73,
+          "split": 3,
+          "compare": 2,
+          "pSpace": 2,
+          "indirectSideEffects": 5
+        },
+        "2010s": {
+          "assembled": 2,
+          "medianLength": 19.5,
+          "split": 2,
+          "compare": 1,
+          "pSpace": 0,
+          "indirectSideEffects": 2
+        },
+        "undated": {
+          "assembled": 1149,
+          "medianLength": 20,
+          "split": 930,
+          "compare": 410,
+          "pSpace": 168,
+          "indirectSideEffects": 1059
+        }
+      }
+    }
+  }
+}

@@ -5,13 +5,18 @@ export {fanLines} from './fan-lines.js';
 import { leaves } from './leaves.js';
 import { initialContract, leafContract, combinatorContract } from './contracts.js';
 import { makeGeometry } from '../../src/engine/geometry.js';
+import { resolveChecksums } from './checksum.js';
+import { switchTable, emitSwitchTable } from './switch-table.js';
+import { switchScore, emitSwitchScore } from './switch-score.js';
 
 export const combinators = {
+  fanboot3: { kids:[3,3],params:{N:[2,16],MOREA:[0,1],HOPA:[0,54000],HOPB:[0,54000],HOPC:[0,54000],EXACT:[1,1],ROUTE:[0,1]},defaults:{N:4,MOREA:1,HOPA:2000,HOPB:4000,HOPC:6000,EXACT:1,SPLIT:1,K:1,ROUTE:0},
+    purpose:'A three-member lockstep fan boot. N-1+MOREA processes enter the first body and one enters each of the other two. Runtime copies are independent; the opening and copy fan are shared. Exact linked rounded-copy overlap checks are mandatory; ring-only and unshifted. ROUTE 1 changes the split to N / 1 / N: every worker forks into the first body and into the third, in lockstep, then a counter lets one worker into the second and ends the rest (MOREA has no effect there).' },
   seq: { kids: [2, 8], purpose: 'Members run one after another; each hands control to the next.' },
   par: { kids: [2, 4], purpose: 'Members launched side by side with SPL.' },
   relocate: { kids: [1, 1], params: { HOP: [256, 54000] }, defaults: { HOP: 4096 }, purpose: 'Copies its member to probe + HOP and runs it there.' },
-  boot: { kids: [1, 2], params: { HOP: [0, 54000], UNROLL: [1, 4], HOPY: [0, 200], HOPZ: [0, 200], WIPE: [0, 1], EARLY: [0, 1] }, defaults: { HOP: 4096, UNROLL: 1, HOPY: 0, HOPZ: 0, WIPE: 0, EARLY: 0 },
-    purpose: 'Copies its first member to + HOP (UNROLL cells per loop) and runs the copy; the second (data) stays behind. WIPE 1: the boot then erases its own pointers to the copy, so a scanner that finds the boot learns nothing. EARLY 1 (gap 10, copy-ahead): copies forward and SPLs into the copy as soon as its entry is in, then finishes copying the tail while it already runs, so the body is live and safe much sooner against a fast quickscan (\'94, ring only).' },
+  boot: { kids: [1, 2], params: { HOP: [0, 54000], UNROLL: [1, 4], HOPY: [0, 200], HOPZ: [0, 200], WIPE: [0, 1], EARLY: [0, 1], SHARE: [0, 4], DIRECT: [0, 1] }, defaults: { HOP: 4096, UNROLL: 1, HOPY: 0, HOPZ: 0, WIPE: 0, EARLY: 0, SHARE: 0, DIRECT: 0 },
+    purpose: 'Copies its first member to + HOP (UNROLL cells per loop) and runs the copy; the second (data) stays behind. WIPE 1 erases the boot pointers. EARLY 1 launches the entry while the rest is still being copied (\'94, ring only). DIRECT 1 emits one direct MOV per payload cell, then jumps into the copy.' },
   image: { kids: [2, 4], purpose: 'Members laid out in order; the first runs, the rest are data.' },
   trigger: { kids: [2, 2], params: { MODE: [0, 2], TIME: [1, 4096] }, defaults: { MODE: 0, TIME: 2000 },
     purpose: 'Runs its first member (a block with a loop) with a watcher beside it; when the watcher fires it rewrites the loop to jump to the second member. MODE 0: after TIME laps of the watcher; 1: when its marker is damaged; 2: when the first member\'s loop is damaged (a watchdog).' },
@@ -21,6 +26,8 @@ export const combinators = {
     purpose: 'Runs N copies of its member, D cells apart.' },
   switch: { kids: [2, 4], params: { CELL: [1, 500], POLICY: [0, 2] }, defaults: { CELL: 17, POLICY: 0 },
     purpose: 'Chooses one of its members by P-space (the 94x hill only). POLICY 0: keep the choice after a win or tie, move to the next after a loss; 1: move on only after two losses in a row; 2: move on every round.' },
+  'switch-table': switchTable,
+  'switch-score': switchScore,
   fork: { kids: [3, 3], params: { BY: [0, 1] }, defaults: { BY: 0 },
     purpose: 'Runs its first member (an opening that provides a probe), then picks a body by what it found. BY 0: the second member if the probe holds a hit, the third if it is still at the image boundary (nothing found). BY 1 (the opening must provide a verdict, as probe-verdict does): the second member if it found a body, the third if it found nothing or a lone cell (a bomb or decoy).' },
   restart: { kids: [1, 1], purpose: 'Keeps a pristine copy of its member (a block with a loop) and a watcher; when the loop is damaged, copies the member back and starts it again.' },
@@ -28,8 +35,8 @@ export const combinators = {
     params: { K: [1, 4], HOP: [0, 54000], HOPY: [0, 200], HOPZ: [0, 200], STAY: [0, 1], REACT: [0, 2], HOP2: [0, 54000], HOP2Y: [0, 200], HOP2Z: [0, 200], CARPET: [1, 20] },
     defaults: { K: 2, HOP: 4000, HOPY: 0, HOPZ: 0, STAY: 0, REACT: 0, HOP2: 2000, HOP2Y: 0, HOP2Z: 0, CARPET: 8 },
     purpose: 'A boot by K independent copy loops, each copying its member to + HOP, so a bomb on one loop doesn\'t stop the copy; the first loop to finish starts the copy. STAY 1 keeps a process running the original too. REACT: the other loops stay on as watchers of the copy\'s loop; when it is hit they make a new copy at + HOP2 (1), first stunning CARPET cells either side of the hit (2).' },
-  fanboot: { kids: [2, 2], params: { N: [2, 16], K: [1, 4], SPLIT: [0, 1], HOPA: [0, 54000], HOPB: [0, 54000] }, defaults: { N: 8, K: 2, SPLIT: 0, HOPA: 2000, HOPB: 5000 },
-    purpose: 'The hill fan boot of two bodies: a fan of SPLs makes N processes that copy both members in lockstep (each copy line copies N cells), the first to + HOPA and the second to + HOPB. The copy pointers are the jump vectors, so the launch happens the moment the copy is done. SPLIT 0: K*N processes enter the first member and N the second; SPLIT 1: N-1 the first and one the second. N is 2, 3, 4, 6, 8, 12 or 16.' },
+  fanboot: { kids: [2, 2], params: { N: [2, 16], K: [1, 4], SPLIT: [0, 1], MOREA: [0, 1], HOPA: [0, 54000], HOPB: [0, 54000], EXACT: [0, 1], CHECK: [0, 3], C0: [0, 199], C1: [0, 199], C2: [0, 199], BYPASS: [0, 1], PATH:[0,2], PUMPWAIT:[0,12], PUMPORDER:[0,1] }, defaults: { N: 8, K: 2, SPLIT: 0, MOREA: 0, HOPA: 2000, HOPB: 5000, EXACT: 0, CHECK: 0, C0: 0, C1: 1, C2: 2, BYPASS: 0, PATH:0, PUMPWAIT:0, PUMPORDER:0 },
+    purpose: 'The hill fan boot of two bodies: a fan of SPLs makes N processes that copy both members in lockstep (each copy line copies N cells), the first to + HOPA and the second to + HOPB. The copy pointers are the jump vectors, so the launch happens the moment the copy is done. SPLIT 0: K*N processes enter the first member and N the second; SPLIT 1: N-1 the first and one the second; MOREA 1 adds one first-member worker with a final SPL. N is 2, 3, 4, 6, 8, 12 or 16. Experimental CHECK: 1 sums both numeric fields of the source and padded tail; 2 sums C0..C2; 3 rejects zero-field bombs at C0/C1. Failure starts the first member\'s cold clear. BYPASS retains the cost while disabling rejection.' },
   classify: { kids: [3, 3], params: { MARKS: [1, 10], DIST: [256, 27000], SPREAD: [1, 2000] }, defaults: { MARKS: 6, DIST: 2000, SPREAD: 800 }, purpose: 'Runs its first member (a block with a loop) beside MARKS tripwire cells scattered DIST away, SPREAD apart, so an attacker out in the core trips one before it reaches the body. When a tripwire is overwritten it reads what hit it: both fields zero (a clear\'s or stone\'s DAT) hands over to the second member; anything else (copied code, a scanner\'s bomb) to the third.' },
 };
 
@@ -41,10 +48,25 @@ export function switchChoice(policy, n, result, choice, losses) {
   if (policy === 1) return result === 0 && losses + 1 >= 2 ? (choice + 1) % n : choice;
   return result === -1 ? choice : (choice + 1) % n;
 }
+combinators.fanboot.knowledge={parameterRoles:{N:'copy-fan size',SPLIT:'routing strategy',MOREA:'extra first-member entrant with SPLIT1',K:'inactive when SPLIT1',HOPA:'first source-relative displacement',HOPB:'second source-relative displacement',EXACT:'validation-only: permit close copies after exact linked span checks; conservative spacing stays default',CHECK:'integrity-check strategy',BYPASS:'experimental cost control'},
+  tuning:['SPLIT1 supplies N-1 first-member entrants and one second-member entrant; MOREA1 adds one first-member entrant.','Use linked labels to calculate physical destinations, not raw HOP differences.','Worker counts do not predict launch timing without measuring the growing queues.','Move pump placement and imp lead together when preserving a seed; recompute after source layout changes.'],
+  placement:['Resolved copy checks include entry trampolines, N-rounded tails, both copied destinations, the original image and core wrapping.','EXACT1 bypasses only the coarse256-cell spacing estimate; exact linked overlap checks remain mandatory.','EXACT requires an unshifted linked frame; nested relocation is explicitly rejected.','Internal secondary boots in a leaf still require their own contracts and dynamic observation.'],
+  failures:['Passing copy-overlap guards does not prove safety from later friendly bombing.','The fourth stone entrant alone left insufficient compatible imps in the tested geometry; moving the pump eight cells back restored a viable assembly.'],evidence:[]};
+combinators.fanboot3.knowledge={parameterRoles:{N:'copy fan size and first-body worker allocation',MOREA:'adds one first-body entrant',HOPA:'stone source-relative displacement',HOPB:'first pump source-relative displacement',HOPC:'second pump source-relative displacement',EXACT:'mandatory actual rounded-copy validation'},
+ tuning:['Resolve physical positions from linked labels after adding the third member. withIndependentImpEngines preserves the stone and first seed while exposing second-pump placement and point counts.','The two runtime pumps have separate code, pointers and seeds, but share the opening, boot fan, core and process budget.','Full verification with multiple compact pumps automatically checks FIFO-tagged surviving descendants for each engine in every admission scenario; do not count a shared instruction-compatible pool twice. Quick verification is a bounded mechanism check and does not establish independent insurance.'],
+ failures:['The 2026-11-04 bounded development grids did not retain two viable seven-point lineages. At second pump6055 the pooled count10 concealed only2 descendants from the first engine and8 from the second.','Six admitted three-point pairs kept both lineages alive and passed12 companion-erasure trials, yet scored4.10 to5.13 percent below current in one eight-round full-field screen. Single three-point controls were only0.14 and0.26 percent below current.','The best tested dual pair is77 instructions versus69; first imps149→168/203, quiet first clear4464→5203 and loop visits by1000 fall152→130. Healthy independent insurance is not automatically sufficient offensive pressure.'],
+ evidence:[]};
+combinators.fanboot.knowledge.preseed=['A direct member may declare bootSeed {source,entry,offset}. Initialize it once before the copy fan, using the deployed member frame. Separately seeded templates can be hoisted to outer seq state and kept outside copied live spans.','Seeded initialization currently requires an unshifted frame without CHECK. Seed targets must avoid the original image and every rounded copy; ordinary copying overlap checks still apply.','The completed fixed-position N7 trial saves three quiet cycles with a four-cell copy but does not beat current in the fresh race. Early data placement, useful launch work, source-damage propagation and field strength are separate checks.'];
+combinators.fanboot.purpose+=' PATH0 is that shared default. PATH1/2 instead split one unrolled exact-span second-member copy path from the first-member fan (continuation first/second respectively). These paths require SPLIT1/MOREA1, entry-first leaf members, no CHECK and an unshifted frame. PUMPWAIT adds second-path NOP visits and PUMPORDER1 copies it in reverse.';
+Object.assign(combinators.fanboot.knowledge.parameterRoles,{PATH:'0 lockstep default;1 continuation stone/child pump;2 continuation pump/child stone',PUMPWAIT:'pump-bootstrap NOP visits, not global cycles; PATH only',PUMPORDER:'0 forward or1 reverse unrolled pump copy; PATH only'});
+combinators.fanboot.knowledge.separatePath=['PATH1/2 require two entry-first leaf members, SPLIT1/MOREA1, no CHECK and an unshifted frame. The stone copy is N-rounded; the pump copies its exact live span. N workers enter the stone and one enters the pump.','Relink and compensate HOPA/HOPB after changing the source layout; withSeparateLauncherPath preserves deployed stone, pump and seed positions. Copy order and one extra wait visit can change later scheduling and imp survival.','Keep PATH0 byte-compatible. Do not loosen full purpose gates when a fast path leaves fewer than seven compatible imps.'];
+combinators.fanboot.knowledge.configuration=['configureStoneImp returns a cloned proposal with linked before/after positions and preservation flags. It compensates HOPA/HOPB after seed/path/opening layout changes, and LEAD after pump movement when keeping the seed. Explicit lead and seedShift are mutually exclusive.','The ordinary configure CLI verifies full purpose before saving source/tree. Opt-in coupled family tuning also requires full admission. Exact close placement remains an explicit choice and does not bypass real copy/seed overlap checks.'];
+combinators.fanboot.knowledge.multiSeed=['bootSeed may return one {source,entry,offset} descriptor or an ordered array. Initialize all targets before splitting in the deployed frame; check each against original/rounded copies and every other initializer target. Single-descriptor output is unchanged.','Experimental private-source pump modes use two initializers (head then bank), adding one original-image instruction while retaining four copied live cells. Source isolation, bank integrity and formation recovery are separate promises; the measured contender is not replaced by this experiment.'];
 for (const [id, c] of Object.entries(combinators)) { c.id = id; c.combinator = true; c.params ??= {}; c.defaults ??= {}; }
 
 export const definition = (id) => leaves[id] ?? combinators[id];
 const isLeaf = (node) => Object.hasOwn(leaves, node.id);
+const seedDescriptors=node=>[].concat(leaves[node.id]?.bootSeed?.(node.P)??[]);
 
 // Give every node its own label namespace, in a deterministic order.
 export function annotate(tree) {
@@ -60,7 +82,7 @@ export function annotate(tree) {
 export function entryOf(node) {
   if (isLeaf(node)) return node.ns + leaves[node.id].entry;
   if (node.id === 'seq' || node.id === 'image' || node.id === 'fork') return entryOf(node.kids[0]);
-  return node.ns + { par: 'split', relocate: 'transition', boot: 'boot', trigger: 'start', apart: 'start', copies: 'start', switch: 'start', restart: 'start', classify: 'start', parboot: 'start', fanboot: 'start' }[node.id];
+  return node.ns + { par: 'split', relocate: 'transition', boot: 'boot', trigger: 'start', apart: 'start', copies: 'start', switch: 'start', 'switch-table': 'start', 'switch-score': 'start', restart: 'start', classify: 'start', parboot: 'start', fanboot: 'start', fanboot3:'start' }[node.id];
 }
 
 // par lays out members that write ahead of themselves (a spiral's imps) last.
@@ -154,11 +176,12 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
   };
   const op = (opcode, mod) => (old ? opcode : `${opcode}.${mod}`);
   function pass(sizes) {
-    const lines = [], labels = {}, spans = {};
+    const lines = [], labels = {}, spans = {}, checksums = [];
     let pc = 0;
     const total = sizes?.total ?? 0;
     const scopes = [];
     const stateDone = new Set();
+    const stateSpans = {};                         // where each leaf's state cells went (for linked's info.dead)
     const ctxFor = (node, env) => {
       const L = (local) => node.ns + local;
       return {
@@ -194,8 +217,13 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
       const def = leaves[leaf.id];
       if (!def.state || stateDone.has(leaf.ns)) return;
       stateDone.add(leaf.ns);
+      const from = pc;
       def.state(ctxFor(leaf, env));
+      stateSpans[leaf.ns] = { start: from, size: pc - from };
     };
+    // A switch's members may share one booted payload (boot SHARE 1, redeploy): only those
+    // capabilities are offered across members, so nothing else a member resolves changes.
+    const sharedPayload = (node) => new Map([...iface(node, settings).provides].filter(([c]) => /^payload/.test(c)));
     function emit(node, env) {
       const start = pc;
       if (isLeaf(node)) {
@@ -247,8 +275,20 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
           }
           case 'boot': {
             const main = spanOf(kids[0]);
+            const start = pc;
+            // SHARE k: name the payload's cells, so a redeploy (FROM k) elsewhere can copy them too (no code changes).
+            if (P.SHARE) ctx.mark('payload');
             emit(kids[0], { ...env, span: main.size });
+            if (P.SHARE) ctx.mark('payloadEnd');
             if (kids[1]) emit(kids[1], env);
+            if (P.DIRECT) {
+              for (let i = 0; i < main.size; i++) {
+                const from = start + i - pc;
+                ctx.ins(i ? '' : 'boot', 'MOV', 'I', `${from}`, `${hop(from + P.HOP, P.HOPY, P.HOPZ)}`);
+              }
+              ctx.ins(main.size ? '' : 'boot', 'JMP', 'B', hopFrom(entryOf(kids[0]), P.HOP, P.HOPY, P.HOPZ));
+              break;
+            }
             if (P.EARLY) {
               // Copy-ahead (gap 10). Copy the member forward (postincrement), and the
               // moment its entry is in, SPL a process into the copy and keep copying the
@@ -401,7 +441,23 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
             ctx.ins('choice', 'DAT', 'F', '#0', '#0');
             if (P.POLICY === 1) ctx.ins('losses', 'DAT', 'F', '#0', '#0');
             kids.forEach((kid, i) => ctx.ins(i ? '' : 'table', 'JMP', 'B', entryOf(kid)));
+            scopes.push(sharedPayload(node));
             for (const kid of kids) emit(kid, env);
+            scopes.pop();
+            break;
+          }
+          case 'switch-table': {
+            emitSwitchTable(ctx, kids.map(entryOf));
+            scopes.push(sharedPayload(node));
+            for (const kid of kids) emit(kid, env);
+            scopes.pop();
+            break;
+          }
+          case 'switch-score': {
+            emitSwitchScore(ctx, kids.map(entryOf));
+            scopes.push(sharedPayload(node));
+            for (const kid of kids) emit(kid, env);
+            scopes.pop();
             break;
           }
           case 'restart': {
@@ -481,33 +537,108 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
             emit(x, env);
             break;
           }
+          case 'fanboot3':
           case 'fanboot': {
             // The fan, then every process runs each copy line once: MOV <v,{v copies one
             // cell per process, from v's B pointer to v's A pointer. Each member is copied
             // from its first cell (or from a JMP to its entry put in front of it), M cells
             // in all, so after the last copy v's A points at the copy's first cell and the
             // same cell, run as SPL / DJN / JMP, sends the processes there.
-            const [a, b] = kids, N = P.N;
+            const [a, b] = kids, N = P.N, triple=node.id==='fanboot3';
+            const seeded=kids.flatMap((kid,i)=>seedDescriptors(kid).map(seed=>({kid,i,seed})));
+            // A standalone fanboot must keep seed templates out of the copied spans too.
+            for (const { kid } of seeded) emitState(kid, env);
             const tramp = kids.map((k) => entryOffset(k) > 0);
             const M = kids.map((k, i) => Math.ceil((spanOf(k).size + tramp[i]) / N) * N);
+            if(P.PATH&&!triple){M[1]=spanOf(b).size;node.fan={M,tramp};
+              seeded.forEach(({kid,i,seed},k)=>ctx.ins(k?'':'start','MOV','I',kid.ns+seed.source,`${kid.ns+seed.entry}+${[P.HOPA,P.HOPB][i]}+${seed.offset}`));
+              ctx.ins(seeded.length?'':'start','SPL','B',L(P.PATH===1?'pumpStart':'stoneStart'));
+              const stonePath=()=>{
+                fanLines(N).forEach((d,i)=>ctx.free('fan',i,i?'':'stoneStart','SPL','B',d,'0'));
+                for(let i=0;i<M[0]/N;i++)ctx.ins('','MOV','I',`<${L('sa')}`,`{${L('va')}`);
+                ctx.ins('va','JMP','B',`${L('c0')}+${P.HOPA}+${M[0]}-${L('va')}`);
+              };
+              const pumpPath=()=>{
+                for(let i=0;i<P.PUMPWAIT;i++)ctx.ins(i?'':'pumpStart','NOP','F','0','0');
+                const order=Array.from({length:M[1]},(_,i)=>P.PUMPORDER?M[1]-1-i:i);
+                order.forEach((k,i)=>ctx.ins(!P.PUMPWAIT&&!i?'pumpStart':'','MOV','I',`${L('c1')}+${k}`,`${L('c1')}+${P.HOPB}+${k}`));
+                ctx.ins('vb','JMP','B',`${entryOf(b)}+${P.HOPB}`);
+              };
+              if(P.PATH===1){stonePath();pumpPath();}else{pumpPath();stonePath();}
+              ctx.ins('sa','DAT','F','#0',`${L('c0')}+${M[0]}-${L('sa')}`);
+              kids.forEach((k,i)=>{ctx.mark('c'+i);emit(k,env);});break;
+            }
             node.fan = { M, tramp };
-            const [va, vb, sa] = [L('va'), L('vb'), P.SPLIT ? L('sa') : L('va')];
-            fanLines(N).forEach((d, i) => ctx.free('fan', i, i ? '' : 'start', 'SPL', 'B', d, '0'));
+            // fanboot3 ROUTE 1 (N / 1 / N): the first and third members are launched by SPL (each vector
+            // holds its own source pointer); a DJN counter then lets one worker through to the second.
+            const route = triple && P.ROUTE === 1;
+            const [va, vb, sa] = [L('va'), L('vb'), P.SPLIT && !route ? L('sa') : L('va')];
+            if (P.CHECK) {
+              const acc = ctx.ref('probe'), count = `${L('c1')}+${M[1]}-${L('c0')}`;
+              const targets = [P.C0, P.C1, P.C2].map(c => c < spanOf(a).size
+                ? [L('c0'), Number(tramp[0]) + c] : [L('c1'), Number(tramp[1]) + c - spanOf(a).size]);
+              const record = { acc, init: L('start'), cmp: L('check'), initLine: lines.length,
+                range: P.CHECK === 1, start: L('c0'), end: L('c1'), extra: M[1], cells: targets };
+              const coldSource = `${a.ns}${leaves[a.id].coldStart.feeder}`, coldEntry = `${a.ns}${leaves[a.id].coldStart.entry}`;
+              if (P.CHECK === 3) {
+                targets.slice(0, 2).forEach(([label, offset], i) => ctx.ins(i ? '' : 'start', 'JMZ', 'F', P.BYPASS ? L('fanStart') : L('cold'), `${label}+${offset}`));
+                ctx.ins('', 'JMP', 'B', L('fanStart'));
+                ctx.ins('cold', 'MOV', 'AB', '#0', `${a.ns}${leaves[a.id].coldStart.gate}`);
+                ctx.ins('', 'MOV', 'I', coldSource, coldEntry);
+                ctx.ins('reject', 'JMP', 'B', coldEntry);
+              } else {
+                ctx.ins('start', 'MOV', 'F', '#0', acc);
+                if (P.CHECK === 1) {
+                  ctx.ins('sum', 'ADD', 'F', `<${vb}`, acc);
+                  ctx.ins('', 'DJN', 'B', L('sum'), `#${count}`);
+                  ctx.ins('', 'ADD', 'AB', `#${count}`, vb);
+                } else for (const [label, offset] of targets) ctx.ins('', 'ADD', 'F', `${label}+${offset}`, acc);
+                record.cmpLine = lines.length;
+                ctx.ins('check', 'SEQ', 'F', acc, '#0');
+                ctx.ins('reject', 'JMP', 'B', P.BYPASS ? L('fanStart') : L('cold'));
+                checksums.push(record);
+              }
+              node.checkCells = targets;
+            }
+            // Seed once, before creating copy workers. The seed source can be
+            // state outside a four-cell runtime span; its target is in the
+            // member's deployed frame, not its original source frame.
+            seeded.forEach(({kid,i,seed},k)=>ctx.ins(k?'':'start','MOV','I',kid.ns+seed.source,`${kid.ns+seed.entry}+${[P.HOPA,P.HOPB,P.HOPC][i]}+${seed.offset}`));
+            fanLines(N).forEach((d, i) => ctx.free('fan', i, i ? '' : P.CHECK||seeded.length ? 'fanStart' : 'start', 'SPL', 'B', d, '0'));
             for (let i = 0; i < M[0] / N; i++) ctx.ins('', 'MOV', 'I', `<${sa}`, `{${va}`);
-            for (let i = 0; i < M[1] / N; i++) ctx.ins('', 'MOV', 'I', `<${vb}`, `{${vb}`);
-            const dst = (i, v) => `${L('c' + i)}+${[P.HOPA, P.HOPB][i]}+${M[i]}-${v}`, src = (i, v) => `${L('c' + i)}+${M[i]}-${v}`;
-            if (P.SPLIT) ctx.ins('va', 'DJN', 'B', dst(0, va), `#${N}`);   // N-1 processes to a, the last falls through to b
+            for(let member=1;member<kids.length;member++){const v=L(member===1?'vb':'vc');for(let i=0;i<M[member]/N;i++)ctx.ins('','MOV','I',`<${v}`,`{${v}`);}
+            const dst = (i, v) => `${L('c' + i)}+${[P.HOPA, P.HOPB,P.HOPC][i]}+${M[i]}-${v}`, src = (i, v) => `${L('c' + i)}+${M[i]}-${v}`;
+            if (route) {
+              ctx.ins('va', 'SPL', 'B', dst(0, va), src(0, va));          // every worker forks into a
+              ctx.ins('vc', 'SPL', 'B', dst(2, L('vc')), src(2, L('vc'))); // and into c, still in lockstep
+              ctx.ins('', 'DJN', 'B', L('rd'), `#${N}`);                   // N-1 workers end on the DAT
+              ctx.ins('vb', 'JMP', 'B', dst(1, vb), src(1, vb));           // the last one enters b
+              ctx.ins('rd', 'DAT', 'F', '#0', '#0');
+            } else {
+            if (P.SPLIT) {
+              ctx.ins('va', 'DJN', 'B', dst(0, va), `#${N}`);   // N-1 processes to a, the last falls through to b
+              // Only the final worker reaches this fork, adding exactly one
+              // entrant to a while its continuation still launches b.
+              if (P.MOREA) ctx.ins('', 'SPL', 'B', `*${va}`);
+            }
             else {
               ctx.ins('va', 'SPL', 'B', dst(0, va), src(0, va));
               for (let k = 1; k < P.K; k++) ctx.free('spk', k - 1, '', 'SPL', 'B', `*${va}`, '0');
             }
-            ctx.ins('vb', 'JMP', 'B', dst(1, vb), src(1, vb));
+            ctx.ins('vb', triple?'SPL':'JMP', 'B', dst(1, vb), src(1, vb));
+            if(triple)ctx.ins('vc','JMP','B',dst(2,L('vc')),src(2,L('vc')));
             if (P.SPLIT) ctx.ins('sa', 'DAT', 'F', '#0', src(0, sa));
+            }
             kids.forEach((k, i) => {
               if (tramp[i]) ctx.ins('c' + i, 'JMP', 'B', entryOf(k));
               else ctx.mark('c' + i);
               emit(k, env);
             });
+            if (P.CHECK && P.CHECK !== 3) {
+              ctx.ins('cold', 'MOV', 'AB', '#0', `${a.ns}${leaves[a.id].coldStart.gate}`);
+              ctx.ins('', 'MOV', 'I', `${a.ns}${leaves[a.id].coldStart.feeder}`, `${a.ns}${leaves[a.id].coldStart.entry}`);
+              ctx.ins('', 'JMP', 'B', `${a.ns}${leaves[a.id].coldStart.entry}`);
+            }
             break;
           }
           case 'classify': {
@@ -556,7 +687,7 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
       spans[node.ns] = { start, size: pc - start };
     }
     emit(root, { next: null });
-    return { lines, labels, spans, total: pc };
+    return { lines, labels, spans, total: pc, checksums, stateSpans };
   }
   // Lay out until the sizes stop changing: a block can depend on another's size
   // (restart's backup is as long as its member), so two passes aren't always enough.
@@ -569,14 +700,106 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
   }
   // Checks a block can make only once it knows where everything landed.
   const misfits = [];
-  const check = (node) => {
+  const linkedSectors = [];
+  // Image windows of a member that has handed on, less the cells it provides to later blocks (linked's info.dead).
+  const deadWindows = (k) => {
+    const keep = [], wins = [];
+    const walk = (n) => { const d = leaves[n.id]; for (const l of Object.values((typeof d?.provides === 'function' ? d.provides(n.P) : d?.provides) ?? {})) keep.push(out.labels[n.ns + l]); (n.kids ?? []).forEach(walk); };
+    walk(k);
+    // Its code, and the state cells its leaves laid out before the seq's code (a quickscan's table).
+    const own = [out.spans[k.ns]], leavesOf = (n) => [n, ...(n.kids ?? []).flatMap(leavesOf)];
+    for (const n of leavesOf(k)) if (out.stateSpans?.[n.ns]?.size) own.push(out.stateSpans[n.ns]);
+    for (const { start, size } of own) {
+      let from = start;
+      for (const c of [...keep.filter((x) => x >= start && x < start + size).sort((a, b) => a - b), start + size]) { if (c > from) wins.push({ start: from, size: c - from }); from = c + 1; }
+    }
+    return wins;
+  };
+  const check = (node, shiftedFrame=false, parent=null, bootHop=null, dead=[]) => {
     const def = leaves[node.id];
-    if (def?.linked) misfits.push(...def.linked(node.P, settings, (l) => out.labels[node.ns + l], { span: node.span }));
-    for (const k of node.kids ?? []) check(k);
+    const seeds=seedDescriptors(node);
+    if(seeds.length&&!['fanboot','fanboot3'].includes(parent?.id))misfits.push(`${node.id}: separately seeded mode requires a direct fanboot parent`);
+    if(seeds.length&&[1,4,5].includes(node.P.SEED)&&seeds.some(seed=>out.labels[node.ns+seed.source]>=out.spans[node.ns].start&&out.labels[node.ns+seed.source]<out.spans[node.ns].start+out.spans[node.ns].size))misfits.push(`${node.id}: four-cell seeding requires template state outside the copied span`);
+    const hasSeeds=['fanboot','fanboot3'].includes(node.id)&&node.kids.some(k=>seedDescriptors(k).length);
+    if(node.id==='fanboot'&&node.P.PATH&&shiftedFrame)misfits.push('fanboot: separate PATH requires an unshifted linked frame');
+    if(node.id==='fanboot'&&node.P.PATH&&node.fan.tramp.some(Boolean))misfits.push('fanboot: separate PATH requires members whose entry is the first copied cell');
+    if(hasSeeds&&(shiftedFrame||node.P.CHECK))misfits.push(`${node.id}: separate seed initialization requires an unshifted frame without CHECK`);
+    if (def?.linked) misfits.push(...def.linked(node.P, settings, (l) => out.labels[node.ns + l], {
+      span: node.span, total: out.total, shiftedFrame, bootHop, dead,
+    }));
+    if (def?.linkedSectors && !shiftedFrame) {
+      for (const sector of def.linkedSectors(node.P, l => out.labels[node.ns + l])) {
+        if (linkedSectors.some(other => sector.start < other.end && other.start < sector.end)) {
+          misfits.push(`${node.id}: declared clear sectors overlap`);
+        }
+        linkedSectors.push(sector);
+      }
+    }
+    if (['fanboot','fanboot3'].includes(node.id) && node.P.EXACT && shiftedFrame) misfits.push(`${node.id}: EXACT requires an unshifted linked frame; nested relocation is not supported`);
+    if (['fanboot','fanboot3'].includes(node.id) && !shiftedFrame) {
+      // Only the linked copy vectors describe the true destination spans.
+      // M includes entry trampolines and copy-fan rounding, not just live code.
+      const segments=(start,size)=>{const a=((start%core)+core)%core;if(size>=core)return [[0,core]];return a+size<=core?[[a,a+size]]:[[a,core],[0,a+size-core]];};
+      const overlaps=(a,b)=>segments(a.start,a.size).some(([lo,hi])=>segments(b.start,b.size).some(([x,y])=>lo<y&&x<hi));
+      const copies=[node.P.HOPA,node.P.HOPB,...(node.id==='fanboot3'?[node.P.HOPC]:[])].map((hop,i)=>({start:out.labels[node.ns+'c'+i]+hop,size:node.fan.M[i]}));
+      for(let i=0;i<copies.length;i++)for(let j=i+1;j<copies.length;j++)if(overlaps(copies[i],copies[j]))misfits.push(`${node.id}: linked rounded copies land on each other`);
+      copies.forEach((copy,i)=>{if(overlaps(copy,{start:0,size:out.total}))misfits.push(`${node.id}: linked copy ${i} lands on the original image`);});
+      if(hasSeeds){const targets=node.kids.flatMap((k,i)=>seedDescriptors(k).map(seed=>({start:out.labels[k.ns+seed.entry]+[node.P.HOPA,node.P.HOPB,node.P.HOPC][i]+seed.offset,size:1})));for(const target of targets){if(copies.some(copy=>overlaps(target,copy)))misfits.push(`${node.id}: separate seed overlaps a rounded copy`);if(overlaps(target,{start:0,size:out.total}))misfits.push(`${node.id}: separate seed overlaps the original image`);}for(let i=0;i<targets.length;i++)for(let j=i+1;j<targets.length;j++)if(overlaps(targets[i],targets[j]))misfits.push(`${node.id}: seed initializers overlap each other`);}
+    }
+    if (['fanboot','fanboot3'].includes(node.id) && node.fan) {
+      // A member may declare where it writes for as long as it runs, as offsets from its first
+      // cell: lattice(P, settings) gives { step, residues } (every cell on those residues) and/or
+      // { from, size } (a window); keeps(P, settings) gives { from, size } cells outside its span
+      // that it needs left alone. No partner's copy (or kept cell) may sit on a declared write.
+      const hops=[node.P.HOPA,node.P.HOPB,node.P.HOPC],wrap=(x,n)=>((x%n)+n)%n,list=(v)=>v==null?[]:Array.isArray(v)?v:[v];
+      const members=node.kids.map((k,i)=>{
+        const d=leaves[k.id],first=out.spans[k.ns].start+hops[i],cells=[];
+        const live=out.spans[k.ns].size+(node.fan.tramp[i]?1:0);                 // its code, not the fan's rounding tail
+        for(let c=0;c<live;c++)cells.push(out.labels[node.ns+'c'+i]+hops[i]+c);
+        // The third argument tells a declaration where the linker put the member: its first cell's
+        // index in the image (start), the image's size (total) and its labels' indexes (at).
+        const where={start:out.spans[k.ns].start,total:out.total,at:(l)=>out.labels[k.ns+l]};
+        for(const w of list(d?.keeps?.(k.P,settings,where)))for(let c=0;c<w.size;c++)cells.push(first+w.from+c);
+        return {k,first,cells,live,writes:list(d?.lattice?.(k.P,settings,where)),later:list(d?.copies?.(k.P,settings,where))};
+      });
+      const hits=(w,first,c)=>w.step?w.residues.includes(wrap(c-first,w.step)):wrap(c-first-w.from,core)<w.size;
+      for(const a of members)for(const b of members){
+        if(a===b||!a.writes.length)continue;
+        const hit=b.cells.find(c=>a.writes.some(w=>hits(w,a.first,c)));
+        if(hit!==undefined)misfits.push(`${node.id}: ${a.k.id} writes on ${b.cells.indexOf(hit)<b.live?`cell ${b.cells.indexOf(hit)} of ${b.k.id}'s copy`:`a cell ${b.k.id} keeps outside its copy`} (it declares ${a.writes.map(w=>w.step?`residues ${w.residues.join(',')} mod ${w.step}`:`a window of ${w.size} cells from ${w.from}`).join(' and ')} from its first cell): move the copies`);
+        // copies(P, settings) declares where a member's later copies can land, as { step, residues }
+        // from its first cell: they must stay off the partner's declared writes too.
+        const gcd2=(x,y)=>{while(y)[x,y]=[y,x%y];return x;};
+        // A residue lattice (a stone that bombs those cells for as long as it runs) is checked against
+        // every generation ({ step, residues }); a window (a bounded clear) against the cells the
+        // original writes in its first laps ({ cells }), since later generations reach every window.
+        const meets=(w,c)=>c.cells?(!w.step&&c.cells.some(o=>hits(w,a.first,b.first+o))):w.step?w.residues.some(r=>c.residues.some(q=>wrap(a.first+r-b.first-q,gcd2(w.step,c.step))===0))
+          :false;
+        const said=(c)=>c.cells?`its first laps write ${c.cells.length} cells`:`its copies fill residues ${c.residues.join(',')} mod ${c.step}`;
+        const met=b.later.filter(c=>a.writes.some(w=>meets(w,c)));
+        if(met.length)misfits.push(`${node.id}: ${b.k.id}'s later copies land on cells ${a.k.id} writes (${met.map(said).join(' and ')} from its first cell): change the paper's steps or the hops`);
+      }
+    }
+    if (node.id === 'fanboot' && node.P.CHECK >= 2) {
+      const size = node.kids.reduce((s, k) => s + out.spans[k.ns].size, 0);
+      if ([node.P.C0, node.P.C1, node.P.C2].some(c => c >= size)) misfits.push('fanboot: checksum sample is outside its members');
+    }
+    const simpleBoot = !shiftedFrame && node.id === 'boot' && node.P.UNROLL === 1 && !node.P.EARLY && !node.P.WIPE;
+    for (const [i, k] of (node.kids ?? []).entries()) {
+      check(k, shiftedFrame || ['boot','relocate','apart','copies','parboot','fanboot','fanboot3'].includes(node.id),
+        node, simpleBoot && i === 0 ? node.P.HOP : null,
+        node.id === 'boot' ? [{ start: 0, size: out.total }]
+          // An image's data members (decoys, padding) never run: its running member may write on them.
+          : node.id === 'image' && i === 0 ? [...dead, ...node.kids.slice(1).map((d) => out.spans[d.ns])] : node.id === 'seq' ? [...dead, ...node.kids.slice(0, i).flatMap(deadWindows)]
+          // A switch runs one member: its dispatch and the members not taken are dead to the one that is.
+          : ['switch', 'switch-table', 'switch-score'].includes(node.id) ? [...dead, { start: out.spans[node.ns].start, size: out.spans[k.ns].start - out.spans[node.ns].start },
+            { start: out.spans[k.ns].start + out.spans[k.ns].size, size: out.spans[node.ns].start + out.spans[node.ns].size - out.spans[k.ns].start - out.spans[k.ns].size }] : dead);
+    }
   };
   check(root);
   const entry = entryOf(root);
   const header = [`;name ${name}`, ';author ZoreWars', `;strategy ${shape(tree)}`, `;assert CORESIZE==${core}`];
+  if (!misfits.length) out.lines = resolveChecksums(out.lines, out.checksums, out.labels, header, entry, settings);
   const source = [...header, ...(old ? [] : [`ORG ${entry}`]), ...out.lines, old ? `END ${entry}` : 'END'].join('\n') + '\n';
   return { source, root, labels: out.labels, spans: out.spans, total: out.total, entry, misfits };
 }

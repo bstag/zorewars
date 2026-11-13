@@ -33,6 +33,7 @@
 // single process would fall through and die.
 
 import { modInverse } from '../util.js';
+import {observeArmadillo,verifyArmadillo} from '../observation-roles.js';
 
 const gcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) [a, b] = [b, a % b]; return a; };
 const mod = (x, n) => ((x % n) + n) % n;
@@ -55,11 +56,26 @@ const mod = (x, n) => ((x % n) + n) % n;
 const armadilloSwitch = {
   id: 'armadillo-switch', kind: 'body', exit: 'never', writes: 'core', roams: false,
   grows: true, processes: 8, dialects: '94',
-  purpose: 'A self-copying stone whose A-trail copies its own SPL over its DJN after a few thousand cycles, dropping every process into a two-line gated forward clear (MOV bomb, >GATE / DJN.F -1, >GATE) whose HOP+1 bomb B-field resets the pointer past the code each lap, so it clears the core forever without writing itself.',
-  params: { STEP: [1, 4000], HOP: [8, 400] },
-  defaults: { STEP: 3510, HOP: 56 },
+  purpose: 'A self-copying stone whose A-trail copies its own SPL over its DJN, dropping processes into a two-line gated forward clear. The HOP+1 bomb B-field resets the pointer past its code each lap. STREAM0 uses the original folded B-predecrement DJN stream; STREAM1 uses A-indirect *-3 through the moving trail pointer. ANTISTEP sets the DAT bomb\'s remote B-predecrement distance; default1 preserves the original bomb.',
+  params: { STEP: [1, 4000], HOP: [8, 400], STREAM:[0,1], ANTISTEP:[1,7999] },
+  defaults: { STEP: 3510, HOP: 56, STREAM:0, ANTISTEP:1 },
+  observationRole:'stone-clear',observe:observeArmadillo,verifyObservation:verifyArmadillo,
+  phaseContract:{minimumClearWrites:100,requiresNaturalHandoff:true,requiresHealthyClearProcessAtEnd:true},
+  knowledge:{parameterRoles:{STEP:'coupled address arithmetic',HOP:'coupled spacing and clear reset',STREAM:'DJN stream addressing: 0 folded B-predecrement, 1 A-indirect through the trail pointer',ANTISTEP:'DAT A operand B-predecrement distance, relative to each executed bomb; may damage enemy or friendly stride fields'},derived:{bombB:'HOP+1'},
+    tuningGroups:[{name:'stone-and-boot-geometry',parameters:['STEP','HOP','parent.HOPA','parent.HOPB'],requires:'preserve natural handoff, actual clear targets and surviving compatible imps under the new queue schedule'}],
+    invariants:['A-trail must copy the feeder into the loop before natural clearing.','A continuing healthy clear needs actual writes, an intact writer/loop/bomb and a live local clear process.','Handoff is an observed event, not a global stop: queued processes can keep bombing after clearing begins.'],
+    tuning:['Tune STEP/HOP with boot destinations and process allocation.','Do not independently patch the derived bomb B-field.','Earlier solo clearing and more surviving imps did not reliably improve field score.','STREAM1 is an addressing-semantic change, not a faster instruction. Compare it independently of STEP/HOP and imp point count.','The retained four-worker profile gained about0.49% on two fresh full-field seeds with STREAM1; changing to the reference stone constants or three points did not reproduce that gain.'],
+    failures:['SPL wipes can disable the useful attack long before final elimination.','Tested timed handoffs and second writers improved some mechanisms but lost whole-field score.','In 400 difficult-opponent replays, 135 of 187 losses made no healthy clear writes and 155 missed natural handoff; these are panel observations, not field-wide rates.'],
+    recoveryKnowledge:['Protecting clear cells alone does not preserve a damaged stone/control path; protecting stone cells often converts losses to ties without restoring a winning clear.','Repair must restore the gate and re-enter useful code, not just restore instruction bytes.','Generic restart compares the loop with its initial instruction and would treat this stone\'s legitimate DJN-to-SPL handoff as damage.','Combat wins can precede handoff: do not optimize or reject battles solely on normal clear-write count.','An initial cold-clear recovery draft passed standalone verification and restored selected damaged clears, but its tested composition failed admission and lost31.2% in a rejected full-field diagnostic.','Footprint safety does not cover indirect side effects: changing the stone lattice predecremented the still-active imp launcher jump.','The old reserve could be erased by friendly clearing; the newer protected watchers still suffered scheduling, insurance and field-strength costs.'],
+    spatialTuningKnowledge:['The original checker rejected thirteen of sixteen nearby STEP/HOP/stone-placement proposals. Audit recovered stone-plus16 after fixing a harmless immediate-SPL literal comparison; twelve remain rejected under the current role/scenario promises. STEP3530/HOP56 still fails while HOP46 or66 with the same STEP passes.','The three originally admitted spatial variants and baseline each resolve759 unique quiet DJN B targets. STEP3530/HOP46 and66 have identical quiet stream target sets but different field scores, so target coverage alone is not a strength objective.','STEP3550 passes the ordinary load-zero phase check but loses compatible insurance in the pump planted-target scenario. Classify that as a stress failure rather than universal incompatibility.','None of the three originally admitted variants beat baseline on the declared eight-round screen. The recovered plus16 profile initially averaged+0.65 percent on two40-round seeds; six independent new80-round full-field seeds instead average-0.029 percent with only2/6 positive. Its gain is not confirmed and it is not promoted; the compatibility correction remains valid.'],
+    interactionKnowledge:['Changed memory, enemy pointer/value use and strategic consequences are separate observations. Use matched gains, regressions and unchanged controls.','A STREAM1 hit changed a selected Time Lapse MOV B1 to B0, redirecting its indirect destination onto itself. Restoring B prevented its DAT self-overwrite and reversed the win; this is a specific in-round intervention result, not a field-wide prevalence claim.','Field effects are conditional: in a Sputnik case restoring B changed win to tie while restoring A+B retained the win. Do not add single-contact or single-field effects.','The tested DJN.A and DJN.B stream replacements kept quiet timing and useful-work totals, but lost about1.91 and2.29 percent against1099 opponents on two fresh12-round screen seeds. Keep DJN.F in the retained profile; modifier changes also affect branch semantics under damage.'],
+    placementExperimentKnowledge:['In the completed fixed-seed pump grid, pair HOPB+d with LEAD-d and compare each candidate with its matching stone-placement control. Thirteen of24 paired variants passed full purpose; the finalist forward16/pump-4/lead68 kept the initial seed/timing, retired the pump earlier and still left18 compatible imps. Two positive full-field confirmation means did not clear the matched-control sensitivity criterion; current remains retained.','The subsequent matched cached-round-robin placement check did not show a climb: current median90.5, challenger102.5 across six entrant plans; fresh-only medians91 and104. Old current anchors103/90/57 reproduce exactly. Preserve the current warrior and the compatible challenger evidence separately.'],
+    freshFamilyKnowledge:['Current quiet stone makes190 DAT-bomb writes by1000 versus183 for Tolypeutes and180 for Armadillo, with first stone entry38 versus39 and37. Do not diagnose the remaining field gap as simply too few quiet bombs.','In all80 plans for the three strongest advantage matchups for each reference, there are72 Tolypeutes-win/current-loss and54 Armadillo-win/current-loss pairs. Both openings do no attack work in58 and42 of those; the current stone has a signature fault before handoff in63 and52. These selected-cohort categories overlap and are not field-wide rates or isolated causes.','Normal geometry, enemy scan paths, launch insurance and sustained attack remain coupled. Earlier/faster clears, more write counts or one transplanted constant are not established fixes.'],
+    antiImpBombKnowledge:['ANTISTEP defaults to1 and changes only the DAT A number. Keep HOP+1 derived: the B field resets the clear gate and is not an independent anti-imp tuning knob.','A DAT resolves its operands before killing its process. The <ANTISTEP side effect decrements the B field at bombPC+ANTISTEP, not at the final indirect address and not relative to the original bomb template.','The 2026-11-04 2 by4 opening/bomb screen tested1,2667,5333,1143 with the retained MUL opening and a six-unit q^4.5 opening. All eight passed full admission; none beat current over1099 opponents on one eight-round seed. Elven King distance2667 alone scored about0.17 percent lower; this bounded screen is not proof of universal inferiority.','2667 preserved34 launches,12 ending compatible imps and unchanged quiet work at retained placement; no matching bomb hit a friendly compatible imp cell in two quiet audits. In selected combat gains, friendly stride hits still occurred. Do not turn quiet compatibility into universal friendly-fire immunity.','1143 passed full purpose with12 ending compatible imps, yet five friendly compatible imp cells were decremented in a load-zero quiet audit. Adequate surviving insurance does not imply zero transient self damage.','Bomb encoding can also be consumed as data. Selected outcome changes and counts of imp-like stride hits are diagnostics, not isolated proof of an anti-imp kill or a field-wide mechanism.'],
+    evidence:[]},
   entry: 'asInc', loop: 'asLoop',
   provides: { datBomb: 'asBomb' },
+  coldStart: { entry: 'asLoop', feeder: 'asInc', gate: 'asInc-6' },
   mutable: [['asAmov', ['a', 'b']], ['asInc', ['b']], ['asLoop', ['a', 'b']], ['asCmov', ['b']], ['asCdjn', ['b']]],
   mismatches(P, settings) {
     const out = [];
@@ -80,12 +96,15 @@ const armadilloSwitch = {
     // Step both trails by STEP each pass (add the feeder's A and B into asAmov).
     ctx.ins('asAdd', 'ADD', 'F', L('asInc'), '-2');
     // The loop: back to the A-trail line, plus a folded decrement stream.
-    ctx.ins('asLoop', 'DJN', 'F', '@-1', `<${L('asInc')}-${P.STEP}`);
+    ctx.ins('asLoop', 'DJN', 'F', '@-1', P.STREAM?'*-3':`<${L('asInc')}-${P.STEP}`);
     // The forward clear the processes fall into once the SPL overwrites the DJN.
     ctx.ins('asCmov', 'MOV', 'I', L('asBomb'), `>${L('asInc')}-6`);
     ctx.ins('asCdjn', 'DJN', 'F', '-1', `>${L('asInc')}-6`);
     // The bomb: B = HOP + 1 resets the clear pointer past the code on each lap.
-    ctx.ins('asBomb', 'DAT', 'F', '<1', `${P.HOP}+1`);
+    // DAT still resolves its operands before killing a process. A remote
+    // predecrement can damage another imp leg, including a friendly one.
+    // This is relative to each executed bomb, not to the original template.
+    ctx.ins('asBomb', 'DAT', 'F', `<${P.ANTISTEP??1}`, `${P.HOP}+1`);
   },
   watch(api) {
     const incAt = api.at('asInc'), loopAt = api.at('asLoop'), cmovAt = api.at('asCmov');

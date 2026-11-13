@@ -28,8 +28,11 @@ export function refineOptions(args, usage) {
   // A push-off needs a field. Default to the chosen rules' hill without changing
   // the caller's flags; explicit fields and --top continue to take precedence.
   if (objective === 'pushoff' && !flags.hill) {
-    const hill = { '94nop': '94nop', 88: '88', lp: 'lp', '94x': '94x' }[flags.rules];
-    if (!hill) usage('--objective pushoff needs --hill, or --rules 94nop|88|lp|94x to use that Koenigstuhl hill');
+    const hill = {
+      '94nop': '94nop', 88: '88', lp: 'lp', 'lp-hill': 'lp', '94x': '94x', '94x-hill': '94x',
+      pspace: 'pspace', icws: 'icws', icws64: 'icws64', nano: 'nano', tiny: 'tiny',
+    }[flags.rules];
+    if (!hill) usage('--objective pushoff needs --hill or a named rule profile with a Koenigstuhl field');
     flags.hill = `koenigstuhl:${hill}`;
     flags.top ??= '30';
   }

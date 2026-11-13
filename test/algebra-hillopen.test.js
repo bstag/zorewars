@@ -101,7 +101,7 @@ function mulHands(P, rules, cell) {
 
 test('opening-qscan-mul decodes every cell it tests', () => {
   const core = (rules) => recipeSettings(rules, 100).coreSize;
-  for (const [rules, P] of [['94nop', { QFAC: 349, GAP: 197, UNITS: 8 }], ['94nop', { QFAC: 1091, GAP: 197, UNITS: 10 }], ['94x', { QFAC: 349, GAP: 197, UNITS: 8 }]]) {
+  for (const [rules, P] of [['94nop', { QFAC: 243, GAP: 138, UNITS: 1 }], ['94nop', { QFAC: 349, GAP: 197, UNITS: 8 }], ['94nop', { QFAC: 1091, GAP: 197, UNITS: 10 }], ['94x', { QFAC: 349, GAP: 197, UNITS: 8 }]]) {
     const c = core(rules), inv = [...Array(c).keys()].find((x) => (P.QFAC * x) % c === 1), dec = (1 + inv) % c;
     const span = mulHands(P, rules, null);
     for (let k = 0; k < P.UNITS; k++) {
