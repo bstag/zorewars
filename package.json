@@ -15,11 +15,14 @@
     "crap:check": "node scripts/crap.js --check",
     "crap:snapshot": "node scripts/crap.js --snapshot",
     "bench": "node scripts/benchmark.js",
+    "bench:wasm": "node scripts/benchmark-ring-duel.js",
     "compare": "node scripts/pmars-compare.js",
     "deploy": "wrangler deploy",
     "build:editor": "node scripts/build-editor.js",
     "build:three": "node scripts/build-three.js",
     "build:workbench": "node scripts/build-block-workbench.js",
+    "build:wasm": "node scripts/build-ring-duel-wasm.js",
+    "build:native": "node scripts/build-ring-duel-native.js",
     "fuzz": "node scripts/plane-fuzz.js"
   },
   "engines": {

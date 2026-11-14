@@ -138,7 +138,7 @@ test('refine executes a real search, reports confirmed gains, and writes the war
       return { variants: [{ idea: 'survive', redcode: ';name Sitting\nJMP 0' }], usage: { input_tokens: 100 }, turns: 1 };
     };
   };
-  await cmdRefine({ _: [f.red], flags: { ...f.flags, json: true } }, f.h, { createProposer, createPool: f.createPool });
+  await cmdRefine({ _: [f.red], flags: { ...f.flags, json: true, wasm: true } }, f.h, { createProposer, createPool: f.createPool });
   const result = JSON.parse(f.lines.join(''));
   assert.equal(result.ok, true);
   assert.equal(result.improved, true);

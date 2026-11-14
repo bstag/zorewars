@@ -13,7 +13,8 @@ export const combinators = {
   fanboot3: { kids:[3,3],params:{N:[2,16],MOREA:[0,1],HOPA:[0,54000],HOPB:[0,54000],HOPC:[0,54000],EXACT:[1,1],ROUTE:[0,1]},defaults:{N:4,MOREA:1,HOPA:2000,HOPB:4000,HOPC:6000,EXACT:1,SPLIT:1,K:1,ROUTE:0},
     purpose:'A three-member lockstep fan boot. N-1+MOREA processes enter the first body and one enters each of the other two. Runtime copies are independent; the opening and copy fan are shared. Exact linked rounded-copy overlap checks are mandatory; ring-only and unshifted. ROUTE 1 changes the split to N / 1 / N: every worker forks into the first body and into the third, in lockstep, then a counter lets one worker into the second and ends the rest (MOREA has no effect there).' },
   seq: { kids: [2, 8], purpose: 'Members run one after another; each hands control to the next.' },
-  par: { kids: [2, 4], purpose: 'Members launched side by side with SPL.' },
+  par: { kids: [2, 4], params: { LP: [0, 1], GAP: [0, 170] }, defaults: { LP: 0, GAP: 0 },
+    purpose: 'Members launched side by side with SPL. LP 1 launches two bodies into a shared eight-slot queue, with GAP blank cells between their images and possible friendly fire.' },
   relocate: { kids: [1, 1], params: { HOP: [256, 54000] }, defaults: { HOP: 4096 }, purpose: 'Copies its member to probe + HOP and runs it there.' },
   boot: { kids: [1, 2], params: { HOP: [0, 54000], UNROLL: [1, 4], HOPY: [0, 200], HOPZ: [0, 200], WIPE: [0, 1], EARLY: [0, 1], SHARE: [0, 4], DIRECT: [0, 1] }, defaults: { HOP: 4096, UNROLL: 1, HOPY: 0, HOPZ: 0, WIPE: 0, EARLY: 0, SHARE: 0, DIRECT: 0 },
     purpose: 'Copies its first member to + HOP (UNROLL cells per loop) and runs the copy; the second (data) stays behind. WIPE 1 erases the boot pointers. EARLY 1 launches the entry while the rest is still being copied (\'94, ring only). DIRECT 1 emits one direct MOV per payload cell, then jumps into the copy.' },
@@ -256,6 +257,15 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
             break;
           }
           case 'par': {
+            if (P.LP) {
+              ctx.ins('split', 'SPL', 'B', entryOf(kids[0]));
+              ctx.ins('', 'JMP', 'B', entryOf(kids[1]));
+              ctx.ins('', 'DAT', 'F', '$0', '$0');
+              emit(kids[0], env);
+              for (let i = 0; i < P.GAP; i++) ctx.ins('', 'DAT', 'F', '$0', '$0');
+              emit(kids[1], env);
+              break;
+            }
             const order = parOrder(kids);
             order.slice(1).forEach((kid, i) => ctx.ins(i ? '' : 'split', 'SPL', 'B', entryOf(kid)));
             if (isLeaf(order[0]) && leaves[order[0].id].entryFirst === false) ctx.ins('', 'JMP', 'B', entryOf(order[0]));
@@ -798,7 +808,15 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
   };
   check(root);
   const entry = entryOf(root);
-  const header = [`;name ${name}`, ';author ZoreWars', `;strategy ${shape(tree)}`, `;assert CORESIZE==${core}`];
+  const credits = new Set();
+  function collectCredits(node) {
+    const credit = leaves[node.id]?.credit;
+    const message = typeof credit === 'function' ? credit(node.P) : credit;
+    if (message) credits.add(`;${message}`);
+    for (const kid of node.kids ?? []) collectCredits(kid);
+  }
+  collectCredits(root);
+  const header = [`;name ${name}`, ';author ZoreWars', `;strategy ${shape(tree)}`, ...credits, `;assert CORESIZE==${core}`];
   if (!misfits.length) out.lines = resolveChecksums(out.lines, out.checksums, out.labels, header, entry, settings);
   const source = [...header, ...(old ? [] : [`ORG ${entry}`]), ...out.lines, old ? `END ${entry}` : 'END'].join('\n') + '\n';
   return { source, root, labels: out.labels, spans: out.spans, total: out.total, entry, misfits };

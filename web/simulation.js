@@ -1,4 +1,3 @@
-import { VM } from '../src/engine/vm.js';
 import { createRound } from '../src/engine/battle.js';
 import { speciesFromVM } from '../src/engine/species.js';
 
@@ -27,15 +26,15 @@ export function createSimulationRunner({
     return !cancelled();
   }
   return {
+    advance,
     async round(warriors, settings, options) {
       if (cancelled()) return null;
       const round = createRound(warriors, settings, options);
       return await advance(round.vm) ? round.finish() : null;
     },
-    async species(compiled, settings) {
+    async species(compiled, settings, { createRingKernel } = {}) {
       if (cancelled()) return null;
-      const vm = new VM(settings);
-      vm.load([compiled], { seed: 1 });
+      const { vm } = createRound([compiled], settings, { seed: 1, createRingKernel, allowKernelFallback: true });
       return await advance(vm, Math.max(0, Math.ceil(vm.settings.maxCycles))) ? speciesFromVM(vm) : null;
     },
   };

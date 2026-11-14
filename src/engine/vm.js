@@ -272,16 +272,7 @@ export class VM {
 
     const killed = this.execute(w, pc, warrior.queue);
 
-    if (killed && this.owner) {
-      const isDat = this.op[pc] === DAT;
-      const cause = !isDat ? 'divideByZero' : codeOwner === w ? 'ownCode' : codeOwner < 0 ? 'emptyCore' : 'enemyCode';
-      warrior.deaths.total++;
-      warrior.deaths[cause]++;
-      warrior.lastDeath = { cycle: this.cycle, step: this.steps, pc, instruction: this.disassemble(pc), cause, codeOwner, writerPc, writeCycle };
-      if (this.events && cause === 'enemyCode' && this.events.length < this.eventLimit) this.events.push(pc, codeOwner, w, 1);
-      if (this._trace instanceof PackedTrace) this._trace.markDeath(cause);
-      else if (this._trace?.length) this._trace.at(-1).died = cause;
-    }
+    if (killed && this.owner) this.recordDeath(warrior, pc, codeOwner, writerPc, writeCycle);
     if (warrior.queue.size > warrior.peak) warrior.peak = warrior.queue.size;
 
     let died = false;
@@ -329,6 +320,17 @@ export class VM {
     let n = 0;
     while (!this.done && n < maxSteps) { this.step(); n++; }
     return n;
+  }
+
+  recordDeath(warrior, pc, codeOwner, writerPc, writeCycle) {
+    const w = warrior.index;
+    const cause = this.op[pc] !== DAT ? 'divideByZero' : codeOwner === w ? 'ownCode' : codeOwner < 0 ? 'emptyCore' : 'enemyCode';
+    warrior.deaths.total++;
+    warrior.deaths[cause]++;
+    warrior.lastDeath = { cycle: this.cycle, step: this.steps, pc, instruction: this.disassemble(pc), cause, codeOwner, writerPc, writeCycle };
+    if (this.events && cause === 'enemyCode' && this.events.length < this.eventLimit) this.events.push(pc, codeOwner, w, 1);
+    if (this._trace instanceof PackedTrace) this._trace.markDeath(cause);
+    else if (this._trace?.length) this._trace.at(-1).died = cause;
   }
 
   // Resolve one operand to an absolute address. Predecrements happen here;
@@ -410,13 +412,13 @@ export class VM {
     return e;
   }
 
-  touch(addr, w) {
+  touch(addr, w, instruction) {
     if (!this.owner) return;
     const prev = this.owner[addr];
     if (this.events && prev >= 0 && prev !== w && this.events.length < this.eventLimit) this.events.push(addr, w, prev, 0);
     if (prev >= 0 && prev !== w && !this.contactSeen.has(w * 64 + prev)) {
       this.contactSeen.add(w * 64 + prev);
-      this.contacts.push({ attacker: w, victim: prev, cycle: this.cycle, step: this.steps, addr, pc: this.curPc, instruction: this.disassemble(this.curPc) });
+      this.contacts.push({ attacker: w, victim: prev, cycle: this.cycle, step: this.steps, addr, pc: this.curPc, instruction: instruction?.() ?? this.disassemble(this.curPc) });
     }
     this.owner[addr] = w;
     this.lastWrite[addr] = this.steps;

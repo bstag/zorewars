@@ -25,11 +25,19 @@ jobs:
         with:
           python-version: '3.12'
       - run: npm ci
+      - name: Build the native Rust engine
+        if: matrix.node == 22
+        run: npm run build:native
       - if: matrix.node == 20
         run: npm test
       - name: Tests with repository coverage
         if: matrix.node == 22
         run: npm run test:coverage
+      - name: Compare Rust torus engines with the reference interpreter
+        if: matrix.node == 22
+        run: |
+          node scripts/plane-fuzz.js 1000 400 144 --wasm
+          node scripts/plane-fuzz.js 1000 400 144 --native
       - name: CRAP report (advisory; threshold 30)
         if: matrix.node == 22
         run: npm run crap

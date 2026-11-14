@@ -97,6 +97,8 @@ The engine implements the ICWS'94 opcode set (`DAT MOV ADD SUB MUL DIV MOD JMP J
 
 As a further check, a round robin of those 34 originals ranks the modern hill champions (Tolypeutes, Myrmidon, Son of Vain, Azathoth, Arvon) at the top and the 1984 classics at the bottom.
 
+The Rust engine runs on rings and 2D and 3D tori. The browser can use the bundled WebAssembly build. In the CLI, select `--wasm` or build the Node addon with `npm run build:native` and select `--native`. See [the engine builds and comparison results](COMPLIANCE.md#run-the-native-rust-engine).
+
 ## Languages
 
 | Language | Arena | CLI |

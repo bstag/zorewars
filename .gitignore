@@ -17,3 +17,4 @@ evolved/
 __pycache__/
 # Local coverage and CRAP reports; the reviewed baseline lives in docs/.
 coverage/
+/tools/build/

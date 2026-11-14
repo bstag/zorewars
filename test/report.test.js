@@ -88,6 +88,19 @@ test('loaded ownership is labelled as loaded rather than a null write cycle', ()
   assert.doesNotMatch(text, /@null/);
 });
 
+test('post-mortems count every process at a shared address and reclassify it on the next report', () => {
+  const vm = load([';name Splitter\nSPL 0, 0\nJMP 0', ';name Wait\nJMP -1'], ring, [0, 40]);
+  const queue = vm.warriors[0].queue;
+  for (let i = 1; i < ring.maxProcesses; i++) queue.push(0);
+  const first = postMortem(vm).warriors[0];
+  assert.deepEqual(first.runningProgram, { "Splitter's program": ring.maxProcesses });
+  assert.equal(first.hotspots[0].count, ring.maxProcesses);
+  vm.poke(0, vm.warriors[1].original[0], 1);
+  const second = postMortem(vm).warriors[0];
+  assert.deepEqual(second.runningProgram, { "Wait's program": ring.maxProcesses });
+  assert.deepEqual(second.runningNow, { "Wait's code": ring.maxProcesses });
+});
+
 test('loaded and written context cells retain their different provenance labels', () => {
   const loaded = load([';name Trap\nDAT #0, #0']);
   loaded.run();

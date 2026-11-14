@@ -67,8 +67,17 @@ function checkSequence({ parts, out, kids }) {
   for (const c of [...out.needs]) if (out.provides.has(c)) out.needs.delete(c);   // met inside the seq
 }
 
-function checkParallel({ node, parts, out, kids }) {
+function checkParallel({ node, parts, out, kids, settings }) {
   requireEndless(node, kids, parts, out);
+  if (node.P.LP) {
+    if (settings.coreSize !== 8000 || settings.maxProcesses !== 8 || settings.topology
+      || kids.length !== 2 || kids.some(k => !leaves[k.id] || leaves[k.id].layout === 'last')) {
+      out.mismatches.push('par LP: requires two inline body blocks on the LP ring');
+    }
+    out.processes = parts.reduce((n, p) => n + p.processes, 0);
+    return;
+  }
+  if (node.P.GAP) out.mismatches.push('par: GAP requires LP 1');
   if (kids.filter((k) => leaves[k.id]?.layout === 'last').length > 1) out.mismatches.push('par: only one member may write just ahead of itself (each must be laid out last)');
   protectPartners(node, kids, out);
   out.processes = parts.reduce((n, p) => n + p.processes, 0);

@@ -53,11 +53,16 @@ export function postMortem(vm) {
       add(shape, shapeOf(ins), w.index);
     }
   }
+  const programsByAddress = new Map();
   const programName = (pc) => {
+    let program = programsByAddress.get(pc);
+    if (program !== undefined) return program;
     const set = exact.get(vm.disassemble(pc)) || shape.get(shapeOf(vm.peek(pc)));
-    if (!set) return 'other code (bombs or data)';
-    if (set.size > 1) return 'an instruction several programs share';
-    return `${name([...set][0])}'s program`;
+    if (!set) program = 'other code (bombs or data)';
+    else if (set.size > 1) program = 'an instruction several programs share';
+    else program = `${name(set.values().next().value)}'s program`;
+    programsByAddress.set(pc, program);
+    return program;
   };
 
   const warriors = vm.warriors.map((w) => {
@@ -189,17 +194,19 @@ function summarize(result, warriors, blow) {
 //   early:     killed by an enemy bomb before cycle 5000 (found fast)
 //   late:      killed by an enemy bomb later (worn down)
 //   tie:       still alive at the cycle limit with someone else (no kill power)
+export function lossSymptom(enemyCode, foreignSteps, diedAt) {
+  if (!enemyCode) return 'suicide';
+  if (foreignSteps > 100) return 'converted';
+  return diedAt < 5000 ? 'early' : 'late';
+}
+
 export function diagnoseRounds(rounds, index = 0) {
   const d = { suicide: 0, converted: 0, early: 0, late: 0, tie: 0 };
   for (const r of rounds) {
     if (!r.report || r.winner === index) continue;
     const me = r.report.warriors[index];
     if (me.alive) { d.tie++; continue; }
-    const cause = me.lastDeath?.cause;
-    if (cause !== 'enemyCode') d.suicide++;
-    else if (me.foreignSteps > 100) d.converted++;
-    else if (me.diedAt < 5000) d.early++;
-    else d.late++;
+    d[lossSymptom(me.lastDeath?.cause === 'enemyCode', me.foreignSteps, me.diedAt)]++;
   }
   return d;
 }

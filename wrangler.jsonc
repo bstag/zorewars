@@ -16,5 +16,10 @@
     "binding": "ASSETS",
     "run_worker_first": ["/api/*"]
   },
-  "observability": { "enabled": true }
+  "observability": {
+    "enabled": true,
+    "redact_query_string": true,
+    "traces": { "enabled": true, "head_sampling_rate": 0.1 },
+    "logs": { "enabled": true, "invocation_logs": false }
+  }
 }

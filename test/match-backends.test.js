@@ -1,8 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { compile, DEFAULT_SETTINGS, runMatch, runRound, VM } from '../src/engine/index.js';
 import { matchPlan, summarizeMatch } from '../src/engine/match.js';
 import { createMatchBackend } from '../src/engine/match-backend.js';
+import { createWasmRingKernel, ringDuelWasmURL } from '../src/engine/ring-duel-wasm.js';
 import { GpuBackendError } from '../src/engine/gpu/errors.js';
 import { createCpuMatchPool } from '../web/cpu-matches.js';
 import { createBrowserMatchPool } from '../web/matches.js';
@@ -41,6 +43,26 @@ test('browser round plans preserve existing random placements and P-space across
   assert.throws(() => matchPlan({ ...task, roundOptions: [] }), /one entry per round/);
 });
 
+test('the browser CPU pool uses Wasm for score-only ring matches and reports', async () => {
+  const wasm = createWasmRingKernel(new WebAssembly.Module(readFileSync(ringDuelWasmURL)));
+  let calls = 0;
+  const createRingKernel = (cfg, options) => { calls++; return wasm(cfg, options); };
+  const cfg = { ...settings, pSpace: false };
+  const task = { ...taskFor(cfg), b: compile('JMP 0', 'redcode', cfg), diagnose: false };
+  const browser = createCpuMatchPool({ createRingKernel });
+  const reference = createCpuMatchPool();
+  try {
+    assert.deepEqual(await browser.match(task), await reference.match(task));
+    assert.equal(calls, 1);
+    const reportTask = { ...task, diagnose: true };
+    assert.deepEqual(await browser.match(reportTask), await reference.match(reportTask));
+    assert.equal(calls, 2);
+  } finally {
+    browser.close();
+    reference.close();
+  }
+});
+
 test('local CPU workers support the same detailed round plans as browser workers', async () => {
   const cpu = createPool(1), browser = createCpuMatchPool();
   try {
@@ -51,6 +73,43 @@ test('local CPU workers support the same detailed round plans as browser workers
       assert.deepEqual(actual, await browser.match(task));
     }
   } finally { cpu.close(); browser.close(); }
+});
+
+test('Wasm hill workers preserve score details and loss diagnosis, including P-space', async () => {
+  const wasmModule = new WebAssembly.Module(readFileSync(ringDuelWasmURL));
+  const js = createPool(1), wasm = createPool(1, { wasmModule });
+  const cfg = { ...settings, coreSize: 8000, maxCycles: 6000 };
+  const cases = [
+    ['MOV.I bomb, -20\nJMP 0\nbomb DAT 0,0', 'early'],
+    ['DJN.B 0, #5001\nMOV.I bomb, -21\nJMP 0\nbomb DAT 0,0', 'late'],
+    ['MOV.I bomb, -19\nMOV.I loop, -21\nDJN.B 0, #120\nMOV.A #0, -22\nJMP 0\nloop JMN.A 0, 1\nbomb DAT 1,0', 'converted'],
+    ['JMP 0', 'tie'],
+    ['JMP 0', 'suicide'],
+  ];
+  try {
+    for (const [source, symptom] of cases) {
+      const task = {
+        a: compile(symptom === 'suicide' ? 'DAT 0,0' : 'JMP 0', 'redcode', cfg),
+        b: compile(source, 'redcode', { ...cfg, maxLength: 8 }),
+        settings: { ...cfg, maxLength: 8, rounds: 2 },
+        roundOptions: [0, 1].map(firstTurn => ({ positions: [0, 20], firstTurn })),
+        details: true, diagnose: true,
+      };
+      assert.ok(task.a.ok && task.b.ok);
+      const expected = await js.match(task);
+      assert.equal(expected.d[symptom], 2, symptom);
+      assert.deepEqual(await wasm.match(task), expected);
+      const scoreTask = { ...task, details: false, diagnose: false };
+      assert.deepEqual(await wasm.match(scoreTask), await js.match(scoreTask));
+    }
+    for (const geometry of [{}, { topology: 'torus', sizeX: 10, sizeY: 8 }]) {
+      const pspaceTask = taskFor({ ...settings, ...geometry });
+      assert.deepEqual(await wasm.match(pspaceTask), await js.match(pspaceTask));
+    }
+  } finally {
+    js.close();
+    wasm.close();
+  }
 });
 
 test('auto falls back once when GPU initialization fails; explicit GPU remains strict', async () => {
@@ -106,6 +165,20 @@ test('cancelled browser CPU matches publish no partial results', async () => {
     const task = taskFor({ ...settings, maxCycles: 1000000 });
     await assert.rejects(pool.match(task), { name: 'AbortError' });
     assert.equal(pool.stats.matches, 0); assert.equal(pool.stats.rounds, 0);
+  } finally { pool.close(); }
+});
+
+test('browser CPU matches yield during Wasm execution and discard cancelled rounds', async () => {
+  const createRingKernel = createWasmRingKernel(new WebAssembly.Module(readFileSync(ringDuelWasmURL)));
+  let cancelled = false;
+  const pool = createCpuMatchPool({ createRingKernel, cancelled: () => cancelled,
+    yieldControl: async () => { cancelled = true; } });
+  try {
+    const cfg = { ...settings, maxCycles: 100000000, pSpace: false };
+    const idle = compile('JMP 0', 'redcode', cfg);
+    await assert.rejects(pool.match({ a: idle, b: idle, settings: cfg }), { name: 'AbortError' });
+    assert.equal(pool.stats.matches, 0);
+    assert.equal(pool.stats.rounds, 0);
   } finally { pool.close(); }
 });
 

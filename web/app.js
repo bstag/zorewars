@@ -3,6 +3,7 @@ import {librarySwitchPrompt} from './library-choice.js';
 import {conversionTarget,installConversion,conversionStatus,clearConversionStatus} from './conversion-slots.js';
 import {createRoundActions} from './round-actions.js';
 import {prepareReplay} from './replay.js';
+import {recordArenaReplay} from './recorded-replay.js';
 import {initializeRemoteImport,initializeLocalSlots} from './startup-slots.js';
 import {advanceFrame,sceneNeedsDraw} from './frame-policy.js';
 import {paintInspector} from './inspector.js';
@@ -592,7 +593,7 @@ function newRound() {
   const pspacesAtStart = state.pspaces.map((ps) => ps.slice()); // for replays
   try {
     const positions = vm.load(warriors, { seed: (Math.random() * 2 ** 32) >>> 0, firstTurn, pspaces: state.pspaces });
-    state.roundSetup = { warriors, positions, firstTurn, pspaces: pspacesAtStart };
+    state.roundSetup = { warriors, positions, firstTurn, pspaces: pspacesAtStart, recorder: recordArenaReplay(vm) };
   } catch (e) {
     state.vm = null;
     forgetRound();
@@ -632,7 +633,7 @@ function discardLive() {
   $('liveBackendStatus').textContent = ''; $('liveBackendStatus').dataset.backend = '';
   $('stepBtn').disabled = false; $('finishBtn').disabled = false;
 }
-function installLive(vm) {
+function installLive(vm, playback) {
   const generation = state.liveGeneration;
   const status = $('liveBackendStatus');
   const show = (backend, reason) => {
@@ -641,7 +642,7 @@ function installLive(vm) {
     status.dataset.backend = backend; status.title = reason ?? '';
     state.dirtyFrame = true;
   };
-  const live = createBrowserLiveController(vm, { backend: state.livePreference, onBackend: show });
+  const live = playback ?? createBrowserLiveController(vm, { backend: state.livePreference, onBackend: show });
   state.live = live; show(live.backend, live.fallbackReason);
 }
 
@@ -666,6 +667,11 @@ function checkDeaths() {
 function finishRound() {
   const vm = state.vm;
   stopRunning();
+  if (!state.replaying && state.roundSetup) {
+    state.roundSetup.endCycle = vm.cycle;
+    state.roundSetup.recording = state.roundSetup.recorder?.result();
+    state.roundSetup.recorder = null;
+  }
   vm.recordResults();
   renderPostMortem(postMortem(vm));
   const outcome = roundOutcome(vm, {replaying:state.replaying,roster:state.roster,colors:WARRIOR_COLORS,touch:touchQuery.matches,colorName});
@@ -715,22 +721,24 @@ function showKillingBlow() {
   $('inspector').scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
 
-// Rounds are deterministic, so a replay re-runs this exact round from the
-// start and pauses shortly before the end; then Step through the finish.
+// Pause before the end using the saved Wasm history when available.
 async function replayEnd(cyclesBefore = 100) {
   const setup = state.roundSetup;
-  const end = state.vm?.cycle ?? 0;
   if (!setup) return;
+  const end = setup.endCycle ?? state.vm?.cycle ?? 0;
   stopRunning();
   discardLive();
   const generation = state.liveGeneration;
+  let playback;
   const vm = await prepareReplay(state.settings, setup, end, cyclesBefore, {
     isCurrent: () => state.liveGeneration === generation,
     resetHighlights: size => highlights.reset(size),
+    recording: setup.recording,
+    onRecordedPlayback: saved => { playback = saved; },
   });
   if (!vm) return;
   state.vm = vm;
-  installLive(vm);
+  installLive(vm, playback);
   state.replaying = true;
   state.lastStep = null;
   state.alive = vm.warriors.map((w) => w.alive);

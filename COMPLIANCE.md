@@ -66,6 +66,77 @@ As a sanity check that the P-space test can catch bugs, it was run against a del
 
    It exits with status 1 and lists the first differences if anything disagrees.
 
+## Benchmark the WebAssembly engine
+
+The browser's CPU match worker uses WebAssembly for eligible two-warrior matches, including match diagnostics and solo species checks. The live arena's CPU path also uses WebAssembly for supported rounds, including play, stepping, and replay. If the browser cannot load the module, it falls back to JavaScript. Use `--wasm` for CLI battles, including solo and multi-warrior rounds, round-robin tournaments, traces, and battle reports. Both ring and 2D and 3D torus battlefields are supported. To rebuild the bundled module, install the Rust WebAssembly target.
+
+```bash
+rustup target add wasm32-unknown-unknown
+npm run build:wasm
+node cli/zorewars.js battle "@silk" "@seeker" --rules 94nop --rounds 200 --wasm
+npm run bench:wasm -- 400 /path/to/pmars
+```
+
+The benchmark compares warmed JavaScript and Wasm runs at identical placements and checks every round result. The optional native pMARS comparison checks the win and tie totals and measures CLI wall time, including process startup and assembly.
+
+On a Ryzen 5 7600 with Node 22.22.3 and an optimized x64 pMARS 0.9.6 server build, Wasm ran the three 400-round pairings 3.1–3.4× as fast as the packed JavaScript engine and took 9–18% longer than the native CLI. All 1,200 Wasm round results matched JavaScript, and pMARS agreed on every pairing's win and tie totals.
+
+The CLI also accepts `--wasm` on `species`, `hill`, `tune`, `evolve`, `train`, `refine`, and `pushoff`. The packed Rust interpreter tracks hill loss symptoms on rings and tori, including when a match is run in slices. The Rust engine supports private P-space across rounds. The assembler still warns on `PIN` and gives each warrior private P-space.
+
+```bash
+node cli/zorewars.js hill "@silk" --rules 94nop --threads 4 --rounds 100 --seed 42 --json
+node cli/zorewars.js hill "@silk" --rules 94nop --threads 4 --rounds 100 --seed 42 --json --wasm
+```
+
+On the same machine, the two commands produced identical JSON for 24 opponents and 2,400 rounds. Median CLI wall time over five measured runs was 7.77 s with JavaScript and 1.05 s with Wasm.
+
+The Wasm engine matched native pMARS 0.9.6 on all 252 30-round matchups in the local P-space comparison.
+
+```bash
+npm run compare -- --pmars /path/to/pmars --only pspace --wasm
+```
+
+## Run the native Rust engine
+
+Build the Node addon with `npm run build:native` and select it with `--native` on the CLI commands that accept `--wasm`. The addon uses the same Rust interpreter and packed-state interface as WebAssembly. The browser continues to load the Wasm build. The local native addon is built for the host and lives in `tools/build/`.
+
+On Windows, the build uses the architecture-matched `node.lib` from the Node SDK. Obtain it with `node-gyp install`, or point `ZOREWARS_NODE_LIB` at an existing copy.
+
+```bash
+npm run build:native
+node cli/zorewars.js battle "@silk" "@seeker" --rules 94nop --rounds 200 --native
+npm run compare -- --pmars /path/to/pmars --only pspace --native
+npm run bench:wasm -- 200 /path/to/pmars --native
+```
+
+The native addon matched pMARS 0.9.6 on all 252 local P-space matchups. CLI comparisons also matched JavaScript and Wasm for ring and torus battles, traces, hill runs, and tournaments. In a 200-round run of the three ring benchmark pairings, the native addon was 2.7–3.3× as fast as packed JavaScript and took 2–10% longer than Wasm and 7–20% longer than pMARS.
+
+Both Rust builds also matched pMARS in 561 single rounds with fixed placements and 30 seeded 20-round matches against the local library.
+
+```bash
+npm run compare -- --pmars /path/to/pmars --local --quick --only round,match --wasm
+npm run compare -- --pmars /path/to/pmars --local --quick --only round,match --native
+```
+
+The torus fuzzer compares core cells and process positions and headings against the independent reference interpreter. On seed 144, each Rust build passed 1,000 generated matchups and 54,793 step comparisons across four shapes.
+
+The native addon was verified on Windows x64 and Linux x64. The Linux run used Debian Bookworm with Node 22 and passed the ring, torus, and match-backend tests, including P-space on one-cell and two-cell cores. On seed 219, both Rust builds passed another 1,000 generated torus matchups and 58,575 step comparisons.
+
+The packed backends preserve large cycle budgets and counters on resumed rounds, wrap signed load positions, and accept command-line torus sizes above the browser arena's cell limit where the packed buffers fit. They allocate process slots based on how many processes the round budget can create and store only P-space cells that Redcode can address. Wide cores reset in place. Packed buffers are capped at 2 GiB for Wasm and 4 GiB for the native addon, subject to available memory. For explicitly placed games, P-space preserves the raw survivor count even when overlapping starts allow more warriors than cells.
+
+Live execution can hand a confirmed GPU snapshot back to Wasm, preserving process queues, P-space, trace history and the final report. The opt-in WebGPU suite verifies that transition on a torus. Trace replay checks the actual compiled opcodes when deciding whether prior rounds are needed to reconstruct P-space. Assembler restrictions continue to apply to source input.
+
+Rust advances up to 128 instructions per call when collecting execution history. JavaScript applies the recorded writes, process changes and P-space stores in order to produce the same traces and reports. Single-step advances one instruction. Rebuild both Rust artifacts after changes to the shared history layout. Benchmark the history path with `npm run bench:wasm -- --history --native`.
+
+Live playback without an instruction trace uses Rust's scheduler state at each batch boundary. JavaScript applies the forensic changes in order for the inspector and recorded replay. To measure the score-only interpreter on a preloaded core, run `npm run bench:wasm -- 250 --kernel --native`. Its timing includes the call boundary and excludes loading, core reset, and scoring.
+
+`node scripts/check-browser-gpu.js` checks the arena in Chrome, including Wasm match diagnostics and solo results against JavaScript on a ring and a torus. It also exercises live stepping, replay, GPU readback failure, and automatic Wasm fallback with WebGPU disabled.
+
+```bash
+node scripts/plane-fuzz.js 1000 400 144 --wasm
+node scripts/plane-fuzz.js 1000 400 144 --native
+```
+
 ## Using pMARS command lines
 
 The CLI accepts pMARS's short options and reproduces pMARS's placement and random number generator, so a pMARS match can be replayed exactly:

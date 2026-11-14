@@ -23,7 +23,9 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { compile, VM, listing, runMatch } from '../src/engine/index.js';
+import { compile, VM, listing, runMatch, DEFAULT_SETTINGS } from '../src/engine/index.js';
+import { rustEngine } from '../cli/rust-engine.js';
+import { createRingDuel } from '../src/engine/ring-duel.js';
 import { fetchWarriorText } from '../cli/remote.js';
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
@@ -36,10 +38,14 @@ const PMARS = opt('pmars') || process.env.PMARS;
 const QUICK = argv.includes('--quick');
 const ONLY = opt('only')?.split(',');
 if (!PMARS || !fs.existsSync(PMARS)) {
-  console.error('usage: node scripts/pmars-compare.js --pmars path/to/pmars [--quick] [--only asm,round,match,pspace]');
+  console.error('usage: node scripts/pmars-compare.js --pmars path/to/pmars [--quick] [--local] [--wasm|--native] [--only asm,round,match,pspace]');
   console.error('See COMPLIANCE.md for how to build pMARS.');
   process.exit(2);
 }
+const { createRingKernel } = rustEngine({ wasm: argv.includes('--wasm'), native: argv.includes('--native') }, message => {
+  console.error(message);
+  process.exit(2);
+});
 
 const WORK = fs.mkdtempSync(path.join(os.tmpdir(), 'zorewars-pmars-'));
 const pmars = (args) => spawnSync(PMARS, args, { encoding: 'utf8' }).stdout;
@@ -83,15 +89,25 @@ function checkRounds(ws, per) {
   const compiled = new Map(ws.map((w) => [w.id, compile(w.text)]));
   for (let i = 0; i < ws.length; i++) {
     for (let j = i + 1; j < ws.length; j++) {
+      const warriors = [compiled.get(ws[i].id), compiled.get(ws[j].id)];
       for (let k = 0; k < per; k++) {
         const pos = 100 + ((k * 7919 + i * 131 + j * 17) % 7801);
         const out = pmars(['-r', '1', '-b', '-k', '-F', String(pos), ws[i].file, ws[j].file]).trim().split(/\r?\n/).slice(-2);
         const [w1, t1] = out[0].split(' ').map(Number);
         const theirs = w1 ? 0 : Number(out[1].split(' ')[0]) ? 1 : t1 ? 'tie' : '?';
-        const vm = new VM();
-        vm.load([compiled.get(ws[i].id), compiled.get(ws[j].id)], { positions: [0, pos], firstTurn: 0 });
-        vm.run();
-        const ours = vm.winner === null ? 'tie' : vm.winner;
+        let winner;
+        if (createRingKernel) {
+          const duel = createRingDuel(DEFAULT_SETTINGS, warriors, createRingKernel);
+          if (!duel) throw new Error(`Cannot run ${ws[i].id} vs ${ws[j].id} in Rust`);
+          winner = duel.round([0, pos], 0).winner;
+        }
+        else {
+          const vm = new VM();
+          vm.load(warriors, { positions: [0, pos], firstTurn: 0 });
+          vm.run();
+          winner = vm.winner;
+        }
+        const ours = winner ?? 'tie';
         total++;
         if (ours !== theirs) diffs.push(`${ws[i].id} vs ${ws[j].id} @${pos}: ours ${ours}, pMARS ${theirs}`);
       }
@@ -104,7 +120,9 @@ function matchTotals(pick, rounds, F) {
   const n = pick.length;
   const out = pmars(['-r', String(rounds), '-b', '-k', '-F', String(F), ...pick.map((w) => w.file)]).trim().split(/\r?\n/).slice(-n);
   const theirs = out.map((l) => l.trim().split(/\s+/).map(Number));
-  const m = runMatch(pick.map((w) => compile(w.text)), { rounds }, { fixed: F });
+  const m = runMatch(pick.map((w) => compile(w.text)), { rounds }, {
+    fixed: F, executionHistory: !createRingKernel, createRingKernel,
+  });
   // pMARS -k prints: wins ties (2 warriors) or score, rounds by survivor count..., losses (3+).
   const ours = pick.map((_, i) => {
     if (n === 2) return [m.warriors[i].wins, m.warriors[i].ties];
@@ -150,8 +168,9 @@ function checkPSpace(ws, rounds) {
 const banner = spawnSync(PMARS, [], { encoding: 'utf8' });
 const version = `${banner.stdout}${banner.stderr}`.split(/\r?\n/).find((l) => /pMARS v/.test(l)) || 'pMARS (version unknown)';
 console.log(`Comparing ZoreWars with ${version.trim()}`);
-const ws = await loadComparisonWarriors({root:ROOT,work:WORK,fetchWarriorText});
-console.log(`${ws.length} warriors (library, fixtures and Hall of Fame originals)\n`);
+const classics = !argv.includes('--local') && (!ONLY || ONLY.some((check) => check !== 'pspace'));
+const ws = await loadComparisonWarriors({root:ROOT,work:WORK,fetchWarriorText,classics});
+console.log(`${ws.length} warriors (library and fixtures${classics ? ', plus Hall of Fame originals' : ''})\n`);
 const checks = {
   asm: () => checkAsm(ws),
   round: () => checkRounds(ws.filter((w) => !w.fixture), QUICK ? 1 : 2),

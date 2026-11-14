@@ -30,6 +30,17 @@ const tinyLpScanAttack = (body) => ({ id: 'seq', kids: [
 ] });
 
 export const recipes = {
+  'lp-romulan-rous': {
+    rules: ['lp', 'lp-hill'], length: 56, verification: 'full', strictRules: true,
+    purpose: 'Romulan Warbird and R.O.U.S. share the LP process queue with 32 blank cells between their bodies.',
+    tree: () => ({
+      id: 'par', P: { LP: 1, GAP: 32 },
+      kids: [
+        { id: 'lp-romulan-scanner' },
+        { id: 'lp-scatter-paper', P: { HOP: 6191, COUNT: 22, READ: 5033, WRITE: 1319, RESTART: 83, INDIRECT: 1 } },
+      ],
+    }),
+  },
   'nano-lane': {
     rules: ['nano'], length: 5, verification: 'full', strictRules: true,
     purpose: 'A five-cell Nano scanner whose comparison and attack share a pointer.',

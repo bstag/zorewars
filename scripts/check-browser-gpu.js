@@ -21,7 +21,7 @@ const server = http.createServer((req, res) => {
   if (url.pathname === '/smoke') { res.setHeader('Content-Type', 'text/html'); res.end('<!doctype html><title>GPU smoke test</title>'); return; }
   const file = path.resolve(root, `.${decodeURIComponent(url.pathname)}`, url.pathname.endsWith('/') ? 'index.html' : '');
   if (!file.startsWith(root + path.sep) || file.includes(`${path.sep}node_modules${path.sep}`)) { res.writeHead(403).end(); return; }
-  res.setHeader('Content-Type', ({ '.js': 'text/javascript', '.json': 'application/json', '.html': 'text/html', '.css': 'text/css', '.svg': 'image/svg+xml' })[path.extname(file)] ?? 'application/octet-stream');
+  res.setHeader('Content-Type', ({ '.js': 'text/javascript', '.json': 'application/json', '.html': 'text/html', '.css': 'text/css', '.svg': 'image/svg+xml', '.wasm': 'application/wasm' })[path.extname(file)] ?? 'application/octet-stream');
   fs.readFile(file, (error, data) => { if (error) res.writeHead(404).end(); else res.end(data); });
 });
 server.listen(0, '127.0.0.1'); await once(server, 'listening');
@@ -86,6 +86,20 @@ try {
     } finally { gpu.close(); cpu.close(); }
     const fallback = await createBrowserMatchPool({ createWorker: () => { throw Error('worker blocked for test'); } });
     try { await fallback.match(task); info.fallback = fallback.backend; } finally { fallback.close(); }
+    // Instantiate the actual browser CPU worker. Match and solo outputs
+    // must agree with a deliberately JS-only pool on both geometries.
+    const wasm = await createBrowserMatchPool({ backend: 'cpu' }), js = createCpuMatchPool();
+    try {
+      for (const cfg of [settings, { ...settings, topology: 'torus', sizeX: 16, sizeY: 5 }]) {
+        const pair = { ...task, settings: cfg };
+        const [actual, expected] = await Promise.all([wasm.match(pair), js.match(pair)]);
+        if (JSON.stringify(actual) !== JSON.stringify(expected)) throw Error('browser Wasm/JS match mismatch');
+        const [solo, soloJs] = await Promise.all([wasm.measureSpecies(a, cfg), js.measureSpecies(a, cfg)]);
+        if (JSON.stringify(solo) !== JSON.stringify(soloJs)) throw Error('browser Wasm/JS solo mismatch');
+      }
+      if (wasm.stats.wasmRounds !== 10) throw Error('browser CPU worker did not execute all rounds in Wasm');
+      info.wasmRounds = wasm.stats.wasmRounds;
+    } finally { wasm.close(); js.close(); }
     let failGpu = false;
     const switching = await createBrowserMatchPool({ createWorker: () => {
       const worker = new Worker('/web/match-worker.js', { type: 'module' });
@@ -136,7 +150,7 @@ try {
     return { tournament, ladder, stopped };
   })()`);
   assert.match(ui.tournament, /GPU/); assert.equal(ui.ladder, 'GPU');
-  console.error('Checking live arena GPU playback, Step, replay, reset and CPU mode…');
+  console.error('Checking live arena GPU playback, stepping, replay, reset and Wasm recovery…');
   const live = await evaluate(`(async () => {
     const el = id => document.getElementById(id);
     const steps = () => Number(el('cycleOut').dataset.steps);
@@ -168,7 +182,7 @@ try {
     await new Promise(r => setTimeout(r, 100));
     if (steps() !== 0 || !el('pmCard').hidden) throw Error('a stale GPU result replaced the new round');
     el('setLiveBackend').value = 'cpu'; el('applySettings').click();
-    await wait(() => el('liveBackendStatus').dataset.backend === 'cpu');
+    await wait(() => el('liveBackendStatus').dataset.backend === 'wasm');
     el('stepBtn').click(); await wait(() => !el('stepBtn').disabled && steps() === 1);
     el('finishBtn').click(); await wait(() => !el('pmCard').hidden && !el('finishBtn').disabled);
     el('setLiveBackend').value = 'auto'; el('applySettings').click();
@@ -181,7 +195,7 @@ try {
     };
     try {
       el('stepBtn').click();
-      await wait(() => !el('stepBtn').disabled && el('liveBackendStatus').dataset.backend === 'cpu' && steps() === 2);
+      await wait(() => !el('stepBtn').disabled && el('liveBackendStatus').dataset.backend === 'wasm' && steps() === 2);
       if (!el('liveBackendStatus').title.includes('readback failed')) throw Error('live fallback reason was lost');
     } finally { GPUBuffer.prototype.mapAsync = originalMap; }
     el('resetBtn').click(); await wait(() => el('liveBackendStatus').dataset.backend === 'gpu');
@@ -205,23 +219,33 @@ try {
   assert.equal(live.backend, 'GPU'); assert.equal(volume.warriors, 4); assert.equal(volume.backend, 'GPU');
   const noGpuScript = await call('Page.addScriptToEvaluateOnNewDocument', { source: "Object.defineProperty(navigator, 'gpu', { value: undefined, configurable: true });" }, sessionId);
   await navigate(origin + '/web/?load=dwarf.red,imp.red');
-  console.error('Checking automatic live CPU fallback without WebGPU…');
+  console.error('Checking automatic live Wasm fallback without WebGPU…');
   const liveFallback = await evaluate(`(async () => {
     const el = id => document.getElementById(id);
     const wait = predicate => new Promise((resolve, reject) => {
       const deadline = Date.now() + 30000;
-      const poll = () => { if (predicate()) resolve(); else if (Date.now() > deadline) reject(Error('live CPU fallback timed out')); else setTimeout(poll, 50); }; poll();
+      const poll = () => { if (predicate()) resolve(); else if (Date.now() > deadline) reject(Error('live Wasm fallback timed out: ' + JSON.stringify({ backend: el('liveBackendStatus')?.dataset.backend, reason: el('liveBackendStatus')?.title, warriors: el('scoreboard')?.children.length, steps: el('cycleOut')?.dataset.steps, log: el('log')?.textContent.slice(-300) }))); else setTimeout(poll, 50); }; poll();
     });
-    await wait(() => el('scoreboard').children.length === 2 && el('liveBackendStatus').dataset.backend === 'cpu');
-    if (!el('liveBackendStatus').title.includes('WebGPU')) throw Error('automatic CPU fallback did not explain unavailable GPU');
+    await wait(() => el('scoreboard').children.length === 2 && el('liveBackendStatus').dataset.backend === 'wasm');
+    if (!el('liveBackendStatus').title.includes('WebGPU')) throw Error('automatic Wasm fallback did not explain unavailable GPU');
     el('setMaxCycles').value = '200'; el('applySettings').click();
+    await wait(() => el('liveBackendStatus').dataset.backend === 'wasm');
     el('stepBtn').click();
     await wait(() => !el('stepBtn').disabled && Number(el('cycleOut').dataset.steps) === 1);
     el('finishBtn').click(); await wait(() => !el('pmCard').hidden && !el('finishBtn').disabled);
-    return { backend: el('liveBackendStatus').textContent, finished: true };
+    const backend = el('liveBackendStatus').textContent, report = el('pmSummary').textContent;
+    el('pmReplay').click();
+    await wait(() => el('liveBackendStatus').dataset.backend === 'replay');
+    const before = Number(el('cycleOut').dataset.steps);
+    el('stepBtn').click();
+    await wait(() => !el('stepBtn').disabled && Number(el('cycleOut').dataset.steps) === before + 1);
+    el('finishBtn').click();
+    await wait(() => !el('finishBtn').disabled);
+    if (el('pmSummary').textContent !== report) throw Error('recorded replay changed the post-mortem');
+    return { backend, finished: true, recordedReplay: true };
   })()`);
   await call('Page.removeScriptToEvaluateOnNewDocument', { identifier: noGpuScript.identifier }, sessionId);
-  assert.equal(liveFallback.backend, 'CPU');
+  assert.equal(liveFallback.backend, 'WASM');
   console.log(JSON.stringify({ engine, ui, live, volume, liveFallback }, null, 2));
   socket.send(JSON.stringify({ id: ++id, method: 'Browser.close' }));
 } finally {

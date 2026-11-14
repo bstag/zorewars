@@ -180,6 +180,7 @@ function lossReports(rows, limit, readRound) {
 }
 
 export async function refine({ pool, source, field, settings, entrySettings = settings, propose,
+  createRingKernel,
   iterations = 3, variants = 4, rounds = 20, checkRounds = 30, seeds = 3, worst = 3, seed = 1,
   model = DEFAULT_MODEL, turns = 20, budget = Infinity,   // budget: estimated dollars for the whole run
   objective = 'points', partners = [], fieldRounds = 50,  // 'pushoff': rank by tournament place beside `partners`
@@ -223,7 +224,8 @@ export async function refine({ pool, source, field, settings, entrySettings = se
   const unit = pushoff ? 'places' : 'points/round';
   // A post-mortem of the first round `w` lost to field[i] (our code only), or null.
   const lostRound = (w, i, s) => {
-    const m = runMatch([w, field[i].w], { ...settings, rounds: Math.min(rounds, 12) }, { seed: s, report: true });
+    const m = runMatch([w, field[i].w], { ...settings, rounds: Math.min(rounds, 12) },
+      { seed: s, report: true, createRingKernel });
     const lost = m.rounds.find((x) => x.report && x.winner !== 0 && !x.survivors.includes(0));
     return lost ? formatPostMortem({ ...lost.report, warriors: lost.report.warriors.slice(0, 1) }) : null;
   };
@@ -246,7 +248,7 @@ export async function refine({ pool, source, field, settings, entrySettings = se
       async check({ redcode }) {
         calls.check++;
         const w = draft(redcode);
-        const sp = measureSpecies(w, settings);
+        const sp = measureSpecies(w, settings, createRingKernel);
         return `Compiles: ${w.instructions.length} instructions. ${sp.survives ? 'Survives alone' : 'DIES ALONE: it kills itself'}; ${sp.processes} processes at most, ${sp.coverage} cells executed (${sp.hint}).`;
       },
       async battle({ redcode, opponent }) {

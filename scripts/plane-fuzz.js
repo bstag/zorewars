@@ -9,8 +9,10 @@ import { VM, DEFAULT_SETTINGS, OPCODES, MODIFIERS, MODES } from '../src/engine/i
 import { makeGeometry } from '../src/engine/geometry.js';
 import { mulberry32 } from '../src/engine/random.js';
 import { makeReference } from './plane-reference.js';
+import { createRingDuel } from '../src/engine/ring-duel.js';
+import { rustEngine } from '../cli/rust-engine.js';
 
-export function fuzz({ programs = 500, steps = 400, seed = 1, shapes = [[100, 80, 1], [125, 64, 1], [20, 20, 20], [7, 3, 5]], log = () => {} } = {}) {
+export function fuzz({ programs = 500, steps = 400, seed = 1, shapes = [[100, 80, 1], [125, 64, 1], [20, 20, 20], [7, 3, 5]], log = () => {}, createRingKernel } = {}) {
   const rng = mulberry32(seed);
   const pick = (a) => a[Math.floor(rng() * a.length)];
   const ops = OPCODES.filter((o) => o !== 'LDP' && o !== 'STP');
@@ -41,6 +43,9 @@ export function fuzz({ programs = 500, steps = 400, seed = 1, shapes = [[100, 80
     const positions = [0, Math.floor(rng() * N)];
     const vm = new VM(settings);
     vm.load(ws, { positions });
+    if (createRingKernel && !createRingDuel(settings, ws, createRingKernel, { history: true })?.attachHistory(vm)) {
+      throw new Error('Cannot attach Rust to the generated torus');
+    }
     const ref = makeReference(settings);
     ref.load(ws, positions);
     for (let s = 0; s < steps && !vm.done; s++) {
@@ -74,8 +79,13 @@ export function fuzz({ programs = 500, steps = 400, seed = 1, shapes = [[100, 80
 }
 
 if (import.meta.url === `file://${process.argv[1].replace(/\\/g, '/')}` || import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/'))) {
-  const [programs = 500, steps = 400, seed = 1] = process.argv.slice(2).map(Number);
-  const r = fuzz({ programs, steps, seed, log: (m) => process.stderr.write(`${m}\n`) });
+  const args = process.argv.slice(2);
+  const [programs = 500, steps = 400, seed = 1] = args.filter(arg => !arg.startsWith('--')).map(Number);
+  const { createRingKernel } = rustEngine({ wasm: args.includes('--wasm'), native: args.includes('--native') }, message => {
+    console.error(message);
+    process.exit(2);
+  });
+  const r = fuzz({ programs, steps, seed, createRingKernel, log: (m) => process.stderr.write(`${m}\n`) });
   if (r.ok) console.log(`VM and reference agree: ${r.programs} random programs, ${r.compared} steps, every cell and process compared after every step.`);
   else {
     console.log(`MISMATCH in program ${r.program} (${r.shape}) at step ${r.step}:`);

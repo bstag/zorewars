@@ -3,12 +3,13 @@ const wrap = (value, core) => ((value % core) + core) % core;
 
 export default {
   id: 'lp-scatter-paper',
+  credit: P => P.INDIRECT ? 'Paper adapted from R.O.U.S. by S. Fernandes.' : null,
   kind: 'body', exit: 'never', dialects: '94', processes: 1, grows: true, writes: 'sparse', roams: true,
   entry: 'copy', entryFirst: false, loop: 'copy',
   purpose: 'A seven-cell LP replicator that copies backwards, scatters through two doubling offsets, and transfers to the copy even when its restart SPL is capped.',
   params: { HOP: [200, 7793], READ: [1, 7999], WRITE: [1, 7999], COUNT: [7, 27], SCATTER: [0, 1],
-    READMODE: [0, 1], RESTART: [1, 7999] },
-  defaults: { HOP: 6080, READ: 4883, WRITE: 1347, COUNT: 21, SCATTER: 1, READMODE: 0, RESTART: 97 },
+    READMODE: [0, 1], RESTART: [1, 7999], INDIRECT: [0, 1] },
+  defaults: { HOP: 6080, READ: 4883, WRITE: 1347, COUNT: 21, SCATTER: 1, READMODE: 0, RESTART: 97, INDIRECT: 0 },
   mutable: [['seed', ['b']], ['scatter', ['a', 'b']], ['transfer', ['a']]],
   observationRole: 'lp-scatter-paper',
   knowledge: {
@@ -18,6 +19,7 @@ export default {
       SCATTER: 'Use 0 to keep the timing and omit the indirect copy and its pointer side effects',
       READMODE: '0 B-postincrement read, 1 A-predecrement read',
       RESTART: 'Remote B-postincrement offset on the restart SPL',
+      INDIRECT: 'Use the published R.O.U.S. addressing for doubling and the copy-loop test',
     },
     evidence: ['docs/lp-top-ten.md#seven-cells-and-two-jobs-per-pass', 'docs/lp-bronze-paper.md'],
   },
@@ -50,8 +52,8 @@ export default {
     ins('copy', 'MOV', 'I', `<${L('seed')}`, `{${L('transfer')}`);
     ins('scatter', P.SCATTER ? 'MOV' : 'NOP', P.SCATTER ? 'I' : 'F',
       `${P.SCATTER ? (P.READMODE ? '{' : '>') : '$'}${P.READ}`, `${P.SCATTER ? '{' : '$'}${P.WRITE}`);
-    ins('double', 'ADD', 'F', L('scatter'), L('scatter'));
-    ins('check', 'JMN', 'B', L('copy'), L('seed'));
+    ins('double', 'ADD', 'F', P.INDIRECT ? '<0' : L('scatter'), P.INDIRECT ? '>0' : L('scatter'));
+    ins('check', 'JMN', 'B', L('copy'), P.INDIRECT ? `*${L('copy')}` : L('seed'));
     ins('restart', 'SPL', 'B', `@${L('seed')}`, `>${P.RESTART}`);
     // Backward copying moves A from HOP+1 to HOP-6. Both operands then address the copied seed.
     ins('transfer', 'JMZ', 'B', `$${P.HOP + 1}`, '*0');

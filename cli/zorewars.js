@@ -13,6 +13,7 @@ import { compile, detectLanguage, runMatch, runTournament, DEFAULT_SETTINGS, RUL
 import { convertWarrior, conversionCandidates } from '../src/engine/convert.js';
 import { MAX_TRACE_TAIL } from '../src/engine/trace.js';
 import { createTraceRound } from '../src/engine/battle.js';
+import { rustEngine } from './rust-engine.js';
 import {writeConversionResult} from './conversion-output.js';
 import { runPythonFile, pythonRunner } from './python.js';
 import { fetchWarriorText, nameFromUrl } from './remote.js';
@@ -82,6 +83,8 @@ Options:
                      later rounds follow pMARS's RNG, so results match pMARS
   --json             machine-readable output
   --no-execution-history  battle/tournament: skip tracking for post-mortems and traces
+  --wasm             use WebAssembly for eligible matches in battle, trace, tournament and CPU search tools
+  --native           use the native Rust engine for the same commands (npm run build:native)
   --classics         hill/tune/evolve: also play the Hall of Fame originals
                      (fetched from the public archives each run; needs network)
   --scratch          evolve: start from random programs, no library genes or opponents (the library is only held out)
@@ -128,7 +131,7 @@ function parseArgs(argv) {
     const a = argv[i];
     if (a.startsWith('--')) {
       const key = a.slice(2);
-      if (['json', 'help', 'report', 'classics', 'write', 'scratch', 'self', 'validate', 'league', 'tune', 'no-execution-history'].includes(key)) args.flags[key] = true;
+      if (['json', 'help', 'report', 'classics', 'write', 'scratch', 'self', 'validate', 'league', 'tune', 'no-execution-history', 'wasm', 'native'].includes(key)) args.flags[key] = true;
       else args.flags[key] = argv[++i];
     } else if (a === '-h') args.flags.help = true;
     else if (/^-[A-Za-z]$/.test(a) && PMARS_FLAGS[a[1]]) args.flags[PMARS_FLAGS[a[1]]] = argv[++i];
@@ -287,6 +290,11 @@ function expandRefs(refs) {
   return out;
 }
 
+function matchEngine(flags, history = false) {
+  const { createRingKernel } = rustEngine(flags, usage);
+  return { executionHistory: createRingKernel ? history : !flags['no-execution-history'], createRingKernel };
+}
+
 async function cmdBattle(args) {
   const refs = args._;
   if (refs.length < 1) usage('battle needs at least one warrior');
@@ -297,7 +305,7 @@ async function cmdBattle(args) {
   const fixed = args.flags.fixed !== undefined ? parseInt(args.flags.fixed, 10) : undefined;
   const report = !!args.flags.report;
   const detailRound = Math.min(settings.rounds, Math.max(1, parseInt(args.flags.round ?? '1', 10)));
-  const result = runMatch(warriors, settings, { seed, fixed, report, executionHistory: !args.flags['no-execution-history'] });
+  const result = runMatch(warriors, settings, { seed, fixed, report, ...matchEngine(args.flags, report) });
 
   if (json) {
     console.log(JSON.stringify({
@@ -348,7 +356,7 @@ async function cmdTournament(args) {
   const warriors = await loadAll(refs, settings, json);
   const seed = parseInt(args.flags.seed ?? '1', 10);
   const result = runTournament(warriors, settings, {
-    seed, executionHistory: !args.flags['no-execution-history'],
+    seed, ...matchEngine(args.flags),
     onMatch: json ? undefined : (m) => process.stderr.write(`  ${m.a} vs ${m.b}: ${m.result.map((r) => `${r.wins}-${r.losses}-${r.ties}`).join(' / ')}\n`),
   });
   if (json) {
@@ -422,15 +430,19 @@ async function cmdTrace(args) {
   const last = Math.max(1, Math.min(MAX_TRACE_TAIL, parseInt(args.flags.last ?? '40', 10)));
   if (!Number.isSafeInteger(round) || !Number.isInteger(last)) usage('--round and --last must be numbers');
   const adapter = args.flags['gpu-adapter'];
-  const backend = args.flags.backend ?? (adapter ? 'gpu' : 'cpu');
-  if (!['auto', 'cpu', 'gpu'].includes(backend)) usage('--backend takes auto, cpu or gpu');
+  const rust = args.flags.wasm || args.flags.native;
+  const requestedBackend = args.flags.backend ?? (adapter ? 'gpu' : 'cpu');
+  if (!['auto', 'cpu', 'gpu'].includes(requestedBackend)) usage('--backend takes auto, cpu or gpu');
+  if (rust && (requestedBackend === 'gpu' || adapter)) usage('Rust trace requires the CPU backend');
+  const backend = rust ? 'cpu' : requestedBackend;
   if (adapter && backend === 'cpu') usage('--gpu-adapter requires --backend gpu or auto');
   const settings = { ...settingsFrom(args.flags), rounds: round };
   const json = !!args.flags.json;
   const warriors = await loadAll(refs, settings, json);
   const seed = parseInt(args.flags.seed ?? '1', 10);
   const fixed = args.flags.fixed !== undefined ? parseInt(args.flags.fixed, 10) : undefined;
-  const prepare = () => createTraceRound(warriors, settings, { seed, fixed, round, traceSize: last });
+  const { createRingKernel } = matchEngine(args.flags, true);
+  const prepare = () => createTraceRound(warriors, settings, { seed, fixed, round, traceSize: last, createRingKernel });
   let replay = prepare();
   if (backend !== 'cpu') {
     let engine, failure;
@@ -502,7 +514,7 @@ ${[...runs.values()].filter(Boolean).length} of ${list.length} can play on this 
 
 const MIME = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
-  '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png',
+  '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.wasm': 'application/wasm',
   '.red': 'text/plain; charset=utf-8', '.py': 'text/plain; charset=utf-8', '.cpp': 'text/plain; charset=utf-8',
   '.hpp': 'text/plain; charset=utf-8', '.md': 'text/plain; charset=utf-8', '.ico': 'image/x-icon', '.txt': 'text/plain; charset=utf-8', '.xml': 'application/xml; charset=utf-8',
 };
@@ -560,9 +572,13 @@ const devtools = async (module = './devtools.js') => [await import(module), { lo
 const args = parseArgs(process.argv.slice(2));
 const cmd = args._.shift();
 if (!cmd || args.flags.help) { console.log(HELP); process.exit(cmd || args.flags.help ? 0 : 2); }
+const directMatch = ['battle', 'tournament'].includes(cmd);
 if (args.flags['no-execution-history']) {
-  if (!['battle', 'tournament'].includes(cmd)) usage('--no-execution-history applies to battle and tournament');
+  if (!directMatch) usage('--no-execution-history applies to battle and tournament');
   if (args.flags.report) usage('--report requires execution history');
+}
+if ((args.flags.wasm || args.flags.native) && !directMatch && !['trace', 'species', 'hill', 'tune', 'evolve', 'train', 'refine', 'pushoff'].includes(cmd)) {
+  usage('--wasm and --native apply to battle, trace, tournament and CPU search tools');
 }
 switch (cmd) {
   case 'battle': await cmdBattle(args); break;

@@ -5,6 +5,7 @@ import { strip } from '../tools/hill.js';
 import { refine, claudeProposer } from '../tools/refine.js';
 import { refineOptions } from './search-options.js';
 import { battlePool, opponents, hillSettingsFor, progress, done } from './devtools-context.js';
+import { rustEngine } from './rust-engine.js';
 
 async function defaultProposer(options) {
   if (typeof process.loadEnvFile === 'function' && fs.existsSync('.env')) process.loadEnvFile('.env');
@@ -37,10 +38,11 @@ export async function cmdRefine(args, h, { createProposer = defaultProposer, cre
   if (!field.length) h.usage('no opponents compiled for this battlefield');
   const partners = flags.partner ? await h.loadAll(h.expandRefs(String(flags.partner).split(',')), entrySettings, json) : [];
   if (flags.hill) Object.assign(settings, hillSettingsFor(settings));
+  const { createRingKernel } = rustEngine(flags, h.usage);
   const pool = await createPool(flags, h);
   try {
     const propose = await createProposer(request.proposer);
-    const r = await refine({ ...search, pool, source, field, settings, entrySettings, propose, partners: partners.map(strip),
+    const r = await refine({ ...search, pool, source, field, settings, entrySettings, propose, partners: partners.map(strip), createRingKernel,
       onProgress: text => progress(json, text) });
     done(json);
     fs.mkdirSync(path.dirname(out) || '.', { recursive: true });

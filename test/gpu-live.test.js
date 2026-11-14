@@ -8,6 +8,8 @@ import { createLiveController } from '../src/engine/live.js';
 import { GpuBackendError } from '../src/engine/gpu/errors.js';
 import { createTraceRound, runMatch } from '../src/engine/battle.js';
 import { randomGenome, toWarrior } from '../tools/genes.js';
+import { createWasmRingKernel, ringDuelWasmURL } from '../src/engine/ring-duel-wasm.js';
+import { prepareWasmLive } from '../web/live.js';
 
 const cfg = { ...DEFAULT_SETTINGS, coreSize: 80, maxCycles: 700, maxLength: 5, minDistance: 5, maxProcesses: 8, pSpaceSize: 7 };
 function makeVM(settings = cfg, count = 2, programs) {
@@ -212,6 +214,36 @@ test('persistent live GPU exactly matches CPU at instruction boundaries', { skip
       try {
         await controller.advance(31); expected.run(31); assert.deepEqual(state(actual), state(expected));
         await controller.advance(73); expected.run(73); assert.equal(controller.backend, 'cpu'); assert.deepEqual(state(actual), state(expected));
+      } finally { controller.close(); }
+    });
+    await t.test('a real GPU snapshot resumes in Wasm with complete torus history', async () => {
+      const settings = { ...cfg, topology: 'torus', sizeX: 16, sizeY: 5, sizeZ: 1 };
+      const programs = ['STP.AB #7, #1\nMOV.I 0, >4\nJMP -2', 'SPL 0\nJMP -1'];
+      const actual = makeVM(settings, 2, programs), expected = makeVM(settings, 2, programs);
+      actual.enableTrace(17);
+      expected.enableTrace(17);
+      const kernel = createWasmRingKernel(new WebAssembly.Module(fs.readFileSync(ringDuelWasmURL)));
+      const session = await engine.createSession(actual);
+      let calls = 0;
+      const controller = createLiveController(actual, {
+        createGpu: async () => ({
+          get lastStep() { return session.lastStep; },
+          close() { session.close(); },
+          advance(n) {
+            if (++calls === 2) throw new GpuBackendError('Device lost after confirmed readback');
+            return session.advance(n);
+          },
+        }),
+        createCpu: () => prepareWasmLive(actual, async () => kernel),
+      });
+      try {
+        for (const n of [17, 31, 100]) {
+          assert.equal(await controller.advance(n), expected.run(n));
+          assert.deepEqual(state(actual), state(expected));
+          assert.deepEqual(actual.trace, expected.trace);
+        }
+        assert.equal(controller.backend, 'wasm');
+        assert.deepEqual(postMortem(actual), postMortem(expected));
       } finally { controller.close(); }
     });
     await t.test('closing an in-flight GPU advance cannot mutate the replaced VM or its P-space', async () => {

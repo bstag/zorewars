@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { createPool, libraryOpponents, classicOpponents, strip } from '../tools/hill.js';
 import { createMatchBackend } from '../src/engine/match-backend.js';
+import { rustEngine } from './rust-engine.js';
 
 // Progress heartbeat. On an interactive terminal it redraws a single line
 // (suppressed under --json so it never clutters piped output). When stderr is
@@ -27,8 +28,11 @@ export const done = (json) => {
 export async function battlePool(flags, h) {
   const adapter = flags['gpu-adapter']?.trim();
   if (Object.hasOwn(flags, 'gpu-adapter') && (!adapter || adapter.startsWith('--'))) h.usage('--gpu-adapter needs a GPU name');
-  const backend = flags.backend ?? (adapter ? 'gpu' : 'cpu');
-  if (!['auto', 'cpu', 'gpu'].includes(backend)) h.usage('--backend takes auto, cpu or gpu');
+  const rust = flags.wasm || flags.native;
+  const requestedBackend = flags.backend ?? (adapter ? 'gpu' : 'cpu');
+  if (!['auto', 'cpu', 'gpu'].includes(requestedBackend)) h.usage('--backend takes auto, cpu or gpu');
+  if (rust && (requestedBackend === 'gpu' || adapter)) h.usage('Rust execution needs a CPU backend');
+  const backend = rust ? 'cpu' : requestedBackend;
   if (adapter && backend === 'cpu') h.usage('--gpu-adapter requires --backend gpu or auto');
   const positive = (key) => {
     if (flags[key] === undefined) return undefined;
@@ -37,7 +41,8 @@ export async function battlePool(flags, h) {
     return value;
   };
   const threads = positive('threads'), batchSize = positive('gpu-batch');
-  return createMatchBackend({ backend, createCpu: () => createPool(threads),
+  const { native, wasmModule } = rustEngine(flags, h.usage);
+  return createMatchBackend({ backend, createCpu: () => createPool(threads, { native, wasmModule }),
     createGpu: async () => (await import('../tools/gpu.js')).createGpuPool({ batchSize, adapter }),
     onFallback: (reason) => { if (!flags.json) console.error(`Using CPU for battles: ${reason}`); },
   });

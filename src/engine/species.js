@@ -6,7 +6,7 @@
 // only on the warrior (and the rules), not on an opponent. Warriors in the
 // same cell play in similar ways; strong warriors exist in many cells.
 
-import { VM } from './vm.js';
+import { createRound } from './battle.js';
 import { DEFAULT_SETTINGS } from './constants.js';
 
 // Bin edges: a value falls in the first bin whose edge is larger than it.
@@ -37,10 +37,9 @@ export function speciesHint(p, c, axes) {
 }
 
 // Run the warrior alone and measure it.
-export function measureSpecies(compiled, settings = {}) {
+export function measureSpecies(compiled, settings = {}, createRingKernel) {
   const cfg = { ...DEFAULT_SETTINGS, ...settings };
-  const vm = new VM(cfg);
-  vm.load([compiled], { seed: 1 });
+  const { vm } = createRound([compiled], cfg, { seed: 1, createRingKernel });
   vm.run(Math.max(0, Math.ceil(cfg.maxCycles)));
   return speciesFromVM(vm);
 }

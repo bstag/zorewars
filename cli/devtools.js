@@ -13,6 +13,7 @@ import { tuneOptions } from './search-options.js';
 export { cmdRefine } from './refinement.js';
 export { cmdPushoff } from './pushoff.js';
 import { battlePool, opponents, hillSettingsFor, progress, done } from './devtools-context.js';
+import { rustEngine } from './rust-engine.js';
 
 // Retain these commands for callers of the former combined command module.
 export async function cmdEvolve(...args) { return (await import('./evolution.js')).cmdEvolve(...args); }
@@ -67,7 +68,8 @@ export async function cmdSpecies(args, h) {
   const refs = args._.length ? h.expandRefs(args._) : h.libraryRefs(settings);
   const warriors = await h.loadAll(refs, settings, json);
   const axes = speciesAxes(settings);
-  const rows = warriors.map((w) => ({ name: w.name, file: w.file, ...measureSpecies(w, settings) }));
+  const { createRingKernel } = rustEngine(args.flags, h.usage);
+  const rows = warriors.map((w) => ({ name: w.name, file: w.file, ...measureSpecies(w, settings, createRingKernel) }));
   if (json) { console.log(JSON.stringify({ ok: true, axes, warriors: rows }, null, 2)); return; }
   h.printTable(rows.map((r) => ({
     Warrior: r.name, Processes: r.processes, 'Cells run': r.coverage,

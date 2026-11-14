@@ -30,3 +30,6 @@ wrangler.jsonc
 dist-check
 coverage
 .c8rc.json
+/.merge-*.log
+/v*.red.hill.err
+/v*.red.hill.json

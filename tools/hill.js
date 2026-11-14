@@ -18,6 +18,8 @@ import { Worker } from 'node:worker_threads';
 import { fileURLToPath } from 'node:url';
 import { compile, inLibraryFor, measureSpecies, DEFAULT_SETTINGS } from '../src/engine/index.js';
 import { fetchWarriorText, nameFromUrl } from '../cli/remote.js';
+import { createWasmRingKernel } from '../src/engine/ring-duel-wasm.js';
+import { createNativeRingKernel } from './ring-duel-native.js';
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const WARRIOR_DIR = path.join(ROOT, 'warriors');
@@ -28,11 +30,12 @@ export const strip = (w) => ({
   instructions: w.instructions.map(({ op, mod, aMode, a, bMode, b }) => ({ op, mod, aMode, a, bMode, b })),
 });
 
-export function createPool(threads = os.cpus().length) {
+export function createPool(threads = os.cpus().length, { wasmModule, native = false } = {}) {
+  const createRingKernel = native ? createNativeRingKernel() : wasmModule ? createWasmRingKernel(wasmModule) : undefined;
   let next = 0, closed = false;
   const pending = new Map();
   const workers = Array.from({ length: Math.max(1, threads) }, () => {
-    const w = new Worker(new URL('./worker.js', import.meta.url));
+    const w = new Worker(new URL('./worker.js', import.meta.url), { workerData: { wasmModule, native } });
     w.on('message', (msg) => {
       const p = pending.get(msg.id);
       if (!p) return;
@@ -56,7 +59,7 @@ export function createPool(threads = os.cpus().length) {
       if (closed) throw new Error('CPU pool is closed');
       // Keep the original local CPU path: per-program worker messages are
       // costly for scratch screening's many short-lived random programs.
-      return measureSpecies(warrior, settings);
+      return measureSpecies(warrior, settings, createRingKernel);
     },
     close() {
       if (closed) return;

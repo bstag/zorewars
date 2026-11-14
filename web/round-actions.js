@@ -10,6 +10,7 @@ async function step(maxSteps, valid = () => true) {
     if (state.vm !== vm || state.live !== live) return 0;
     state.lastStep = live.lastStep;
     checkDeaths();
+    if (!state.replaying && !vm.done) state.roundSetup?.recorder?.checkpoint();
     if (vm.done) finishRound();
     sampleChart(); updateCycle(); state.dirtyFrame = true;
     return n;
