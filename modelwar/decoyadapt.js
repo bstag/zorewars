@@ -4,12 +4,15 @@
 // An enemy oneshot that lands on the decoy clears forward from there and has
 // to wrap the whole core before it reaches us; our clear sits first, so a
 // hit on our own decoy also clears the enemy before it gets back to us.
+// The decoy's A-fields are 0: the scan's }first operand reads through the
+// A-field, so non-zero ones made our scan stop on our own decoy. The P-space
+// switch sits after the decoy for the same reason (the scan reaches it last).
 name("Decoy Adapter");
 author("ZoreWars");
 strategy("Decoy Shot plus a P-space switch: keep a score per clear setting and play the one that is ahead.");
 
 const P = {"ALT":5000,"DECOY":4000,"PERIOD":11,"STEP":10091,"DEC":13500};
-// SPACE {"DECOY":[200,5000],"PERIOD":[5,23],"STEP":[2000,23000],"DEC":[1000,24000]}
+// SPACE {"DECOY":[200,5000],"PERIOD":[5,23],"STEP":[2000,23000],"DEC":[1000,24000],"ALT":[1000,24000]}
 
 raw(`gate    equ clear-4`);
 raw(`first   equ bptr-1+${P.STEP}`);
@@ -27,6 +30,10 @@ raw(`        mov    scanptr,   gate`);
 raw(`        jmp    clear-1,   <gate`);
 for (let i = 0; i < 4; i++) raw(`        dat 0,0`);
 raw(`inc     dat    ${P.STEP},      ${P.STEP}`);
+for (let i = 0; i < P.DECOY; i++) {
+  const k = (i % P.PERIOD) + 1;
+  raw(`        dat    #0, #${k}`);
+}
 // P-space switch: cell 0 = last result (0 lost, 1 won, 2 tie), cell 1 = mode used,
 // cells 2/3 = running score (wins - losses) of each mode. Play the mode that is ahead;
 // ties favour mode 0. Without working P-space everything stays 0: plain Decoy Shot.
@@ -67,7 +74,3 @@ raw(`c0      dat    0,         0`);
 raw(`c1      dat    0,         0`);
 raw(`d       dat    0,         0`);
 raw(`df      dat    0,         0`);
-for (let i = 0; i < P.DECOY; i++) {
-  const k = (i % P.PERIOD) + 1;
-  raw(`        dat    #${k}, #${P.PERIOD + 1 - k}`);
-}
