@@ -47,18 +47,23 @@ export async function cmdEvolveTrees(args, h, { quiet = false } = {}) {
   const { placeOnHill } = await import('../tools/evolution/trees/placement.js');
   const { treeSettings, recipes, shape } = await import('../tools/algebra/index.js');
   const f = args.flags, json = !!f.json;
-  const {integer,rules,length,torus,settings,generations,batch,rounds,race,seed,archiveSize,ties,aim,aimTries,aimExplore,lexicase,lexEpsilon,ops,starts,out}=treeCommandOptions(f,h,{treeSettings,recipes});
+  const {integer,rules,length,torus,settings,generations,batch,rounds,race,seed,archiveSize,ties,aim,aimTries,aimExplore,lexicase,lexEpsilon,ops,starts,out,redQueen}=treeCommandOptions(f,h,{treeSettings,recipes});
   fs.mkdirSync(out, { recursive: true });
+  if (f.ladder && (f.king || redQueen)) h.usage('--ladder keeps its own champions; drop --king and --red-queen');
   if (f.ladder) return climbHill(args, h, { settings, rules, length, torus, starts, batch, rounds, race, seed, archiveSize, ties, aim, aimTries, aimExplore, lexicase, lexEpsilon, ops, integer, out, json });
   const field = f.hill ? await hillOpponents(String(f.hill), settings, { ...f, top: f.top ?? '30' }) : libraryOpponents(settings);
   if (!field.length) h.usage('no opponents compiled for this battlefield');
+  // Red Queen: --king a.red,b.red play every generation (opponents only, never
+  // genes); --red-queen N adds the last N generation champions.
+  const kings = f.king ? (await h.loadAll(h.expandRefs(String(f.king).split(',')), hillSettingsFor(settings), json)).map((w) => ({ name: w.name, w: strip(w) })) : [];
   const pool = await battlePool(f, h);
   const counters = await counterTable(f, out);
   try {
     await tagField(field, settings, json);
-    if (!json) console.log(`Evolving block trees on ${rules}${torus ? ` (torus ${torus})` : ''}, up to ${settings.maxLength} instructions, against ${field.length} ${f.hill ? 'hill' : 'library'} warriors: ${generations} generations of ${batch}${f.tune ? ', numbers only' : ''}, ${rounds} rounds on the screen, racing ${race}${ties !== 1 ? `, ties worth ${ties}` : ''}${aim && !f.tune && !f['tree-ops'] ? ', mutations aimed by the counter table' : ''}.\n`);
+    const queen = redQueen || kings.length ? `; Red Queen: ${kings.length ? `${kings.length} king${kings.length > 1 ? 's' : ''}` : ''}${kings.length && redQueen ? ' and ' : ''}${redQueen ? `the last ${redQueen} champions` : ''} also play` : '';
+    if (!json) console.log(`Evolving block trees on ${rules}${torus ? ` (torus ${torus})` : ''}, up to ${settings.maxLength} instructions, against ${field.length} ${f.hill ? 'hill' : 'library'} warriors${queen}: ${generations} generations of ${batch}${f.tune ? ', numbers only' : ''}, ${rounds} rounds on the screen, racing ${race}${ties !== 1 ? `, ties worth ${ties}` : ''}${aim && !f.tune && !f['tree-ops'] ? ', mutations aimed by the counter table' : ''}.\n`);
     const r = await evolveTrees({ pool, field, rules, length, torus, starts, generations, batch, rounds, race, seed, archiveSize, ties, counters: counters.table, aim, aimTries, aimExplore, lexicase, lexEpsilon,
-      ops,
+      ops, redQueen, kings,
       onLog: (t) => { done(json); if (!json) console.log(t); },
       onGeneration: (rec) => {
         const b = rec.champion;
@@ -177,9 +182,13 @@ export function treeCommandOptions(f,h,{treeSettings,recipes}) {
   if (f.tune && (!f.start || !starts.length)) h.usage('--tune needs a nonempty --start tree.json');
   if(ops?.every(op=>op==='tune'||COUPLED_MUTATIONS.includes(op))&&(!f.start||!starts.length))h.usage('Numeric/coupled operators need a nonempty --start tree.json');
   if (!starts.length) for (const r of Object.values(recipes)) if (r.rules.includes(rules) && !torus) starts.push(r.tree(rules));
+  // A rule set without recipes of its own ('modelwar') starts from the '94
+  // recipes; the gate refuses any that don't fit its core.
+  if (!starts.length && !torus && RULESETS[rules] && RULESETS[rules].dialect !== '88') for (const r of Object.values(recipes)) if (r.rules.includes('94nop')) starts.push(r.tree('94nop'));
   if (f.ladder && !f.hill) h.usage('--ladder needs --hill');
+  const redQueen = integer('red-queen', 0, 0);
   const out = f.out ?? path.join('evolved', 'trees');
-  return {integer,rules,length,torus,settings,generations,batch,rounds,race,seed,archiveSize,ties,aim,aimTries,aimExplore,lexicase,lexEpsilon,ops,starts,out};
+  return {integer,rules,length,torus,settings,generations,batch,rounds,race,seed,archiveSize,ties,aim,aimTries,aimExplore,lexicase,lexEpsilon,ops,starts,out,redQueen};
 }
 
 // Human output is kept outside search orchestration and JSON serialization.
