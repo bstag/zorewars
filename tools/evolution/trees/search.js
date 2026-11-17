@@ -14,6 +14,8 @@
 // - `ties` is what a tie is worth while breeding (a win is 3): 1 is the hill's
 //   own scoring, 0 rewards only kills. Placement on the hill always uses 3/1/0.
 // - Tune mode (ops ['tune']) only changes numbers: hill-climbing one design.
+// - Red Queen (`redQueen`, `kings`): earlier champions and given warriors join
+//   the field as opponents only, never as genes.
 // - placement.js ranks a warrior on the hill by score.
 // - ladder.js climbs a hill from the bottom, a rung at a time.
 // - Every generation's champion is diagnosed by opponent strategy (what it
@@ -36,6 +38,7 @@ export async function evolveTrees({
   generations = 10, batch = 30, rounds = 10, race = 2, seed = 1, ops = MUTATIONS, ties = 1,
   archiveSize = 48, crossRate = 0.25, randomRate = 0.1, onLog = () => {}, onGeneration = () => {}, stop = null,
   counters = null, aim = true, aimTries = 6, aimExplore = 0.3, lexicase = false, lexEpsilon = 0.1,
+  redQueen = 0, kings = [],
 }) {
   if (!Number.isFinite(lexEpsilon) || lexEpsilon < 0) throw new Error('lexicase epsilon must be a nonnegative finite number');
   const numericOnly = ops.length>0&&ops.every(op=>['tune','tune-placement'].includes(op));
@@ -43,7 +46,11 @@ export async function evolveTrees({
   const verification=ops.some(op=>COUPLED_MUTATIONS.includes(op))?'full':'quick';
   if (localOnly && !starts.length) throw new Error('numeric/coupled tuning needs starting trees');
   // The field may change by generation (a function of it), as the ladder's does.
-  const fieldAt = typeof field === 'function' ? field : () => field;
+  // Red Queen: `kings` ({ name, w }) always play; with `redQueen` N, so do the
+  // last N generation champions, so each generation must beat the ones before.
+  const baseField = typeof field === 'function' ? field : () => field;
+  const champions = [];
+  const fieldAt = (gen) => [...baseField(gen), ...kings.map((k) => ({ group: 'king', ...k })), ...(redQueen ? champions.slice(-redQueen) : [])];
   const settings = treeSettings(rules, length, torus);
   const play = { ...settings, maxLength: settings.hillMaxLength ?? Math.max(settings.maxLength, 200) };
   const random = mulberry32(seed);
@@ -181,11 +188,12 @@ export async function evolveTrees({
     const rec = { gen, niches: archive.size, placed, champion: { shape: shape(champ.e.tree), fit: champ.fit, tree: champ.e.tree, size: champ.e.build.size, species: champ.e.build.species.hint, diagnosis: dx } };
     history.push(rec);
     onLog(`generation ${gen}: ${archive.size} niches, ${placed} placed | champion ${champ.fit.toFixed(2)} pts/round, ${rec.champion.shape} (${rec.champion.size} cells, ${rec.champion.species})${dx ? ` | weakest: ${describeDiagnosis(dx)}` : ''}`);
-    onGeneration(rec);
+    onGeneration(rec, champ.e.build.w);
+    if (redQueen) champions.push({ name: `champion ${gen}`, group: 'champion', w: champ.e.build.w });
     if (stop && await stop(rec, champ.e.build.w)) break;
   }
   const candidate = (e, fit = e.fit) => ({ shape: shape(e.tree), fit, tree: e.tree, size: e.build.size, species: e.build.species.hint, source: e.build.source, w: e.build.w });
   const final = [...archive.values()].sort((a, b) => b.fit - a.fit).map(e => candidate(e));
   return { settings, ties,verification,history, archive: final, finalists: finalists.map(({ e, fit }) => candidate(e, fit)),
-    stats, best: history.at(-1)?.champion ?? null };
+    stats, best: history.at(-1)?.champion ?? null, champions: champions.length };
 }

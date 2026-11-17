@@ -104,3 +104,27 @@ test('placeOnHill ranks a warrior among the hill by average points', async () =>
     assert.deepEqual(p.table.map((x) => x.score), [...p.table.map((x) => x.score)].sort((a, b) => b - a));
   } finally { pool.close(); }
 });
+
+test('Red Queen: kings and earlier champions join the field as opponents', async () => {
+  const pool = createPool(2);
+  try {
+    const opts = { pool, field, starts: [paper], generations: 2, batch: 2, rounds: 2, race: 0, seed: 4, randomRate: 0 };
+    const plain = await evolveTrees(opts);
+    assert.equal(plain.champions, 0);
+    const king = { name: 'Dwarf king', w: field[0].w };
+    const seen = [];
+    const queen = await evolveTrees({ ...opts, redQueen: 1, kings: [king], onGeneration: (rec, w) => seen.push(w) });
+    assert.equal(queen.champions, 2);
+    assert.equal(seen.length, 2);
+    assert.ok(seen.every((w) => w && w.instructions));
+    // Generation 1 adds the king; generation 2 adds the king and champion 1.
+    assert.ok(queen.stats.battleRounds > plain.stats.battleRounds);
+  } finally { pool.close(); }
+});
+
+test('the modelwar rule set builds trees on its 25200-cell core', () => {
+  const s = treeSettings('modelwar', 100);
+  assert.equal(s.coreSize, 25200);
+  assert.equal(s.maxCycles, 252000);
+  assert.equal(s.hillMaxLength, 5040);
+});

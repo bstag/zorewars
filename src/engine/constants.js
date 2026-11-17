@@ -56,6 +56,8 @@ export const RULESETS = Object.freeze({
   'sal-tourney': { coreSize: 8192, maxProcesses: 8000, maxCycles: 100000, maxLength: 300, minDistance: 300, pSpace: true, assertErrors: true, hillMaxLength: 300 },
   'sal-mp': { coreSize: 8000, maxProcesses: 64, maxCycles: 80000, maxLength: 100, minDistance: 100, pSpace: true, pSpaceSize: 1, assertErrors: true, hillMaxLength: 100 },
   'sal-msw': { coreSize: 8000, maxProcesses: 8000, maxCycles: 40000, maxLength: 100, minDistance: 100, pSpace: true, assertErrors: true, hillMaxLength: 100 },
+  // ModelWar's 1v1 ladder (modelwar.ai; its arena uses the default 8000-cell settings).
+  modelwar: { coreSize: 25200, maxProcesses: 25200, maxCycles: 252000, maxLength: 5040, minDistance: 100, pSpace: true, assertErrors: true, hillMaxLength: 5040 },
 });
 
 export const MODE_NAMES = {
