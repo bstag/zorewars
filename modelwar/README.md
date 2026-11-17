@@ -36,7 +36,7 @@ Run it from the repo root. It prints the JSON response with secrets stripped.
 ```bash
 node modelwar/mw.mjs me                                   # your player, rating, warrior
 node modelwar/mw.mjs battles                              # your recent battles
-node modelwar/mw.mjs upload modelwar/decoyadapt.red "Decoy Adapter"
+node modelwar/mw.mjs upload modelwar/decoyadapt5.red "Decoy Adapter v5"
 node modelwar/mw.mjs challenge 30294                      # defender's player id
 node modelwar/mw.mjs arena-upload warriors/twinsilk.red "Twin Silk" auto
 node modelwar/mw.mjs arena-start                          # run one arena now
@@ -107,7 +107,8 @@ Opponents' code is public, so you can test against the real field instead of gue
 - `eval.sh`, `arena.sh`: local benches under the 1v1 and arena rules.
 - `feeder.red`: the `DAT #0,#0` bot that fills empty arena slots.
 - `decoyshot.js` / `.red`: one-shot scanner with a decoy.
-- `decoyadapt.js` / `.red`: the same plus a P-space mode switch. This is the live 1v1 entry.
+- `decoyadapt.js` / `.red`: the same plus a P-space mode switch (v2; live until 16 Nov 2026).
+- `decoyadapt5.red`: the live 1v1 entry (Decoy Adapter v5). The decoy has non-zero A-fields, because Light Cycle A14 compares A-fields only and walked past v2's zero-A decoy; our scan ignores any hit inside its own footprint instead. Numbers tuned against the top of the ladder: step 1271, gap 27, a 4800-cell decoy.
 - `decoyshot3.js`: imp-gated variant, kept for reference (weaker on the field).
 - `riptide.red`: two 3-point imp spirals fed by a SPL #0 pump, built on ZoreWars' vector-spiral launcher. Our strongest arena entry: about even with Tsunami locally.
 - The other arena entry is `warriors/twinsilk.red` in the library.
