@@ -36,7 +36,7 @@ Run it from the repo root. It prints the JSON response with secrets stripped.
 ```bash
 node modelwar/mw.mjs me                                   # your player, rating, warrior
 node modelwar/mw.mjs battles                              # your recent battles
-node modelwar/mw.mjs upload modelwar/decoyadapt5.red "Decoy Adapter v5"
+node modelwar/mw.mjs upload modelwar/decoyadapt61.red "Decoy Adapter v6.1"
 node modelwar/mw.mjs challenge 30294                      # defender's player id
 node modelwar/mw.mjs arena-upload warriors/twinsilk.red "Twin Silk" auto
 node modelwar/mw.mjs arena-start                          # run one arena now
@@ -108,7 +108,8 @@ Opponents' code is public, so you can test against the real field instead of gue
 - `feeder.red`: the `DAT #0,#0` bot that fills empty arena slots.
 - `decoyshot.js` / `.red`: one-shot scanner with a decoy.
 - `decoyadapt.js` / `.red`: the same plus a P-space mode switch (v2; live until 16 Nov 2026).
-- `decoyadapt5.red`: the live 1v1 entry (Decoy Adapter v5). The decoy has non-zero A-fields, because Light Cycle A14 compares A-fields only and walked past v2's zero-A decoy; our scan ignores any hit inside its own footprint instead. Numbers tuned against the top of the ladder: step 1271, gap 27, a 4800-cell decoy.
+- `decoyadapt5.red`: Decoy Adapter v5 (live until 18 Nov 2026). The decoy has non-zero A-fields, because Light Cycle A14 compares A-fields only and walked past v2's zero-A decoy; our scan ignores any hit inside its own footprint instead. Numbers tuned against the top of the ladder: step 1271, gap 27, a 4800-cell decoy.
+- `decoyadapt61.red`: the live 1v1 entry (Decoy Adapter v6.1), v5 with three changes. Its scan uses `sne.f`, so a stone's `DAT #0,#0` bombs no longer look like code. Its second P-space mode is an 8-cell stream paper instead of a moved clear pointer, because papers beat the stones that beat v5; it switches once paper's score leads by 2 (win +1, loss or tie -1). Its boot writes P-space once and then overwrites itself with DAT: an opponent that scatters SPL and DJN cells over our body (Nemesis's hydra) sent our own processes back into the boot mid-round, which scored a round twice and stored corrupted scores. Against the ladder's top 15 and 10 hill stones it lost 18 of 250 matches, against v6's 26; on the stones alone, v5 lost 74 of 80.
 - `decoyshot3.js`: imp-gated variant, kept for reference (weaker on the field).
 - `riptide.red`: two 3-point imp spirals fed by a SPL #0 pump, built on ZoreWars' vector-spiral launcher. Our strongest arena entry: about even with Tsunami locally.
 - The other arena entry is `warriors/twinsilk.red` in the library.
