@@ -5,7 +5,7 @@ import { gate } from './gate.js';
 
 // A battlefield: a hill's rules, and optionally a torus ('100x80' or '20x20x20')
 // in place of the ring. On a torus a warrior may be at most half a row long.
-export function treeSettings(rules = '94x', length = Math.min(50, RULESETS[rules]?.maxLength ?? 50), torus = null) {
+export function treeSettings(rules = '94x', length = Math.min(100, RULESETS[rules]?.maxLength ?? 100), torus = null) {
   const settings = recipeSettings(rules, length);
   if (!torus) return settings;
   const dims = String(torus).toLowerCase().split('x').map((d) => parseInt(d, 10));

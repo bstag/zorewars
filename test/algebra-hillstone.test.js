@@ -8,8 +8,10 @@ const ALL = ['88', '94nop', 'lp', '94x'];
 const NO88 = ['94nop', 'lp', '94x'];                 // scan-vampire is '94 only
 const CHEAP = ['88', '94nop', 'lp'];                  // 8,000-cell cores; skip the slow 94x run
 
+// Length 50, the limit these trees were written for: hill-stone FIT 0 keeps its bomb classes clear
+// of a warrior as long as the limit, so its default STEP (gcd 80 on 8,000 cells) needs a limit under 78.
 const passes = (tree, rules) => {
-  const built = buildTree(tree, { rules });
+  const built = buildTree(tree, { rules, length: 50 });
   assert.equal(built.verification.ok, true, `${rules} ${JSON.stringify(tree)}`);
   assert.equal(built.verification.shape, 'generic', `${rules} ${JSON.stringify(tree)}`);
   return built;
