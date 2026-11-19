@@ -1,0 +1,36 @@
+{
+  "id": "switch-score",
+  "P": {
+    "FIRST": 1,
+    "LOSS": -1,
+    "TIE": 0,
+    "STREAK": 4,
+    "HOLD": 1,
+    "WIN": 1
+  },
+  "kids": [
+    {
+      "id": "boot",
+      "P": {
+        "HOP": 12600
+      },
+      "kids": [
+        {
+          "id": "twin-scan"
+        },
+        {
+          "id": "decoy-field",
+          "P": {
+            "COUNT": 190
+          }
+        }
+      ]
+    },
+    {
+      "id": "guard-stone"
+    },
+    {
+      "id": "sweep"
+    }
+  ]
+}
