@@ -78,6 +78,15 @@ export function sweepStart(P, core) {
   const g = sweepFactor(P.G, core), s = Math.max(g, Math.round((core * P.STARTF) / 10000));
   return s - mod(s + 1, g);
 }
+// The (step, start) pairs VARY rotates through: STEPF/STARTF first, then STEPF2/STARTF2, ...
+export function sweepEntries(P, core) {
+  const out = [];
+  for (let k = 1; k <= Math.max(1, P.VARY); k++) {
+    const q = k === 1 ? P : { ...P, STEPF: P[`STEPF${k}`], STARTF: P[`STARTF${k}`] };
+    out.push([sweepStep(q, core), sweepStart(q, core)]);
+  }
+  return out;
+}
 // LAPF percent of half the core: how many loops before the clear.
 export const sweepLaps = (P, core) => Math.max(2, Math.round((core * P.LAPF) / 200));
 const pads = (P) => Math.max(0, P.UP - 2);
@@ -89,6 +98,7 @@ function sweepMismatches(P, settings) {
   if (g < 2) out.push(`sweep: the ${core}-cell core has no factor from 2 to ${P.G} for the step to share`);
   if (g > P.GAP + 2 * P.WIPE) out.push(`sweep: the scan visits every ${g}th cell, more than its GAP plus its wipe (${P.GAP + 2 * P.WIPE}) cover: lower G or widen GAP or WIPE`);
   if (P.UP > 2 * P.WIPE) out.push('sweep: UP is above the wipe: it must start within its 2*WIPE cells');
+  if (P.VARY > 1 && !settings.pSpace) out.push('sweep: VARY counts rounds in P-space, which this hill does not have');
   return out;
 }
 
@@ -96,12 +106,14 @@ const sweep = {
   id: 'sweep', kind: 'body', exit: 'never', writes: 'core', attacks: 'all', roams: false, dialects: '94',
   processes: 1, grows: true,
   purpose: 'A two-pair continuous scanner on a step that shares a factor G with the core (every G-th cell, one lap of core/G probes): each find gets 2*WIPE SPL cells from UP-1 above the find downward; after LAPS loops (and a pause, see the file) a SPL-fed clear runs a forward DAT and a backward decrement, and restarts itself when its forward pointer comes round onto its lowest cell. Numbers are shares of the core, so it builds on any core; written for ModelWar, where it beats Nemesis 8-0 (54 wins, 10 losses in 100 rounds).',
-  params: { G: [2, 16], STEPF: [1, 9999], STARTF: [1, 9999], GAP: [2, 32], WIPE: [2, 16], UP: [0, 9], LAPF: [1, 100], BA: [0, 3], TF: [0, 1], TRIP: [0, 2], CLR: [0, 1] },
-  defaults: { G: 10, STEPF: 5044, STARTF: 2357, GAP: 9, WIPE: 9, UP: 5, LAPF: 28, BA: 0, TF: 0, TRIP: 1, CLR: 1 },
-  entry: 'loop', entryFirst: false, loop: 'loop',
+  params: { G: [2, 16], STEPF: [1, 9999], STARTF: [1, 9999], GAP: [2, 32], WIPE: [2, 16], UP: [0, 9], LAPF: [1, 100], BA: [0, 3], TF: [0, 1], TRIP: [0, 2], CLR: [0, 1],
+    VARY: [0, 4], VCELL: [1, 1500], STEPF2: [1, 9999], STARTF2: [1, 9999], STEPF3: [1, 9999], STARTF3: [1, 9999], STEPF4: [1, 9999], STARTF4: [1, 9999] },
+  defaults: { G: 10, STEPF: 5044, STARTF: 2357, GAP: 9, WIPE: 9, UP: 5, LAPF: 28, BA: 0, TF: 0, TRIP: 1, CLR: 1,
+    VARY: 0, VCELL: 40, STEPF2: 3100, STARTF2: 6100, STEPF3: 7700, STARTF3: 6100, STEPF4: 6900, STARTF4: 2357 },
+  entry: (P) => (P.VARY > 1 ? 'pick' : 'loop'), entryFirst: false, loop: 'loop',
   protects: (P) => (P.CLR ? 'image' : 'self'),
   provides: { splBomb: 'st', datBomb: 'cb' },
-  mutable: (P) => [['cp', ['a', 'b']], ['trip', EVERY], ['one', EVERY], ['p', EVERY], ...Array.from({ length: pads(P) }, (_, k) => [`pad${k}`, EVERY]), ['lap', ['b']], ['c', ['b']]],
+  mutable: (P) => [['cp', ['a', 'b']], ['trip', EVERY], ['one', EVERY], ['p', EVERY], ...Array.from({ length: pads(P) }, (_, k) => [`pad${k}`, EVERY]), ['lap', ['b']], ['c', ['b']], ...(P.VARY > 1 ? [['st', EVERY], ['vk', ['b']]] : [])],
   mismatches: sweepMismatches,
   // Its wipes and clear skip only what lies above p, so nothing that still runs may lie under it:
   // `attacks: 'all'` refuses running partners, and what an opening leaves under it (its code, a
@@ -144,6 +156,24 @@ const sweep = {
     ctx.ins('', 'JMP', 'B', L('cl'));
     ctx.ins('st', 'SPL', 'B', `#${STEP}`, `$${STEP}`);
     ctx.ins('cb', 'DAT', 'F', `$${P.BA}`, `$${clr}`);
+    if (P.VARY > 1) {
+      // A different step each round: a round counter in P-space cell VCELL picks entry
+      // (count mod VARY) of the table, copied over st (the step) and p (the start) before
+      // the scan begins. The first round plays STEPF/STARTF.
+      const n = P.VARY, entries = sweepEntries(P, core);
+      ctx.ins('pick', 'LDP', 'AB', `#${P.VCELL}`, L('vk'));
+      ctx.ins('', 'MOD', 'AB', `#${n}`, L('vk'));
+      ctx.ins('', 'ADD', 'AB', '#1', L('vk'));
+      ctx.ins('', 'STP', 'B', L('vk'), `#${P.VCELL}`);
+      ctx.ins('', 'ADD', 'AB', `#${L('tst0')}-${L('vk')}-1`, L('vk'));
+      ctx.ins('', 'MOV', 'I', `@${L('vk')}`, L('st'));
+      ctx.ins('', 'ADD', 'AB', `#${n}`, L('vk'));
+      ctx.ins('', 'MOV', 'I', `@${L('vk')}`, p);
+      ctx.ins('', 'JMP', 'B', L('loop'));
+      ctx.ins('vk', 'DAT', 'F', '$0', '$0');
+      entries.forEach(([S], k) => ctx.ins(`tst${k}`, 'SPL', 'B', `#${S}`, `$${S}`));
+      entries.forEach(([, s0]) => ctx.ins('', 'DAT', 'F', `#${mod(s0 - P.GAP, core)}`, `#${s0}`));
+    }
   },
   plant(api) {
     // Something on the scan's path, a few probes out, clear of the image.

@@ -58,6 +58,15 @@ export function twinStep(P, core) {
 }
 // The high probe's start, near STARTF/10000 of the core.
 export const twinStart = (P, core) => Math.max(P.GAP + 1, Math.round((core * P.STARTF) / 10000));
+// The (step, start) pairs VARY rotates through: STEPF/STARTF first, then STEPF2/STARTF2, ...
+export function twinEntries(P, core) {
+  const out = [];
+  for (let k = 1; k <= Math.max(1, P.VARY); k++) {
+    const q = k === 1 ? P : { ...P, STEPF: P[`STEPF${k}`], STARTF: P[`STARTF${k}`] };
+    out.push([twinStep(q, core), twinStart(q, core)]);
+  }
+  return out;
+}
 // TIME/100 laps of the lattice (core/g probes, two a loop).
 export const twinLoops = (P, core) => Math.max(2, Math.round((P.TIME / 100) * (core / twinFactor(P.G, core)) / 2));
 // Cells under scan: cp, st, cb, the wipe (3), the pads, loop.
@@ -68,6 +77,7 @@ function twinMismatches(P, settings) {
   const core = settings.coreSize, out = [];
   if (settings.topology === 'torus') return ['twin-scan: written for the ring'];
   if (twinFactor(P.G, core) < 2) out.push(`twin-scan: the ${core}-cell core has no factor from 2 to ${P.G} for the step to share`);
+  if (P.VARY > 1 && !settings.pSpace) out.push('twin-scan: VARY counts rounds in P-space, which this hill does not have');
   if (2 * P.WIPE < P.GAP + P.UP + 1) out.push(`twin-scan: the wipe (${2 * P.WIPE} cells from UP under the low probe) does not reach the high probe: raise WIPE or lower GAP or UP`);
   return out;
 }
@@ -76,23 +86,46 @@ const twinScan = {
   id: 'twin-scan', kind: 'body', exit: 'never', writes: 'core', attacks: 'all', roams: false, dialects: '94',
   processes: 1, grows: false,
   purpose: 'A small .8c pair scanner: two pairs of cells GAP apart compared per five-instruction loop on a step sharing a factor G with the core; each find gets 2*WIPE SPL cells from UP under the low probe upward, and the scan goes on; after TIME/100 laps the same wipe loop becomes a DAT clear that restarts itself when it comes round onto its lowest cell. Numbers are shares of the core, so it builds on any core; written for ModelWar, where booted away with a decoy left behind it beats the Decoy Adapter scanner/paper.',
-  params: { G: [2, 16], STEPF: [1, 9999], STARTF: [1, 9999], GAP: [1, 16], WIPE: [1, 16], UP: [0, 8], TIME: [10, 2000], BA: [0, 3], CLR: [0, 1] },
-  defaults: { G: 4, STEPF: 884, STARTF: 1768, GAP: 6, WIPE: 7, UP: 2, TIME: 360, BA: 0, CLR: 1 },
-  entry: 'loop', entryFirst: false, loop: 'loop',
+  params: { G: [2, 16], STEPF: [1, 9999], STARTF: [1, 9999], GAP: [1, 16], WIPE: [1, 16], UP: [0, 8], TIME: [10, 2000], BA: [0, 3], CLR: [0, 1],
+    VARY: [0, 4], VCELL: [1, 1500], STEPF2: [1, 9999], STARTF2: [1, 9999], STEPF3: [1, 9999], STARTF3: [1, 9999], STEPF4: [1, 9999], STARTF4: [1, 9999] },
+  defaults: { G: 4, STEPF: 884, STARTF: 1768, GAP: 6, WIPE: 7, UP: 2, TIME: 360, BA: 0, CLR: 1,
+    VARY: 0, VCELL: 44, STEPF2: 1500, STARTF2: 3100, STEPF3: 2900, STARTF3: 5300, STEPF4: 4100, STARTF4: 7700 },
+  entry: (P) => (P.VARY > 1 ? 'pick' : 'loop'), entryFirst: false, loop: 'loop',
   protects: (P) => (P.CLR ? 'image' : 'self'),
   provides: { splBomb: 'st', datBomb: 'cb' },
-  mutable: (P) => [['cp', ['a', 'b']], ['st', ['op', 'mod', 'aMode', 'a', 'bMode', 'b']], ['scan', ['a', 'b']], ['timer', ['b']], ['c', ['b']], ...Array.from({ length: pads(P) }, (_, k) => [`pad${k}`, ['op', 'mod', 'aMode', 'a', 'bMode', 'b']])],
+  mutable: (P) => [['cp', ['a', 'b']], ['st', ['op', 'mod', 'aMode', 'a', 'bMode', 'b']], ['scan', ['a', 'b']], ['timer', ['b']], ['c', ['b']], ...(P.VARY > 1 ? [['vk', ['b']]] : []), ...Array.from({ length: pads(P) }, (_, k) => [`pad${k}`, ['op', 'mod', 'aMode', 'a', 'bMode', 'b']])],
   mismatches: twinMismatches,
   // Its wipes and clear skip only what lies above cp, so nothing that still runs may lie under it
   // (`attacks: 'all'`), as for sweep.
   emit(ctx) {
     const { L, P, core, total } = ctx, idx = ctx.pc();
     const W = P.WIPE, S = twinStep(P, core), A0 = twinStart(P, core), k = P.GAP + P.UP;
-    const rest = Math.max(total - idx, 1);                    // the first cell past the warrior, from cp
+    const cp0 = idx + (P.VARY > 1 ? 10 + 2 * P.VARY : 0);     // cp's index: the picker comes first
+    const rest = Math.max(total - cp0, 1);                    // the first cell past the warrior, from cp
     const clr = P.CLR ? `${rest}` : `${L('last')}+1-${L('cp')}`;
     const own = `${rest}-${below(P)}+${k}`;                   // a high probe up to here may be us
     const hi = core - 2 * W - below(P) - 2;                   // above this, the wipe could wrap onto cp
     const scan = L('scan');
+    if (P.VARY > 1) {
+      // A different step each round, as sweep's VARY: a round counter in P-space cell VCELL
+      // picks entry (count mod VARY), copied over st and scan before the scan begins; the
+      // first round plays STEPF/STARTF. It sits under cp, so a copy-ahead boot (EARLY 1),
+      // which copies through the member's loop before launching it, has it all in place;
+      // the clear passes over it (dead by then) on its way round to cp.
+      const n = P.VARY, entries = twinEntries(P, core);
+      ctx.ins('pick', 'LDP', 'AB', `#${P.VCELL}`, L('vk'));
+      ctx.ins('', 'MOD', 'AB', `#${n}`, L('vk'));
+      ctx.ins('', 'ADD', 'AB', '#1', L('vk'));
+      ctx.ins('', 'STP', 'B', L('vk'), `#${P.VCELL}`);
+      ctx.ins('', 'ADD', 'AB', `#${L('tst0')}-${L('vk')}-1`, L('vk'));
+      ctx.ins('', 'MOV', 'I', `@${L('vk')}`, L('st'));
+      ctx.ins('', 'ADD', 'AB', `#${n}`, L('vk'));
+      ctx.ins('', 'MOV', 'I', `@${L('vk')}`, scan);
+      ctx.ins('', 'JMP', 'B', L('loop'));
+      ctx.ins('vk', 'DAT', 'F', '$0', '$0');
+      entries.forEach(([St], j) => ctx.ins(`tst${j}`, 'SPL', 'B', `#${St}`, `$${St}`));
+      entries.forEach(([St, a0]) => ctx.ins('', 'SNE', 'I', `$${mod(a0 - St, core)}`, `$${mod(a0 - St - P.GAP, core)}`));
+    }
     ctx.ins('cp', 'DAT', 'F', `$${P.BA}`, `$${clr}`);
     ctx.ins('st', 'SPL', 'B', `#${S}`, `$${S}`);
     ctx.ins('cb', 'DAT', 'F', `$${P.BA}`, `$${clr}`);

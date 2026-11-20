@@ -88,8 +88,11 @@ export function annotate(tree) {
   return walk(tree);
 }
 
+// A leaf's entry label: fixed, or chosen by its parameters (a function of P).
+export const leafEntry = (node) => { const e = leaves[node.id].entry; return typeof e === 'function' ? e(node.P) : e; };
+
 export function entryOf(node) {
-  if (isLeaf(node)) return node.ns + leaves[node.id].entry;
+  if (isLeaf(node)) return node.ns + leafEntry(node);
   if (node.id === 'seq' || node.id === 'image' || node.id === 'fork') return entryOf(node.kids[0]);
   return node.ns + { par: 'split', relocate: 'transition', boot: 'boot', trigger: 'start', apart: 'start', copies: 'start', switch: 'start', 'switch-table': 'start', 'switch-score': 'start', restart: 'start', classify: 'start', parboot: 'start', fanboot: 'start', fanboot3:'start' }[node.id];
 }
@@ -314,7 +317,11 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
               // each cell it reaches has already been written; the body is live and safe
               // long before the copy is complete.
               const entryOff = (sizes?.labels?.[entryOf(kids[0])] ?? main.start) - main.start;
-              const head = Math.max(1, Math.min(main.size, entryOff + 1));   // copy through the entry, then launch
+              // Copy through the entry (and the member's loop, when that comes later: an entry
+              // that runs set-up code first jumps there), then launch.
+              const loopLabel = isLeaf(kids[0]) && leaves[kids[0].id].loop ? kids[0].ns + leaves[kids[0].id].loop : null;
+              const loopOff = loopLabel && sizes?.labels?.[loopLabel] !== undefined ? sizes.labels[loopLabel] - main.start : -1;
+              const head = Math.max(1, Math.min(main.size, Math.max(entryOff, loopOff) + 1));
               const tail = main.size - head;
               const launch = hopFrom(entryOf(kids[0]), P.HOP, P.HOPY, P.HOPZ);
               ctx.ins('boot', 'MOV', 'I', `>${L('copyFrom')}`, `>${L('copyTo')}`);
@@ -327,7 +334,12 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
                 ctx.ins('', 'MOV', 'I', L('wiped'), L('go'));
                 ctx.ins('', 'MOV', 'I', L('wiped'), L('copyTo'));
                 ctx.ins('wiped', 'DAT', 'F', '#0', '#0');
-              } else ctx.ins('', 'JMP', 'B', launch);   // the boot process joins the copy
+              } else {
+                // The boot process joins the copy: at its loop when the entry runs set-up code
+                // first (a step picker must run once), else at the entry.
+                const join = loopLabel && loopLabel !== entryOf(kids[0]) ? hopFrom(loopLabel, P.HOP, P.HOPY, P.HOPZ) : launch;
+                ctx.ins('', 'JMP', 'B', join);
+              }
               ctx.ins('copyFrom', 'DAT', 'F', '#0', `#${main.start - pc}`);               // forward: the member's first cell
               ctx.ins('copyTo', 'DAT', 'F', '#0', `#${hop(main.start + P.HOP - pc, P.HOPY, P.HOPZ)}`);
               ctx.ins('headCount', 'DAT', 'F', '#0', `#${head}`);
