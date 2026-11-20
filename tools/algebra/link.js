@@ -25,8 +25,8 @@ export const combinators = {
     purpose: 'Copies its second member D cells away and runs it there beside the first, so one hit can\'t find both.' },
   copies: { kids: [1, 1], params: { N: [2, 4], D: [0, 54000], DY: [0, 200], DZ: [0, 200] }, defaults: { N: 2, D: 2667, DY: 0, DZ: 0 },
     purpose: 'Runs N copies of its member, D cells apart.' },
-  switch: { kids: [2, 4], params: { CELL: [1, 500], POLICY: [0, 2] }, defaults: { CELL: 17, POLICY: 0 },
-    purpose: 'Chooses one of its members by P-space (the 94x hill only). POLICY 0: keep the choice after a win or tie, move to the next after a loss; 1: move on only after two losses in a row; 2: move on every round.' },
+  switch: { kids: [2, 4], params: { CELL: [1, 500], POLICY: [0, 2], TIES: [0, 20] }, defaults: { CELL: 17, POLICY: 0, TIES: 0 },
+    purpose: 'Chooses one of its members by P-space (the 94x hill only). POLICY 0: keep the choice after a win or tie, move to the next after a loss; 1: move on only after two losses in a row; 2: move on every round. TIES t (0 off) counts ties in a row in P-space cell CELL+2 and scores the t-th as a loss, so a member that only ties (a paper against a paper) is left; a win or a loss resets the count. It costs 12 instructions.' },
   'switch-table': switchTable,
   'switch-score': switchScore,
   fork: { kids: [3, 3], params: { BY: [0, 1] }, defaults: { BY: 0 },
@@ -42,8 +42,16 @@ export const combinators = {
 };
 
 // What a switch picks this round, from last round's result, its stored choice
-// and loss count (a model of the emitted code, for the gate's scenarios).
-export function switchChoice(policy, n, result, choice, losses) {
+// and loss count (a model of the emitted code, for the gate's scenarios). With a tie
+// limit, ties counts the ties in a row so far; the limit-th tie is scored as a loss.
+export const isTie = (result) => result !== -1 && result !== 0 && result !== 1;
+export function switchTies(limit, result, ties) {
+  if (!limit) return { result, ties };
+  if (!isTie(result)) return { result, ties: 0 };
+  return ties + 1 >= limit ? { result: 0, ties: 0 } : { result, ties: ties + 1 };
+}
+export function switchChoice(policy, n, result, choice, losses, limit = 0, ties = 0) {
+  ({ result } = switchTies(limit, result, ties));
   choice %= n;
   if (policy === 0) return result === 0 ? (choice + 1) % n : choice;
   if (policy === 1) return result === 0 && losses + 1 >= 2 ? (choice + 1) % n : choice;
@@ -425,6 +433,20 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
             ctx.ins('start', 'LDP', 'AB', '#0', result);
             ctx.ins('', 'LDP', 'AB', `#${P.CELL}`, choice);
             ctx.ins('', 'MOD', 'AB', `#${n}`, choice);
+            if (P.TIES) {                               // the TIES-th tie in a row is scored as a loss
+              const ties = L('ties');
+              ctx.ins('', 'LDP', 'AB', `#${P.CELL + 2}`, ties);
+              ctx.ins('', 'ADD', 'AB', '#1', result);   // first round 0, loss 1, win 2, a tie 3 or more
+              ctx.ins('', 'SLT', 'AB', '#2', result);   // a tie skips the jump
+              ctx.ins('', 'JMP', 'B', L('notie'));
+              ctx.ins('', 'ADD', 'AB', '#1', ties);
+              ctx.ins('', 'SLT', 'AB', `#${P.TIES - 1}`, ties);   // the limit reached skips the jump
+              ctx.ins('', 'JMP', 'B', L('tdone'));
+              ctx.ins('', 'MOV', 'AB', '#1', result);   // a loss, once the 1 is taken off
+              ctx.ins('notie', 'MOV', 'AB', '#0', ties);
+              ctx.ins('tdone', 'SUB', 'AB', '#1', result);
+              ctx.ins('', 'STP', 'B', ties, `#${P.CELL + 2}`);
+            }
             if (P.POLICY === 0) {                       // move on after a loss
               ctx.ins('', 'JMN', 'B', L('keep'), result);
               ctx.ins('', 'ADD', 'AB', '#1', choice);
@@ -450,6 +472,7 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
             ctx.ins('result', 'DAT', 'F', '#0', '#0');
             ctx.ins('choice', 'DAT', 'F', '#0', '#0');
             if (P.POLICY === 1) ctx.ins('losses', 'DAT', 'F', '#0', '#0');
+            if (P.TIES) ctx.ins('ties', 'DAT', 'F', '#0', '#0');
             kids.forEach((kid, i) => ctx.ins(i ? '' : 'table', 'JMP', 'B', entryOf(kid)));
             scopes.push(sharedPayload(node));
             for (const kid of kids) emit(kid, env);

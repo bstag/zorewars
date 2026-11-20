@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { compile, mulberry32 } from '../src/engine/index.js';
 import { recipeSettings } from '../tools/blocks/recipes.js';
 import { emitCombo, buildCombo, comboDefaults, comboMismatches } from '../tools/blocks/combo.js';
-import { buildTree, comboToTree, link, treeMismatches, randomTree, mutate, crossover, fits, id, shape, leaves, recipes, switchChoice, treeSettings } from '../tools/algebra/index.js';
+import { buildTree, comboToTree, link, treeMismatches, randomTree, mutate, crossover, fits, id, shape, leaves, recipes, switchChoice, switchTies, treeSettings } from '../tools/algebra/index.js';
 
 const code = (source, settings) => {
   const w = compile(source, 'redcode', settings);
@@ -125,6 +125,18 @@ test('more combinators: n-way P-space switches, restart, in-round classify', () 
   assert.equal(switchChoice(1, 2, 0, 0, 1), 1);          // the second loss in a row: move on
   assert.equal(switchChoice(2, 3, 1, 2, 0), 0);          // rotate even after a win
   assert.equal(switchChoice(2, 3, -1, 2, 0), 2);         // but not on the first round
+  // TIES 3: the third tie in a row is a loss; a win or a loss resets the count.
+  assert.equal(switchChoice(0, 2, 2, 0, 0, 3, 1), 0);    // the second tie: keep
+  assert.equal(switchChoice(0, 2, 2, 0, 0, 3, 2), 1);    // the third: move on
+  assert.equal(switchChoice(1, 2, 2, 0, 1, 3, 2), 1);    // POLICY 1: that loss is the second in a row
+  assert.equal(switchChoice(0, 2, 2, 0, 0, 0, 9), 0);    // no limit: ties never move it
+  assert.deepEqual(switchTies(3, 1, 2), { result: 1, ties: 0 });
+  assert.deepEqual(switchTies(3, -1, 2), { result: -1, ties: 0 });
+  for (const POLICY of [0, 1, 2]) {
+    const built = buildTree({ id: 'switch', P: { CELL: 30, POLICY, TIES: 3 }, kids: [ms(), paper] }, { rules: '94x-hill' });
+    assert.equal(built.verification.ok, true, `ties, policy ${POLICY}`);
+    assert.ok(built.verification.observations.some((o) => o.scenario === 'switch: result 2, choice 0, losses 0, ties 2'), `policy ${POLICY}`);
+  }
   for (const rules of ['88', '94nop']) {
     const built = buildTree({ id: 'restart', kids: [ms()] }, { rules });
     assert.ok(built.verification.observations.some((o) => o.scenario === 'restart: loop damaged'), rules);
