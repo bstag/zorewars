@@ -29,7 +29,105 @@ const tinyLpScanAttack = (body) => ({ id: 'seq', kids: [
   body,
 ] });
 
+const standard88 = { rules: ['88'], verification: 'full', strictRules: true };
+const wide88 = { ...standard88, length: 100 };
+const tableScan88 = (body) => ({
+  id: 'seq', kids: [{ id: 'opening-qscan-table-88', P: { PAIRS: 12, BURST: 6 } }, body],
+});
+const tail88 = (TAIL) => ({ id: 'silk-tail-88', P: { TAIL } });
+const pairedTails88 = (a, b) => tableScan88({
+  id: 'par', kids: [
+    { id: 'boot', P: { HOP: 3348 }, kids: [tail88(a)] },
+    { id: 'boot', P: { HOP: 7348 }, kids: [tail88(b)] },
+  ],
+});
+
 export const recipes = {
+  'repeat-burst-imp-88': {
+    ...standard88,
+    purpose: 'Morrell’s repeated seven-point imp bursts with a moving seed.',
+    tree: () => ({ id: 'repeat-burst-imp-88' }),
+  },
+  'iron-trap-88': {
+    ...standard88,
+    purpose: 'Iron Trap’s comparison scanner, literal imp response and clear.',
+    tree: () => ({ id: 'iron-trap-88' }),
+  },
+  'tangle-trap-88': {
+    ...standard88,
+    purpose: 'Tangle Trap 3’s staged fangs, capacity pit and damage-triggered clear.',
+    tree: () => ({ id: 'tangle-trap-88' }),
+  },
+  'shadow-seeker-88': {
+    ...standard88,
+    purpose: 'Shadow Seeker’s combined remote subtraction and B-field scan.',
+    tree: () => ({ id: 'shadow-seeker-88' }),
+  },
+  'microwarrior-swarm-88': {
+    ...standard88,
+    purpose: 'Hordes of Microwarriors’ shared pointer and remote workers.',
+    tree: () => ({ id: 'microwarrior-swarm-88' }),
+  },
+  'leviathan-88': {
+    ...wide88,
+    purpose: 'A table quickscan followed by the eight-head Leviathan launcher.',
+    tree: () => tableScan88({ id: 'leviathan-launch-88' }),
+  },
+  'matreshka-dual-tail-88': {
+    ...wide88,
+    purpose: 'Two independently booted nested clear-tail papers behind a quickscan.',
+    tree: () => pairedTails88(0, 0),
+  },
+  'permafrost-dual-tail-88': {
+    ...wide88,
+    purpose: 'Independent imp-tail and resin-tail papers behind a quickscan.',
+    tree: () => pairedTails88(1, 2),
+  },
+  'evil-spirit-imp-tail-88': {
+    ...wide88,
+    purpose: 'A quickscan into a nested paper with an imp tail.',
+    tree: () => tableScan88(tail88(1)),
+  },
+  'gothik-quickscan-88': {
+    ...wide88,
+    purpose: 'A table quickscan into a self-replicating B-field scanner.',
+    tree: () => tableScan88({ id: 'scan-replicator-88' }),
+  },
+  'torment-hydra-88': {
+    ...wide88,
+    purpose: 'A table quickscan into a single resin hydra.',
+    tree: () => tableScan88({ id: 'hydra-88' }),
+  },
+  'no-mucking-carpet-88': {
+    ...standard88,
+    purpose: 'A three-cell SPL carpet and clear as a No Mucking About control.',
+    tree: () => ({ id: 'pair-wipe-scanner-88', P: { WIPE: 3, BACK: 0, GAP: 2, CLEAR: 1 } }),
+  },
+  'triangular-sun-pump-88': {
+    ...standard88,
+    purpose: 'A triple decrement stream stone beside a seven-point imp pump.',
+    tree: () => ({ id: 'par', kids: [{ id: 'triple-stream-stone' }, { id: 'imp-pump-88', P: { N: 7 } }] }),
+  },
+  'gymnosperm-88': {
+    rules: ['88'], verification: 'full', strictRules: true,
+    purpose: 'Dave Hillis’s five-cell remote copy bomber, with its published displacement.',
+    tree: () => ({ id: 'gymnosperm-88' }),
+  },
+  'gymnosperm-boot-88': {
+    rules: ['88'], verification: 'full', strictRules: true,
+    purpose: 'A booted Gymnosperm bomber whose launch-side decrements start in blank core.',
+    tree: () => ({ id: 'boot', P: { HOP: 3801 }, kids: [{ id: 'gymnosperm-88' }] }),
+  },
+  'iron-sword-88': {
+    rules: ['88'], verification: 'full', strictRules: true,
+    purpose: 'Wayne Sheppard’s scanner and clear at the distance-54 setting tried with Coil 31.',
+    tree: () => ({ id: 'iron-sword-88' }),
+  },
+  'iron-sword-q2-88': {
+    rules: ['88'], verification: 'full', strictRules: true,
+    purpose: 'A quickscan stun attack followed by distance-54 Iron Sword.',
+    tree: () => ({ id: 'seq', kids: [{ id: 'opening-q2-stun-88' }, { id: 'iron-sword-88' }] }),
+  },
   'lp-romulan-rous': {
     rules: ['lp', 'lp-hill'], length: 56, verification: 'full', strictRules: true,
     purpose: 'Romulan Warbird and R.O.U.S. share the LP process queue with 32 blank cells between their bodies.',

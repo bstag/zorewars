@@ -64,6 +64,30 @@ test('guard-stone runs its processes through the loop in order: every step write
   }
 });
 
+test('guard-stone with an airbag clears when an enemy bomb with any non-zero field lands on its guard', async () => {
+  const { VM } = await import('../src/engine/index.js');
+  const { recipeSettings } = await import('../tools/blocks/recipes.js');
+  for (const BOMB of [0, 1, 2]) {
+    const s = buildTree({ id: 'guard-stone', P: { AIR: 1, BOMB } }, { rules: '94x', verification: 'full' });
+    assert.equal(s.verification.ok, true, `BOMB ${BOMB}`);
+  }
+  const settings = recipeSettings('94x');
+  // DAT #0, #5 has a zero A-field: the A-read guard (AIR 0) misses it, the airbag does not.
+  // One process (M 0) bombs until the guard trips; the clear's SPL #0 then multiplies it.
+  for (const [AIR, clears] of [[1, true], [0, false]]) {
+    const b = buildTree({ id: 'guard-stone', P: { AIR } }, { rules: '94x' });
+    const guard = b.labels[b.root.ns + 'guard'];
+    const vm = new VM(settings);
+    vm.load([b.w], { positions: [0] });
+    if (AIR) assert.deepEqual([vm.peek(guard).a, vm.peek(guard).b], [0, 0], 'the guard is an empty cell');
+    for (let i = 0; i < 200; i++) vm.step();
+    assert.equal(vm.warriors[0].queue.size, 1, `AIR ${AIR}: still bombing`);
+    vm.poke(guard, { op: 'DAT', mod: 'F', aMode: '#', a: 0, bMode: '#', b: 5 });
+    for (let i = 0; i < 200; i++) vm.step();
+    assert.equal(vm.warriors[0].queue.size > 1, clears, `AIR ${AIR}`);
+  }
+});
+
 test('guard-stone beside a sweep in a switch-score', () => {
   const t = buildTree({ id: 'switch-score', P: { STREAK: 4 }, kids: [{ id: 'sweep' }, { id: 'guard-stone', P: { BOMB: 2, M: 0 } }] }, { rules: 'modelwar', length: 200, verification: 'full' });
   assert.equal(t.verification.ok, true);
