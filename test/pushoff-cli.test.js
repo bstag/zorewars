@@ -223,6 +223,98 @@ test('text replay retains entries ranked below the first 25 rows', async t => {
   assert.match(f.lines.join('\n'), /★ W26: rank 27 of 27/);
 });
 
+test('CLI converts both pMARS output formats to a saved field and exports KotH output', t => {
+  const dir = fixture(t), manifest = path.join(dir, 'input.json'), saved = path.join(dir, 'scores.json');
+  const exported = path.join(dir, 'exported');
+  const warriors = [{ name: 'Silk', entry: true }, { name: 'Seeker' }];
+  fs.writeFileSync(path.join(dir, 'match.txt'), '19 31\r\n0 31\r\n');
+  fs.writeFileSync(path.join(dir, 'self.txt'), 'Silk scores 50\nSilk scores 50\nResults: 0 0 50\n');
+  fs.writeFileSync(manifest, JSON.stringify({
+    format: 'pmars', warriors, rounds: 50,
+    matches: [{ a: 0, b: 1, file: 'match.txt' }, { a: 0, b: 0, file: 'self.txt' }],
+  }));
+  const run = (...args) => {
+    const result = spawnSync(process.execPath, ['cli/zorewars.js', 'pushoff', ...args, '--json'], {
+      encoding: 'utf8', timeout: 10000,
+    });
+    assert.ifError(result.error);
+    assert.equal(result.status, 0, result.stderr);
+    return JSON.parse(result.stdout);
+  };
+  const ranking = run('--load', manifest, '--save', saved);
+  const record = JSON.parse(fs.readFileSync(saved, 'utf8'));
+  assert.deepEqual(record.scores, [[0, 88 / 50], [31 / 50, 0]]);
+  assert.deepEqual(record.results, [
+    [{ w: 0, l: 0, t: 50, rounds: 50 }, { w: 19, l: 0, t: 31, rounds: 50 }],
+    [{ w: 0, l: 19, t: 31, rounds: 50 }, null],
+  ]);
+  assert.deepEqual(run('--load', saved, '--export-pmars', exported), ranking);
+  assert.equal(fs.readFileSync(path.join(exported, '0-1.txt'), 'utf8'), '19 31\n0 31\n');
+  assert.equal(fs.readFileSync(path.join(exported, '0-0.txt'), 'utf8'), '0 50\n0 50\n');
+  const reimported = path.join(dir, 'reimported.json');
+  assert.deepEqual(run('--load', path.join(exported, 'manifest.json'), '--save', reimported), ranking);
+  assert.deepEqual(JSON.parse(fs.readFileSync(reimported, 'utf8')), record);
+});
+
+test('pMARS conversion rejects incomplete fields, bad match counts, and scores-only exports', async t => {
+  const dir = fixture(t), file = path.join(dir, 'input.json'), exported = path.join(dir, 'exported');
+  const warriors = [{ name: 'A' }, { name: 'B' }];
+  const match = { a: 0, b: 1, file: 'match.txt' };
+  const args = { _: [], flags: { load: file, 'export-pmars': exported } };
+  fs.writeFileSync(path.join(dir, match.file), '19 31\n0 32\n');
+  for (const [matches, error] of [[[], /invalid win\/loss\/tie/], [[match], /inconsistent pMARS win\/tie/]]) {
+    fs.writeFileSync(file, JSON.stringify({ format: 'pmars', warriors, matches }));
+    await assert.rejects(cmdPushoff(args, beforeLoading()), error);
+  }
+  fs.writeFileSync(file, JSON.stringify({ warriors, scores: [[0, 1], [1, 0]] }));
+  await assert.rejects(cmdPushoff(args, beforeLoading()), /needs saved win\/loss\/tie counts/);
+  assert.equal(fs.existsSync(exported), false);
+});
+
+test('CLI exchanges Koenigstuhl column-major binary scores and removes tagged P-space warriors', t => {
+  const dir = fixture(t), dat = path.join(dir, 'hill32.dat'), binaryFile = path.join(dir, 'hill32.scores');
+  const saved = path.join(dir, 'scores.json'), exported = path.join(dir, 'exported');
+  const fields = ['3', 'A', 'Author A', 'a.red', '88', 'B', 'Author B', 'b.red', 'P-Space',
+    'C', 'Author C', 'c.red', '94'];
+  fs.writeFileSync(dat, '\uFEFF' + fields.join('\r\n') + '\r\n');
+  const binary = Buffer.alloc(36);
+  [0, 0, 2000000, 3000000, 0, 1000000, 1000000, 2000000, 0]
+    .forEach((score, i) => binary.writeInt32LE(score, i * 4));
+  fs.writeFileSync(binaryFile, binary);
+  const run = (...args) => {
+    const result = spawnSync(process.execPath, ['cli/zorewars.js', 'pushoff', ...args, '--json'], {
+      encoding: 'utf8', timeout: 10000,
+    });
+    assert.ifError(result.error);
+    assert.equal(result.status, 0, result.stderr);
+    return JSON.parse(result.stdout);
+  };
+  assert.deepEqual(run('--load', dat, '--save', saved).ranking.map(row => row.name), ['C', 'A', 'B']);
+  const record = JSON.parse(fs.readFileSync(saved, 'utf8'));
+  assert.deepEqual(record.scores, [[0, 3, 1], [0, 0, 2], [2, 1, 0]]);
+  assert.deepEqual(record.warriors[1], { name: 'B', author: 'Author B', file: 'b.red', format: 'P-Space' });
+  run('--load', saved, '--export-koenigstuhl', exported);
+  assert.deepEqual(fs.readFileSync(path.join(exported, 'hill32.scores')), binary);
+  assert.equal(fs.readFileSync(path.join(exported, 'hill32.dat'), 'utf8'), fields.join('\n') + '\n');
+  const filtered = path.join(dir, 'filtered.json');
+  assert.deepEqual(run('--load', binaryFile, '--remove-pspace', '--save', filtered).ranking.map(row => row.name), ['C', 'A']);
+  assert.deepEqual(JSON.parse(fs.readFileSync(filtered, 'utf8')).scores, [[0, 1], [2, 0]]);
+});
+
+test('Koenigstuhl import rejects incomplete metadata and truncated binary tables', async t => {
+  const dir = fixture(t), dat = path.join(dir, 'hill32.dat'), scores = path.join(dir, 'hill32.scores');
+  fs.writeFileSync(dat, '2\nA\nAuthor\na.red\n94\n');
+  await assert.rejects(cmdPushoff({ _: [], flags: { load: dat } }, beforeLoading()), /four lines per warrior/);
+  fs.writeFileSync(dat, '1\nA\nAuthor\na.red\n94\n');
+  fs.writeFileSync(scores, Buffer.alloc(3));
+  await assert.rejects(cmdPushoff({ _: [], flags: { load: dat } }, beforeLoading()), /exactly 4 bytes/);
+  fs.writeFileSync(scores, Buffer.alloc(4));
+  await assert.rejects(cmdPushoff({ _: [], flags: { load: dat, rule: 'announcement', features: 'wlt' } }, beforeLoading()), /needs saved win\/loss\/tie/);
+  const legacy = path.join(dir, 'legacy.json');
+  fs.writeFileSync(legacy, JSON.stringify({ warriors: [{ name: 'A' }], scores: [[0]] }));
+  await assert.rejects(cmdPushoff({ _: [], flags: { load: legacy, 'remove-pspace': true } }, beforeLoading()), /requires saved warrior format labels/);
+});
+
 test('CLI reports usage errors for malformed play and replay input', t => {
   const dir = fixture(t), file = path.join(dir, 'bad.json');
   fs.writeFileSync(file, '{}');

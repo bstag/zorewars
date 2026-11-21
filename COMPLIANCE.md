@@ -148,6 +148,71 @@ zorewars battle    -r 50 -s 8000 -p 8000 -c 80000 -l 25 -d 100 -F 3000 silk.red 
 
 Both report Silk 19 wins, 0 losses, 31 ties (88 points) and Seeker 31 points. The Core War Tournament Weekend 2024 '94 event used `pmars -s 8000 -p 8000 -c 80000 -l 25 -d 100`. Note that `-p` is the process limit, not the P-space size, which is `-S`.
 
+### Exchanging match scores
+
+Capture the standard output of each two-warrior pMARS match. Import
+accepts either the two lines from `-b -k` or regular output ending in
+`Results: <first wins> <second wins> <ties>`. Keep the warrior order
+from the pMARS command line and give each pair its own file.
+
+```sh
+pmars -b -k -r 50 -F 3000 silk.red seeker.red > silk-seeker.txt
+```
+
+Create a manifest next to the score files. Each match uses zero-based
+indices into `warriors`. Paths are relative to the manifest directory.
+Give one result per distinct pair. Self-fights are optional, and the
+optional `rounds` field checks that each match ran the specified number
+of rounds.
+
+```json
+{
+  "format": "pmars",
+  "warriors": [{ "name": "Silk", "entry": true }, { "name": "Seeker" }],
+  "rounds": 50,
+  "matches": [{ "a": 0, "b": 1, "file": "silk-seeker.txt" }]
+}
+```
+
+```sh
+node cli/zorewars.js pushoff --load manifest.json --save scores.json
+node cli/zorewars.js pushoff --load scores.json --export-pmars pmars-matches
+```
+
+Import rebuilds the win/loss/tie and points-per-round matrices, then
+prints the push-off ranking. Export writes the two `wins ties` lines
+for each pair and a reusable `manifest.json` into a new directory.
+Export requires saved win/loss/tie counts.
+
+### Koenigstuhl binary tables
+
+`pushoff --load` also accepts a `.dat` or `.scores` path and reads
+its matching sibling file. The metadata has four lines per warrior
+after the count. The binary matrix stores the column warrior's score
+against the row warrior as a little-endian 32-bit integer. Its
+0–300 normalized scores are multiplied by 10,000, giving a factor of
+1,000,000 relative to our 0–3 points per round.
+[Metcalf's format specification](https://corewar.co.uk/metcalf/koenformat.txt)
+
+```sh
+node cli/zorewars.js pushoff --load hill32.dat --save scores.json
+node cli/zorewars.js pushoff --load scores.json --export-koenigstuhl exported-hill
+node cli/zorewars.js pushoff --load hill32.dat --remove-pspace --export-koenigstuhl filtered-hill
+```
+
+`--remove-pspace` removes entries whose metadata format is
+`P-Space`, together with the corresponding rows and columns, following
+the published Ruby helper. It preserves the order of retained warriors.
+[P-space removal script](https://corewar.co.uk/metcalf/removepspace.rb)
+
+Binary tables contain normalized scores. Win/loss/tie counts and match
+seeds must come from separate records. Export preserves available
+author, source filename and format labels. Missing filenames use
+`warrior-N.red`, and missing format labels default to `94`, or
+`88` when the saved settings specify that dialect. Export rounds to
+the binary format's precision of 0.0001 normalized points and writes
+the pair of files into a new directory.
+
 ## What the audit changed
 
 The pMARS simulator (`sim.c`), assembler (`asm.c`), placement (`pos.c`) and option defaults (`clparse.c`) were read line by line against our engine. The instruction semantics already matched: every opcode and modifier, all eight addressing modes, division by zero inside `.F` and `.X`, `DJN` testing the value before the decrement, `SEQ.I`, `SLT`, `SPL`'s process limit, and P-space `LDP`/`STP`. These differences were found and fixed:

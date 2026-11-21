@@ -12,6 +12,23 @@ in a push-off against the hill. Beating a fixed set of kings is too narrow a
 target. Instruction runs, which faced the whole hill as opponents, held up
 better but did not beat their starting warriors on fresh seeds.
 
+## What the 2026 top-64 benchmark showed
+
+Evaluate both entries together with the tournament's iterative SD-score
+push-off. In the top-64 hill benchmark, Escapement and Spyglass ranked
+ahead of their higher-average teammates in LP and 94x, respectively.
+Those averages came from different elimination stages. Each removal
+changes the opponents used to compute the average and nearest-neighbor
+distance at the next step.
+
+Validate finalists on the target tournament field using fresh seeds.
+For a repeat of the 2026 benchmark, use the top 64 warriors from the
+relevant hill plus the entrants. Use `pushoff` with
+`--top 64 --save <file>` to keep the matrix. Compare average points and
+nearest neighbors on that common field, then rerank the same match
+results with each candidate alone and with its proposed partner.
+[2026 results and competitor comparisons](tournament-weekend-2026.md)
+
 ## 1. A realistic opponent field
 
 Hill warriors are written for a 100-instruction limit and most fill it:
@@ -66,11 +83,38 @@ or swap one out.
 
 ## 4. Hunt for empty niches
 
-Measure where every hill warrior sits by behaviour (the correlation of its
-results across the field) and search for warriors far from all of them with
-a reasonable average. In the push-off, distance multiplies the score.
-Families of near-clones on the hill are targets: a warrior that beats one
-beats all of them.
+Use the top 100 warriors on the relevant hill as the development field,
+or the whole hill if it has fewer than 100. Compare candidates' scores
+against each opponent and look for matchups where the hill leaders tend
+to get similar results. A specialist that scores well in a different
+set of matchups can earn a larger nearest-neighbor distance, even if it
+struggles farther down the hill.
+
+Select by iterative push-off place on the development field. Check both
+average points and nearest-neighbor distance to see how a candidate
+earned that place. Their product governs elimination at each step.
+
+Look for overlooked designs at ranks 101–200, where the hill has that
+many entries. Play them against the same top-100 field and compare
+their per-opponent scores with the leaders' profiles. Shortlist designs
+with repeatable strengths against a different set of opponents. Review
+their losses for matchups a small design change could improve.
+
+Start with earlier designs that already have favorable matchups within
+their constraints. Pick a specific group of leading opponents the design
+could do better against, then test a targeted refinement under the
+tournament rules. Compare the original and the refinement on the same
+opponents and seeds. Check whether its improved matchups made its
+profile more like a leader's. Keep a refinement if it improves
+push-off place on fresh seeds with the proposed second entry in the
+field.
+
+Include closely related opponents when available. The 2026 recap
+reported that Rodents and Hell Kitty lost places because their matchup
+scores resembled those of bombing papers such as R.O.U.S. Amethystine
+Python scored well across scoring formats. Compare round-robin points
+rank and push-off rank on the same field, and check each candidate's
+nearest neighbor among the hill leaders and our other entry.
 
 ## 5. Model-guided mutation
 

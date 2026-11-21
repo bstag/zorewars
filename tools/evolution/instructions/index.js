@@ -47,13 +47,22 @@ import { instructionOptions } from './options.js';
 import { createAssessor } from './evaluation.js';
 import { createBreeder } from './population.js';
 import { initialGenomes } from './seeds.js';
+import { checkpointOptions, instructionCheckpoint, readInstructionCheckpoint } from './checkpoint.js';
 
 export async function evolve(input) {
-  const options = instructionOptions(input);
+  const restored = input.resume && readInstructionCheckpoint(input.resume);
+  const saved = restored?.state;
+  const options = instructionOptions(restored ? {
+    ...restored.options, rounds: input.rounds ?? restored.options.rounds,
+    pool: input.pool, onPlace: input.onPlace, onLog: input.onLog, onRound: input.onRound,
+  } : input);
   const { pool: runner, sources, opponents, heldOut, settings, entrySettings, rounds, batches, batchSize, evalRounds,
     maxLength, kings, scratch, tieValue, seed, algorithm, objective, populationSize, selection, epsilon,
     descriptor, archiveSize, localSteps, partners, fieldRounds, league, exploitWin, exploitAge_, race,
     onRound, geo } = options;
+  if (saved && rounds < saved.round) throw new Error('Generation target precedes the checkpoint');
+  const { onCheckpoint } = input;
+  const savedOptions = onCheckpoint && checkpointOptions(options);
   const random = mulberry32(seed);
   const units = makeGenePool(sources, { random });
   const ops = makeOperators(units, geo, { scratch, coreSize: settings.coreSize, random, pSpace: entrySettings.pSpace !== false && entrySettings.dialect !== '88' });
@@ -63,18 +72,26 @@ export async function evolve(input) {
   const niche = (sp) => (geo ? `${sp.key},${sp.shape}` : sp.key);
   const opNames = Object.keys(ops);
   const chooser = makeChooser(opNames, random);
-  const champions = kings.map((w) => ({ round: 0, name: w.name, g: genomeOf(w), w: strip(w) }));
+  if (saved) {
+    // Rebuild the same gene slices from the original seed before restoring the breeding RNG.
+    random.restore(saved.randomState);
+    Object.assign(chooser.credit, structuredClone(saved.credit));
+  }
+  const champions = saved ? [...saved.champions] : kings.map((w) => ({ round: 0, name: w.name, g: genomeOf(w), w: strip(w) }));
   const coreSize = settings.coreSize;
   const stats = { evaluated: 0, cacheHits: 0, rejected: 0, matches: 0, battleRounds: 0, localTried: 0, localImproved: 0, raced: 0, promoted: 0 };
+  if (saved) Object.assign(stats, saved.stats);
   const pool = countBattles(runner, stats);
-  const target = await createObjective({ pool, opponents, partners, settings, objective, rounds: evalRounds, fieldRounds, seed });
+  const target = await createObjective({ pool, opponents, partners, settings, objective, rounds: evalRounds, fieldRounds, seed,
+    fieldResults: saved?.fieldResults });
   const outcomes = descriptor === 'outcomes'
     ? outcomeNiches(target.field.length, archiveSize, mulberry32(seed ^ 0x6a09e667)) : null;
   const cellOf = (x) => outcomes ? outcomes.cell(x.descriptor) : niche(x.species);
 
   // Populations: who each one is scored against. Without a league there is
   // only the main one, whose rivals are the champions (the Red Queen).
-  const exploiters = [], leagueExploiters = [];
+  const exploiters = saved ? [...saved.exploiters] : [];
+  const leagueExploiters = saved ? [...saved.leagueExploiters] : [];
   const RECENT = 10;   // the main warriors face this many of the latest exploiters of each kind
   const MAIN = { key: 'main', field: true, rivals: () => league
     ? [...champions, ...exploiters.slice(-RECENT), ...leagueExploiters.slice(-RECENT)] : champions };
@@ -82,7 +99,8 @@ export async function evolve(input) {
   const LEAGUE = { key: 'league', field: false, rivals: () => [...champions, ...exploiters, ...leagueExploiters] };
 
   const { assess, assessBatch, reset, lineage } = createAssessor({ pool, target, outcomes, stats, options });
-  const { start, originalCount, startingSources } = await initialGenomes({ sources, champions, units, random, options, pool });
+  for (const item of saved?.lineage ?? []) lineage.set(item.id, item);
+  const { start, originalCount, startingSources } = saved ?? await initialGenomes({ sources, champions, units, random, options, pool });
   const { breed, bestOf } = createBreeder({ assess, assessBatch, cellOf, stats, options, random, ops, chooser, startingSources });
   // A league side population's champion: kept as a rival, not exported as a Red Queen.
   const sideChampion = async (archive, round, label, pop) => {
@@ -91,10 +109,13 @@ export async function evolve(input) {
       w: strip(toWarrior(best.g, `${label} ${round}`, coreSize)) };
   };
 
-  let archive = new Map(), exploitArchive = null, leagueArchive = null, exploitAge = 0;
-  const history = [];
-  let baseline = null;
-  for (let round = 1; round <= rounds; round++) {
+  let archive = new Map(saved?.archive);
+  let exploitArchive = saved?.exploitArchive ? new Map(saved.exploitArchive) : null;
+  let leagueArchive = saved?.leagueArchive ? new Map(saved.leagueArchive) : null;
+  let exploitAge = saved?.exploitAge ?? 0;
+  const history = saved ? [...saved.history] : [];
+  let baseline = saved?.baseline ?? null;
+  for (let round = history.length + 1; round <= rounds; round++) {
     reset(); // scores from different placements/opponents are never compared
     // Warm start: last round's elites are judged again against the new opponents.
     const prev = round === 1 ? start : [...archive.values()].map((x) => x.g);
@@ -131,11 +152,23 @@ export async function evolve(input) {
     }
     history.push(rec);
     onRound(rec);
+    if (onCheckpoint) {
+      const checkpoint = instructionCheckpoint(savedOptions, {
+        round, randomState: random.state(), start, originalCount, startingSources,
+        archive: [...archive], exploitArchive: exploitArchive && [...exploitArchive],
+        leagueArchive: leagueArchive && [...leagueArchive], exploitAge,
+        history: [...history], champions: [...champions], exploiters: [...exploiters], leagueExploiters: [...leagueExploiters],
+        baseline, stats: { ...stats }, credit: structuredClone(chooser.credit), lineage: [...lineage.values()],
+        fieldResults: target.fieldResults,
+      });
+      if (await onCheckpoint(checkpoint) === false) break;
+    }
   }
   const final = [...archive.values()].sort((a, b) => b.fit - a.fit);
   const niches = new Map();
   for (const x of final) if (!niches.has(cellOf(x))) niches.set(cellOf(x), x);
   return {
+    ...(history.length < rounds ? { paused: true } : {}),
     config: { seed, algorithm, objective, selection, epsilon, descriptor, archiveSize, localSteps, fieldRounds,
       rounds, batches, batchSize, evalRounds, maxLength, populationSize, tieValue, scratch, settings, entrySettings,
       ...(league ? { league, exploitWin, exploitAge: exploitAge_ } : {}), ...(race ? { race } : {}) },

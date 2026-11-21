@@ -81,9 +81,16 @@ export function pushOff(scores, names, { rule = null, results = null, features =
 // stays in, both in each column's standard deviation and in the distance.
 // Distance is the sum over columns of |difference| / that column's standard
 // deviation; diversity is the distance to the nearest other warrior, and the
-// lowest diversity times average score is pushed off (on a tie, the one
-// listed later). A column with zero spread is skipped (the script would
+// lowest diversity times average score is pushed off. Equal products compare
+// diversity, then average, then remove the one listed later. A column with
+// zero spread is skipped (the script would
 // divide 0 by 0 there).
+function compareSDStats(left, right) {
+  return left.score - right.score
+    || left.div - right.div
+    || left.avg - right.avg;
+}
+
 export function sdScoreHill(scores, names) {
   const live = names.map((_, i) => i);
   const at = (i, j) => (i === j ? 0 : scores[i][j]);
@@ -101,7 +108,7 @@ export function sdScoreHill(scores, names) {
       return { index: i, name: names[i], avg, div, score: avg * div };
     });
     let worst = 0;
-    for (let c = 1; c < stats.length; c++) if (stats[c].score <= stats[worst].score) worst = c;
+    for (let c = 1; c < stats.length; c++) if (compareSDStats(stats[c], stats[worst]) <= 0) worst = c;
     out.unshift(stats[worst]);
     live.splice(worst, 1);
     if (live.length === 1) out.unshift(stats.find((x) => x.index === live[0]));

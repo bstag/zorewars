@@ -4,7 +4,8 @@ import { roundRobin } from '../tools/pushoff.js';
 import { strip } from '../tools/hill.js';
 import { pushOff, validatePushOffOptions } from '../src/engine/pushoff.js';
 import { battlePool, hillOpponents, hillSettingsFor, progress, done } from './devtools-context.js';
-import { loadPushoffRecord, savePushoffRecord } from './pushoff-record.js';
+import { exportKoenigstuhlRecord, exportPmarsRecord, loadPushoffRecord, savePushoffRecord } from './pushoff-record.js';
+import { removePSpaceWarriors } from './koenigstuhl-scores.js';
 
 function integer(flags, key, fallback, usage, positive = true) {
   const value = Number(flags[key] ?? fallback);
@@ -17,11 +18,31 @@ function requestFrom(args, usage) {
   if (!['official', 'announcement'].includes(rule)) usage('pushoff --rule official|announcement');
   const variant = rule === 'official' ? { rule } : { features: flags.features ?? 'points', metric: flags.metric ?? 'sd', self: !!flags.self, field: flags.field ?? 'original' };
   try { validatePushOffOptions(variant); } catch (error) { usage(error.message); }
-  const base = { json: !!flags.json, variant };
+  const exportPmars = flags['export-pmars'];
+  if (Object.hasOwn(flags, 'export-pmars') && (typeof exportPmars !== 'string' || !exportPmars || exportPmars.startsWith('--'))) {
+    usage('--export-pmars requires a new directory');
+  }
+  const exportKoenigstuhl = flags['export-koenigstuhl'];
+  if (Object.hasOwn(flags, 'export-koenigstuhl') &&
+      (typeof exportKoenigstuhl !== 'string' || !exportKoenigstuhl || exportKoenigstuhl.startsWith('--'))) {
+    usage('--export-koenigstuhl requires a new directory');
+  }
+  const base = { json: !!flags.json, variant, save: flags.save, exportPmars, exportKoenigstuhl };
   if (flags.load) return { ...base, load: String(flags.load) };
-  if (!args._.length || !flags.hill) usage('pushoff <entry...> --hill koenigstuhl:94nop|88|lp|94x (or a folder) [--rounds 50] [--save file] | pushoff --load file [--rule official|announcement]');
+  if (flags['remove-pspace']) usage('--remove-pspace requires --load and saved warrior format labels');
+  if (!args._.length || !flags.hill) usage('pushoff <entry...> --hill koenigstuhl:94nop|88|lp|94x (or a folder) [--rounds 50] [--save file] | pushoff --load file [--rule official|announcement] [--save file] [--export-pmars dir] [--export-koenigstuhl dir] [--remove-pspace]');
   return { ...base, top: Math.max(2, integer(flags, 'top', 50, usage)), rounds: Math.max(2, integer(flags, 'rounds', 50, usage)),
-    seed: integer(flags, 'seed', 1, usage, false), save: flags.save ? String(flags.save) : null };
+    seed: integer(flags, 'seed', 1, usage, false) };
+}
+
+function writeOutputs(record, { save, exportPmars, exportKoenigstuhl }, usage) {
+  try {
+    if (exportPmars) exportPmarsRecord(exportPmars, record);
+    if (exportKoenigstuhl) exportKoenigstuhlRecord(exportKoenigstuhl, record);
+    if (save) savePushoffRecord(save, record);
+  } catch (error) {
+    usage(`could not save push-off results: ${error.message}`);
+  }
 }
 
 function showRanking(record, { json, variant }, h) {
@@ -36,7 +57,15 @@ function showRanking(record, { json, variant }, h) {
 
 export async function cmdPushoff(args, h, { createPool = battlePool } = {}) {
   const request = requestFrom(args, h.usage);
-  if (request.load) { showRanking(loadPushoffRecord(request.load, request.variant, h.usage), request, h); return; }
+  if (request.load) {
+    let record = loadPushoffRecord(request.load, request.variant, h.usage);
+    if (args.flags['remove-pspace']) {
+      try { record = removePSpaceWarriors(record); } catch (error) { h.usage(error.message); }
+    }
+    writeOutputs(record, request, h.usage);
+    showRanking(record, request, h);
+    return;
+  }
   const { json, rounds, seed, variant, save } = request, flags = args.flags;
   const settings = h.settingsFrom(flags), hillSettings = hillSettingsFor(settings);
   const entries = await h.loadAll(h.expandRefs(args._), settings, json);
@@ -50,9 +79,12 @@ export async function cmdPushoff(args, h, { createPool = battlePool } = {}) {
     const matrices = await roundRobin(pool, all.map(x => strip(x.w)), { rounds, seed, settings: hillSettings, self: variant.self || !!save,
       onProgress: (i, n) => progress(json, `round robin: ${i}/${n}`) });
     done(json);
-    const record = { rounds, settings: { coreSize: settings.coreSize, maxProcesses: settings.maxProcesses, maxCycles: settings.maxCycles, maxLength: settings.maxLength },
-      warriors: all.map(x => ({ name: x.w.name, entry: x.entry })), ...matrices };
-    if (save) savePushoffRecord(save, record);
+    const record = { rounds, settings: { coreSize: settings.coreSize, maxProcesses: settings.maxProcesses, maxCycles: settings.maxCycles, maxLength: settings.maxLength,
+      dialect: settings.dialect, pSpace: settings.pSpace },
+      warriors: all.map(x => ({ name: x.w.name, author: x.w.author, file: x.w.file, entry: x.entry,
+        format: x.w.instructions.some(instruction => ['LDP', 'STP'].includes(instruction.op))
+          ? 'P-Space' : settings.dialect === '88' ? '88' : '94' })), ...matrices };
+    writeOutputs(record, request, h.usage);
     showRanking(record, request, h);
   } finally { pool.close(); }
 }

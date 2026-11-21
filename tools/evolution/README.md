@@ -43,6 +43,10 @@ flowchart TD
   results in birth order even when the backend evaluates concurrently.
 - `index.js` coordinates generations and league opponents. Fitness is reset
   before breeding; each population's rivals stay fixed during that breeding run.
+- `checkpoint.js` defines the versioned JSON format. Pass an
+  `onCheckpoint(snapshot)` callback to save a complete generation, and return
+  `false` to stop there. To continue, call `evolve({ pool, resume: snapshot })`.
+  Resume rebuilds the gene slices and solo measurement cache as needed.
 
 `execution.js` counts battle work while preserving live backend getters and solo
 acceleration, including GPU-to-CPU fallback. `identity.js` supplies stable genome

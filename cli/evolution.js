@@ -4,6 +4,7 @@ import path from 'node:path';
 import { libraryOpponents, strip } from '../tools/hill.js';
 import { evolve } from '../tools/evolution/instructions/index.js';
 import {evolutionOptions} from './evolution-options.js';
+import { checkpointExecution, checkpointRequest, writeCheckpoint } from './evolution-checkpoint.js';
 import { trainingProfiles, validateCandidates } from '../tools/training.js';
 import { roleOf, toRedcode } from '../tools/genes.js';
 import { makeGeometry } from '../src/engine/geometry.js';
@@ -11,37 +12,73 @@ import { cmdEvolveTrees } from './tree-evolution.js';
 import { battlePool, opponents, hillOpponents, hillSettingsFor, progress, done } from './devtools-context.js';
 
 export async function cmdEvolve(args, h, { quiet = false } = {}) {
+  if (args.flags.representation && args.flags.representation !== 'instructions'
+    && ['checkpoint', 'resume', 'stop-after'].some(key => Object.hasOwn(args.flags, key))) {
+    h.usage('Evolution checkpoints currently require the instructions representation');
+  }
   if (args.flags.representation === 'blocks') {
     const { cmdEvolveBlocks } = await import('./block-devtools.js');
     return cmdEvolveBlocks(args, h, { quiet, battlePool, hillOpponents, hillSettingsFor });
   }
   if (args.flags.representation === 'tree') return cmdEvolveTrees(args, h, { quiet });
   if (args.flags.representation && args.flags.representation !== 'instructions') h.usage('--representation takes instructions, blocks or tree');
-  const settings = h.settingsFrom(args.flags);
+  const checkpoint = checkpointRequest(args, h.usage);
+  const { file: checkpointFile, resume, stopAfter } = checkpoint;
+  const settings = checkpoint.options?.settings ?? h.settingsFrom(args.flags);
   const json = !!args.flags.json;
-  const {generations, batches, batchSize, seed, algorithm, objective, selection, descriptor, epsilon, tieValue, evalRounds, populationSize, archiveSize, localSteps, checkRounds, seeds, finalists, out, scratch, fieldRounds, league, exploitWin, exploitAge, race, maxLength} = evolutionOptions(args,h,settings);
-  const {sources,field,heldOut,kings,partners,hill}=await prepareInstructionField(args,h,settings,{json,scratch,objective});
-  const entrySettings = { ...settings };
+  const config = resume ? { ...checkpoint.options, ...resume.cli.validation, generations: checkpoint.generations,
+    out: args.flags.out ?? resume.cli.out } : evolutionOptions(args, h, settings);
+  const { generations, batches, batchSize, seed, algorithm, objective, selection, descriptor, epsilon, tieValue, evalRounds,
+    populationSize, archiveSize, localSteps, checkRounds, seeds, finalists, out, scratch, fieldRounds, league, exploitWin,
+    exploitAge, race, maxLength } = config;
+  const { sources, field, heldOut, kings, partners, hill } = resume
+    ? { ...checkpoint.options, field: checkpoint.options.opponents }
+    : await prepareInstructionField(args, h, settings, { json, scratch, objective });
+  const entrySettings = checkpoint.options?.entrySettings ?? { ...settings };
   if (hill) Object.assign(settings, hillSettingsFor(settings));   // genomes keep the entry limit above
   if (!scratch && !field.length) h.usage('no opponents compiled for this battlefield');
+  if (checkpointFile && path.dirname(path.resolve(checkpointFile)) === path.resolve(out)
+    && /^(evolve\.json|best\.red|(?:redqueen-\d+|elite-.+|exploiter-\d+|league-\d+)\.red)$/i.test(path.basename(checkpointFile))) {
+    h.usage('--checkpoint needs a file separate from the evolution reports and warrior exports');
+  }
   fs.mkdirSync(out, { recursive: true });
-  const pool = await battlePool(args.flags, h);
+  const execution = { ...checkpoint.execution, ...checkpointExecution(args.flags) };
+  const pool = await battlePool({ ...execution, json }, h);
+  const validation = { validate: resume ? resume.cli.validation.validate : !!args.flags.validate, checkRounds, seeds, finalists };
+  let pauseRequested = false;
+  const requestPause = () => {
+    pauseRequested = true;
+    console.error('Pausing after this generation. Press Ctrl+C again to exit immediately.');
+  };
+  if (checkpointFile) process.once('SIGINT', requestPause);
   try {
-    if (!json) console.log(`Evolving${scratch ? ' from scratch' : ''}: ${generations} Red Queen generations, ${batches}x${batchSize} children each, ${scratch ? 'random programs, no gene pool' : `${sources.length} warriors in the gene pool`}, genomes up to ${maxLength} instructions${kings.length ? `, starting champions: ${kings.map((k) => k.name).join(', ')}` : ''}${heldOut.length ? `, ${heldOut.length} ${scratch ? 'library warriors and classics' : 'classics'} held out` : ''}\n`);
+    if (!json && resume) console.log(`Resuming after generation ${resume.state.round} of ${generations}.\n`);
+    if (!json && !resume) console.log(`Evolving${scratch ? ' from scratch' : ''}: ${generations} Red Queen generations, ${batches}x${batchSize} children each, ${scratch ? 'random programs, no gene pool' : `${sources.length} warriors in the gene pool`}, genomes up to ${maxLength} instructions${kings.length ? `, starting champions: ${kings.map((k) => k.name).join(', ')}` : ''}${heldOut.length ? `, ${heldOut.length} ${scratch ? 'library warriors and classics' : 'classics'} held out` : ''}\n`);
     const geo = settings.topology === 'torus' ? makeGeometry(settings) : null;
+    const exportRound = rec => {
+      const c = rec.champion;
+      const file = path.join(out, `redqueen-${rec.round}.red`);
+      fs.writeFileSync(file, toRedcode(c.g, { name: c.name, coreSize: settings.coreSize, geo, dialect: settings.dialect, strategy: `Champion of Red Queen generation ${rec.round} (zorewars evolve): ${c.species.hint}, ${c.species.processes} processes, ${c.species.coverage} cells.` }));
+      for (const [x, prefix, what] of [[rec.exploiter, 'exploiter', 'exploiter: beats the champion before it'], [rec.leagueExploiter, 'league', 'league exploiter: beats the league']]) {
+        if (x) fs.writeFileSync(path.join(out, `${prefix}-${rec.round}.red`), toRedcode(x.g, { name: x.name, coreSize: settings.coreSize, geo, dialect: settings.dialect, strategy: `Generation ${rec.round} ${what} (zorewars evolve --league): ${x.species.hint}.` }));
+      }
+      return file;
+    };
+    if (resume) for (const rec of resume.state.history) exportRound(rec);
     const r = await evolve({
       pool, sources, opponents: field, heldOut, settings, entrySettings, rounds: generations, batches, batchSize,
       maxLength, kings, scratch, seed, algorithm, objective, evalRounds, populationSize, tieValue, partners, fieldRounds,
       selection, epsilon, descriptor, archiveSize, localSteps, league, exploitWin, exploitAge, race,
+      resume,
+      onCheckpoint: checkpointFile ? snapshot => {
+        writeCheckpoint(checkpointFile, snapshot, { out: path.resolve(out), validation, execution });
+        return !pauseRequested && snapshot.state.round !== stopAfter;
+      } : undefined,
       onLog: (t) => progress(json, t),
       onRound: (rec) => {
         done(json);
         const c = rec.champion;
-        const file = path.join(out, `redqueen-${rec.round}.red`);
-        fs.writeFileSync(file, toRedcode(c.g, { name: c.name, coreSize: settings.coreSize, geo, dialect: settings.dialect, strategy: `Champion of Red Queen generation ${rec.round} (zorewars evolve): ${c.species.hint}, ${c.species.processes} processes, ${c.species.coverage} cells.` }));
-        for (const [x, prefix, what] of [[rec.exploiter, 'exploiter', 'exploiter: beats the champion before it'], [rec.leagueExploiter, 'league', 'league exploiter: beats the league']]) {
-          if (x) fs.writeFileSync(path.join(out, `${prefix}-${rec.round}.red`), toRedcode(x.g, { name: x.name, coreSize: settings.coreSize, geo, dialect: settings.dialect, strategy: `Generation ${rec.round} ${what} (zorewars evolve --league): ${x.species.hint}.` }));
-        }
+        const file = exportRound(rec);
         if (json) return;
         const vs = c.vsAncestors ? ` | vs ancestors ${(c.vsAncestors.reduce((s, x) => s + x.pts, 0) / c.vsAncestors.length).toFixed(2)} pts/round` : '';
         const held = c.heldOut ? ` | held-out ${scratch ? 'library' : 'classics'} ${c.heldOut.score.toFixed(2)}` : '';
@@ -50,6 +87,13 @@ export async function cmdEvolve(args, h, { quiet = false } = {}) {
         console.log(`generation ${rec.round}: ${rec.cells} ${algorithm === 'ga' ? 'population members' : `${descriptor} cells`} (${rec.placed} archive updates) | champion ${fitText}, ${c.species.hint}, ${c.g.code.length} instructions${vs}${held}${side}  -> ${file}`);
       },
     });
+    process.removeListener('SIGINT', requestPause);
+    if (r.paused || pauseRequested) {
+      const status = { ok: true, paused: true, generation: r.history.length, checkpoint: checkpointFile };
+      if (!quiet && json) console.log(JSON.stringify(status));
+      if (!quiet && !json) console.log(`Paused after generation ${status.generation}. Resume with zorewars evolve --resume "${checkpointFile}".`);
+      return r;
+    }
     for (const x of r.archive) {
       const [p, c, shape] = x.cell.split(',');
       const tag = descriptor === 'outcomes' ? x.cell : `p${p}-c${c}${shape ? `-s${shape}` : ''}`;
@@ -59,7 +103,7 @@ export async function cmdEvolve(args, h, { quiet = false } = {}) {
       sources: sources.map((s) => ({ name: s.w.name, role: s.role, w: s.w })),
       opponents: field, heldOut, kings: kings.map(strip), partners: partners.map(strip),
     };
-    if (args.flags.validate) {
+    if (validation.validate) {
       // Scratch remains independent of the library: validate against its
       // champion lineage, rather than using the held-out library to select.
       const validationField = scratch ? r.champions.map((c) => ({ name: c.name, group: 'champion', w: c.w })) : field;
@@ -84,10 +128,16 @@ Racing: ${r.stats.raced} children raced past the screen, ${r.stats.promoted} too
     console.log(`\nWritten to ${out}/: redqueen-N.red (each generation's champion), elite-*.red (niche elites), evolve.json.`);
     console.log(`Try one: zorewars hill ${out}/redqueen-${generations}.red --classics`);
     return r;
-  } finally { pool.close(); }
+  } finally {
+    if (checkpointFile) process.removeListener('SIGINT', requestPause);
+    pool.close();
+  }
 }
 
 export async function cmdTrain(args, h) {
+  if (['checkpoint', 'resume', 'stop-after'].some(key => Object.hasOwn(args.flags, key))) {
+    h.usage('Evolution checkpoints are available through evolve');
+  }
   if (args.flags.representation && !['instructions', 'blocks'].includes(args.flags.representation)) {
     h.usage('train --representation takes instructions or blocks; use evolve for tree search');
   }
