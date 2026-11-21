@@ -503,11 +503,17 @@ function checkGeneric(built,{full=false}={}) {
     if (!limit.grows && vm.warriors[0].peak > limit.processes) throw new Error(`More processes than the blocks declare (${vm.warriors[0].peak} > ${limit.processes})`);
     for (const v of watched) {
       const { x } = v;
-      const required = scenario.branch ? (x.branch ? x.branch === scenario.branch : !x.optional)
+      // A block inside nested selectors has a path of branches; it is judged by the one at the
+      // scenario's selector. Under the chosen branch it is required only if no inner selector
+      // stands between (that one picks a single member of its own).
+      const path = x.branches ?? (x.branch ? [x.branch] : []);
+      const at = scenario.branch ? path.find((b) => b.slice(0, b.lastIndexOf(':')) === scenario.branch.slice(0, scenario.branch.lastIndexOf(':'))) : undefined;
+      const offBranch = scenario.branch && path.length > 0 && at !== scenario.branch;
+      const required = scenario.branch ? (path.length ? at === scenario.branch && path[path.length - 1] === at : !x.optional)
         : scenario.expect ? !x.optional || x.triggered === scenario.expect : !x.optional;
       if (required && !v.entered) throw new Error(`${x.node.id} was never entered (${scenario.name})`);
       // A fork decides early; later a roaming copy may wander onto the other branch's entry.
-      if (scenario.branch && x.branch && x.branch !== scenario.branch && v.entered && !(scenario.decideBy && pickedAt !== null && v.enteredAt > pickedAt + 2)) throw new Error(`ran the wrong branch (${scenario.name})`);
+      if (offBranch && v.entered && !(scenario.decideBy && pickedAt !== null && v.enteredAt > pickedAt + 2)) throw new Error(`ran the wrong branch (${scenario.name})`);
       v.hooks.final?.();
     }
     const pumpLineage=lineage?.finish();if(pumpLineage)for(const e of pumpLineage.engines)if(e.launches<2*e.N||e.arithmeticDeviations||e.firstImpExecution===null||e.compatibleImps<e.N)throw Error(`Independent pump lineage ${e.namespace} fails (${scenario.name}): ${e.launches} launches, ${e.compatibleImps}/${e.N} compatible descendants`);

@@ -25,8 +25,8 @@ export const combinators = {
     purpose: 'Copies its second member D cells away and runs it there beside the first, so one hit can\'t find both.' },
   copies: { kids: [1, 1], params: { N: [2, 4], D: [0, 54000], DY: [0, 200], DZ: [0, 200] }, defaults: { N: 2, D: 2667, DY: 0, DZ: 0 },
     purpose: 'Runs N copies of its member, D cells apart.' },
-  switch: { kids: [2, 4], params: { CELL: [1, 500], POLICY: [0, 2], TIES: [0, 20] }, defaults: { CELL: 17, POLICY: 0, TIES: 0 },
-    purpose: 'Chooses one of its members by P-space (the 94x hill only). POLICY 0: keep the choice after a win or tie, move to the next after a loss; 1: move on only after two losses in a row; 2: move on every round. TIES t (0 off) counts ties in a row in P-space cell CELL+2 and scores the t-th as a loss, so a member that only ties (a paper against a paper) is left; a win or a loss resets the count. It costs 12 instructions.' },
+  switch: { kids: [2, 4], params: { CELL: [1, 500], POLICY: [0, 3], TIES: [0, 20] }, defaults: { CELL: 17, POLICY: 0, TIES: 0 },
+    purpose: 'Chooses one of its members by P-space (the 94x hill only). POLICY 0: keep the choice after a win or tie, move to the next after a loss; 1: move on only after two losses in a row; 2: move on every round; 3: move on after a win (it mirrors an opponent that switches after its own loss, so each member can answer the arm that opponent has moved to). TIES t (0 off) counts ties in a row in P-space cell CELL+2 and scores the t-th as a loss, so a member that only ties (a paper against a paper) is left; a win or a loss resets the count. It costs 12 instructions.' },
   'switch-table': switchTable,
   'switch-score': switchScore,
   fork: { kids: [3, 3], params: { BY: [0, 1] }, defaults: { BY: 0 },
@@ -51,10 +51,13 @@ export function switchTies(limit, result, ties) {
   return ties + 1 >= limit ? { result: 0, ties: 0 } : { result, ties: ties + 1 };
 }
 export function switchChoice(policy, n, result, choice, losses, limit = 0, ties = 0) {
+  // POLICY 3 scores the TIES-th tie in a row as a win (move on: the mirror has lost step).
+  if (policy === 3 && limit && isTie(result) && switchTies(limit, result, ties).result === 0) result = 1;
   ({ result } = switchTies(limit, result, ties));
   choice %= n;
   if (policy === 0) return result === 0 ? (choice + 1) % n : choice;
   if (policy === 1) return result === 0 && losses + 1 >= 2 ? (choice + 1) % n : choice;
+  if (policy === 3) return result === 1 ? (choice + 1) % n : choice;
   return result === -1 ? choice : (choice + 1) % n;
 }
 combinators.fanboot.knowledge={parameterRoles:{N:'copy-fan size',SPLIT:'routing strategy',MOREA:'extra first-member entrant with SPLIT1',K:'inactive when SPLIT1',HOPA:'first source-relative displacement',HOPB:'second source-relative displacement',EXACT:'validation-only: permit close copies after exact linked span checks; conservative spacing stays default',CHECK:'integrity-check strategy',BYPASS:'experimental cost control'},
@@ -335,9 +338,11 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
                 ctx.ins('', 'MOV', 'I', L('wiped'), L('copyTo'));
                 ctx.ins('wiped', 'DAT', 'F', '#0', '#0');
               } else {
-                // The boot process joins the copy: at its loop when the entry runs set-up code
-                // first (a step picker must run once), else at the entry.
-                const join = loopLabel && loopLabel !== entryOf(kids[0]) ? hopFrom(loopLabel, P.HOP, P.HOPY, P.HOPZ) : launch;
+                // The boot process joins the copy: at its loop when the entry is a per-round step
+                // picker (an entry chosen by the parameters, which must run once), else at the entry
+                // (some members, such as ladder-scanner, expect the second process there).
+                const picker = isLeaf(kids[0]) && typeof leaves[kids[0].id].entry === 'function';
+                const join = picker && loopLabel && loopLabel !== entryOf(kids[0]) ? hopFrom(loopLabel, P.HOP, P.HOPY, P.HOPZ) : launch;
                 ctx.ins('', 'JMP', 'B', join);
               }
               ctx.ins('copyFrom', 'DAT', 'F', '#0', `#${main.start - pc}`);               // forward: the member's first cell
@@ -454,7 +459,7 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
               ctx.ins('', 'ADD', 'AB', '#1', ties);
               ctx.ins('', 'SLT', 'AB', `#${P.TIES - 1}`, ties);   // the limit reached skips the jump
               ctx.ins('', 'JMP', 'B', L('tdone'));
-              ctx.ins('', 'MOV', 'AB', '#1', result);   // a loss, once the 1 is taken off
+              ctx.ins('', 'MOV', 'AB', P.POLICY === 3 ? '#2' : '#1', result);   // a loss (POLICY 3: a win), once the 1 is taken off
               ctx.ins('notie', 'MOV', 'AB', '#0', ties);
               ctx.ins('tdone', 'SUB', 'AB', '#1', result);
               ctx.ins('', 'STP', 'B', ties, `#${P.CELL + 2}`);
@@ -470,6 +475,9 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
               ctx.ins('', 'JMP', 'B', L('keep'));
               ctx.ins('', 'ADD', 'AB', '#1', choice);
               ctx.ins('won', 'MOV', 'AB', '#0', losses);
+            } else if (P.POLICY === 3) {                // move on after a win
+              ctx.ins('', 'SNE', 'AB', '#1', result);
+              ctx.ins('', 'ADD', 'AB', '#1', choice);
             } else {                                    // move on every round but the first
               ctx.ins('', 'ADD', 'AB', '#1', result);
               ctx.ins('', 'JMZ', 'B', L('keep'), result);
