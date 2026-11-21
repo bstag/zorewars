@@ -44,6 +44,8 @@ Then open http://localhost:8080. Pick warriors with the **Library** button (sear
 
 **Hosting:** there's no build step; the repository root is the website. Deploy it to Cloudflare (Workers + Static Assets, with a tiny Worker that proxies archive downloads) or to GitHub Pages (fully static). See [DEPLOY.md](DEPLOY.md).
 
+**Discord:** install the [ZoreWars Discord app](DEPLOY.md#discord-battles) in a test server to run `/battle` with two `.red` files and get a scoreboard in the channel.
+
 ```bash
 node cli/zorewars.js list
 node cli/zorewars.js battle @mice @dwarf --rounds 100

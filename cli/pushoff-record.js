@@ -2,6 +2,8 @@
 // counts that ranking consumes, while older scores-only records remain usable.
 import fs from 'node:fs';
 import path from 'node:path';
+import { PMARS_SCORE_FORMAT, readPmarsRecord, writePmarsRecord } from './pmars-scores.js';
+import { readKoenigstuhlRecord, writeKoenigstuhlRecord } from './koenigstuhl-scores.js';
 
 function square(matrix, size) {
   return Array.isArray(matrix) && matrix.length === size && matrix.every(row => Array.isArray(row) && row.length === size);
@@ -24,12 +26,16 @@ function validateResults(results, size, self) {
   }
 }
 
-function validateRecord(record, variant) {
-  const warriors = record?.warriors;
+function validateWarriors(warriors) {
   if (!Array.isArray(warriors) || !warriors.length || warriors.some(w => typeof w?.name !== 'string')) {
     throw new Error('saved warriors must be a non-empty list of named warriors');
   }
   if (warriors.some(w => w.entry !== undefined && typeof w.entry !== 'boolean')) throw new Error('saved entry markers must be booleans');
+}
+
+function validateRecord(record, variant) {
+  const warriors = record?.warriors;
+  validateWarriors(warriors);
   if (!square(record.scores, warriors.length)) throw new Error('scores must be a square matching the saved warriors');
   if (record.scores.some(row => row.some(value => !Number.isFinite(value)))) throw new Error('scores must contain finite numbers');
   const needsResults = variant.rule !== 'official' && (variant.features !== 'points' || variant.self);
@@ -40,7 +46,13 @@ function validateRecord(record, variant) {
 }
 
 export function loadPushoffRecord(file, variant, usage) {
-  try { return validateRecord(JSON.parse(fs.readFileSync(file, 'utf8')), variant); }
+  try {
+    if (/\.(dat|scores)$/i.test(file)) return validateRecord(readKoenigstuhlRecord(file), variant);
+    const input = JSON.parse(fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, ''));
+    if (input?.format !== PMARS_SCORE_FORMAT) return validateRecord(input, variant);
+    validateWarriors(input.warriors);
+    return validateRecord(readPmarsRecord(input, path.dirname(file)), variant);
+  }
   catch (error) { usage(`could not load push-off results: ${error.message}`); }
 }
 
@@ -48,4 +60,14 @@ export function savePushoffRecord(file, record) {
   validateRecord(record, { rule: 'official' });
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, JSON.stringify(record));
+}
+
+export function exportPmarsRecord(directory, record) {
+  validateRecord(record, { rule: 'official' });
+  writePmarsRecord(record, directory);
+}
+
+export function exportKoenigstuhlRecord(directory, record) {
+  validateRecord(record, { rule: 'official' });
+  writeKoenigstuhlRecord(directory, record);
 }

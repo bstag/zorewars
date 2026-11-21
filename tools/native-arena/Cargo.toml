@@ -1,0 +1,26 @@
+[package]
+name = "zorewars-arena"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+default = ["gpu"]
+gpu = ["dep:eframe", "dep:rfd", "dep:serde", "dep:serde_json"]
+
+[dependencies]
+eframe = { version = "0.34.1", optional = true, default-features = false, features = ["default_fonts", "wgpu", "wayland", "x11"] }
+rfd = { version = "0.16.0", optional = true }
+serde = { version = "1", features = ["derive"], optional = true }
+serde_json = { version = "1", optional = true }
+
+[build-dependencies]
+serde_json = "1"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(zorewars_native)'] }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61.2", features = [
+  "Win32_Graphics_Gdi", "Win32_System_LibraryLoader",
+  "Win32_UI_Controls_Dialogs", "Win32_UI_Input_KeyboardAndMouse", "Win32_UI_WindowsAndMessaging",
+] }

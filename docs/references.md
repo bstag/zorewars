@@ -41,14 +41,24 @@ history (warriors, authors, archives, hills) is credited in
 
 ## Ranking: the diversity push-off
 
+- **Recursive Koenigstuhl** determines the published order used to pick
+  opponents for `--hill koenigstuhl:… --top N`. It starts with the
+  full round robin at weight 1. It reranks after adding a contribution
+  from games against the current top half at weight 1/2, then the
+  current top third at weight 1/3, and so on. It stops when the order
+  stabilizes or the opponent cutoff reaches 50 warriors or fewer.
+  [Christoph Birk's Koenigstuhl page](https://asdflkj.net/COREWAR/koenigstuhl.html)
 - <a id="tournament-weekend"></a>**Iterative diversity push-off** (`pushoff`, `--objective pushoff`, the
   arena's Ladder): the ranking the
   [Core War Tournament Weekend](https://corewar.co.uk/tournamentweekend2026.htm)
   uses, played against the top of the
   [Koenigstuhl hills](https://asdflkj.net/COREWAR/koenigstuhl.html). Our
-  default rule follows the tournament runner's SD-score hill script; we have not
-  found a public address for that script, so this entry will gain a link when
-  one is known.
+  default rule follows the runner's October 28 `sdscore.rb` attachment.
+  The original Ruby script was executed against seven saved matrices,
+  matching every rank and printed value after correcting an edge-case
+  tie break. The [scoring audit](tw2026-scoring-audit.md) records its
+  provenance and distinguishes that revision from the unconfirmed
+  final tournament script. A public script address remains unavailable.
 - <a id="astolfi"></a>**Diversity distance**: Achille Astolfi, "A Numeric Approach to Diversity
   Hills". [corewar.co.uk/astolfi/diversity.htm](https://corewar.co.uk/astolfi/diversity.htm)
 - <a id="sd-score"></a>**SD-score**: Osama Ismael, "The Standard Deviation Score: a novel

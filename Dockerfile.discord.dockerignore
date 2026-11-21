@@ -1,0 +1,8 @@
+**
+!package.json
+!cli/
+!cli/discord.js
+!cli/discord-match.js
+!src/
+!src/engine/
+!src/engine/**

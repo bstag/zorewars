@@ -26,3 +26,11 @@ test('official rule: ties push off the later warrior; zero-spread columns are sk
   assert.deepEqual(sdScoreHill([[0]], ['only']).map((x) => x.name), ['only']);
   assert.deepEqual(sdScoreHill([], []), []);
 });
+
+test('official product ties compare distance and average before reverse file order', () => {
+  // A and B have identical nonzero profiles, so their nearest distance is 0.
+  // C has zero average but positive distance. D keeps all columns nonzero
+  // in the Ruby reference. min_by compares [product, distance, average].
+  const scores = [[0, 0, 1, 1], [0, 0, 1, 1], [0, 0, 0, 0], [1, 1, 0, 0]];
+  assert.deepEqual(sdScoreHill(scores, ['A', 'B', 'C', 'D']).map(row => row.name), ['A', 'D', 'C', 'B']);
+});

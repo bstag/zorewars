@@ -24,6 +24,12 @@
 //         (GPAD empty cells)
 //   guard DAT  0, 1
 //
+// AIR 1 is an airbag: the guard is an empty cell (DAT 0, 0) read with JMZ.F, so any
+// write with a non-zero field starts the clear: our own lattice bomb, and an enemy's
+// SPL or DAT bomb whichever field it sets. (AIR 0 reads one field only, so with the
+// MOV bomb an enemy's DAT 0/#n on the guard goes unnoticed.) A DAT 0, 0 written on
+// it changes nothing, and an empty guard gives a scanner nothing to find.
+//
 // The bombs cover one residue class modulo g = gcd(S, core). X0 is chosen at
 // build time so that the guard is the first cell of the block the lattice
 // reaches, at step K = LIFE% of the lap (or the latest step before that at
@@ -60,9 +66,13 @@ export function guardStep(P, core) {
 
 // Offsets from cp.
 export function guardLayout(P) {
-  const procs = 4 * P.M + 1, s = 1 + procs, p = s + 2, clr = s + 4, cl = clr + 1, bomb = clr + 4, cb = bomb + 1;
-  const guard = cb + 1 + P.GPAD;
-  return { procs, s, p, clr, cl, bomb, cb, guard, size: guard + 1, critical: [0, s, s + 1, p, s + 3, clr, cl, cl + 1, cl + 2, bomb, cb] };
+  const procs = 4 * P.M + 1, s = 1 + procs, clr = s + 4, cl = clr + 1, bomb = clr + 4, cb = bomb + 1;
+  // PTR 1: both bombs go through a pointer cell of its own (after cb, with its step beside it),
+  // so an enemy write on the first bomb's cell can't turn the second bomb back onto the stone.
+  const p = P.PTR ? cb + 1 : s + 2, inc = P.PTR ? cb + 2 : null;
+  const guard = cb + 1 + (P.PTR ? 2 : 0) + P.GPAD;
+  const critical = [0, s, s + 1, s + 2, s + 3, clr, cl, cl + 1, cl + 2, bomb, cb, ...(P.PTR ? [p, inc] : [])];
+  return { procs, s, p, inc, clr, cl, bomb, cb, guard, size: guard + 1, critical };
 }
 
 // X0 (the pointer's start, from p) and K (the step at which the guard is hit), or null.
@@ -95,14 +105,14 @@ const guardStone = {
   id: 'guard-stone', kind: 'body', exit: 'never', writes: 'core', attacks: 'all', roams: false, dialects: '94',
   processes: (P) => 4 * P.M + 1, grows: true,
   purpose: 'A 4M+1-process stone that writes two bombs a step (the second through the first\'s A-field) on a lattice sharing a factor G with the core, until its guard cell is hit (by itself at LIFE% of the lap, placed so the guard comes before its own cells, or earlier by an enemy\'s zero-B bomb); then a SPL-fed self-restarting clear. Numbers are shares of the core, so it builds on any core; written for ModelWar, where it beats the stones and papers a scanner loses to.',
-  params: { G: [2, 24], STEPF: [1, 9999], LIFE: [5, 100], M: [0, 3], BOMB: [0, 2], GPAD: [0, 12], BA: [0, 3], CLR: [0, 1] },
+  params: { G: [2, 24], STEPF: [1, 9999], LIFE: [5, 100], M: [0, 3], BOMB: [0, 2], GPAD: [0, 12], BA: [0, 3], CLR: [0, 1], AIR: [0, 1], PTR: [0, 1] },
   // Screened on ModelWar (25 opponents, 2 matches each): BOMB 2 with G 6, GPAD 7 (the guard at 90%
   // of the lap) scored 1.56 points a round, 36-14 in matches; DAT and SPL bombs 1.35 to 1.45.
-  defaults: { G: 6, STEPF: 3800, LIFE: 90, M: 0, BOMB: 2, GPAD: 7, BA: 0, CLR: 1 },
+  defaults: { G: 6, STEPF: 3800, LIFE: 90, M: 0, BOMB: 2, GPAD: 7, BA: 0, CLR: 1, AIR: 0, PTR: 0 },
   entry: 'boot', entryFirst: false, loop: 's',
   protects: (P) => (P.CLR ? 'image' : 'self'),
   provides: { datBomb: 'cb' },
-  mutable: (P) => [['cp', ['a', 'b']], ['p', ['b']], ['guard', ['a', 'b']], ...Array.from({ length: P.GPAD }, (_, k) => [`pad${k}`, ['op', 'mod', 'aMode', 'a', 'bMode', 'b']])],
+  mutable: (P) => [['cp', ['a', 'b']], ['p', P.PTR ? ['a', 'b'] : ['b']], ['guard', ['a', 'b']], ...Array.from({ length: P.GPAD }, (_, k) => [`pad${k}`, ['op', 'mod', 'aMode', 'a', 'bMode', 'b']])],
   mismatches: guardMismatches,
   // Its clear skips only what lies above cp, so nothing that still runs may lie under it
   // (`attacks: 'all'`), as for sweep.
@@ -114,10 +124,17 @@ const guardStone = {
     ctx.ins('cp', 'DAT', 'F', `$${P.BA}`, `$${clr}`);
     for (let k = 0; k < lay.procs - 1; k++) ctx.ins(k ? '' : 'boot', 'SPL', 'B', L('s'), '$0');
     ctx.ins(lay.procs > 1 ? '' : 'boot', 'JMP', 'B', L('s'), '$0');
-    ctx.ins('s', 'ADD', 'AB', `#${mod(2 * S, core)}`, L('p'));
-    ctx.ins('', 'MOV', 'I', L('bomb'), `@${L('p')}`);
-    ctx.ins('p', 'MOV', 'I', L('bomb'), `*${X0}`);
-    if (P.BOMB === 2) ctx.ins('', 'JMZ', 'A', L('s'), L('guard'));   // our MOV bomb has a non-zero A
+    if (P.PTR) {
+      ctx.ins('s', 'ADD', 'F', L('inc'), L('p'));
+      ctx.ins('', 'MOV', 'I', L('bomb'), `@${L('p')}`);
+      ctx.ins('', 'MOV', 'I', L('bomb'), `*${L('p')}`);
+    } else {
+      ctx.ins('s', 'ADD', 'AB', `#${mod(2 * S, core)}`, L('p'));
+      ctx.ins('', 'MOV', 'I', L('bomb'), `@${L('p')}`);
+      ctx.ins('p', 'MOV', 'I', L('bomb'), `*${X0}`);
+    }
+    if (P.AIR) ctx.ins('', 'JMZ', 'F', L('s'), L('guard'));          // airbag: any non-zero field
+    else if (P.BOMB === 2) ctx.ins('', 'JMZ', 'A', L('s'), L('guard'));   // our MOV bomb has a non-zero A
     else ctx.ins('', 'JMN', 'B', L('s'), L('guard'));                 // our DAT/SPL bomb has a zero B
     ctx.ins('clr', 'SPL', 'B', '#0', '$0');
     ctx.ins('cl', 'MOV', 'I', L('cb'), `>${L('cp')}`);
@@ -126,8 +143,12 @@ const guardStone = {
     if (P.BOMB === 2) ctx.ins('bomb', 'MOV', 'I', `$${S}`, '$1');
     else ctx.ins('bomb', P.BOMB ? 'SPL' : 'DAT', P.BOMB ? 'B' : 'F', `#${S}`, '#0');
     ctx.ins('cb', 'DAT', 'F', `$${P.BA}`, `$${clr}`);
+    if (P.PTR) {
+      ctx.ins('p', 'DAT', 'F', `$${mod(X0 + S, core)}`, `$${X0}`);   // A: the second bomb, S past the first
+      ctx.ins('inc', 'DAT', 'F', `$${mod(2 * S, core)}`, `$${mod(2 * S, core)}`);
+    }
     for (let k = 0; k < P.GPAD; k++) ctx.ins(`pad${k}`, 'DAT', 'F', '$0', '$0');
-    ctx.ins('guard', 'DAT', 'F', '$0', '$1');
+    ctx.ins('guard', 'DAT', 'F', '$0', P.AIR ? '$0' : '$1');
   },
   plant(api) {
     // A target on the lattice, a few hundred steps out, clear of the image.

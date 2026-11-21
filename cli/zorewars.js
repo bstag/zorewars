@@ -53,6 +53,10 @@ Developer tools (use every CPU core):
   zorewars pushoff <entry...> --hill koenigstuhl:94nop [--rules NAME] [--length 50] [--top 50] [--save f]
                                                      predict a tournament place: round robin with a hill's
                                                      top warriors, then the iterative diversity push-off
+  zorewars pushoff --load <record-or-manifest.json> [--save f] [--export-pmars dir]
+                                                     rerank saved scores or convert pMARS match output
+  zorewars pushoff --load <hill32.dat> [--remove-pspace] [--save f] [--export-koenigstuhl dir]
+                                                     exchange Koenigstuhl binary score tables
 
 Warriors:
   path/to/file.red   Redcode assembly
@@ -106,6 +110,9 @@ Options:
   --race N           evolve: a child that beats its cell's elite must beat it again N times,
                      doubling the rounds each time (default 0); champions get one more doubling
   --validate         evolve: compare finalists to the starting baseline on fresh placements (always on for train)
+  --checkpoint FILE  save instruction evolution after each generation (Ctrl+C pauses at that boundary)
+  --resume FILE      continue an evolution run with its saved warriors, settings and RNG state
+  --stop-after N     pause instruction evolution at generation N with --checkpoint or --resume
   --check-rounds N   validation rounds per opponent and seed (default 30)
   --seeds N          validation placement seeds (default 3, at least 2)
   --finalists N      validation shortlist size (default 6)
@@ -131,7 +138,7 @@ function parseArgs(argv) {
     const a = argv[i];
     if (a.startsWith('--')) {
       const key = a.slice(2);
-      if (['json', 'help', 'report', 'classics', 'write', 'scratch', 'self', 'validate', 'league', 'tune', 'no-execution-history', 'wasm', 'native'].includes(key)) args.flags[key] = true;
+      if (['json', 'help', 'report', 'classics', 'write', 'scratch', 'self', 'validate', 'league', 'tune', 'no-execution-history', 'wasm', 'native', 'remove-pspace'].includes(key)) args.flags[key] = true;
       else args.flags[key] = argv[++i];
     } else if (a === '-h') args.flags.help = true;
     else if (/^-[A-Za-z]$/.test(a) && PMARS_FLAGS[a[1]]) args.flags[PMARS_FLAGS[a[1]]] = argv[++i];
