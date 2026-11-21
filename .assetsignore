@@ -23,6 +23,9 @@ lang/cpp
 package.json
 package-lock.json
 wrangler.jsonc
+wrangler.discord.jsonc
+Dockerfile.discord
+Dockerfile.discord.dockerignore
 .gitignore
 .gitattributes
 .assetsignore

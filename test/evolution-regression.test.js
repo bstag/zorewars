@@ -28,7 +28,7 @@ const variants = {
   scratch: { scratch: true, sources: [], opponents: [], maxLength: 2 },
 };
 
-test('instruction evolution preserves complete seeded results across search modes', async () => {
+test('instruction evolution preserves complete seeded results across search modes and JSON checkpoints', async () => {
   const settings = { ...DEFAULT_SETTINGS, coreSize: 80, maxLength: 10, minDistance: 10,
     maxCycles: 300, maxProcesses: 16, pSpace: false };
   const sources = ['MOV.I 0, 1', 'SPL 0\nMOV.I 0, 1', 'ADD #4, 3\nMOV 2, @2\nJMP -2\nDAT 0, 0']
@@ -37,11 +37,21 @@ test('instruction evolution preserves complete seeded results across search mode
   const pool = createPool(1);
   try {
     for (const [name, variant] of Object.entries(variants)) {
-      const result = await evolve({ pool, sources, opponents, settings, rounds: 2, batches: 1,
+      const input = { pool, sources, opponents, settings, rounds: 2, batches: 1,
         batchSize: 4, populationSize: 4, evalRounds: 2, maxLength: 8, seed: 515,
-        objective: 'points', ...variant });
+        objective: 'points', ...variant };
+      const result = await evolve(input);
       const digest = createHash('sha256').update(JSON.stringify(result)).digest('hex');
       assert.equal(digest, snapshots[name], `${name}: seeded evolution changed`);
+      let checkpoint;
+      const paused = await evolve({ ...input, onCheckpoint(snapshot) {
+        checkpoint = JSON.parse(JSON.stringify(snapshot));
+        return false;
+      } });
+      assert.equal(paused.paused, true);
+      assert.equal(checkpoint.state.round, 1);
+      const resumed = await evolve({ pool, resume: checkpoint });
+      assert.equal(createHash('sha256').update(JSON.stringify(resumed)).digest('hex'), digest, `${name}: resume changed the run`);
     }
   } finally { pool.close(); }
 });

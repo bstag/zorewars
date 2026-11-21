@@ -20,6 +20,23 @@ run directory contains `best.red` and `evolve.json`. Generated files are
 ignored by Git. The script preserves the compiled training and held-out
 inputs in its report.
 
+To compare selection by points with selection by the official diversity
+push-off, run both objectives on matched evolution seeds:
+
+```sh
+node scripts/compare-evolution.js --objectives points,pushoff --variants ga,species --native --out evolved/diversity-comparison
+```
+
+Both objectives report held-out points per round and the official push-off
+places for the recommended warrior and its baseline on each of three
+placement seeds. Lower place is better. The same held-out field and placement
+seeds apply to every run. Finalist selection uses the training field exclusively.
+The `gain` and `margin` fields use the training objective's
+units, so compare raw points and places across objectives. The held-out field
+is a five-warrior diagnostic panel. Use the actual tournament roster and rules
+when measuring a contest entry. Omit `--native` to use JavaScript or use
+`--wasm` for the WebAssembly battle engine.
+
 All 18 runs used the real ICWS'88 settings: 8000 cells, 8000 processes,
 80000 cycles, no P-space, and at most 50 instructions. The six variants used
 evolution seeds 4242, 4243 and 4244, two generations, two batches of 12

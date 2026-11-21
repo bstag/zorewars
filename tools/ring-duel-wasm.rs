@@ -15,13 +15,17 @@ mod node;
 
 // Keep the shared record layout in sync with rust-history-layout.js.
 const HISTORY_BATCH: u32 = 128;
-const HISTORY_WORDS: usize = 29;
+const HISTORY_WORDS: usize = 29 + cfg!(zorewars_source_history) as usize;
 const HISTORY_WRITE_WORDS: usize = 7;
 const HISTORY_SUCCESSORS: usize = 22;
 const HISTORY_PSPACE: usize = 24;
 const HISTORY_ACTOR: usize = 26;
 const HISTORY_PC: usize = 27;
 const HISTORY_CYCLE: usize = 28;
+// The desktop source debugger has a private trailing word. The Wasm and
+// Node history records retain their existing layout.
+#[cfg(zorewars_source_history)]
+const HISTORY_COPY_SOURCE: usize = 29;
 const HISTORY_NONE: u32 = u32::MAX;
 const ROUND_STATE_WORDS: usize = 25;
 
@@ -541,6 +545,10 @@ unsafe fn execute<W: Word, const DIAGNOSE: bool, const GROUP: bool, const HISTOR
             *writes.add(HISTORY_ACTOR) = turn as u32;
             *writes.add(HISTORY_PC) = process;
             *writes.add(HISTORY_CYCLE) = cycle as u32;
+            #[cfg(zorewars_source_history)]
+            {
+                *writes.add(HISTORY_COPY_SOURCE) = HISTORY_NONE;
+            }
         }
         let Some((a_address, source)) = operand::<W, DIAGNOSE, HISTORY>(
             core,
@@ -729,6 +737,10 @@ unsafe fn execute<W: Word, const DIAGNOSE: bool, const GROUP: bool, const HISTOR
         }
         if HISTORY && matches!(op, MOV | ADD | SUB | MUL | DIV | MOD | DJN | LDP) {
             record_write(writes, b_address, *target, *core.add(pc as usize));
+            #[cfg(zorewars_source_history)]
+            if op == MOV && modifier == I {
+                *writes.add(HISTORY_COPY_SOURCE) = a_address;
+            }
         }
 
         if !killed {

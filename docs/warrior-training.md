@@ -300,10 +300,11 @@ champions, when both exist. `--ties` discounts ties against champions. With
 `evolve` default remains smooth; `train` defaults to points.
 
 `evolve --objective pushoff` scores each candidate by its place in a [Core War
-Tournament Weekend push-off](references.md#tournament-weekend) against the opponents (average points times
-[SD-score](references.md#sd-score) diversity, the median of the eight points readings), so a warrior
-that wins in its own way beats a stronger copy of what the field already
-plays. `--partner a.red,b.red` enters our other entries beside each
+Tournament Weekend push-off](references.md#tournament-weekend) against the opponents using
+the organizer's published rule. At each elimination, the rule multiplies
+average points by [SD-score](references.md#sd-score) distance to the closest
+remaining warrior's matchup profile. A warrior can place higher by scoring
+well against a different mix of opponents. `--partner a.red,b.red` enters our other entries beside each
 candidate; their places count half against it, so it isn't bred to push
 them out. The opponents' own round robin is played once at the start, at
 `--field-rounds` (default 50) a pair. Keep it and `--eval-rounds` high (20 or
@@ -314,6 +315,9 @@ last. Use it with `--hill` to train for a tournament:
 ```sh
 node cli/zorewars.js evolve my-entry.red --rules 88 --length 50 --genome 50 --hill koenigstuhl:88 --top 50 --objective pushoff --partner other-entry.red --eval-rounds 20 --out evolved/88-pushoff
 ```
+
+[Evolution comparisons](evolution-experiments.md#reproduce) can report both
+held-out points and official push-off placement on the same opponents.
 
 `--scratch` uses random initial programs and champion-only fitness. Library
 results remain observational, not a search target. If validation is requested,
@@ -386,9 +390,33 @@ public-hill strength. `--variants ga,memetic`, `--seeds 4242`, `--generations`,
 The seed controls all evolutionary choices and match placements; changing the
 number of workers does not change the result for the same inputs and engine.
 Reports retain compiled inputs because a remote hill or the library can
-change. They are evidence and warm-start material, not resumable PRNG
-checkpoints. To continue search, pass saved warriors as sources or `--king`
-and use a new seed and output directory.
+change. Use the separate checkpoint file to continue the same instruction
+evolution run. To start a new run from an earlier champion, pass the saved
+warrior as a source or `--king`.
+
+### Pause and resume instruction evolution
+
+```sh
+zorewars evolve --rules tiny --generations 8 --out evolved/tiny --checkpoint evolved/tiny/run.json --stop-after 3 --native
+zorewars evolve --resume evolved/tiny/run.json
+```
+
+With `--checkpoint`, Ctrl+C requests a pause at the end of the current
+generation. A second Ctrl+C exits immediately. After an interruption,
+`--resume` starts after the last complete generation written to disk.
+An interruption before the first checkpoint requires starting over.
+The checkpoint embeds the compiled opponents, sources, population and random
+state, so local or remote source files can change between invocations.
+
+Resume keeps the saved settings, output directory and battle backend unless
+you override `--out`, `--threads`, or the backend. Use `--backend cpu`
+to switch to JavaScript, `--native` for Rust, or `--wasm` for Rust WebAssembly.
+The existing accelerated kernels handle supported matches and fall back
+to JavaScript where needed. Reproducibility assumes the same search version
+and equivalent battle results. Use `--generations N` to set a new total, or
+`--checkpoint PATH` to write future checkpoints to a different file.
+Checkpoints currently cover the instruction representation. Tree ladders
+retain their existing rung-based resume.
 
 ## Ruleset profiles
 

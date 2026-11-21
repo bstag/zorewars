@@ -1,0 +1,50 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"name": "zorewars-discord",
+	"main": "./worker/discord-entry.js",
+	"compatibility_date": "2026-10-24",
+	"routes": [
+		{
+			"pattern": "battle.zorewar.app",
+			"custom_domain": true
+		}
+	],
+	"workers_dev": false,
+	"preview_urls": false,
+	"observability": {
+		"enabled": true,
+		"traces": { "enabled": false },
+		"logs": { "enabled": true, "invocation_logs": false }
+	},
+	"containers": [
+		{
+			"class_name": "BattleContainer",
+			"image": "./Dockerfile.discord",
+			"instance_type": "lite",
+			"max_instances": 1
+		}
+	],
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "BATTLE_CONTAINER",
+				"class_name": "BattleContainer"
+			}
+		]
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": [
+				"BattleContainer"
+			]
+		}
+	],
+	"d1_databases": [
+		{
+			"binding": "HILLS_DB",
+			"database_name": "zorewars-hills",
+			"database_id": "18ab960d-29e1-4bbd-b235-c396a5dd87ca"
+		}
+	]
+}

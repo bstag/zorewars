@@ -4,6 +4,8 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { nativeAddonURL } from '../tools/ring-duel-native.js';
+import { ringDuelWasmURL } from '../src/engine/ring-duel-wasm.js';
 
 const run = (...args) => {
   const result = spawnSync(process.execPath, ['cli/zorewars.js', ...args, '--json'], { encoding: 'utf8' });
@@ -47,13 +49,53 @@ test('invalid search and training options fail before creating output', () => {
     ['evolve', '--algorithm', 'ga', '--descriptor', 'outcomes'],
     ['evolve', '--algorithm', 'ga', '--race', '1'],
     ['evolve', '--league', '--scratch'],
+    ['evolve', '--representation', 'blocks', '--checkpoint', 'checkpoint.json'],
+    ['train', '--checkpoint', 'checkpoint.json'],
   ].entries()) {
     const out = path.join(dir, String(i));
     const result = spawnSync(process.execPath, ['cli/zorewars.js', ...args, '--hill', path.join(dir, 'missing-hill'), '--out', out], { encoding: 'utf8' });
     assert.equal(result.status, 2, result.stderr);
-    assert.match(result.stderr, /representation|epsilon|select|algorithm|outcome|racing|league/i);
+    assert.match(result.stderr, /representation|epsilon|select|algorithm|outcome|racing|league|checkpoint/i);
     assert.equal(fs.existsSync(out), false);
   }
+});
+
+test('instruction CLI resumes a saved field and produces the same validated run', t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'zorewars-checkpoint-cli-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const hill = path.join(dir, 'hill');
+  fs.mkdirSync(hill);
+  const opponent = path.join(hill, 'imp.red');
+  fs.writeFileSync(opponent, ';name Imp\nMOV.I 0, 1\n');
+  const uninterrupted = path.join(dir, 'uninterrupted');
+  const paused = path.join(dir, 'paused');
+  const resumed = path.join(dir, 'resumed');
+  const checkpoint = path.join(paused, 'run.json');
+  const common = ['evolve', '--rules', 'nano', '--hill', hill, '--seed', '487',
+    '--cycles', '100', '--batches', '1', '--batch', '3', '--threads', '1',
+    '--eval-rounds', '2', '--validate', '--check-rounds', '2', '--seeds', '2'];
+  run(...common, '--generations', '3', '--out', uninterrupted);
+  const backend = fs.existsSync(nativeAddonURL) ? ['--native'] : [];
+  const started = run(...common, ...backend, '--generations', '2', '--out', paused,
+    '--checkpoint', checkpoint, '--stop-after', '1');
+  assert.deepEqual(started, { ok: true, paused: true, generation: 1, checkpoint });
+  assert.equal(fs.existsSync(path.join(paused, 'evolve.json')), false);
+  fs.unlinkSync(opponent);
+  const nextBackend = fs.existsSync(ringDuelWasmURL) ? ['--wasm'] : ['--backend', 'cpu'];
+  const continued = run('evolve', '--resume', checkpoint, '--generations', '3', ...nextBackend,
+    '--stop-after', '2', '--out', resumed);
+  assert.deepEqual(continued, { ok: true, paused: true, generation: 2, checkpoint });
+  run('evolve', '--resume', checkpoint, '--backend', 'cpu');
+  for (const file of fs.readdirSync(uninterrupted)) {
+    assert.deepEqual(fs.readFileSync(path.join(resumed, file)), fs.readFileSync(path.join(uninterrupted, file)), file);
+  }
+  const saved = JSON.parse(fs.readFileSync(checkpoint, 'utf8'));
+  assert.equal(saved.state.round, 3);
+  assert.equal(saved.options.rounds, 3);
+  assert.equal(saved.cli.execution.backend, 'cpu');
+  const rejected = spawnSync(process.execPath, ['cli/zorewars.js', 'evolve', '--resume', checkpoint, '--seed', '42'], { encoding: 'utf8' });
+  assert.equal(rejected.status, 2, rejected.stderr);
+  assert.match(rejected.stderr, /saved warriors and search settings/);
 });
 
 test('numeric tree tuning preserves structure in search and ladder runs', () => {

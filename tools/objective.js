@@ -4,17 +4,17 @@ import { evaluate, strip } from './hill.js';
 import { roundRobin, medianPlaces } from './pushoff.js';
 
 export async function createObjective({ pool, opponents, settings, objective = 'points',
-  partners = [], rounds = 6, fieldRounds = 50, seed = 1, readings,
+  partners = [], rounds = 6, fieldRounds = 50, seed = 1, readings, fieldResults,
 }) {
   if (!['points', 'smooth', 'pushoff'].includes(objective)) throw new Error('objective must be smooth, points or pushoff');
   if (partners.length && objective !== 'pushoff') throw new Error('partners need objective pushoff');
   if (objective === 'pushoff' && !opponents.length) throw new Error('objective pushoff needs opponents');
   const field = [...partners.map((w) => ({ name: w.name, group: 'partner', w: strip(w) })), ...opponents];
   const base = objective === 'pushoff'
-    ? await roundRobin(pool, field.map((x) => x.w), { rounds: Math.max(rounds, fieldRounds), seed: seed + 11, settings, self: true })
+    ? fieldResults ?? await roundRobin(pool, field.map((x) => x.w), { rounds: Math.max(rounds, fieldRounds), seed: seed + 11, settings, self: true })
     : null;
   return {
-    field,
+    field, fieldResults: base,
     async assess(w, { seed: matchSeed = seed, diagnose = false, rounds: played = rounds } = {}) {
       const a = await evaluate(pool, w, base ? [...field, { name: 'self', group: 'self', w: strip(w) }] : field,
         { rounds: played, seed: matchSeed, settings, diagnose });
