@@ -1,0 +1,63 @@
+{
+  "id": "switch-score",
+  "P": {
+    "LOSS": -1,
+    "TIE": 0,
+    "STREAK": 4,
+    "HOLD": 1,
+    "WIN": 1,
+    "FIRST": 3
+  },
+  "kids": [
+    {
+      "id": "boot",
+      "P": {
+        "HOP": 12600
+      },
+      "kids": [
+        {
+          "id": "twin-scan"
+        },
+        {
+          "id": "decoy-field",
+          "P": {
+            "COUNT": 190
+          }
+        }
+      ]
+    },
+    {
+      "id": "boot",
+      "P": {
+        "HOP": 12600
+      },
+      "kids": [
+        {
+          "id": "guard-stone"
+        }
+      ]
+    },
+    {
+      "id": "boot",
+      "P": {
+        "HOP": 12600
+      },
+      "kids": [
+        {
+          "id": "sweep"
+        }
+      ]
+    },
+    {
+      "id": "boot",
+      "P": {
+        "HOP": 12600
+      },
+      "kids": [
+        {
+          "id": "tail-silk"
+        }
+      ]
+    }
+  ]
+}

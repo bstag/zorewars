@@ -147,7 +147,7 @@ function checkCopies({ node, settings, parts, out, kids, torus, core }) {
 function checkSwitch({ node, settings, old, parts, out, kids }) {
   if (!settings.pSpace) out.mismatches.push('switch needs P-space (the 94x hill)');
   if (old) out.mismatches.push("switch needs ICWS'94 (LDP and STP)");
-  if (node.P.CELL + (node.P.POLICY === 1 ? 1 : 0) >= pSpaceSizeFor(settings)) {
+  if (node.P.CELL + (node.P.TIES ? 2 : node.P.POLICY === 1 ? 1 : 0) >= pSpaceSizeFor(settings)) {
     out.mismatches.push('switch: private cells exceed the P-space size');
   }
   requireEndless(node, kids, parts, out);

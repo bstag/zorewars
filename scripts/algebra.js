@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // The block algebra from the command line (docs/block-algebra.md).
-//   node scripts/algebra.js build tree.json --rules 94nop [--length 50] [--out x.red]
+//   node scripts/algebra.js build tree.json --rules 94nop [--length 100] [--out x.red]
 //   node scripts/algebra.js build tree.json --verification full --json
 //   node scripts/algebra.js observe tree.json [--opponent enemy.red] --json
 //   node scripts/algebra.js explain <block> --json
@@ -18,7 +18,7 @@ const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const [command, ...rest] = process.argv.slice(2);
 const flags = {}, args = [];
 for (let i = 0; i < rest.length; i++) rest[i]==='--json'?flags.json=true:rest[i].startsWith('--') ? (flags[rest[i].slice(2)] = rest[++i]) : args.push(rest[i]);
-const rules = flags.rules ?? '94nop', length = Number(flags.length ?? Math.min(50, RULESETS[rules]?.maxLength ?? 50));
+const rules = flags.rules ?? '94nop', length = Number(flags.length ?? Math.min(100, RULESETS[rules]?.maxLength ?? 100));
 
 function report(built) {
   if(flags['tree-out'])fs.writeFileSync(flags['tree-out'],JSON.stringify(built.tree,null,2));
@@ -66,6 +66,6 @@ if (command === 'build') {
   fs.writeFileSync(path.join(ROOT, 'docs', 'block-algebra-catalog.md'), text+learned);
   console.log(`docs/block-algebra-catalog.md: ${rows.length} blocks, ${crows.length} combinators`);
 } else {
-  console.error('usage: node scripts/algebra.js build <tree.json|-> | configure <tree.json> [--options options.json] | observe <tree.json> | explain <block> | random | recipe <name> | catalog [--rules 94nop] [--length 50] [--verification quick|full] [--json] [--seed 1] [--out file] [--tree-out file]');
+  console.error('usage: node scripts/algebra.js build <tree.json|-> | configure <tree.json> [--options options.json] | observe <tree.json> | explain <block> | random | recipe <name> | catalog [--rules 94nop] [--length 100] [--verification quick|full] [--json] [--seed 1] [--out file] [--tree-out file]');
   process.exit(2);
 }

@@ -3,7 +3,7 @@
 // checks the contract, links the tree, assembles it and runs the gate.
 export { buildTree, treeSettings } from './build.js';
 export { leaves, modInverse } from './leaves.js';
-export { combinators, definition, iface, link, shape, treeMismatches, switchChoice } from './link.js';
+export { combinators, definition, iface, link, shape, treeMismatches, switchChoice, switchTies } from './link.js';
 export { gate, shapeOf } from './gate.js';
 export {observeTree,createObservation,verifyPhases} from './observe.js';
 export {describeBlock} from './knowledge.js';

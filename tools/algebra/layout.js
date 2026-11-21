@@ -29,11 +29,11 @@ export function blockInstances(root, labels, spans, settings) {
         break;
       case 'switch':
       case 'switch-table':
-      case 'switch-score': k.forEach((kid, i) => walk(kid, shifts, { ...flags, optional: true, branch: `${node.ns}:${i}` })); break;
+      case 'switch-score': k.forEach((kid, i) => walk(kid, shifts, { ...flags, optional: true, branch: `${node.ns}:${i}`, branches: [...(flags.branches ?? []), `${node.ns}:${i}`] })); break;
       case 'fork':
         walk(k[0], shifts, flags);
-        walk(k[1], shifts, { ...flags, optional: true, branch: `${node.ns}:1` });
-        walk(k[2], shifts, { ...flags, optional: true, branch: `${node.ns}:2` });
+        walk(k[1], shifts, { ...flags, optional: true, branch: `${node.ns}:1`, branches: [...(flags.branches ?? []), `${node.ns}:1`] });
+        walk(k[2], shifts, { ...flags, optional: true, branch: `${node.ns}:2`, branches: [...(flags.branches ?? []), `${node.ns}:2`] });
         break;
       case 'parboot': {
         const { HOP, HOPY, HOPZ, STAY, REACT, HOP2, HOP2Y, HOP2Z } = node.P;
@@ -54,8 +54,8 @@ export function blockInstances(root, labels, spans, settings) {
         break;
       case 'classify':
         walk(k[0], shifts, { ...flags, mayStop: true });
-        walk(k[1], shifts, { ...flags, optional: true, branch: `${node.ns}:1` });
-        walk(k[2], shifts, { ...flags, optional: true, branch: `${node.ns}:2` });
+        walk(k[1], shifts, { ...flags, optional: true, branch: `${node.ns}:1`, branches: [...(flags.branches ?? []), `${node.ns}:1`] });
+        walk(k[2], shifts, { ...flags, optional: true, branch: `${node.ns}:2`, branches: [...(flags.branches ?? []), `${node.ns}:2`] });
         break;
       default: for (const kid of k) walk(kid, shifts, flags);
     }

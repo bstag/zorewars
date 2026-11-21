@@ -8,7 +8,7 @@
 // Passing means the warrior behaves when alone; it says nothing about how it fights.
 import { compile, VM } from '../../src/engine/index.js';
 import { leaves } from './leaves.js';
-import { link, iface, entryOf, switchChoice } from './link.js';
+import { link, iface, entryOf, switchChoice, switchTies } from './link.js';
 import { makeGeometry } from '../../src/engine/geometry.js';
 import {blockInstances as instances} from './layout.js';
 import {createObservation,observeTree,verifyPhases} from './observe.js';
@@ -280,11 +280,16 @@ function scenarios(root, labels, settings) {
     }
     if (node.id === 'switch') {
       // Every kind of history, against the model of the emitted code.
-      const n = node.kids.length, { POLICY, CELL } = node.P;
-      for (const [result, choice, losses] of [[-1, 0, 0], [1, 1, 0], [0, 0, 0], [0, 0, 1], [0, n - 1, 1], [1, n - 1, 1], [2, 1, 0]]) {
+      // With TIES, also both sides of the tie limit; the tie count it stores is checked too.
+      const n = node.kids.length, { POLICY, CELL, TIES = 0 } = node.P;
+      const histories = [[-1, 0, 0, 0], [1, 1, 0, 0], [0, 0, 0, 0], [0, 0, 1, 0], [0, n - 1, 1, 0], [1, n - 1, 1, 0], [2, 1, 0, 0]];
+      if (TIES) histories.push([2, 0, 0, TIES - 1], [2, n - 1, 1, TIES - 1], [2, 1, 0, Math.max(0, TIES - 2)], [1, 0, 0, TIES - 1], [0, 0, 1, TIES - 1], [-1, 1, 0, TIES - 1]);
+      for (const [result, choice, losses, ties] of histories) {
         const p = VM.freshPSpace(settings); p[0] = result; p[CELL] = choice; p[CELL + 1] = losses;
-        const pick = switchChoice(POLICY, n, result, choice, losses);
-        out.push({ name: `switch: result ${result}, choice ${choice}, losses ${losses}`, pspace: p, branch: `${node.ns}:${pick}` });
+        if (TIES) p[CELL + 2] = ties;
+        const pick = switchChoice(POLICY, n, result, choice, losses, TIES, ties);
+        out.push({ name: `switch: result ${result}, choice ${choice}, losses ${losses}${TIES ? `, ties ${ties}` : ''}`, pspace: p, branch: `${node.ns}:${pick}`,
+          ...(TIES ? { storedAll: [[CELL, pick], [CELL + 2, switchTies(TIES, result, ties).ties]] } : {}) });
       }
     }
     if (node.id === 'switch-table') {
@@ -491,18 +496,24 @@ function checkGeneric(built,{full=false}={}) {
     }
     for (const [cell, want] of scenario.storedAll ?? []) {
       const got = vm.warriors[0].pspace[cell];
-      if (got !== want) throw new Error(`switch-score: P-space cell ${cell} holds ${got}, expected ${want} (${scenario.name})`);
+      if (got !== want) throw new Error(`${scenario.name.split(":")[0]}: P-space cell ${cell} holds ${got}, expected ${want} (${scenario.name})`);
     }
     if (scenario.restored !== undefined && !same(vm.peek(add(base, scenario.restored)), w.instructions[scenario.restored])) throw new Error('restart: the damaged loop was not restored');
     if (scenario.carpet && stunned < scenario.carpet.n) throw new Error(`parboot: only ${stunned} cells around the hit were stunned`);
     if (!limit.grows && vm.warriors[0].peak > limit.processes) throw new Error(`More processes than the blocks declare (${vm.warriors[0].peak} > ${limit.processes})`);
     for (const v of watched) {
       const { x } = v;
-      const required = scenario.branch ? (x.branch ? x.branch === scenario.branch : !x.optional)
+      // A block inside nested selectors has a path of branches; it is judged by the one at the
+      // scenario's selector. Under the chosen branch it is required only if no inner selector
+      // stands between (that one picks a single member of its own).
+      const path = x.branches ?? (x.branch ? [x.branch] : []);
+      const at = scenario.branch ? path.find((b) => b.slice(0, b.lastIndexOf(':')) === scenario.branch.slice(0, scenario.branch.lastIndexOf(':'))) : undefined;
+      const offBranch = scenario.branch && path.length > 0 && at !== scenario.branch;
+      const required = scenario.branch ? (path.length ? at === scenario.branch && path[path.length - 1] === at : !x.optional)
         : scenario.expect ? !x.optional || x.triggered === scenario.expect : !x.optional;
       if (required && !v.entered) throw new Error(`${x.node.id} was never entered (${scenario.name})`);
       // A fork decides early; later a roaming copy may wander onto the other branch's entry.
-      if (scenario.branch && x.branch && x.branch !== scenario.branch && v.entered && !(scenario.decideBy && pickedAt !== null && v.enteredAt > pickedAt + 2)) throw new Error(`ran the wrong branch (${scenario.name})`);
+      if (offBranch && v.entered && !(scenario.decideBy && pickedAt !== null && v.enteredAt > pickedAt + 2)) throw new Error(`ran the wrong branch (${scenario.name})`);
       v.hooks.final?.();
     }
     const pumpLineage=lineage?.finish();if(pumpLineage)for(const e of pumpLineage.engines)if(e.launches<2*e.N||e.arithmeticDeviations||e.firstImpExecution===null||e.compatibleImps<e.N)throw Error(`Independent pump lineage ${e.namespace} fails (${scenario.name}): ${e.launches} launches, ${e.compatibleImps}/${e.N} compatible descendants`);

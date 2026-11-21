@@ -25,8 +25,8 @@ export const combinators = {
     purpose: 'Copies its second member D cells away and runs it there beside the first, so one hit can\'t find both.' },
   copies: { kids: [1, 1], params: { N: [2, 4], D: [0, 54000], DY: [0, 200], DZ: [0, 200] }, defaults: { N: 2, D: 2667, DY: 0, DZ: 0 },
     purpose: 'Runs N copies of its member, D cells apart.' },
-  switch: { kids: [2, 4], params: { CELL: [1, 500], POLICY: [0, 2] }, defaults: { CELL: 17, POLICY: 0 },
-    purpose: 'Chooses one of its members by P-space (the 94x hill only). POLICY 0: keep the choice after a win or tie, move to the next after a loss; 1: move on only after two losses in a row; 2: move on every round.' },
+  switch: { kids: [2, 4], params: { CELL: [1, 500], POLICY: [0, 3], TIES: [0, 20] }, defaults: { CELL: 17, POLICY: 0, TIES: 0 },
+    purpose: 'Chooses one of its members by P-space (the 94x hill only). POLICY 0: keep the choice after a win or tie, move to the next after a loss; 1: move on only after two losses in a row; 2: move on every round; 3: move on after a win (it mirrors an opponent that switches after its own loss, so each member can answer the arm that opponent has moved to). TIES t (0 off) counts ties in a row in P-space cell CELL+2 and scores the t-th as a loss, so a member that only ties (a paper against a paper) is left; a win or a loss resets the count. It costs 12 instructions.' },
   'switch-table': switchTable,
   'switch-score': switchScore,
   fork: { kids: [3, 3], params: { BY: [0, 1] }, defaults: { BY: 0 },
@@ -42,11 +42,22 @@ export const combinators = {
 };
 
 // What a switch picks this round, from last round's result, its stored choice
-// and loss count (a model of the emitted code, for the gate's scenarios).
-export function switchChoice(policy, n, result, choice, losses) {
+// and loss count (a model of the emitted code, for the gate's scenarios). With a tie
+// limit, ties counts the ties in a row so far; the limit-th tie is scored as a loss.
+export const isTie = (result) => result !== -1 && result !== 0 && result !== 1;
+export function switchTies(limit, result, ties) {
+  if (!limit) return { result, ties };
+  if (!isTie(result)) return { result, ties: 0 };
+  return ties + 1 >= limit ? { result: 0, ties: 0 } : { result, ties: ties + 1 };
+}
+export function switchChoice(policy, n, result, choice, losses, limit = 0, ties = 0) {
+  // POLICY 3 scores the TIES-th tie in a row as a win (move on: the mirror has lost step).
+  if (policy === 3 && limit && isTie(result) && switchTies(limit, result, ties).result === 0) result = 1;
+  ({ result } = switchTies(limit, result, ties));
   choice %= n;
   if (policy === 0) return result === 0 ? (choice + 1) % n : choice;
   if (policy === 1) return result === 0 && losses + 1 >= 2 ? (choice + 1) % n : choice;
+  if (policy === 3) return result === 1 ? (choice + 1) % n : choice;
   return result === -1 ? choice : (choice + 1) % n;
 }
 combinators.fanboot.knowledge={parameterRoles:{N:'copy-fan size',SPLIT:'routing strategy',MOREA:'extra first-member entrant with SPLIT1',K:'inactive when SPLIT1',HOPA:'first source-relative displacement',HOPB:'second source-relative displacement',EXACT:'validation-only: permit close copies after exact linked span checks; conservative spacing stays default',CHECK:'integrity-check strategy',BYPASS:'experimental cost control'},
@@ -80,8 +91,11 @@ export function annotate(tree) {
   return walk(tree);
 }
 
+// A leaf's entry label: fixed, or chosen by its parameters (a function of P).
+export const leafEntry = (node) => { const e = leaves[node.id].entry; return typeof e === 'function' ? e(node.P) : e; };
+
 export function entryOf(node) {
-  if (isLeaf(node)) return node.ns + leaves[node.id].entry;
+  if (isLeaf(node)) return node.ns + leafEntry(node);
   if (node.id === 'seq' || node.id === 'image' || node.id === 'fork') return entryOf(node.kids[0]);
   return node.ns + { par: 'split', relocate: 'transition', boot: 'boot', trigger: 'start', apart: 'start', copies: 'start', switch: 'start', 'switch-table': 'start', 'switch-score': 'start', restart: 'start', classify: 'start', parboot: 'start', fanboot: 'start', fanboot3:'start' }[node.id];
 }
@@ -306,7 +320,11 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
               // each cell it reaches has already been written; the body is live and safe
               // long before the copy is complete.
               const entryOff = (sizes?.labels?.[entryOf(kids[0])] ?? main.start) - main.start;
-              const head = Math.max(1, Math.min(main.size, entryOff + 1));   // copy through the entry, then launch
+              // Copy through the entry (and the member's loop, when that comes later: an entry
+              // that runs set-up code first jumps there), then launch.
+              const loopLabel = isLeaf(kids[0]) && leaves[kids[0].id].loop ? kids[0].ns + leaves[kids[0].id].loop : null;
+              const loopOff = loopLabel && sizes?.labels?.[loopLabel] !== undefined ? sizes.labels[loopLabel] - main.start : -1;
+              const head = Math.max(1, Math.min(main.size, Math.max(entryOff, loopOff) + 1));
               const tail = main.size - head;
               const launch = hopFrom(entryOf(kids[0]), P.HOP, P.HOPY, P.HOPZ);
               ctx.ins('boot', 'MOV', 'I', `>${L('copyFrom')}`, `>${L('copyTo')}`);
@@ -319,7 +337,14 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
                 ctx.ins('', 'MOV', 'I', L('wiped'), L('go'));
                 ctx.ins('', 'MOV', 'I', L('wiped'), L('copyTo'));
                 ctx.ins('wiped', 'DAT', 'F', '#0', '#0');
-              } else ctx.ins('', 'JMP', 'B', launch);   // the boot process joins the copy
+              } else {
+                // The boot process joins the copy: at its loop when the entry is a per-round step
+                // picker (an entry chosen by the parameters, which must run once), else at the entry
+                // (some members, such as ladder-scanner, expect the second process there).
+                const picker = isLeaf(kids[0]) && typeof leaves[kids[0].id].entry === 'function';
+                const join = picker && loopLabel && loopLabel !== entryOf(kids[0]) ? hopFrom(loopLabel, P.HOP, P.HOPY, P.HOPZ) : launch;
+                ctx.ins('', 'JMP', 'B', join);
+              }
               ctx.ins('copyFrom', 'DAT', 'F', '#0', `#${main.start - pc}`);               // forward: the member's first cell
               ctx.ins('copyTo', 'DAT', 'F', '#0', `#${hop(main.start + P.HOP - pc, P.HOPY, P.HOPZ)}`);
               ctx.ins('headCount', 'DAT', 'F', '#0', `#${head}`);
@@ -425,6 +450,20 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
             ctx.ins('start', 'LDP', 'AB', '#0', result);
             ctx.ins('', 'LDP', 'AB', `#${P.CELL}`, choice);
             ctx.ins('', 'MOD', 'AB', `#${n}`, choice);
+            if (P.TIES) {                               // the TIES-th tie in a row is scored as a loss
+              const ties = L('ties');
+              ctx.ins('', 'LDP', 'AB', `#${P.CELL + 2}`, ties);
+              ctx.ins('', 'ADD', 'AB', '#1', result);   // first round 0, loss 1, win 2, a tie 3 or more
+              ctx.ins('', 'SLT', 'AB', '#2', result);   // a tie skips the jump
+              ctx.ins('', 'JMP', 'B', L('notie'));
+              ctx.ins('', 'ADD', 'AB', '#1', ties);
+              ctx.ins('', 'SLT', 'AB', `#${P.TIES - 1}`, ties);   // the limit reached skips the jump
+              ctx.ins('', 'JMP', 'B', L('tdone'));
+              ctx.ins('', 'MOV', 'AB', P.POLICY === 3 ? '#2' : '#1', result);   // a loss (POLICY 3: a win), once the 1 is taken off
+              ctx.ins('notie', 'MOV', 'AB', '#0', ties);
+              ctx.ins('tdone', 'SUB', 'AB', '#1', result);
+              ctx.ins('', 'STP', 'B', ties, `#${P.CELL + 2}`);
+            }
             if (P.POLICY === 0) {                       // move on after a loss
               ctx.ins('', 'JMN', 'B', L('keep'), result);
               ctx.ins('', 'ADD', 'AB', '#1', choice);
@@ -436,6 +475,9 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
               ctx.ins('', 'JMP', 'B', L('keep'));
               ctx.ins('', 'ADD', 'AB', '#1', choice);
               ctx.ins('won', 'MOV', 'AB', '#0', losses);
+            } else if (P.POLICY === 3) {                // move on after a win
+              ctx.ins('', 'SNE', 'AB', '#1', result);
+              ctx.ins('', 'ADD', 'AB', '#1', choice);
             } else {                                    // move on every round but the first
               ctx.ins('', 'ADD', 'AB', '#1', result);
               ctx.ins('', 'JMZ', 'B', L('keep'), result);
@@ -450,6 +492,7 @@ export function link(tree, settings, { name = 'Tree' } = {}) {
             ctx.ins('result', 'DAT', 'F', '#0', '#0');
             ctx.ins('choice', 'DAT', 'F', '#0', '#0');
             if (P.POLICY === 1) ctx.ins('losses', 'DAT', 'F', '#0', '#0');
+            if (P.TIES) ctx.ins('ties', 'DAT', 'F', '#0', '#0');
             kids.forEach((kid, i) => ctx.ins(i ? '' : 'table', 'JMP', 'B', entryOf(kid)));
             scopes.push(sharedPayload(node));
             for (const kid of kids) emit(kid, env);
