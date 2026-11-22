@@ -10,6 +10,10 @@
 		}
 	],
 	"workers_dev": false,
+	// DISCORD_APPLICATION_ID, DISCORD_GUILD_ID and DISCORD_PUBLIC_KEY are set
+	// once with --var (see DEPLOY.md) and are not in this file. Without this, a
+	// plain "wrangler deploy" deletes them and the bot answers 503.
+	"keep_vars": true,
 	"preview_urls": false,
 	"observability": {
 		"enabled": true,
