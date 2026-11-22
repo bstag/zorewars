@@ -161,7 +161,8 @@ function checkSwitchTable(ctx) {
   if (node.P.PACKED && !packedPlan(node.P, ctx.core)) {
     out.mismatches.push('switch-table: packed residue range exceeds the core');
   }
-  if (tableRows(node.P).some(row => row.branch >= kids.length)) {
+  if (node.P.TRACK && kids.length !== 2) out.mismatches.push('switch-table: TRACK needs exactly two payloads');
+  if (!node.P.TRACK && tableRows(node.P).some(row => row.branch >= kids.length)) {
     out.mismatches.push('switch-table: a row selects a missing payload');
   }
 }

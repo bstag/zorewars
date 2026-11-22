@@ -6,12 +6,12 @@ const outcomes = ['LOSS', 'WIN', 'TIE'];
 
 export const switchTable = {
   kids: [2, 4],
-  params: { CELL: [1, 500], FIRST: [0, 15], LOSS: [0, 65535], WIN: [0, 65535], TIE: [0, 65535], PACKED: [0, 1], SEAL: [0, 1] },
-  defaults: { CELL: 1, FIRST: 0, LOSS: 0x0505, WIN: 0x5050, TIE: 0x1414, PACKED: 0, SEAL: 0 },
+  params: { CELL: [1, 500], FIRST: [0, 15], LOSS: [0, 65535], WIN: [0, 65535], TIE: [0, 65535], PACKED: [0, 1], SEAL: [0, 1], TRACK: [0, 3400], TFIRST: [0, 1] },
+  defaults: { CELL: 1, FIRST: 0, LOSS: 0x0505, WIN: 0x5050, TIE: 0x1414, PACKED: 0, SEAL: 0, TRACK: 0, TFIRST: 1 },
   purpose: 'Chooses a payload and independently stores the next state using a result-indexed P-space table. FIRST is one row; LOSS, WIN and TIE pack four row nibbles each (low nibble is state 0). A row is 4 times its next state plus its zero-based payload. PACKED 1 deduplicates rows and encodes the next state as three outcome-specific residues.',
   testedProfiles: ['pspace', 'lp-hill', '94x-hill', 'tinylp'],
   knowledge: {
-    parameterRoles: { CELL: 'Private persistent state slot', FIRST: 'First-round row and packed spare-row fallback', LOSS: 'Four loss rows', WIN: 'Four win rows', TIE: 'Four tie rows', PACKED: '0 explicit logical states, 1 outcome-specific residue encoding', SEAL: '1 overwrites the STP with a DAT once the state is stored, so a stray process that re-enters the table mid-round dies instead of rewriting it' },
+    parameterRoles: { CELL: 'Private persistent state slot', FIRST: 'First-round row and packed spare-row fallback', LOSS: 'Four loss rows', WIN: 'Four win rows', TIE: 'Four tie rows', PACKED: '0 explicit logical states, 1 outcome-specific residue encoding', TFIRST: 'With TRACK, the payload played while both cells are 0 (the first round)', TRACK: '0 off; otherwise plays payload (arm + phase + TFIRST) mod 2 from P-space cells TRACK and TRACK+1, kept by the switch-score above it (its TRACK), and stores nothing', SEAL: '1 overwrites the STP with a DAT once the state is stored, so a stray process that re-enters the table mid-round dies instead of rewriting it' },
     invariants: ['P-space cell 0 is reserved for the prior result.', 'Every row selects an existing child and stores the independent next state.', 'The gate checks first round, every result/state combination and an out-of-range state.'],
     evidence: ['docs/hill-block-review.md#x-and-p-space-need-a-controller-contract', 'test/algebra-hill-profile.test.js'],
   },
@@ -72,8 +72,27 @@ function emitPacked(ctx, entries, plan) {
   plan.rows.forEach(({ branch, next }, i) => ctx.ins(i ? '' : 'table', 'JMP', 'B', entries[branch], `#${next}`));
 }
 
+// With TRACK the prediction is kept by the switch-score above; this only reads it.
+export const trackChoice = (arm, phase, first) => (arm + phase + first) % 2;
+
+function emitTracked(ctx, entries) {
+  const { L, P } = ctx;
+  const row = L('row'), phase = L('phase');
+  ctx.ins('start', 'LDP', 'AB', `#${P.TRACK}`, row);
+  ctx.ins('', 'LDP', 'AB', `#${P.TRACK + 1}`, phase);
+  ctx.ins('', 'ADD', 'B', phase, row);
+  if (P.TFIRST) ctx.ins('', 'ADD', 'AB', `#${P.TFIRST}`, row);
+  ctx.ins('', 'MOD', 'AB', '#2', row);
+  ctx.ins('', 'ADD', 'AB', `#${L('table')}-${row}`, row);
+  ctx.ins('', 'JMP', 'B', `@${row}`);
+  ctx.ins('phase', 'DAT', 'F', '#0', '#0');
+  ctx.ins('row', 'DAT', 'F', '#0', '#0');
+  entries.slice(0, 2).forEach((entry, i) => ctx.ins(i ? '' : 'table', 'JMP', 'B', entry));
+}
+
 export function emitSwitchTable(ctx, entries) {
   const { L, P } = ctx;
+  if (P.TRACK) return emitTracked(ctx, entries);
   if (P.PACKED) return emitPacked(ctx, entries, packedPlan(P, ctx.core));
   const row = L('row'), result = L('result'), dispatch = L('dispatch');
   ctx.ins('start', 'LDP', 'AB', '#0', result);
