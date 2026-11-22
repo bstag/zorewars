@@ -10,3 +10,15 @@ test('component replication refuses missing, duplicate and misaligned arms',()=>
  const s=records();s[0].results[2].id='baseline';assert.throws(()=>summarizeFactorialReplication(s,options));
  const t=records();t[2].results[2].rows[0].name='other';assert.throws(()=>summarizeFactorialReplication(t,options));
 });
+
+test('factorial replication keeps the absolute interaction when the reference earns zero', () => {
+  const input = records();
+  for (const record of input) {
+    record.results[0].rows[0] = { index: 0, name: 'opponent', w: 0, t: 0, l: 10 };
+  }
+  const result = summarizeFactorialReplication(input, options);
+  assert.equal(result.primary.gainPct, null);
+  assert.equal(result.interaction.relativePct, null);
+  assert.deepEqual(result.interaction.seedMean95RelativePct, [null, null]);
+  assert.ok(Math.abs(result.interaction.meanPairedPoints + 1.2) < 1e-12);
+});
