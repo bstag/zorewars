@@ -60,6 +60,7 @@ tbody tr { border-top: 1px solid var(--line); }
 tbody tr:first-child { background: #102335; }
 tbody tr:first-child td:first-child { box-shadow: inset 3px 0 var(--accent); color: var(--accent); }
 tbody th { overflow-wrap: anywhere; font-weight: 600; }
+tbody th .by { color: var(--muted); font-weight: 400; font-size: .875rem; }
 td { font: .875rem var(--mono); }
 .points, .record { text-align: right; white-space: nowrap; }
 td.points { color: var(--accent); font-weight: 600; }
@@ -85,7 +86,7 @@ export function ladderPage(hill, rows) {
   const table = rows.map(row => `
           <tr>
             <td>${row.rank}</td>
-            <th scope="row">${escapeHtml(row.name)}</th>
+            <th scope="row">${escapeHtml(row.name)}${row.author ? ` <span class="by">by ${escapeHtml(row.author)}</span>` : ''}</th>
             <td class="points">${row.pointsPerRound?.toFixed(3) ?? '—'}</td>
             <td class="record">${row.wins}/${row.losses}/${row.ties}</td>
           </tr>`).join('');

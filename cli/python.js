@@ -9,6 +9,18 @@ import { fileURLToPath } from 'node:url';
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const LIB = path.join(ROOT, 'lang', 'python');
 
+// A generator runs once to print Redcode. One that is still going after this
+// long is looping, and one that prints more than this is not a warrior.
+export const GENERATOR_LIMITS = { timeout: 20000, maxBuffer: 8 * 1024 * 1024 };
+
+// Why a generator process failed, in one line.
+export function generatorFailure(what, r) {
+  if (r.error?.code === 'ETIMEDOUT') return `${what} was still running after ${GENERATOR_LIMITS.timeout / 1000} seconds (an endless loop?) and was stopped`;
+  if (r.error?.code === 'ENOBUFS') return `${what} printed more than ${GENERATOR_LIMITS.maxBuffer / 1024 / 1024} MB and was stopped`;
+  if (r.error) return `${what} could not run: ${r.error.message}`;
+  return `${what} exited with status ${r.status}:\n${r.stderr}`;
+}
+
 function env() {
   return { ...process.env, PYTHONPATH: [LIB, process.env.PYTHONPATH].filter(Boolean).join(path.delimiter), PYTHONIOENCODING: 'utf-8' };
 }
@@ -30,8 +42,8 @@ export function findPython() {
 export function runPythonFile(file) {
   const py = findPython();
   if (!py) throw new Error('could not find a Python 3 interpreter (tried python3, python, py)');
-  const r = spawnSync(py[0], [...py.slice(1), file], { env: env(), encoding: 'utf8' });
-  if (r.status !== 0) throw new Error(`python exited with status ${r.status}:\n${r.stderr}`);
+  const r = spawnSync(py[0], [...py.slice(1), file], { env: env(), encoding: 'utf8', ...GENERATOR_LIMITS });
+  if (r.error || r.status !== 0) throw new Error(generatorFailure('python', r));
   return r.stdout;
 }
 
@@ -39,6 +51,7 @@ export function runPythonFile(file) {
 export function pythonRunner() {
   if (!findPython()) return null;
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'zorewars-py-'));
+  process.once('exit', () => fs.rmSync(dir, { recursive: true, force: true }));
   let n = 0;
   return (code) => {
     const file = path.join(dir, `warrior${n++}.py`);

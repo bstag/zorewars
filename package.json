@@ -23,7 +23,8 @@
     "build:workbench": "node scripts/build-block-workbench.js",
     "build:wasm": "node scripts/build-ring-duel-wasm.js",
     "build:native": "node scripts/build-ring-duel-native.js",
-    "fuzz": "node scripts/plane-fuzz.js"
+    "fuzz": "node scripts/plane-fuzz.js",
+    "hill:reset": "node scripts/hill-reset.js"
   },
   "engines": {
     "node": ">=18"

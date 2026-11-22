@@ -15,7 +15,7 @@ import { MAX_TRACE_TAIL } from '../src/engine/trace.js';
 import { createTraceRound } from '../src/engine/battle.js';
 import { rustEngine } from './rust-engine.js';
 import {writeConversionResult} from './conversion-output.js';
-import { runPythonFile, pythonRunner } from './python.js';
+import { runPythonFile, pythonRunner, GENERATOR_LIMITS, generatorFailure } from './python.js';
 import { fetchWarriorText, nameFromUrl } from './remote.js';
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
@@ -34,7 +34,7 @@ Usage:
   zorewars check <warrior> [--json]
   zorewars list [--torus XxY[xZ]] [--json]          built-in warriors (and which run on that battlefield)
   zorewars classics [--json]                         famous originals you can fight
-  zorewars serve [--port 8080]
+  zorewars serve [--port 8080] [--host 0.0.0.0]
 
 Developer tools (use every CPU core):
   zorewars hill <warrior> [--classics] [--rounds 20]  score it against the library (and the classics),
@@ -43,9 +43,10 @@ Developer tools (use every CPU core):
                                                      plays a real hill's top warriors instead)
   zorewars species [warrior...]                      where warriors sit on the behaviour map
                                                      (processes x cells executed); none = the library
-  zorewars tune <warrior.js> [--candidates 40] [--seeds 3] [--write]
-  zorewars refine <warrior.red> [--iterations 3] [--variants 4] [--turns 20] [--budget 5] [--objective points|pushoff] [--partner b.red] [--effort high] [--model id] [--out refined/x.red]
+  zorewars tune <warrior.js> [--candidates 40] [--seeds 3] [--seed 1] [--write]
                                                      search the warrior's // SPACE for better constants
+  zorewars refine <warrior.red> [--iterations 3] [--variants 4] [--turns 20] [--budget 5] [--objective points|pushoff] [--partner b.red] [--effort high] [--model id] [--out refined/x.red]
+                                                     a language model proposes rewrites (uses a paid API)
   zorewars evolve [warrior...] [--generations 6] [--king w.js] [--genome 40] [--scratch] [--ties 0.5] [--league] [--race 2] [--out evolved]
                                                      breed warriors with MAP-Elites or a population GA
   zorewars train [warrior...] [--profiles 94nop,88,lp,94x|all] [--algorithm ga|map-elites] [--out evolved/training]
@@ -95,6 +96,10 @@ Options:
   --ties 0.5         evolve: what a tie with a champion counts (0..1); lower makes champions kill
   --algorithm NAME   evolve/train: map-elites (diverse niches) or ga (population genetic algorithm)
   --representation blocks   evolve: verified recipe GA with Red Queen; defaults to 94x, length 50
+  --representation tree     evolve: breed block trees against a hill (see AGENTS.md); with
+                     --start a.json  --red-queen N  --ladder N  --place none  --place-rounds 50
+  --hill SPEC        hill/tune/evolve/pushoff: koenigstuhl:94nop|88|lp|94x or a folder of .red files
+  --top N            how many of that hill's warriors to play (default 50)
   --families LIST    blocks: clear,lifeboat,compass (availability depends on --rules)
   --selection NAME   default parent selection or lexicase (preserve opponent specialists)
   --epsilon N        lexicase tolerance; auto uses median absolute deviation (default auto)
@@ -122,9 +127,10 @@ Options:
   --gpu-batch N      maximum matches per local GPU batch (default 1024)
   --profiles LIST    train: default,94nop,88,lp,94x,94x-hill,plane,volume,volume-wide,volume-coprime,volume-cube or all
 
-pMARS's short options also work: -r -s -c -p -l -d -F -S (and -b -k are ignored),
+pMARS's short options also work: -r -s -c -p -l -d -F -S; -8 selects --rules 88; -b -k -f -e -V -o are ignored,
 so 'pmars -r 100 -l 25 -d 100 a.red b.red' becomes 'zorewars battle -r 100 -l 25 -d 100 a.red b.red'.
   --port N           port for 'serve'            (default 8080)
+  --host ADDRESS     address 'serve' listens on  (default 127.0.0.1; 0.0.0.0 opens it to your network)
 
 Exit status: 0 ok, 1 a warrior failed to compile, 2 bad usage.`;
 
@@ -132,24 +138,61 @@ Exit status: 0 ok, 1 a warrior failed to compile, 2 bad usage.`;
 //   pmars -r 100 -s 8000 -p 8000 -c 80000 -l 25 -d 100 -F 4000 -S 500
 const PMARS_FLAGS = { r: 'rounds', s: 'coresize', c: 'cycles', p: 'processes', l: 'length', d: 'distance', F: 'fixed', S: 'pspace' };
 
+// Flags that take no value, and every flag some command reads. Anything else
+// is a typo: it used to be accepted silently and swallow the next argument.
+const BOOLEAN_FLAGS = ['json', 'help', 'report', 'classics', 'write', 'scratch', 'self', 'validate', 'league', 'tune', 'no-execution-history', 'wasm', 'native', 'remove-pspace'];
+const VALUE_FLAGS = `aim-explore aim-tries algorithm archive-size backend batch batches budget candidates cap champions check-rounds
+  checkpoint clear-margin clear-place clear-rounds coresize counters cycles descriptor distance effort epsilon eval-rounds
+  exploit-age exploit-win export-koenigstuhl export-pmars families features field field-rounds finalists fixed from-rung
+  generations genome gpu-adapter gpu-batch hill host iterations king ladder last length lex-epsilon load local-steps metric
+  model objective out panel partner place place-rounds pmars population port processes profiles pspace race red-queen
+  representation resume round rounds rule rules sample save seed seeds select selection start stop-after threads ties to top
+  torus tree-ops turns variants`.split(/\s+/);
+
 function parseArgs(argv) {
   const args = { _: [], flags: {} };
+  const value = (flag, i) => {
+    const v = argv[i];
+    // "-5" is a value; "--json" or nothing is a missing one.
+    if (v === undefined || /^--[a-z]/i.test(v)) usage(`${flag} needs a value`);
+    return v;
+  };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a.startsWith('--')) {
       const key = a.slice(2);
-      if (['json', 'help', 'report', 'classics', 'write', 'scratch', 'self', 'validate', 'league', 'tune', 'no-execution-history', 'wasm', 'native', 'remove-pspace'].includes(key)) args.flags[key] = true;
-      else args.flags[key] = argv[++i];
+      if (BOOLEAN_FLAGS.includes(key)) args.flags[key] = true;
+      else if (VALUE_FLAGS.includes(key)) args.flags[key] = value(a, ++i);
+      else usage(`unknown option ${a}`);
     } else if (a === '-h') args.flags.help = true;
-    else if (/^-[A-Za-z]$/.test(a) && PMARS_FLAGS[a[1]]) args.flags[PMARS_FLAGS[a[1]]] = argv[++i];
-    else if (/^-[bkf8eVo]$/.test(a)) { /* pMARS display/mode switches: ignored */ }
+    else if (/^-[A-Za-z]$/.test(a) && PMARS_FLAGS[a[1]]) args.flags[PMARS_FLAGS[a[1]]] = value(a, ++i);
+    else if (a === '-8') args.flags.rules ??= '88';            // pmars -8: ICWS'88 rules
+    else if (/^-[bkfeVo]$/.test(a)) { /* pMARS display/mode switches: ignored */ }
     else args._.push(a);
   }
   return args;
 }
 
+// A whole number from a flag, or the fallback when the flag is absent.
+// "abc", "3x" and "2.9" are errors, not 0, 3 and 2.
+function intFlag(flags, key, fallback, { min = 1, max = Number.MAX_SAFE_INTEGER } = {}) {
+  if (flags[key] === undefined) return fallback;
+  const n = /^-?\d+$/.test(String(flags[key]).trim()) ? Number(flags[key]) : NaN;
+  if (!Number.isSafeInteger(n) || n < min || n > max) {
+    usage(`--${key} must be a whole number${max === Number.MAX_SAFE_INTEGER ? ` of at least ${min}` : ` from ${min} to ${max}`}`);
+  }
+  return n;
+}
+
+// Warriors are placed at least minDistance apart, so that many must fit.
+function checkRoom(settings, count) {
+  if (settings.maxLength > settings.coreSize) usage(`--length ${settings.maxLength} does not fit a core of ${settings.coreSize}`);
+  if (count > 1 && count * settings.minDistance > settings.coreSize) {
+    usage(`${count} warriors ${settings.minDistance} cells apart do not fit a core of ${settings.coreSize}: lower --distance or raise --coresize`);
+  }
+}
+
 function settingsFrom(flags, defaults = {}) {
-  const num = (k) => (flags[k] !== undefined ? parseInt(flags[k], 10) : undefined);
   const s = { ...DEFAULT_SETTINGS, ...defaults };
   // --rules 94nop|88|lp|94x: a standard hill's settings (other flags override them).
   if (flags.rules !== undefined) {
@@ -159,15 +202,12 @@ function settingsFrom(flags, defaults = {}) {
   }
   const map = { rounds: 'rounds', coresize: 'coreSize', cycles: 'maxCycles', processes: 'maxProcesses', length: 'maxLength', distance: 'minDistance', pspace: 'pSpaceSize' };
   for (const [flag, key] of Object.entries(map)) {
-    const v = num(flag);
-    if (v !== undefined) {
-      if (!Number.isFinite(v) || v <= 0) usage(`--${flag} must be a positive integer`);
-      s[key] = v;
-    }
+    const v = intFlag(flags, flag, undefined);
+    if (v !== undefined) s[key] = v;
   }
   // --torus 100x80 (or 20x20x20): a torus battlefield instead of the ring.
   if (flags.torus !== undefined) {
-    const dims = String(flags.torus).toLowerCase().split('x').map((d) => parseInt(d, 10));
+    const dims = String(flags.torus).toLowerCase().split('x').map((d) => (/^\d+$/.test(d) ? Number(d) : NaN));
     if (dims.length < 2 || dims.length > 3 || dims.some((d) => !Number.isFinite(d) || d < 1)) usage('--torus takes sizes like 100x80 or 20x20x20');
     const [x, y, z = 1] = dims;
     Object.assign(s, { topology: 'torus', sizeX: x, sizeY: y, sizeZ: z, coreSize: x * y * z });
@@ -199,20 +239,23 @@ function runGenerator(file, language) {
   if (language === 'python') return runPythonFile(file);
   if (language === 'cpp') {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'zorewars-'));
-    const exe = path.join(tmp, process.platform === 'win32' ? 'warrior.exe' : 'warrior');
-    let compiled = false;
-    for (const cxx of ['g++', 'clang++']) {
-      const r = spawnSync(cxx, ['-std=c++17', '-O1', '-I', path.join(ROOT, 'lang', 'cpp'), file, '-o', exe], { encoding: 'utf8' });
-      if (r.error) continue;
-      if (r.status !== 0) throw new Error(`${cxx} failed:\n${r.stderr}`);
-      compiled = true;
-      break;
+    try {
+      const exe = path.join(tmp, process.platform === 'win32' ? 'warrior.exe' : 'warrior');
+      let compiled = false;
+      for (const cxx of ['g++', 'clang++']) {
+        const r = spawnSync(cxx, ['-std=c++17', '-O1', '-I', path.join(ROOT, 'lang', 'cpp'), file, '-o', exe], { encoding: 'utf8', timeout: 120000 });
+        if (r.error?.code === 'ENOENT') continue;
+        if (r.error || r.status !== 0) throw new Error(r.error ? `${cxx} could not run: ${r.error.message}` : `${cxx} failed:\n${r.stderr}`);
+        compiled = true;
+        break;
+      }
+      if (!compiled) throw new Error('could not find a C++ compiler (tried g++, clang++)');
+      const r = spawnSync(exe, [], { encoding: 'utf8', ...GENERATOR_LIMITS });
+      if (r.error || r.status !== 0) throw new Error(generatorFailure('the warrior program', r));
+      return r.stdout;
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });       // also when the compiler fails
     }
-    if (!compiled) throw new Error('could not find a C++ compiler (tried g++, clang++)');
-    const r = spawnSync(exe, [], { encoding: 'utf8' });
-    fs.rmSync(tmp, { recursive: true, force: true });
-    if (r.status !== 0) throw new Error(`warrior program exited with status ${r.status}:\n${r.stderr}`);
-    return r.stdout;
   }
   throw new Error(`unsupported language ${language}`);
 }
@@ -252,6 +295,7 @@ async function loadWarrior(ref, settings) {
   } else {
     if (ref.startsWith('@')) file = builtinPath(ref.slice(1));
     if (!fs.existsSync(file)) usage(`no such file: ${file}`);
+    if (!fs.statSync(file).isFile()) usage(`${file} is a folder; give a warrior file (tournament accepts folders)`);
     language = detectLanguage(file);
     if (language === 'python' || language === 'cpp') {
       try {
@@ -307,11 +351,12 @@ async function cmdBattle(args) {
   if (refs.length < 1) usage('battle needs at least one warrior');
   const settings = settingsFrom(args.flags, { rounds: 1 });
   const json = !!args.flags.json;
+  const seed = intFlag(args.flags, 'seed', 1, { min: 0 });
+  const fixed = intFlag(args.flags, 'fixed', undefined, { min: 0, max: settings.coreSize - 1 });
+  const detailRound = Math.min(settings.rounds, intFlag(args.flags, 'round', 1));
+  checkRoom(settings, refs.length);
   const warriors = await loadAll(refs, settings, json);
-  const seed = parseInt(args.flags.seed ?? '1', 10);
-  const fixed = args.flags.fixed !== undefined ? parseInt(args.flags.fixed, 10) : undefined;
   const report = !!args.flags.report;
-  const detailRound = Math.min(settings.rounds, Math.max(1, parseInt(args.flags.round ?? '1', 10)));
   const result = runMatch(warriors, settings, { seed, fixed, report, ...matchEngine(args.flags, report) });
 
   if (json) {
@@ -360,8 +405,9 @@ async function cmdTournament(args) {
   if (refs.length < 2) usage('tournament needs at least two warriors');
   const settings = settingsFrom(args.flags, { rounds: 10 });
   const json = !!args.flags.json;
+  const seed = intFlag(args.flags, 'seed', 1, { min: 0 });
+  checkRoom(settings, 2);
   const warriors = await loadAll(refs, settings, json);
-  const seed = parseInt(args.flags.seed ?? '1', 10);
   const result = runTournament(warriors, settings, {
     seed, ...matchEngine(args.flags),
     onMatch: json ? undefined : (m) => process.stderr.write(`  ${m.a} vs ${m.b}: ${m.result.map((r) => `${r.wins}-${r.losses}-${r.ties}`).join(' / ')}\n`),
@@ -433,9 +479,8 @@ async function cmdConvert(args) {
 async function cmdTrace(args) {
   const refs = args._;
   if (refs.length < 1) usage('trace needs at least one warrior');
-  const round = Math.max(1, parseInt(args.flags.round ?? '1', 10));
-  const last = Math.max(1, Math.min(MAX_TRACE_TAIL, parseInt(args.flags.last ?? '40', 10)));
-  if (!Number.isSafeInteger(round) || !Number.isInteger(last)) usage('--round and --last must be numbers');
+  const round = intFlag(args.flags, 'round', 1);
+  const last = Math.min(MAX_TRACE_TAIL, intFlag(args.flags, 'last', 40));
   const adapter = args.flags['gpu-adapter'];
   const rust = args.flags.wasm || args.flags.native;
   const requestedBackend = args.flags.backend ?? (adapter ? 'gpu' : 'cpu');
@@ -445,9 +490,10 @@ async function cmdTrace(args) {
   if (adapter && backend === 'cpu') usage('--gpu-adapter requires --backend gpu or auto');
   const settings = { ...settingsFrom(args.flags), rounds: round };
   const json = !!args.flags.json;
+  const seed = intFlag(args.flags, 'seed', 1, { min: 0 });
+  const fixed = intFlag(args.flags, 'fixed', undefined, { min: 0, max: settings.coreSize - 1 });
+  checkRoom(settings, refs.length);
   const warriors = await loadAll(refs, settings, json);
-  const seed = parseInt(args.flags.seed ?? '1', 10);
-  const fixed = args.flags.fixed !== undefined ? parseInt(args.flags.fixed, 10) : undefined;
   const { createRingKernel } = matchEngine(args.flags, true);
   const prepare = () => createTraceRound(warriors, settings, { seed, fixed, round, traceSize: last, createRingKernel });
   let replay = prepare();
@@ -532,7 +578,9 @@ const SITE_FILES = ['index.html', 'robots.txt', 'sitemap.xml'];
 const SITE_DIRS = ['web', 'src', 'warriors', 'lang'];
 
 function cmdServe(args) {
-  const port = parseInt(args.flags.port ?? process.env.PORT ?? '8080', 10);
+  const port = intFlag({ port: args.flags.port ?? process.env.PORT }, 'port', 8080, { min: 1, max: 65535 });
+  // Loopback unless asked: --host 0.0.0.0 lets a phone on the same network open the arena.
+  const host = args.flags.host ?? '127.0.0.1';
   const server = http.createServer(async (req, res) => {
     const reqUrl = new URL(req.url, 'http://x');
     if (reqUrl.pathname === '/api/fetch') {
@@ -576,8 +624,7 @@ function cmdServe(args) {
     };
     tryNext();
   });
-  // Loopback only: this is a development server.
-  server.listen(port, '127.0.0.1', () => console.log(`ZoreWars arena running at http://localhost:${port}/`));
+  server.listen(port, host, () => console.log(`ZoreWars arena running at http://${host === '127.0.0.1' ? 'localhost' : host}:${port}/${host === '127.0.0.1' ? '' : ' (reachable from other devices on this network)'}`));
 }
 
 function printTable(rows) {
@@ -609,6 +656,9 @@ if (args.flags['no-execution-history']) {
 if ((args.flags.wasm || args.flags.native) && !directMatch && !['trace', 'species', 'hill', 'tune', 'evolve', 'train', 'refine', 'pushoff'].includes(cmd)) {
   usage('--wasm and --native apply to battle, trace, tournament and CPU search tools');
 }
+// A mistake in the request (a missing file, an unknown hill) is reported in
+// one line; set ZOREWARS_DEBUG=1 for the stack trace.
+try {
 switch (cmd) {
   case 'battle': await cmdBattle(args); break;
   case 'tournament': await cmdTournament(args); break;
@@ -627,4 +677,9 @@ switch (cmd) {
   case 'train': { const [m, h] = await devtools('./evolution.js'); await m.cmdTrain(args, h); break; }
   case 'pushoff': { const [m, h] = await devtools(); await m.cmdPushoff(args, h); break; }
   default: usage(`unknown command '${cmd}'`);
+}
+} catch (error) {
+  if (process.env.ZOREWARS_DEBUG) throw error;
+  console.error(`zorewars: ${error?.message ?? error}`);
+  process.exit(2);
 }

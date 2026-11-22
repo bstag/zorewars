@@ -37,8 +37,9 @@ function rank(entries, matches) {
 
 export async function readStandings(db, hill) {
   const { entries, matches } = await readHill(db, hill);
-  return rank(entries, matches).map(({ name, wins, losses, ties, points, rounds }, i) => ({
-    rank: i + 1, name, wins, losses, ties, pointsPerRound: rounds ? points / rounds : null,
+  // author: from the warrior's ;author line (absent on entries made before it was kept).
+  return rank(entries, matches).map(({ name, author, wins, losses, ties, points, rounds }, i) => ({
+    rank: i + 1, name, author: author && author !== 'Anonymous' ? author : '', wins, losses, ties, pointsPerRound: rounds ? points / rounds : null,
   }));
 }
 
@@ -64,7 +65,7 @@ export async function submitToHill(db, hill, interactionId, attachment, score, r
   const { entry, matches } = result;
   const ranked = rank([...state.entries, { ...entry, joined: state.version }], [...state.matches, ...matches]);
   const position = ranked.findIndex(candidate => candidate.id === entry.id) + 1;
-  const entries = ranked.slice(0, HILL_SIZE).map(({ id, name, source, joined }) => ({ id, name, source, joined }));
+  const entries = ranked.slice(0, HILL_SIZE).map(({ id, name, author, source, joined }) => ({ id, name, author, source, joined }));
   const active = new Set(entries.map(candidate => candidate.id));
   const retainedMatches = [...state.matches, ...matches].filter(match => active.has(match.first) && active.has(match.second));
   const publishedPosition = rank(entries, retainedMatches).findIndex(candidate => candidate.id === entry.id) + 1;

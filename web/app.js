@@ -366,6 +366,7 @@ function renderGutter() {
 
 function onSourceChange(text) {
   const slot = activeSlot();
+  if (!slot) return;                       // typed before the slots were set up
   slot.source = text;
   slot.edited = true;
   saveSlotsSoon();
@@ -583,7 +584,7 @@ async function convertActive(lang) {
 // reload: an edit before the first step replaces the round in place (same
 // round number and first mover, no new log line).
 function newRound({ reload = false } = {}) {
-  const inPlace = reload === true && !!state.vm && state.vm.steps === 0 && state.round > 0;
+  const inPlace = reload === true && !state.replaying && !!state.vm && state.vm.steps === 0 && state.round > 0;
   stopRunning();
   discardLive();
   const roster = state.slots.map((s, i) => (s.compiled?.ok ? i : -1)).filter((i) => i >= 0);
@@ -815,6 +816,15 @@ function sampleChart() {
   if (vm) chart.sample(vm.cycle, vm.warriors.map((w) => w.queue.size));
 }
 
+let pendingHover = null;
+function resolveHover() {
+  if (!pendingHover) return;
+  const [x, y] = pendingHover;
+  pendingHover = null;
+  const a = renderer.addressAt(x, y);
+  if (a !== state.hover) { state.hover = a; state.dirtyFrame = true; }
+}
+
 function frame() {
   requestAnimationFrame(frame);           // first, so one bad frame can't stop the loop
   const vm = state.vm;
@@ -823,6 +833,7 @@ function frame() {
   measureSpeed(vm, now);
   if (vm) {
     pickRenderer();
+    resolveHover();
     const events = vm.takeEvents();
     highlights.ingest(events, now);
     renderer.ingest?.(vm, events, now);                      // the avatar views animate the hits
@@ -961,7 +972,9 @@ const PRESET_FIELDS = () => [...$('setField').options].map((o) => o.value).filte
 function chosenField() {
   if ($('setField').value !== 'custom') return $('setField').value;
   const [x, y, z] = ['setSizeX', 'setSizeY', 'setSizeZ'].map((id) => parseInt($(id).value, 10));
-  if (![x, y, z].every(Number.isFinite) || x < 4 || y < 2 || z < 1 || x * y * z > MAX_CELLS) return null;
+  // The inputs' own max counts too: a row wider than it makes a canvas browsers refuse.
+  const tooBig = ['setSizeX', 'setSizeY', 'setSizeZ'].some((id, i) => $(id).max && [x, y, z][i] > Number($(id).max));
+  if (![x, y, z].every(Number.isFinite) || x < 4 || y < 2 || z < 1 || tooBig || x * y * z > MAX_CELLS) return null;
   return `torus:${x}x${y}${z > 1 ? `x${z}` : ''}`;
 }
 function renderCustomField() {
@@ -1026,11 +1039,16 @@ function measureSpeed(vm, now) {
     if (speedMeter) { speedMeter = null; renderSpeed(); }
     return;
   }
-  if (speedMeter?.vm !== vm) speedMeter = { vm, at: now, cycle: vm.cycle, rate: null };
-  else if (now - speedMeter.at >= 500) {
-    speedMeter = { vm, at: now, cycle: vm.cycle, rate: (vm.cycle - speedMeter.cycle) * 1000 / (now - speedMeter.at) };
-    renderSpeed();
-  }
+  if (speedMeter?.vm !== vm) { speedMeter = { vm, at: now, cycle: vm.cycle, rate: null }; return; }
+  const elapsed = now - speedMeter.at;
+  if (elapsed < 500) return;
+  const cycles = vm.cycle - speedMeter.cycle;
+  // A window too long (the tab was hidden) or holding too few cycles (a slow
+  // setting) says nothing about what this machine can do: keep the last answer.
+  const rate = elapsed <= 1500 && cycles >= 5 ? cycles * 1000 / elapsed : (elapsed > 1500 ? null : speedMeter.rate);
+  const changed = rate !== speedMeter.rate;
+  speedMeter = { vm, at: now, cycle: vm.cycle, rate };
+  if (changed) renderSpeed();
 }
 
 
@@ -1205,10 +1223,11 @@ function wireEvents() {
     canvas.addEventListener('mousemove', (e) => {
       if (renderer === renderer3d && renderer3d.pointers.size) return;   // turning the view
       if (renderer === avatars3d && avatars3d.down) return;
-      const a = renderer.addressAt(e.clientX, e.clientY);
-      if (a !== state.hover) { state.hover = a; state.dirtyFrame = true; }
+      // Resolved once per frame (resolveHover): finding the cell under the
+      // pointer can cost a pass over the core, and mice report far more often.
+      pendingHover = [e.clientX, e.clientY];
     });
-    canvas.addEventListener('mouseleave', () => { state.hover = -1; state.dirtyFrame = true; });
+    canvas.addEventListener('mouseleave', () => { pendingHover = null; state.hover = -1; state.dirtyFrame = true; });
     canvas.addEventListener('click', (e) => {
       if (renderer.consumeDrag?.()) return;              // the end of a drag, not a tap
       const a = renderer.addressAt(e.clientX, e.clientY);

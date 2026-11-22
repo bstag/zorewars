@@ -48,6 +48,10 @@ export default {
     const pathname = new URL(request.url).pathname;
     if (pathname.startsWith('/ladder/')) {
       const started = performance.now();
+      // The page's Cache-Control (30 s) decides how long this copy is served.
+      const cache = request.method === 'GET' ? caches.default : null;
+      const cached = await cache?.match(request);
+      if (cached) return cached;
       const response = await publicStandings(request, env.HILLS_DB)
         .catch((error) => {
           // Say why in the log (an uninitialised database, for one).
@@ -56,6 +60,7 @@ export default {
         });
       const hill = pathname === '/ladder/nano' ? 'nano' : pathname === '/ladder/tiny' ? 'tiny' : undefined;
       if (hill) console.info({ event: 'ladder_view', hill, status: response.status, durationMs: Math.round(performance.now() - started) });
+      if (cache && response.status === 200) ctx.waitUntil(cache.put(request, response.clone()));
       return response;
     }
     return handleDiscord(request, env, ctx, forwarded => sendToBattleOrigin(forwarded, env));

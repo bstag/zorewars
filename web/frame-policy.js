@@ -4,19 +4,21 @@
 const FRAME_MS = 1000 / 60;
 export function advanceFrame(state, stepVM, now) {
   const vm = state.vm;
+  if (!vm || !state.running || vm.done) { state.lastAdvance = undefined; return; }
+  // While a step is still in flight (a GPU readback takes a few frames) the
+  // clock keeps running, so the time waited is counted by the next step.
+  if (state.livePending) return;
   const last = state.lastAdvance;
   state.lastAdvance = now;
-  if (vm && state.running && !vm.done && !state.livePending) {
-    // Without a clock (or after a pause) count one nominal frame; a long gap
-    // (a background tab) must not turn into one enormous burst.
-    const frames = now === undefined || last === undefined ? 1 : Math.min(Math.max(now - last, 0) / FRAME_MS, 4);
-    state.carry += state.stepsPerFrame * frames * vm.warriors.filter((w) => w.alive).length;
-    const want = Math.floor(state.carry);
-    state.carry -= want;
-    if (want > 0) {
-      const epoch = state.liveEpoch;
-      stepVM(want, () => state.running && state.liveEpoch === epoch);
-    }
+  // Without a clock, or on the first frame after a pause, count one nominal
+  // frame; a long gap (a background tab) must not turn into one enormous burst.
+  const frames = now === undefined || last === undefined ? 1 : Math.min(Math.max(now - last, 0) / FRAME_MS, 4);
+  state.carry += state.stepsPerFrame * frames * vm.warriors.filter((w) => w.alive).length;
+  const want = Math.floor(state.carry);
+  state.carry -= want;
+  if (want > 0) {
+    const epoch = state.liveEpoch;
+    stepVM(want, () => state.running && state.liveEpoch === epoch);
   }
 }
 export function sceneNeedsDraw(state, highlightsActive, rendererAnimating, now) {

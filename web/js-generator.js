@@ -5,7 +5,7 @@ import { generateFromJS } from '../src/engine/generator.js';
 const defaultFactory = () => new Worker(new URL('./generator-worker.js', import.meta.url), { type: 'module' });
 
 export function createJsGenerator({ createWorker = defaultFactory, timeoutMs = 3000, fallback = generateFromJS } = {}) {
-  let worker = null, broken = false, nextId = 1;
+  let worker = null, broken = false, worked = false, nextId = 1;
   let tail = Promise.resolve();
   const drop = () => { worker?.terminate(); worker = null; };
 
@@ -26,12 +26,17 @@ export function createJsGenerator({ createWorker = defaultFactory, timeoutMs = 3
     worker.onmessage = ({ data }) => {
       if (data.id !== id) return;
       clearTimeout(timer);
+      worked = true;
       if (data.error !== undefined) reject(new Error(data.error)); else resolve(data.redcode);
     };
     worker.onerror = (event) => {
       event.preventDefault?.();
       clearTimeout(timer);
       drop();
+      // A worker that has answered before is working: this was one bad run,
+      // and the next call gets a fresh worker. One that never answered can't
+      // be loaded here, so generators run on the page from now on.
+      if (worked) { reject(new Error('The generator stopped unexpectedly. Edit the code to try again.')); return; }
       broken = true;
       try { resolve(fallback(source, settings)); } catch (e) { reject(e); }
     };

@@ -12,12 +12,8 @@ import { tune, withConstants } from '../tools/tune.js';
 import { tuneOptions } from './search-options.js';
 export { cmdRefine } from './refinement.js';
 export { cmdPushoff } from './pushoff.js';
-import { battlePool, opponents, hillSettingsFor, progress, done } from './devtools-context.js';
+import { battlePool, opponents, hillSettingsFor, progress, done, wholeNumber } from './devtools-context.js';
 import { rustEngine } from './rust-engine.js';
-
-// Retain these commands for callers of the former combined command module.
-export async function cmdEvolve(...args) { return (await import('./evolution.js')).cmdEvolve(...args); }
-export async function cmdTrain(...args) { return (await import('./evolution.js')).cmdTrain(...args); }
 
 const SYMPTOMS = {
   tie: 'ties (both alive at the end: no kill power)',
@@ -43,7 +39,7 @@ export async function cmdHill(args, h) {
   const pool = await battlePool(args.flags, h);
   try {
     progress(json, `Playing ${field.length} opponents, ${settings.rounds} rounds each…`);
-    const r = await evaluate(pool, w, field, { rounds: settings.rounds, seed: parseInt(args.flags.seed ?? '1', 10), settings, diagnose: true });
+    const r = await evaluate(pool, w, field, { rounds: settings.rounds, seed: wholeNumber(args.flags, 'seed', 1, 0), settings, diagnose: true });
     done(json);
     if (json) {
       console.log(JSON.stringify({ ok: true, warrior: w.name, rounds: settings.rounds, score: r.score, smooth: r.smooth, groups: r.groups, symptoms: r.symptoms, opponents: r.rows }, null, 2));
@@ -91,7 +87,7 @@ export async function cmdSpecies(args, h) {
 }
 
 export async function cmdTune(args, h) {
-  const { file, json, candidates, seeds } = tuneOptions(args, h.usage);
+  const { file, json, candidates, seeds, seed } = tuneOptions(args, h.usage);
   const settings = h.settingsFrom(args.flags);
   const source = fs.readFileSync(file, 'utf8');
   const [w] = await h.loadAll([file], settings, json);
@@ -99,7 +95,7 @@ export async function cmdTune(args, h) {
   if (args.flags.hill) Object.assign(settings, hillSettingsFor(settings));
   const pool = await battlePool(args.flags, h);
   try {
-    const r = await tune({ pool, source, field, settings, candidates, seeds, onProgress: (i, n) => progress(json, i <= candidates + 1 ? `Screening candidate ${i}/${candidates + 1}…` : `Checking finalists on ${seeds} fresh seeds (${i}/${n})…`) });
+    const r = await tune({ pool, source, field, settings, candidates, seeds, seed, onProgress: (i, n) => progress(json, i <= candidates + 1 ? `Screening candidate ${i}/${candidates + 1}…` : `Checking finalists on ${seeds} fresh seeds (${i}/${n})…`) });
     done(json);
     const write = args.flags.write && r.improved;
     if (write) fs.writeFileSync(file, withConstants(source, r.best.P));

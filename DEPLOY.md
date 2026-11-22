@@ -83,6 +83,26 @@ is missing and never clears the hills.) Redeploy the Discord Worker and containe
 variables, then run `node cli/discord.js register` as above. The public pages
 and `/ladder` read D1 directly. Only submissions wake the match runner.
 
+### Emptying a hill
+
+`node scripts/hill-reset.js nano|tiny|all` empties a hill without a deploy.
+Use it when a hill has to start over: a stored warrior stops assembling
+after an engine change (every submission to that hill then fails with "could
+not accept this submission"), or the entries are no longer wanted.
+
+```bash
+node scripts/hill-reset.js nano --remote          # shows the hill; changes nothing
+node scripts/hill-reset.js nano --remote --yes    # empties the live Nano hill
+node scripts/hill-reset.js all --remote --yes     # both hills
+```
+
+Without `--remote` it works on the local development database. Without
+`--yes` it only reports what it would do. The reset cannot be undone, and it
+reads the row back to confirm the stored hill is valid. Changing
+`HILL_REVISION` in `src/engine/discord-hills.js` and deploying has the same
+effect for every hill, and is the way to do it when the scoring itself
+changed.
+
 ### Moving the runner to a VPS
 
 Run `node cli/discord.js` on a Node.js 18+ host, or build the same
