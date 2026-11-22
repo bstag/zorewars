@@ -1,13 +1,10 @@
 import { HILLS } from '../src/engine/discord-hills.js';
+import { discordConfigured, isSnowflake, verifyDiscordSignature } from '../src/engine/discord-verify.js';
 import { readStandings, standingsMessage, submitToHill } from './discord-hills.js';
 
 const ENDPOINT = '/api/discord/interactions';
 const MAX_BODY = 64 * 1024;
 const DISCORD_API = 'https://discord.com/api/v10';
-
-function fromHex(hex) {
-  return Uint8Array.from(hex.match(/../g), byte => parseInt(byte, 16));
-}
 
 async function readBody(request) {
   const bytes = new Uint8Array(MAX_BODY);
@@ -57,23 +54,14 @@ export async function handleDiscord(request, env, ctx, send) {
   if (url.pathname !== ENDPOINT) return new Response('Not found', { status: 404 });
   if (request.method !== 'POST') return new Response('Use POST', { status: 405, headers: { Allow: 'POST' } });
   const { DISCORD_APPLICATION_ID: app, DISCORD_GUILD_ID: guild, DISCORD_PUBLIC_KEY: publicKey } = env;
-  if (!/^\d{17,20}$/.test(app) || !/^\d{17,20}$/.test(guild) || !/^[a-f0-9]{64}$/i.test(publicKey)) {
+  if (!discordConfigured(app, guild, publicKey)) {
     return new Response('Discord configuration missing', { status: 503 });
   }
   const signature = request.headers.get('x-signature-ed25519');
   const timestamp = request.headers.get('x-signature-timestamp');
-  if (!/^[a-f0-9]{128}$/i.test(signature) || !/^\d{1,16}$/.test(timestamp) ||
-      Math.abs(Date.now() / 1000 - Number(timestamp)) > 300) {
-    return new Response('Invalid Discord signature', { status: 401 });
-  }
   const body = await readBody(request);
   if (!body) return new Response('Interaction too large', { status: 413 });
-  const prefix = new TextEncoder().encode(timestamp);
-  const signed = new Uint8Array(prefix.length + body.length);
-  signed.set(prefix);
-  signed.set(body, prefix.length);
-  const key = await crypto.subtle.importKey('raw', fromHex(publicKey), 'Ed25519', false, ['verify']);
-  if (!await crypto.subtle.verify('Ed25519', key, fromHex(signature), signed)) {
+  if (!await verifyDiscordSignature(publicKey, signature, timestamp, body)) {
     return new Response('Invalid Discord signature', { status: 401 });
   }
   let interaction;
@@ -103,8 +91,8 @@ export async function handleDiscord(request, env, ctx, send) {
           console.info({ event: 'ladder_read', ...observation, hill, entries: rows.length, durationMs: Math.round(performance.now() - started) });
           return standingsMessage(hill, rows);
         })
-        .catch(() => {
-          console.error({ event: 'ladder_read_failed', ...observation, hill });
+        .catch((error) => {
+          console.error({ event: 'ladder_read_failed', ...observation, hill, reason: String(error?.message ?? error) });
           return 'Could not read the hill standings. Try again shortly.';
         })
         .then(content => postResult(interaction, content, observation))
@@ -117,7 +105,7 @@ export async function handleDiscord(request, env, ctx, send) {
       return reject('Attach a .red file of up to 32 KiB.');
     }
     if (!env.DISCORD_HILL_SECRET) return reject('Hill submissions are not configured yet.');
-    if (!/^\d{17,20}$/.test(interaction.id)) return reject('Invalid submission ID.');
+    if (!isSnowflake(interaction.id)) return reject('Invalid submission ID.');
     ctx.waitUntil(submitToHill(env.HILLS_DB, hill, interaction.id, attachment, async (hill, attachment, members) => {
       const response = await send(new Request('http://container/internal/hill-match', {
         method: 'POST',
@@ -127,8 +115,8 @@ export async function handleDiscord(request, env, ctx, send) {
       }));
       if (!response.ok) throw new Error('Hill origin rejected submission');
       return response.json();
-    }, requestId).catch(() => {
-      console.error({ event: 'hill_submission_failed', ...observation, hill });
+    }, requestId).catch((error) => {
+      console.error({ event: 'hill_submission_failed', ...observation, hill, reason: String(error?.message ?? error) });
       return 'The hill could not accept this submission. Try again shortly.';
     }).then(content => postResult(interaction, content, observation))
       .catch(() => console.error({ event: 'discord_reply_failed', ...observation, hill })));

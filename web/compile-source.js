@@ -1,5 +1,5 @@
 // Generator execution and persisted hang markers; callers decide whether a result is current.
-export async function compileSource(source, language, {compile,pythonReady,loadPython,generateFromPython,generating,getSettings,hung,onPythonLoading}) {
+export async function compileSource(source, language, {compile,pythonReady,loadPython,generateFromPython,generateFromJS,generating,getSettings,hung,onPythonLoading}) {
   let result;
   const generator = language !== 'redcode';
 
@@ -16,6 +16,15 @@ export async function compileSource(source, language, {compile,pythonReady,loadP
       const redcode = await generateFromPython(source, getSettings());
       generating(source, false);
       result = compile(redcode, 'redcode', getSettings());
+    } else if (language === 'javascript' && generateFromJS) {
+      // Off the page thread, with a time limit (web/js-generator.js).
+      let redcode;
+      try {
+        redcode = await generateFromJS(source, getSettings());
+      } catch (e) {
+        throw new Error(`JavaScript error: ${e.message}`);
+      }
+      result = compile(redcode, 'redcode', getSettings());
     } else {
       if (generator) generating(source, true);
       result = compile(source, language, getSettings());
@@ -29,8 +38,11 @@ export async function compileSource(source, language, {compile,pythonReady,loadP
   return result;
 }
 
+// An edit reloads a round that has not started. A finished round stays (with
+// its post-mortem and replay) until Run or New round, so the code can be fixed
+// while reading why it lost.
 export function canStartEditedRound(state) {
-  return !state.booting && (!state.vm || state.vm.steps === 0 || state.vm.done)
+  return !state.booting && (!state.vm || state.vm.steps === 0)
     && state.slots.every(slot => slot.status !== 'compiling');
 }
 

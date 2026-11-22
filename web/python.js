@@ -24,7 +24,10 @@ async function getPyodide() {
     pyodidePromise = (async () => {
       await loadScript(PYODIDE_URL);
       const py = await window.loadPyodide();
-      const lib = await fetch('../lang/python/zorewars.py').then((r) => r.text());
+      const lib = await fetch('../lang/python/zorewars.py').then((r) => {
+        if (!r.ok) throw new Error(`Could not load the Python library (HTTP ${r.status})`);   // retried on the next compile
+        return r.text();
+      });
       py.FS.writeFile('/home/pyodide/zorewars.py', lib);
       return py;
     })().catch((e) => { pyodidePromise = null; throw e; });

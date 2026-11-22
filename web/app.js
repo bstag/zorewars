@@ -8,11 +8,14 @@ import {initializeRemoteImport,initializeLocalSlots} from './startup-slots.js';
 import {advanceFrame,sceneNeedsDraw} from './frame-policy.js';
 import {paintInspector} from './inspector.js';
 import {compileSource,canStartEditedRound,publishCompilation} from './compile-source.js';
+import {createJsGenerator} from './js-generator.js';
+import {safeGet,safeSet} from './storage.js';
+import {runTournament} from './tournament.js';
 import {escapeHtml,compileStatusMarkup,generatedListing} from './editor-status.js';
 import {selectRenderer,updateRendererControls} from './renderer-choice.js';
 // ZoreWars arena: editors, live battle view, inspector and tournaments.
 
-import { compile, VM, mulberry32, DEFAULT_SETTINGS, RULESETS, listing, roundPoints, postMortem, generateFromJS } from '../src/engine/index.js';
+import { compile, VM, DEFAULT_SETTINGS, RULESETS, postMortem, generateFromJS } from '../src/engine/index.js';
 import { convertWarrior } from '../src/engine/convert.js';
 import { CoreRenderer, ProcessChart, WARRIOR_COLORS, setColorSlots } from './arena.js';
 import { CoreView3D } from './arena3d.js';
@@ -22,8 +25,6 @@ import { initPicker } from './picker.js';
 import { scanLibraryFit } from './library-fit.js';
 import { fieldKey, fieldSettings, battlefieldSettings, NO_HILL_RULES } from './battlefield.js';
 import { rulesHint } from './rules-hint.js';
-import { createSimulationRunner } from './simulation.js';
-import { createBrowserMatchPool } from './matches.js';
 import { createBrowserLiveController } from './live.js';
 import { generateFromPython, loadPython, pythonReady } from './python.js';
 import { createCodeEditor } from './editor.js';
@@ -178,22 +179,30 @@ const chart = new ProcessChart($('chart'));
 
 // ---------------------------------------------------------------- storage
 
-function safeGet(key) {
-  try { return JSON.parse(localStorage.getItem(key)); } catch { return null; }
+// While typing: at most one write every 400 ms, and always before the page is
+// hidden or closed, so no keystroke is lost.
+let saveTimer = 0;
+function saveSlotsSoon() {
+  if (!saveTimer) saveTimer = setTimeout(saveSlots, 400);
 }
-function safeSet(key, value) {
-  try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* storage unavailable */ }
-}
+addEventListener('pagehide', () => { if (saveTimer) saveSlots(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden && saveTimer) saveSlots(); });
 function saveSlots() {
+  clearTimeout(saveTimer); saveTimer = 0;
   safeSet(STORAGE_KEY, state.slots.map(({ language, source, libFile, origin, edited }) => ({ language, source, libFile, origin, edited })));
 }
 
 // ---------------------------------------------------------------- library
 
 async function loadLibrary() {
-  const list = await fetch('../warriors/index.json').then((r) => r.json());
+  const get = async (url) => {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`${url}: HTTP ${r.status}`);   // not an error page as warrior source
+    return r;
+  };
+  const list = await (await get('../warriors/index.json')).json();
   await Promise.all(list.map(async (entry) => {
-    entry.source = await fetch(`../warriors/${entry.file}`).then((r) => r.text());
+    entry.source = await (await get(`../warriors/${entry.file}`)).text();
   }));
   state.library = list;
   renderLibrarySelect();
@@ -263,6 +272,7 @@ function generating(source, on) {
   safeSet(GENERATING_KEY, on ? [...list, source].slice(-8) : list);
 }
 
+const generateJsInWorker = createJsGenerator();
 async function compileSlot(slot) {
   const token = ++slot.token;
   slot.status = 'compiling';
@@ -270,7 +280,7 @@ async function compileSlot(slot) {
   const source = slot.source;
   const hung = slot.language !== 'redcode' && (safeGet(GENERATING_KEY) || []).includes(source);
   const result = await compileSource(source, slot.language, {
-    compile, pythonReady, loadPython, generateFromPython, generating, hung,
+    compile, pythonReady, loadPython, generateFromPython, generateFromJS: generateJsInWorker, generating, hung,
     getSettings: () => state.settings,
     onPythonLoading: () => {
       slot.statusText = 'Loading Python in your browser (about 10 MB, first time only)…';
@@ -282,7 +292,7 @@ async function compileSlot(slot) {
   if (slot === activeSlot()) renderEditorStatus();
   refreshPanels();
   // Apply edits immediately when the current round has not started or is over.
-  if (canStartEditedRound(state)) newRound();
+  if (canStartEditedRound(state)) newRound({ reload: true });
 }
 
 function scheduleCompile(slot, delay) {
@@ -358,7 +368,7 @@ function onSourceChange(text) {
   const slot = activeSlot();
   slot.source = text;
   slot.edited = true;
-  saveSlots();
+  saveSlotsSoon();
   scheduleCompile(slot, slot.language === 'python' ? 900 : 250);
 }
 
@@ -400,6 +410,10 @@ function addSlot() {
 
 function removeSlot() {
   if (state.slots.length <= 1) return;
+  const slot = activeSlot();
+  if (!isPristine(slot) && !confirm(`Remove ${slot.compiled?.name || 'this warrior'} and its edits?`)) return;
+  clearTimeout(slot.compileTimer);
+  slot.token++;                            // a compile in flight must not publish into a removed slot
   state.slots.splice(state.active, 1);
   state.active = Math.max(0, state.active - 1);
   saveSlots();
@@ -566,7 +580,10 @@ async function convertActive(lang) {
 
 // ---------------------------------------------------------------- battle
 
-function newRound() {
+// reload: an edit before the first step replaces the round in place (same
+// round number and first mover, no new log line).
+function newRound({ reload = false } = {}) {
+  const inPlace = reload === true && !!state.vm && state.vm.steps === 0 && state.round > 0;
   stopRunning();
   discardLive();
   const roster = state.slots.map((s, i) => (s.compiled?.ok ? i : -1)).filter((i) => i >= 0);
@@ -589,7 +606,7 @@ function newRound() {
     state.pspaceOwners = warriors;
     state.pspaces = warriors.map(() => VM.freshPSpace(state.settings));
   }
-  const firstTurn = state.round % warriors.length;
+  const firstTurn = (inPlace ? state.round - 1 : state.round) % warriors.length;
   const pspacesAtStart = state.pspaces.map((ps) => ps.slice()); // for replays
   try {
     const positions = vm.load(warriors, { seed: (Math.random() * 2 ** 32) >>> 0, firstTurn, pspaces: state.pspaces });
@@ -604,7 +621,7 @@ function newRound() {
   installLive(vm);
   renderer3d.stopFollowingWarrior();                   // warrior numbers change between rounds
   updateFollow();
-  state.round++;
+  if (!inPlace) state.round++;
   state.replaying = false;
   state.report = null;
   $('pmCard').hidden = true;
@@ -614,7 +631,7 @@ function newRound() {
   chart.sample(0, vm.warriors.map((w) => w.queue.size));
   hideOverlay();
   const skipped = state.slots.length - roster.length;
-  log(`<b>Round ${state.round}</b> · ${vm.warriors.map((w, k) => `${colorName(k, w.name)} at ${pad4(w.position)}`).join(', ')}${skipped ? ` <span class="muted">(${skipped} skipped: compile errors)</span>` : ''}`);
+  if (!inPlace) log(`<b>Round ${state.round}</b> · ${vm.warriors.map((w, k) => `${colorName(k, w.name)} at ${pad4(w.position)}`).join(', ')}${skipped ? ` <span class="muted">(${skipped} skipped: compile errors)</span>` : ''}`);
   renderScoreboard();
   updateCycle();
   state.dirtyFrame = true;
@@ -690,10 +707,18 @@ function renderPostMortem(report) {
     return k >= 0 ? colorName(k, n) : escapeHtml(n);
   };
   // Colour warrior names inside report sentences.
+  // One pass over the plain text (longest names first), so a name that
+  // also occurs inside another name or inside the markup is left alone.
+  const names = [...new Set(vm.warriors.map((w) => w.name))].filter(Boolean).sort((a, b) => b.length - a.length);
+  const namePattern = names.length ? new RegExp(names.map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|'), 'g') : null;
   const colorize = (text) => {
-    let html = escapeHtml(text);
-    for (const w of vm.warriors) html = html.split(escapeHtml(w.name)).join(nameHtml(w.name));
-    return html;
+    if (!namePattern) return escapeHtml(text);
+    let html = '', at = 0;
+    for (const m of text.matchAll(namePattern)) {
+      html += escapeHtml(text.slice(at, m.index)) + nameHtml(m[0]);
+      at = m.index + m[0].length;
+    }
+    return html + escapeHtml(text.slice(at));
   };
   $('pmSummary').innerHTML = colorize(report.summary);
   $('pmTimeline').innerHTML = report.timeline.map((e) => `<li class="${e.kind}"><b>${e.cycle.toLocaleString()}</b> ${colorize(e.text)}</li>`).join('');
@@ -793,8 +818,9 @@ function sampleChart() {
 function frame() {
   requestAnimationFrame(frame);           // first, so one bad frame can't stop the loop
   const vm = state.vm;
-  advanceFrame(state, stepVM);
   const now = performance.now();
+  advanceFrame(state, stepVM, now);
+  measureSpeed(vm, now);
   if (vm) {
     pickRenderer();
     const events = vm.takeEvents();
@@ -883,6 +909,11 @@ function renderScoreboard() {
     d.innerHTML = `<div class="name"></div><div class="meta"><span class="procs"></span><span class="badge"></span></div><div class="bar"><i></i></div>`;
     d.querySelector('.name').textContent = w.name;
     d.querySelector('.name').title = `${w.name} by ${w.author} · ${w.length} instructions${vm.geo ? ' · tap to follow it in 3D' : ''}`;
+    if (vm.geo) {                        // the card is a control: follow this warrior in 3D
+      d.setAttribute('role', 'button');
+      d.tabIndex = 0;
+      d.setAttribute('aria-label', `Follow ${w.name} in 3D`);
+    }
     sb.appendChild(d);
   });
   renderScoreboardLive();
@@ -916,96 +947,6 @@ function log(html) {
   const ol = $('log');
   ol.prepend(li);
   while (ol.children.length > 200) ol.lastChild.remove();
-}
-
-// ---------------------------------------------------------------- tournament
-
-function runTournamentUI() {
-  if (state.tournament) { state.tournament.cancel = true; state.tournament.pool?.close(); return; }
-  const roster = state.slots.map((s, i) => (s.compiled?.ok ? i : -1)).filter((i) => i >= 0);
-  if (roster.length < 2) { $('tourResults').innerHTML = '<p class="muted small">Need at least two working warriors.</p>'; return; }
-  const rounds = Math.max(1, Math.min(1000, parseInt($('tourRounds').value, 10) || 50));
-  const warriors = roster.map((i) => state.slots[i].compiled);
-  const stats = warriors.map((w) => ({ name: w.name, wins: 0, losses: 0, ties: 0, score: 0 }));
-  const rng = mulberry32((Math.random() * 2 ** 32) >>> 0);
-  const settings = { ...state.settings };   // the rules the warriors were compiled for
-  const pspaces = warriors.map(() => VM.freshPSpace(settings));
-  const t = { cancel: false, done: 0 };
-  state.tournament = t;
-  const runner = createSimulationRunner({ cancelled: () => t.cancel });
-  $('tourBtn').textContent = 'Stop';
-  $('tourBar').style.width = '0%';
-  $('tourResults').innerHTML = '<p class="muted small">Starting…</p>';
-
-  const render = () => {
-    const rows = stats.map((s, k) => ({ ...s, k })).sort((a, b) => b.score - a.score);
-    $('tourResults').innerHTML = `<table class="results"><thead><tr><th>Warrior</th><th>W</th><th>L</th><th>T</th><th>Pts</th></tr></thead><tbody>${
-      rows.map((s) => `<tr><td class="name"><span class="dot" style="background:${WARRIOR_COLORS[roster[s.k]]}"></span>${escapeHtml(s.name)}</td><td>${s.wins}</td><td>${s.losses}</td><td>${s.ties}</td><td>${s.score}</td></tr>`).join('')
-    }</tbody></table><p class="muted small">${t.done} / ${rounds} rounds · each survivor scores (W²−1)/S, as in pMARS</p>`;
-    $('tourBar').style.width = `${(t.done / rounds) * 100}%`;
-  };
-
-  const stop = () => {
-    t.pool?.close();
-    if (state.tournament === t) {
-      state.tournament = null; $('tourBtn').textContent = 'Run';
-      if (t.cancel) $('tourResults').insertAdjacentHTML('beforeend', '<p class="muted small">Stopped.</p>');
-    }
-  };
-  // The shared GPU kernel owns two-warrior matches. Multiplayer rounds keep
-  // using the yielding CPU runner, with their existing scoring and P-space.
-  if (warriors.length === 2) {
-    const cancelled = () => t.cancel || state.tournament !== t;
-    (async () => {
-      try {
-        const pool = t.pool = await createBrowserMatchPool({ cancelled });
-        $('tourResults').innerHTML = `<p class="muted small">Running ${rounds} rounds on ${pool.backend.toUpperCase()}…</p>`;
-        const result = await pool.match({ a: warriors[0], b: warriors[1], settings: { ...settings, rounds }, details: true,
-          roundOptions: Array.from({ length: rounds }, (_, r) => ({ seed: Math.floor(rng() * 2 ** 32), firstTurn: r % 2 })) });
-        if (cancelled()) return;
-        result.rounds.forEach((res) => {
-          const points = roundPoints(2, res.survivors.length);
-          stats.forEach((s, k) => {
-            if (res.winner === k) { s.wins++; s.score += points; }
-            else if (res.winner === null) { s.ties++; s.score += points; }
-            else s.losses++;
-          });
-        });
-        t.done = result.rounds.length; render();
-        $('tourResults').insertAdjacentHTML('beforeend', `<p class="muted small">${pool.backend.toUpperCase()}</p>`);
-      } catch (error) {
-        if (!cancelled()) $('tourResults').innerHTML = `<p class="muted small">Stopped: ${escapeHtml(error.message)}</p>`;
-      } finally { stop(); }
-    })();
-    return;
-  }
-  const next = async () => {
-    const t0 = performance.now();
-    try {
-      await playSlice(t0);
-    } catch (e) {
-      stop();
-      $('tourResults').insertAdjacentHTML('beforeend', `<p class="muted small">Stopped: ${escapeHtml(e.message)}</p>`);
-      return;
-    }
-    render();
-    if (t.done < rounds && !t.cancel) setTimeout(next, 0);
-    else stop();
-  };
-  const playSlice = async (t0) => {
-    while (t.done < rounds && !t.cancel && performance.now() - t0 < 40) {
-      const res = await runner.round(warriors, settings, { seed: Math.floor(rng() * 2 ** 32), firstTurn: t.done % warriors.length, pspaces });
-      if (!res) break;
-      stats.forEach((s, k) => {
-        const points = roundPoints(warriors.length, res.survivors.length);
-        if (res.winner === k) { s.wins++; s.score += points; }
-        else if (res.winner === null && res.survivors.includes(k)) { s.ties++; s.score += points; }
-        else s.losses++;
-      });
-      t.done++;
-    }
-  };
-  next();
 }
 
 // ---------------------------------------------------------------- settings
@@ -1068,10 +1009,28 @@ function speedFromSlider(v) {
   // 0..100 -> 0.05 .. 20,000 cycles per frame (exponential)
   return 0.05 * Math.pow(400000, v / 100);
 }
+const cyclesPerSecond = (perSec) => (perSec < 10 ? `${perSec.toFixed(1)} cyc/s` : perSec < 10000 ? `${Math.round(perSec)} cyc/s` : `${Math.round(perSec / 1000)}k cyc/s`);
 function renderSpeed() {
-  const v = state.stepsPerFrame;
-  const perSec = v * 60;
-  $('speedOut').textContent = perSec < 10 ? `${perSec.toFixed(1)} cyc/s` : perSec < 10000 ? `${Math.round(perSec)} cyc/s` : `${Math.round(perSec / 1000)}k cyc/s`;
+  const target = state.stepsPerFrame * 60;
+  const out = $('speedOut');
+  // When this machine (or the GPU engine) can't reach the chosen speed, show
+  // what it is really doing rather than what was asked for.
+  const short = state.running && speedMeter?.rate != null && speedMeter.rate < target * 0.8;
+  out.textContent = short ? `${cyclesPerSecond(speedMeter.rate)} (max)` : cyclesPerSecond(target);
+  out.title = short ? `Asked for ${cyclesPerSecond(target)}; this is as fast as the round runs here.` : '';
+}
+// The speed really reached, measured over half-second windows while running.
+let speedMeter = null;
+function measureSpeed(vm, now) {
+  if (!vm || !state.running || vm.done) {
+    if (speedMeter) { speedMeter = null; renderSpeed(); }
+    return;
+  }
+  if (speedMeter?.vm !== vm) speedMeter = { vm, at: now, cycle: vm.cycle, rate: null };
+  else if (now - speedMeter.at >= 500) {
+    speedMeter = { vm, at: now, cycle: vm.cycle, rate: (vm.cycle - speedMeter.cycle) * 1000 / (now - speedMeter.at) };
+    renderSpeed();
+  }
 }
 
 
@@ -1320,9 +1279,13 @@ function wireEvents() {
     state.dirtyFrame = true;
   });
   $('followStop').addEventListener('click', () => { renderer3d.stopFollowingWarrior(); updateFollow(); state.dirtyFrame = true; });
-  $('scoreboard').addEventListener('click', (e) => {
+  const followCard = (e) => {
     const card = e.target.closest('.fighter');
     if (card) followWarrior([...$('scoreboard').children].indexOf(card));
+  };
+  $('scoreboard').addEventListener('click', followCard);
+  $('scoreboard').addEventListener('keydown', (e) => {
+    if ((e.key === 'Enter' || e.key === ' ') && e.target.matches('.fighter[role="button"]')) { e.preventDefault(); followCard(e); }
   });
 
   $('spinToggle').addEventListener('click', () => {
@@ -1352,7 +1315,7 @@ function wireEvents() {
   });
   if (safeGet('zorewars.shape') === 'torus') showShape('torus');
 
-  $('tourBtn').addEventListener('click', runTournamentUI);
+  $('tourBtn').addEventListener('click', () => runTournament(state, $));
 
   $('applySettings').addEventListener('click', () => {
     const v = {};
@@ -1390,7 +1353,10 @@ function wireEvents() {
   });
 
   document.addEventListener('keydown', (e) => {
-    if (e.target.closest('textarea, input, select, [contenteditable], .cm-editor, dialog') || e.ctrlKey || e.metaKey || e.altKey) return;
+    // Not while typing, not on a focused control (Space and Enter belong to
+    // it), and not on key repeat (holding R would rebuild the round each time).
+    if (e.repeat || e.ctrlKey || e.metaKey || e.altKey ||
+        e.target.closest('textarea, input, select, button, summary, a[href], [role="button"], [contenteditable], .cm-editor, dialog')) return;
     if (e.code === 'Space') { e.preventDefault(); $('runBtn').click(); }
     else if (e.key === 's' || e.key === 'S') $('stepBtn').click();
     else if (e.key === 'r' || e.key === 'R') newRound();
@@ -1423,10 +1389,12 @@ async function boot() {
   wireMobile();
   loadClassics();
   renderer.layout(state.settings.coreSize, state.vm?.geo ?? null);
+  let libraryError = null;
+  showOverlay('Loading…', 'Fetching the warrior library');   // replaced by the first round
   try {
     await loadLibrary();
   } catch (e) {
-    showOverlay('Could not load the warrior library', 'Serve the project with "npm start" rather than opening the file directly.');
+    libraryError = e;
     console.error(e);
   }
   panels.push(initLadder(panelContext), initSpecies(panelContext));
@@ -1453,6 +1421,8 @@ async function boot() {
   await Promise.all(state.slots.map((s) => compileSlot(s)));
   state.booting = false;
   newRound();
+  // After the first round is set up, so it stays visible.
+  if (libraryError) log('<b style="color:var(--bad)">Could not load the warrior library.</b> Serve the project with "npm start" rather than opening the file directly, then reload.');
   requestAnimationFrame(frame);
 }
 

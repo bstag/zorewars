@@ -4,7 +4,7 @@
 // warriors for other battlefields are a checkbox away. Search covers names,
 // families, authors and the ;strategy text.
 
-const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+import { escapeHtml as esc } from './editor-status.js';
 
 // Library entries carry their encyclopedia family; for a warrior without one
 // (a file added to the library, not yet to the encyclopedia), a guess from its
@@ -102,7 +102,7 @@ export function initPicker(ctx) {
       </li>`;
     }).join('') || '<li class="empty">No warriors match.</li>';
     $('pickerCount').textContent = `${shown.length} shown${hidden ? ` · ${hidden} more with the boxes below ticked` : ''}`;
-    $('pickerList').setAttribute('aria-activedescendant', shown.length ? `pick-${state.cursor}` : '');
+    $('pickerSearch').setAttribute('aria-activedescendant', shown.length ? `pick-${state.cursor}` : '');   // focus stays in the search box
   }
 
   function choose(i) {
@@ -116,7 +116,7 @@ export function initPicker(ctx) {
     state.cursor = (state.cursor + d + state.rows.length) % state.rows.length;
     for (const li of $('pickerList').querySelectorAll('li[data-i]')) li.setAttribute('aria-selected', String(+li.dataset.i === state.cursor));
     $(`pick-${state.cursor}`)?.scrollIntoView({ block: 'nearest' });
-    $('pickerList').setAttribute('aria-activedescendant', `pick-${state.cursor}`);
+    $('pickerSearch').setAttribute('aria-activedescendant', `pick-${state.cursor}`);
   }
 
   $('pickerFamilies').addEventListener('click', (ev) => {

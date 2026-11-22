@@ -7,7 +7,7 @@
   --line-2: #2a3a60;
   --text: #e2e8f0;
   --text-2: #94a3b8;
-  --muted: #64748b;
+  --muted: #7c8aa0;   /* 4.9:1 or better on every panel colour (WCAG AA for small text) */
   --accent: #22d3ee;
   --accent-2: #f472b6;
   --good: #4ade80;
@@ -120,6 +120,7 @@ select:focus, input:focus, textarea:focus, button:focus-visible { outline: 2px s
   cursor: pointer; color: var(--muted); flex: none;
 }
 .icon-btn:hover { color: var(--bad); border-color: var(--bad); }
+.menu-btn:hover { color: var(--text); border-color: var(--text-2); }   /* not the red of "remove" */
 .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
 
 /* ---------- code editor ---------- */
@@ -158,6 +159,7 @@ select:focus, input:focus, textarea:focus, button:focus-visible { outline: 2px s
   border-left: 3px solid var(--c); position: relative; overflow: hidden;
 }
 .fighter.dead { opacity: 0.45; }
+.fighter:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .fighter.winner { box-shadow: 0 0 0 1px var(--c), 0 0 24px -6px var(--c); }
 .fighter .name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fighter .meta { display: flex; justify-content: space-between; font: 12px var(--mono); color: var(--text-2); margin-top: 2px; }
@@ -354,9 +356,46 @@ table.results.ladder td.name { max-width: 150px; }
   .speed input { height: 32px; }
 }
 
+/* ---------- long-form pages: Learn, History, Warriors ----------
+   One definition for the three pages (docs.html is the reference). A page's
+   own <style> holds only what is particular to it. */
+.docs { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 32px; max-width: 1180px; margin: 0 auto; padding: 24px 20px 80px; }
+.toc { position: sticky; top: 72px; align-self: start; max-height: calc(100vh - 90px); overflow: auto; font-size: 13px; }
+.toc h4 { margin: 16px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+.toc a { display: block; padding: 3px 8px; color: var(--text-2); text-decoration: none; border-radius: 6px; }
+.toc a:hover { color: var(--text); background: var(--panel-2); }
+.docs > article, main.enc { min-width: 0; font-size: 15px; line-height: 1.7; }
+.docs > article { max-width: 800px; }
+.docs > article h1, main.enc > h1 { font: 700 34px/1.2 var(--sans); margin: 8px 0 8px; letter-spacing: -0.01em; }
+.docs > article h2, main.enc > h2 { font-size: 23px; margin: 56px 0 12px; padding-top: 8px; border-top: 1px solid var(--line); scroll-margin-top: 72px; }
+.docs > article h3 { font-size: 16px; text-transform: none; letter-spacing: 0; color: var(--text); margin: 28px 0 8px; scroll-margin-top: 72px; }
+.docs > article p, .docs > article li, main.enc p { color: #cbd5e1; }
+.docs > article code, main.enc code { font: 13px var(--mono); background: var(--panel-2); border: 1px solid var(--line); padding: 1px 5px; border-radius: 5px; color: #e2e8f0; }
+.docs > article pre { font: 13px/1.6 var(--mono); background: #060a14; border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; overflow-x: auto; color: #cbd5e1; }
+.docs > article pre code { background: none; border: 0; padding: 0; }
+.docs .lead { font-size: 18px; color: var(--text-2) !important; }
+.callout { border: 1px solid var(--line-2); border-left: 3px solid var(--accent); background: var(--panel); border-radius: 8px; padding: 12px 16px; margin: 16px 0; }
+.callout.warn { border-left-color: var(--warn); }
+.callout p { margin: 0; }
+table.ref { width: 100%; border-collapse: collapse; font-size: 14px; margin: 12px 0; display: block; overflow-x: auto; }
+table.ref th, table.ref td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.ref th { color: var(--muted); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
+table.ref td:first-child { font-family: var(--mono); white-space: nowrap; color: var(--accent); }
+.exercise { border: 1px dashed var(--line-2); border-radius: 8px; padding: 10px 16px; margin: 12px 0; }
+.exercise b { color: var(--warn); }
+/* Redcode in prose (also the landing page's sample) */
+.cmt { color: #7686a8; }
+.kw { color: #22d3ee; }
+.lbl { color: #f472b6; }
+@media (max-width: 860px) {
+  .docs { grid-template-columns: minmax(0, 1fr); padding: 16px; }
+  .toc { position: static; max-height: none; border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; }
+  .docs > article h1, main.enc > h1 { font-size: 28px; }
+}
+
 /* ---------- phones: three views and a bottom tab bar ---------- */
 @media (max-width: 860px) {
-  body { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }
+  body:has(.tabbar) { padding-bottom: calc(64px + env(safe-area-inset-bottom)); }   /* room for the arena's tab bar */
   .topbar { padding: 8px 12px; position: sticky; }
   .brand-name { font-size: 16px; }
   .menu-btn { display: inline-flex; border-color: var(--line-2); color: var(--text-2); }

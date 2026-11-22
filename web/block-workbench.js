@@ -1,7 +1,15 @@
 import { blockPosition, moveBlock, newBlock, readStack } from './block-stack.js';
 
 const $ = (id) => document.getElementById(id);
-const worker = new Worker(new URL('./vendor/block-workbench.js', import.meta.url), { type: 'module' });
+// Replaced when a build is stopped (a build runs to the end inside the worker,
+// so stopping one means ending the worker).
+let worker;
+let building = false;
+function startWorker() {
+  worker = new Worker(new URL('./vendor/block-workbench.js', import.meta.url), { type: 'module' });
+  worker.onmessage = onWorkerMessage;
+  worker.onerror = onWorkerError;
+}
 const labels = { group: 'Group', opening: 'Opening', body: 'Body', finisher: 'Finisher', data: 'Data' };
 const groupLabels = { seq: 'Sequence', par: 'Parallel', boot: 'Boot a copy', fork: 'Branch on scan' };
 let catalog, starters, rulesets;
@@ -285,11 +293,22 @@ function buildWarrior() {
     message();
     buildStatus('Linking blocks and checking behavior…');
     $('workbench-controls').disabled = true;
+    building = true;
+    $('run-status').hidden = false;
+    $('stop-benchmark').disabled = false;
+    $('stop-benchmark').textContent = 'Stop build';
+    $('run-progress').textContent = 'Building… Full verification can take a while.';
     send('build', { tree: stack, options: {
       rules: $('rules').value, length: $('budget').valueAsNumber, name: 'Workbench warrior',
       torus: $('topology').value || null, verification: $('verification').value,
     } });
   } catch (error) { buildStatus(error.message, 'error'); }
+}
+
+function endBuildStatus() {
+  if (!building) return;
+  building = false;
+  $('run-status').hidden = true;
 }
 
 function runBenchmark() {
@@ -298,6 +317,7 @@ function runBenchmark() {
   $('workbench-controls').disabled = true;
   $('run-status').hidden = false;
   $('stop-benchmark').disabled = false;
+  $('stop-benchmark').textContent = 'Stop benchmark';
   $('run-progress').textContent = 'Running library matches…';
   send('benchmark', { opponent: $('opponent').value, rounds: $('rounds').valueAsNumber, seed: $('seed').valueAsNumber });
 }
@@ -342,8 +362,9 @@ function showField({ opponents, skipped }) {
   $('workbench-controls').disabled = false;
 }
 
-worker.onmessage = ({ data: { type, id, value } }) => {
+function onWorkerMessage({ data: { type, id, value } }) {
   if (id !== requestId) return;
+  if (type === 'build' || type === 'error') endBuildStatus();
   switch (type) {
     case 'catalog': loadCatalog(value); break;
     case 'starter':
@@ -377,7 +398,7 @@ worker.onmessage = ({ data: { type, id, value } }) => {
       else message(value, true);
       break;
   }
-};
+}
 
 function download(name, data, type) {
   const url = URL.createObjectURL(new Blob([data], { type }));
@@ -396,6 +417,15 @@ $('new-tree').addEventListener('click', () => setTree(null));
 $('build-warrior').addEventListener('click', buildWarrior);
 $('run-benchmark').addEventListener('click', runBenchmark);
 $('stop-benchmark').addEventListener('click', () => {
+  if (building) {
+    worker.terminate();
+    requestId++;                     // anything the old worker still sent is stale
+    startWorker();
+    endBuildStatus();
+    $('workbench-controls').disabled = false;
+    buildStatus('Build stopped. Change the stack or the verification level and build again.');
+    return;
+  }
   $('stop-benchmark').disabled = true;
   $('run-progress').textContent = 'Stopping after the current simulation slice…';
   worker.postMessage({ type: 'cancel' });
@@ -415,9 +445,11 @@ $('tree-file').addEventListener('change', async (event) => {
   finally { $('workbench-controls').disabled = false; }
 });
 
-worker.onerror = () => {
+function onWorkerError() {
+  building = false;
   $('run-status').hidden = true;
   $('workbench-controls').disabled = true;
   message('The workbench could not start its simulator. Reload this page to try again.', true);
-};
+}
+startWorker();
 send('catalog');

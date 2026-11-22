@@ -32,27 +32,70 @@ export const strip = (w) => ({
 
 export function createPool(threads = os.cpus().length, { wasmModule, native = false } = {}) {
   const createRingKernel = native ? createNativeRingKernel() : wasmModule ? createWasmRingKernel(wasmModule) : undefined;
-  let next = 0, closed = false;
-  const pending = new Map();
-  const workers = Array.from({ length: Math.max(1, threads) }, () => {
-    const w = new Worker(new URL('./worker.js', import.meta.url), { workerData: { wasmModule, native } });
-    w.on('message', (msg) => {
-      const p = pending.get(msg.id);
-      if (!p) return;
-      pending.delete(msg.id);
-      if (msg.error) p.reject(new Error(msg.error)); else p.resolve(msg);
+  let next = 0, closed = false, startupFailures = 0;
+  const size = Math.max(1, threads);
+  // Tasks wait in a queue and go to whichever thread is free, so one long
+  // match doesn't hold up the short ones behind it. A thread that dies fails
+  // only the match it was playing and is replaced.
+  const queue = [];
+  const idle = [];
+  const workers = new Set();
+  const dispatch = () => {
+    while (queue.length && idle.length) {
+      const job = queue.shift();
+      const slot = idle.pop();
+      try {
+        slot.worker.postMessage({ ...job.task, id: job.id });
+        slot.job = job;
+      } catch (error) { // a task that can't be posted
+        idle.push(slot);
+        job.reject(error);
+      }
+    }
+  };
+  const spawn = () => {
+    const slot = { worker: new Worker(new URL('./worker.js', import.meta.url), { workerData: { wasmModule, native } }), job: null };
+    const settle = (error, msg) => {
+      const job = slot.job;
+      slot.job = null;
+      if (job) error ? job.reject(error) : job.resolve(msg);
+    };
+    slot.worker.on('message', (msg) => {
+      if (!slot.job || msg.id !== slot.job.id) return;
+      settle(msg.error && new Error(msg.error), msg);
+      startupFailures = 0;
+      idle.push(slot);
+      dispatch();
     });
-    w.on('error', (e) => { for (const p of pending.values()) p.reject(e); pending.clear(); });
-    return w;
-  });
+    const died = (error) => {
+      if (!workers.delete(slot)) return;
+      const at = idle.indexOf(slot);
+      if (at >= 0) idle.splice(at, 1);
+      settle(error);
+      if (closed) return;
+      // Threads that keep dying before they answer anything can't be replaced
+      // into working: stop instead of respawning forever.
+      if (++startupFailures > size) {
+        closed = true;
+        for (const job of queue.splice(0)) job.reject(error);
+        return;
+      }
+      spawn();
+      dispatch();
+    };
+    slot.worker.on('error', died);
+    slot.worker.on('exit', (code) => died(new Error(`CPU worker exited (code ${code})`)));
+    workers.add(slot);
+    idle.push(slot);
+  };
+  for (let i = 0; i < size; i++) spawn();
   return {
-    size: workers.length,
+    size,
     match(task) {
       if (closed) return Promise.reject(new Error('CPU pool is closed'));
-      const id = next++;
       return new Promise((resolve, reject) => {
-        pending.set(id, { resolve, reject });
-        workers[id % workers.length].postMessage({ ...task, id });
+        queue.push({ id: next++, task, resolve, reject });
+        dispatch();
       });
     },
     async measureSpecies(warrior, settings) {
@@ -64,9 +107,13 @@ export function createPool(threads = os.cpus().length, { wasmModule, native = fa
     close() {
       if (closed) return;
       closed = true;
-      for (const p of pending.values()) p.reject(new Error('CPU pool is closed'));
-      pending.clear();
-      for (const w of workers) w.terminate();
+      const error = new Error('CPU pool is closed');
+      for (const job of queue.splice(0)) job.reject(error);
+      for (const slot of [...workers]) {
+        workers.delete(slot);
+        if (slot.job) slot.job.reject(error);
+        slot.worker.terminate();
+      }
     },
   };
 }

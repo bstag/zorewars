@@ -4,6 +4,13 @@ export const HILL_ROUNDS = 50;
 export const HILL_SEED = 48172;
 export const HILL_REVISION = 1;
 
+// Text from a warrior file, made safe to show in a Discord message: control
+// characters dropped, length capped, markdown and mentions escaped.
+export function display(text, limit = 90) {
+  return text.replace(/[\p{Cc}\p{Cf}]/gu, ' ').slice(0, limit)
+    .replace(/[\\`*_~|<>@\[\]]/g, '\\$&');
+}
+
 const hillOption = {
   name: 'hill', type: 3, description: 'Choose the hill', required: true,
   choices: HILLS.map(hill => ({ name: hill, value: hill })),

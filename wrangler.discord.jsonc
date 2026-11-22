@@ -44,7 +44,10 @@
 		{
 			"binding": "HILLS_DB",
 			"database_name": "zorewars-hills",
-			"database_id": "18ab960d-29e1-4bbd-b235-c396a5dd87ca"
+			"database_id": "18ab960d-29e1-4bbd-b235-c396a5dd87ca",
+			// Schema changes are numbered files here; "wrangler d1 migrations apply"
+			// records which have run.
+			"migrations_dir": "worker/migrations"
 		}
 	]
 }

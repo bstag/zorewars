@@ -51,9 +51,28 @@ export async function fetchWarriorText(text, options = {}) {
   if (!res.ok) throw new Error(`${url.href}: HTTP ${res.status}`);
   const type = res.headers.get('content-type') || '';
   if (type && !/^text\/|application\/octet-stream/.test(type)) throw new Error(`${url.href}: not a text file (${type})`);
-  const buf = await res.arrayBuffer();
-  if (buf.byteLength > MAX_BYTES) throw new Error(`${url.href}: file is larger than ${MAX_BYTES / 1024} KB`);
-  return { text: new TextDecoder().decode(buf), url: res.url || url.href };
+  // Stop at the limit rather than downloading a huge file to measure it.
+  const tooLarge = () => new Error(`${url.href}: file is larger than ${MAX_BYTES / 1024} KB`);
+  if (Number(res.headers.get('content-length')) > MAX_BYTES) {
+    await res.body?.cancel();
+    throw tooLarge();
+  }
+  const decoder = new TextDecoder();
+  let body = '', bytes = 0;
+  if (res.body) {
+    const reader = res.body.getReader();
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      bytes += value.byteLength;
+      if (bytes > MAX_BYTES) {
+        await reader.cancel();
+        throw tooLarge();
+      }
+      body += decoder.decode(value, { stream: true });
+    }
+  }
+  return { text: body + decoder.decode(), url: res.url || url.href };
 }
 
 // "Iron%20Gate%5B2%5D.txt" -> "IronGate". Used when a file has no ;name.

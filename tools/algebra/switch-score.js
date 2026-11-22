@@ -8,9 +8,9 @@ export const switchScore = {
   kids: [2, 6],
   params: {
     CELL: [1, 3400], FIRST: [0, 5], WIN: [-9, 9], TIE: [-9, 9], LOSS: [-9, 9],
-    HOLD: [0, 50], STREAK: [0, 20], SENT: [1, 4000],
+    HOLD: [0, 50], STREAK: [0, 20], SENT: [1, 4000], SEAL: [0, 1],
   },
-  defaults: { CELL: 20, FIRST: 0, WIN: 1, TIE: 0, LOSS: -1, HOLD: 0, STREAK: 0, SENT: 1931 },
+  defaults: { CELL: 20, FIRST: 0, WIN: 1, TIE: 0, LOSS: -1, HOLD: 0, STREAK: 0, SENT: 1931, SEAL: 0 },
   purpose: 'Chooses a member by accumulated P-space scores. Each round the member played last round gets WIN, TIE or LOSS added to its score, then the member with the best score plays; the one just played keeps its place unless another beats its score plus HOLD (HOLD k-1 with LOSS -1 and WIN 0 is "move on after k losses"). STREAK s counts ties in a row and scores the s-th as a loss. A sentinel cell (SENT) that reads wrong, as on the first round or after a brainwash, resets every score and plays FIRST.',
   testedProfiles: ['94x-hill', 'lp-hill', 'pspace'],
   knowledge: {
@@ -21,6 +21,7 @@ export const switchScore = {
       HOLD: 'Bonus the last member keeps when scores are compared; another member must beat score + HOLD',
       STREAK: '0 off; s scores the s-th tie in a row as a loss (an answer to imps that tie for ever)',
       SENT: 'Sentinel value; a reset writes it, a mismatch triggers a reset',
+      SEAL: '1 overwrites every STP with a DAT once the choice is stored, so a stray process that re-enters the selector mid-round (thrown there by an SPL carpet, say) dies instead of rewriting the scores',
     },
     invariants: [
       'P-space cell 0 is the prior result: 0 loss, 1 win, anything else a tie.',
@@ -133,11 +134,15 @@ export function emitSwitchScore(ctx, entries) {
     if (i + 1 < n) ctx.mark(`next${i}`);
   }
   ctx.ins('finish', 'STP', 'B', pick, `#${cells.last}`);
+  if (P.SEAL) {
+    const writers = [...(P.STREAK ? ['tieok', 'clear'] : []), 'store', 'reset', ...Array.from({ length: n + (P.STREAK ? 1 : 0) }, (_, i) => `rs${i}`), 'finish'];
+    for (const w of writers) ctx.ins('', 'MOV', 'I', tmp, L(w));
+  }
   ctx.ins('', 'ADD', 'AB', `#${L('table')}-${pick}`, pick);
   ctx.ins('', 'JMP', 'B', `@${pick}`);
   ctx.ins('reset', 'STP', 'AB', `#${P.SENT}`, `#${cells.sentinel}`);
-  for (let i = 0; i < n; i++) ctx.ins('', 'STP', 'AB', `#${bias}`, `#${cells.box(i)}`);
-  if (P.STREAK) ctx.ins('', 'STP', 'AB', '#0', `#${cells.streak}`);
+  for (let i = 0; i < n; i++) ctx.ins(P.SEAL ? `rs${i}` : '', 'STP', 'AB', `#${bias}`, `#${cells.box(i)}`);
+  if (P.STREAK) ctx.ins(P.SEAL ? `rs${n}` : '', 'STP', 'AB', '#0', `#${cells.streak}`);
   ctx.ins('', 'MOV', 'AB', `#${P.FIRST}`, pick);
   ctx.ins('', 'JMP', 'B', L('finish'));
   for (const name of ['tmp', 'res', 'last', 'ptr', 'sc', 'cand', 'pick', ...(P.STREAK ? ['stk'] : [])]) ctx.ins(name, 'DAT', 'F', '#0', '#0');

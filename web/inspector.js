@@ -4,11 +4,14 @@ import {escapeHtml} from './editor-status.js';
 function inspectorRows(state, center, pad4) {
   const vm = state.vm;
   const rows = [];
+  // One pass over the queues, not one copy of each queue per row.
+  const pcs = new Set();
+  for (const w of vm.warriors) if (w.alive) for (const pc of w.queue) pcs.add(pc);
   for (let d = -4; d <= 4; d++) {
     const p = vm.norm(center + d);
     const o = vm.owner[p];
     const who = o >= 0 ? `<span style="color:${WARRIOR_COLORS[state.roster[o]]}">${escapeHtml(vm.warriors[o].name)}</span>` : '';
-    const running = vm.warriors.some((w) => w.alive && [...w.queue].includes(p)) ? ' ◂ pc' : '';
+    const running = pcs.has(p) ? ' ◂ pc' : '';
     const text = `${d === 0 ? '▸' : ' '}${pad4(p)}  ${vm.disassemble(p).padEnd(22)}`;
     rows.push(d === 0 ? `<span class="cur">${escapeHtml(text)}${who}${running}</span>` : `${escapeHtml(text)}${who}${running}`);
   }
@@ -27,6 +30,8 @@ export function paintInspector(state, $, colorName, pad4) {
   const addr = state.pinned >= 0 ? state.pinned : state.hover;
   const el = $('inspector');
   const hint = $('inspectHint');
+  // The pinned-cell line is only current while a cell is pinned (below).
+  if (!vm || state.pinned < 0) $('cellPeek').hidden = true;
   if (!vm) { el.textContent = ''; return; }
   const ls = state.lastStep;
   let center = addr;

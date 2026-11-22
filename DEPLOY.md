@@ -68,12 +68,15 @@ From Ubuntu, run these commands from your Linux home directory:
 cd ~
 repo=/mnt/e/Source/ZoreWars
 npx --yes wrangler@4.152.0 d1 create zorewars-hills --binding HILLS_DB --update-config --config "$repo/wrangler.discord.jsonc"
-npx --yes wrangler@4.152.0 d1 execute zorewars-hills --remote --file "$repo/docs/discord-hills.sql" --config "$repo/wrangler.discord.jsonc"
+npx --yes wrangler@4.152.0 d1 migrations apply zorewars-hills --remote --config "$repo/wrangler.discord.jsonc"
 openssl rand -hex 32 | npx --yes wrangler@4.152.0 secret put DISCORD_HILL_SECRET --config "$repo/wrangler.discord.jsonc"
 ```
 
-Create the database once. The SQL can be reapplied without clearing the
-hills. Redeploy the Discord Worker and container with your existing Discord
+Create the database once. The schema lives in `worker/migrations/`; D1
+records which files have run, so `migrations apply` is safe to repeat and
+is how later schema changes are rolled out. (A database that was set up
+before migrations existed can run it too: the first file only creates what
+is missing and never clears the hills.) Redeploy the Discord Worker and container with your existing Discord
 variables, then run `node cli/discord.js register` as above. The public pages
 and `/ladder` read D1 directly. Only submissions wake the match runner.
 
@@ -154,6 +157,8 @@ across the Worker, Durable Object, and container logs.
 | `arena_ready`, `arena_start_timeout` | Container startup and cold starts |
 | `arena_match`, `arena_match_failed`, `arena_busy` | Attachment download time, simulation time, and saturation |
 | `hill_submission` | Accepted entries, missed cuts, duplicates, and concurrent write conflicts |
+| `ladder_view_failed`, `ladder_read_failed`, `hill_submission_failed` | Why hill storage could not be used; `reason` names the cause, such as an uninitialised database |
+| `hill_revision_reset` | A hill read as empty because `HILL_REVISION` changed; its old entries are replaced by the next submission |
 | `discord_reply`, `discord_reply_failed` | Discord callback status and delivery failures |
 
 The application events omit warrior source, Discord interaction tokens,
