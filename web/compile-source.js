@@ -42,7 +42,9 @@ export async function compileSource(source, language, {compile,pythonReady,loadP
 // its post-mortem and replay) until Run or New round, so the code can be fixed
 // while reading why it lost.
 export function canStartEditedRound(state) {
-  return !state.booting && (!state.vm || state.vm.steps === 0)
+  // A replay can also sit at step 0 (of a round that ended early); it is not
+  // an unstarted round.
+  return !state.booting && !state.replaying && (!state.vm || state.vm.steps === 0)
     && state.slots.every(slot => slot.status !== 'compiling');
 }
 

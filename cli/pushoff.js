@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 // Live tournament execution and replay share ranking, but replay needs no
 // battlefield, warrior loading or battle workers.
 import { roundRobin } from '../tools/pushoff.js';
@@ -26,6 +27,10 @@ function requestFrom(args, usage) {
   if (Object.hasOwn(flags, 'export-koenigstuhl') &&
       (typeof exportKoenigstuhl !== 'string' || !exportKoenigstuhl || exportKoenigstuhl.startsWith('--'))) {
     usage('--export-koenigstuhl requires a new directory');
+  }
+  // Before any matches are played: the exporters need folders that don't exist yet.
+  for (const [flag, dir] of [['--export-pmars', exportPmars], ['--export-koenigstuhl', exportKoenigstuhl]]) {
+    if (dir && fs.existsSync(dir)) usage(`${flag} requires a new directory; ${dir} already exists`);
   }
   const base = { json: !!flags.json, variant, save: flags.save, exportPmars, exportKoenigstuhl };
   if (flags.load) return { ...base, load: String(flags.load) };
@@ -84,7 +89,7 @@ export async function cmdPushoff(args, h, { createPool = battlePool } = {}) {
       warriors: all.map(x => ({ name: x.w.name, author: x.w.author, file: x.w.file, entry: x.entry,
         format: x.w.instructions.some(instruction => ['LDP', 'STP'].includes(instruction.op))
           ? 'P-Space' : settings.dialect === '88' ? '88' : '94' })), ...matrices };
+    showRanking(record, request, h);            // first: a failed save must not hide the result
     writeOutputs(record, request, h.usage);
-    showRanking(record, request, h);
   } finally { pool.close(); }
 }

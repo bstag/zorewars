@@ -199,6 +199,7 @@ export class AvatarView3D {
       if (this.down && Math.hypot(e.clientX - this.down[0], e.clientY - this.down[1]) > 4) this.dragMoved = true;
     });
     canvas.addEventListener('pointerup', () => { this.down = null; });
+    canvas.addEventListener('pointercancel', () => { this.down = null; });
 
     // Light: a sky, a key light that casts shadows, a cool rim, and a few
     // point lights that flash where blows land.

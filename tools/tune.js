@@ -7,7 +7,7 @@
 // screens every candidate with a few rounds, re-checks the best few with more
 // rounds on fresh seeds (so a lucky draw isn't kept), and reports the best.
 
-import { compile } from '../src/engine/index.js';
+import { compile, mulberry32 } from '../src/engine/index.js';
 import { evaluate } from './hill.js';
 
 const P_LINE = /^const P = (\{.*\});[ \t]*$/m;   // [ \t]*, not \s*: keep the line break and any blank line after it
@@ -22,10 +22,10 @@ export function parseTunable(source) {
 
 export const withConstants = (source, P) => source.replace(P_LINE, `const P = ${JSON.stringify(P)};`);
 
-function sample(space) {
+function sample(space, random) {
   return Object.fromEntries(Object.entries(space).map(([k, v]) => {
-    if (Array.isArray(v) && v.length === 2 && v.every(Number.isInteger)) return [k, v[0] + Math.floor(Math.random() * (v[1] - v[0] + 1))];
-    if (Array.isArray(v)) return [k, v[Math.floor(Math.random() * v.length)]];
+    if (Array.isArray(v) && v.length === 2 && v.every(Number.isInteger)) return [k, v[0] + Math.floor(random() * (v[1] - v[0] + 1))];
+    if (Array.isArray(v)) return [k, v[Math.floor(random() * v.length)]];
     return [k, v];
   }));
 }
@@ -47,16 +47,19 @@ export function pairedGain(samples, base, z = Z) {
   return { gain: m, margin: (z * sd) / Math.sqrt(d.length) };
 }
 
-export async function tune({ pool, source, field, settings, candidates = 40, screenRounds = 10, checkRounds = 20, seeds = 3, finalists = 6, onProgress = () => {} }) {
+export async function tune({ pool, source, field, settings, candidates = 40, screenRounds = 10, checkRounds = 20, seeds = 3, finalists = 6, seed = 1, onProgress = () => {} }) {
+  // The same --seed draws the same candidates and plays them on the same
+  // placements, so a run can be repeated.
+  const random = mulberry32(seed);
   const { space, current } = parseTunable(source);
   const build = (P) => compile(withConstants(source, P), 'javascript', settings);
   const tried = [];
-  const all = [current, ...Array.from({ length: candidates }, () => ({ ...current, ...sample(space) }))];
+  const all = [current, ...Array.from({ length: candidates }, () => ({ ...current, ...sample(space, random) }))];
   let rejected = 0;
   for (const [i, P] of all.entries()) {
     const w = build(P);
     if (!w.ok) { rejected++; continue; }                // e.g. the warrior's own checks refuse these values
-    const r = await evaluate(pool, w, field, { rounds: screenRounds, seed: 1, settings });
+    const r = await evaluate(pool, w, field, { rounds: screenRounds, seed, settings });
     tried.push({ P, screen: r.smooth, current: i === 0 });
     onProgress(i + 1, all.length);
   }
@@ -65,12 +68,12 @@ export async function tune({ pool, source, field, settings, candidates = 40, scr
   // Re-check the best (and the current values, for comparison) on fresh seeds.
   const check = tried.slice(0, finalists);
   if (!check.some((t) => t.current)) check.push(tried.find((t) => t.current));
-  const seedList = Array.from({ length: Math.max(1, seeds) }, (_, i) => 1001 + i * 1000);
+  const seedList = Array.from({ length: Math.max(1, seeds) }, (_, i) => seed + 1000 + i * 1000);
   const results = [];
   for (const [i, t] of check.filter(Boolean).entries()) {
     const w = build(t.P);
     const runs = [];
-    for (const seed of seedList) runs.push(await evaluate(pool, w, field, { rounds: checkRounds, seed, settings }));
+    for (const checkSeed of seedList) runs.push(await evaluate(pool, w, field, { rounds: checkRounds, seed: checkSeed, settings }));
     const mean = (k) => runs.reduce((s, r) => s + r[k], 0) / runs.length;
     results.push({ ...t, score: mean('score'), smooth: mean('smooth'), samples: runs.flatMap((r) => r.rows.map((x) => x.smooth)), rows: runs[0].rows });
     onProgress(all.length + i + 1, all.length + check.length);

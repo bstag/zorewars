@@ -14,7 +14,8 @@ export function tuneOptions(args, usage) {
   const file = args._[0];
   if (!/\.js$/i.test(file) || !fs.existsSync(file)) usage('tune works on a JavaScript warrior file with a // SPACE comment and a const P = {...}; line');
   return { file, json: !!args.flags.json,
-    candidates: positiveInteger(args.flags, 'candidates', 40, usage), seeds: positiveInteger(args.flags, 'seeds', 3, usage) };
+    candidates: positiveInteger(args.flags, 'candidates', 40, usage), seeds: positiveInteger(args.flags, 'seeds', 3, usage),
+    seed: positiveInteger(args.flags, 'seed', 1, usage) };
 }
 
 export function refineOptions(args, usage) {

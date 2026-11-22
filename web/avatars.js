@@ -134,6 +134,8 @@ export class AvatarView {
       if (h.kind === 'kill') this.impacts.push({ to: h.to, kind: 'kill', attacker: h.attacker, t0: now });
       else if (this.flying.length < MAX_FLYING) this.flying.push({ from: h.from, to: h.to, kind: h.kind, attacker: h.attacker, t0: now, minor: h.minor });
     }
+    // draw() prunes these, but it doesn't run while the arena is off screen.
+    if (this.impacts.length > MAX_FLYING) this.impacts.splice(0, this.impacts.length - MAX_FLYING);
   }
 
   // ---- projection: a camera looking at the arena floor ----

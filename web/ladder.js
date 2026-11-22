@@ -20,6 +20,7 @@ import { createBrowserMatchPool } from './matches.js';
 
 const LADDER_KEY = 'zorewars.ladder.v1';      // one ladder (read once, to migrate)
 const LADDERS_KEY = 'zorewars.ladders.v2';
+const MAX_LADDERS = 8;
 const LADDER_SIZE = 10;
 const LADDER_START = ['gatekeeper.js', 'bandit.js', 'chameleon.js', 'evolvedsilk.red', 'blitz.js', 'papercut.js', 'silk.red', 'oneshot.red'];
 // On a plane: warriors written for it, and classic ones that do well there.
@@ -51,8 +52,16 @@ export function initLadder(ctx) {
 
   function load() {
     const saved = savedLadders()[rulesKey(ctx.settings())];
-    if (saved && Array.isArray(saved.members)) return saved;
     const lib = ctx.library();
+    if (saved && Array.isArray(saved.members)) {
+      // Library members are stored by file; their source comes from the library.
+      const members = saved.members.map((m) => {
+        if (m.origin !== 'library' || m.source) return m;
+        const e = lib.find((x) => `lib:${x.file}` === m.id);
+        return e && { ...m, source: e.source, language: e.language };
+      }).filter(Boolean);
+      return { ...saved, members };
+    }
     // Under ICWS'88 rules: the library's '88 warriors.
     const start = ctx.settings().dialect === '88' ? lib.filter((e) => inLibraryFor(e, ctx.settings())).map((e) => e.file)
       : ctx.settings().topology === 'torus' ? LADDER_START_PLANE : LADDER_START;
@@ -61,7 +70,14 @@ export function initLadder(ctx) {
     return { rules: rulesKey(ctx.settings()), members, results: {} };
   }
   // One ladder per rule set, so switching the battlefield and back keeps each.
-  const save = () => safeSet(LADDERS_KEY, { ...savedLadders(), [ladder.rules]: { ...ladder, members: ladder.members.map(({ compiled, ...m }) => m) } });
+  // Library warriors are saved without their source, and only the most
+  // recently used ladders are kept, so the store stays small.
+  const save = () => {
+    const members = ladder.members.map(({ compiled, source, ...m }) => (m.origin === 'library' ? m : { ...m, source }));
+    const all = { ...savedLadders(), [ladder.rules]: { ...ladder, members, savedAt: Date.now() } };
+    const kept = Object.entries(all).sort((a, b) => (b[1].savedAt ?? 0) - (a[1].savedAt ?? 0)).slice(0, MAX_LADDERS);
+    safeSet(LADDERS_KEY, Object.fromEntries(kept));
+  };
 
   function standings() {
     return ladder.members.map((m) => {
@@ -178,14 +194,26 @@ export function initLadder(ctx) {
     if (ladder.members.some((m) => m.id === id)) { render(`${esc(w.name)} is already on the ladder, unchanged.`); return; }
     fillGaps(() => {
       // An earlier version of the same warrior steps aside for the new one.
+      // It is set aside, not dropped: a stopped or failed challenge puts it back.
       const old = ladder.members.find((m) => m.origin === 'you' && m.name === w.name);
+      const aside = old && {
+        member: old, index: ladder.members.indexOf(old),
+        results: Object.fromEntries(Object.entries(ladder.results).filter(([k]) => k.startsWith(`${old.id}|`) || k.endsWith(`|${old.id}`))),
+      };
       if (old) removeMember(old);
       const me = { id, name: w.name, language: slot.language, source: slot.source, origin: 'you', age: 0, compiled: w };
       const pairs = ladder.members.filter((m) => compileMember(m).ok).map((m) => [me, m]);
       render(`${esc(w.name)} is playing ${pairs.length} warriors…`);
       ladder.members.push(me);
       play(pairs, roundsWanted(), (cancelled) => {
-        if (cancelled) { removeMember(me); save(); render('Challenge stopped.'); return; }
+        if (cancelled) {
+          removeMember(me);
+          if (aside) {
+            ladder.members.splice(aside.index, 0, aside.member);
+            Object.assign(ladder.results, aside.results);
+          }
+          save(); render('Challenge stopped.'); return;
+        }
         const rows = ranked();
         const place = rows.findIndex((r) => r.m === me) + 1;
         let msg;

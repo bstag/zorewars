@@ -44,7 +44,8 @@ export async function battlePool(flags, h) {
   const { native, wasmModule } = rustEngine(flags, h.usage);
   return createMatchBackend({ backend, createCpu: () => createPool(threads, { native, wasmModule }),
     createGpu: async () => (await import('../tools/gpu.js')).createGpuPool({ batchSize, adapter }),
-    onFallback: (reason) => { if (!flags.json) console.error(`Using CPU for battles: ${reason}`); },
+    // To stderr, so it is safe (and worth knowing) under --json too.
+    onFallback: (reason) => console.error(`Using CPU for battles: ${reason}`),
   });
 }
 
@@ -67,24 +68,40 @@ const KOENIGSTUHL = {
   '94nop': '94', '88': '88', lp: 'LP', '94x': 'X', pspace: 'PSPACE',
   icws: 'ICWS', icws64: 'ICWS64', tiny: 'TINY', nano: 'NANO',
 };
+// A whole number from a flag: "abc" and "2.9" are mistakes, not 0 and 2.
+export function wholeNumber(flags, key, fallback, min = 1) {
+  if (flags[key] === undefined) return fallback;
+  const n = Number(flags[key]);
+  if (!Number.isSafeInteger(n) || n < min) throw new Error(`--${key} must be a whole number of at least ${min}`);
+  return n;
+}
+
+const HILL_FETCH_MS = 20000;
 async function fetchHill(name, top, json) {
   const dir = KOENIGSTUHL[name];
   if (!dir) throw new Error(`unknown hill '${name}': use ${Object.keys(KOENIGSTUHL).map((k) => `koenigstuhl:${k}`).join(', ')}`);
   const base = `https://asdflkj.net/COREWAR/${dir}/`;
   const cache = path.join((await import('node:os')).tmpdir(), 'zorewars-hills', dir);
   fs.mkdirSync(cache, { recursive: true });
-  const response = await fetch(`${base}hill32_rec.html`);
+  const response = await fetch(`${base}hill32_rec.html`, { signal: AbortSignal.timeout(HILL_FETCH_MS) });
   if (!response.ok) throw new Error(`Could not load Koenigstuhl ${name}: HTTP ${response.status}`);
   const listing = await response.text();
   const files = [...new Set([...listing.matchAll(/href="(HILL(?:32)?\/[^"]+\.(?:red|rc|txt))"/gi)].map((m) => m[1]))].slice(0, top);
   const out = [];
   for (const [k, f] of files.entries()) {
     const local = path.join(cache, path.basename(f));
-    if (!fs.existsSync(local)) {
-      const res = await fetch(base + f);
-      const text = await res.text();
-      if (!res.ok || /^\s*<!DOCTYPE|^\s*<html/i.test(text)) { if (!json) console.error(`(could not fetch ${path.basename(f)})`); continue; }
-      fs.writeFileSync(local, text);
+    if (!fs.existsSync(local) || !fs.statSync(local).size) {
+      let res, text;
+      try {
+        res = await fetch(base + f, { signal: AbortSignal.timeout(HILL_FETCH_MS) });
+        text = await res.text();
+      } catch { res = null; }
+      if (!res?.ok || !text.trim() || /^\s*<!DOCTYPE|^\s*<html/i.test(text)) { if (!json) console.error(`(could not fetch ${path.basename(f)})`); continue; }
+      // Written beside the cache entry and renamed, so an interrupted run
+      // never leaves half a warrior to be reused.
+      const partial = `${local}.${process.pid}.part`;
+      fs.writeFileSync(partial, text);
+      fs.renameSync(partial, local);
     }
     out.push(local);
     progress(json, `hill: ${k + 1}/${files.length}`);
@@ -108,7 +125,7 @@ export async function hillOpponents(spec, settings, flags) {
   const { opponentTags } = await import('../tools/algebra/counters.js');
   const json = !!flags.json;
   const out = [];
-  for (const f of await hillFiles(spec, Math.max(1, parseInt(flags.top ?? '50', 10)), json)) {
+  for (const f of await hillFiles(spec, wholeNumber(flags, 'top', 50), json)) {
     const w = compile(fs.readFileSync(f, 'utf8'), 'redcode', hillSettingsFor(settings));
     if (!w.ok) { if (!json) console.error(`(skipped ${path.basename(f)}: ${w.errors[0].message})`); continue; }
     // What its comments claim it is; tree evolution tags it by play (tagField).

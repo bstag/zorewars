@@ -227,3 +227,28 @@ test('a hill stored under an older scoring revision starts empty and is replaced
     assert.equal(saved.revision, 1);
   } finally { console.warn = warn; console.info = info; }
 });
+
+test('the hill reset script names hills strictly and writes a statement no shell can break', async () => {
+  const { parseRequest, resetStatement } = await import('../scripts/hill-reset.js');
+  assert.deepEqual(parseRequest(['nano']), { hills: ['nano'], remote: false, yes: false });
+  assert.deepEqual(parseRequest(['all', '--remote', '--yes']), { hills: ['nano', 'tiny'], remote: true, yes: true });
+  for (const bad of [[], ['nano', 'tiny'], ['everything'], ['nano', '--force'], ["nano' OR 1=1 --"]]) assert.throws(() => parseRequest(bad));
+  const sql = resetStatement(['nano', 'tiny']);
+  assert.ok(!sql.includes('"'), 'double quotes are stripped by the shell');
+  assert.match(sql, /version = version \+ 1/);
+  assert.match(sql, /WHERE hill IN \('nano', 'tiny'\)$/);
+  assert.throws(() => resetStatement(["x'); DROP TABLE discord_hills; --"]));
+});
+
+test('standings carry the author from ;author, and none for older or anonymous entries', async () => {
+  const state = { revision: 1, receipts: [], matches: [], entries: [
+    { id: 'a', name: 'Signed', author: 'Ada', source: '', joined: 0 },
+    { id: 'b', name: 'Old entry', source: '', joined: 1 },
+    { id: 'c', name: 'Nobody', author: 'Anonymous', source: '', joined: 2 },
+  ] };
+  const db = { prepare: () => ({ bind: () => ({ first: async () => ({ version: 3, state: JSON.stringify(state) }) }) }) };
+  assert.deepEqual((await readStandings(db, 'nano')).map(({ name, author }) => [name, author]), [['Signed', 'Ada'], ['Old entry', ''], ['Nobody', '']]);
+  const page = await (await publicStandings(new Request('https://battle.zorewar.app/ladder/nano'), db)).text();
+  assert.match(page, /Signed <span class="by">by Ada<\/span>/);
+  assert.ok(!page.includes('by Anonymous'));
+});

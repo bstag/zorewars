@@ -47,7 +47,7 @@ export async function cmdEvolveTrees(args, h, { quiet = false } = {}) {
   const { placeOnHill } = await import('../tools/evolution/trees/placement.js');
   const { treeSettings, recipes, shape } = await import('../tools/algebra/index.js');
   const f = args.flags, json = !!f.json;
-  const {integer,rules,length,torus,settings,generations,batch,rounds,race,seed,archiveSize,ties,aim,aimTries,aimExplore,lexicase,lexEpsilon,ops,starts,out,redQueen}=treeCommandOptions(f,h,{treeSettings,recipes});
+  const {integer,rules,length,torus,settings,generations,batch,rounds,race,seed,archiveSize,ties,aim,aimTries,aimExplore,lexicase,lexEpsilon,ops,starts,out,redQueen,placeRounds}=treeCommandOptions(f,h,{treeSettings,recipes});
   fs.mkdirSync(out, { recursive: true });
   if (f.ladder && (f.king || redQueen)) h.usage('--ladder keeps its own champions; drop --king and --red-queen');
   if (f.ladder) return climbHill(args, h, { settings, rules, length, torus, starts, batch, rounds, race, seed, archiveSize, ties, aim, aimTries, aimExplore, lexicase, lexEpsilon, ops, integer, out, json });
@@ -76,7 +76,7 @@ export async function cmdEvolveTrees(args, h, { quiet = false } = {}) {
     const candidates = r.finalists.length ? r.finalists : r.archive;
     for (const e of candidates.slice(0, f.place === 'none' ? 0 : 3)) {
       progress(json, `placing ${e.shape} on the hill…`);
-      placed.push({ ...e, placement: await placeOnHill({ pool, field, w: e.w, settings, rounds: integer('place-rounds', 50), cache }) });
+      placed.push({ ...e, placement: await placeOnHill({ pool, field, w: e.w, settings, rounds: placeRounds, cache }) });
     }
     done(json);
     const best = placed.sort((a, b) => b.placement.score - a.placement.score)[0] ?? candidates[0];
@@ -132,7 +132,7 @@ async function climbHill(args, h, o) {
     // The full check: the final champion placed among the hill's top 30.
     const top = hill.slice(0, 30);
     progress(json, 'placing the champion on the top 30…');
-    const placement = r.champion ? await placeOnHill({ pool, field: top, w: r.champion.w, settings, rounds: integer('place-rounds', 50) }) : null;
+    const placement = r.champion ? await placeOnHill({ pool, field: top, w: r.champion.w, settings, rounds: o.placeRounds }) : null;
     done(json);
     if (r.champion) {
       fs.writeFileSync(path.join(out, 'best.red'), source(r.champion.tree));
@@ -188,7 +188,14 @@ export function treeCommandOptions(f,h,{treeSettings,recipes}) {
   if (f.ladder && !f.hill) h.usage('--ladder needs --hill');
   const redQueen = integer('red-queen', 0, 0);
   const out = f.out ?? path.join('evolved', 'trees');
-  return {integer,rules,length,torus,settings,generations,batch,rounds,race,seed,archiveSize,ties,aim,aimTries,aimExplore,lexicase,lexEpsilon,ops,starts,out,redQueen};
+  // Read here, before any evolving, so a mistyped count stops the run at once
+  // rather than after the work it would have thrown away.
+  const placeRounds = integer('place-rounds', 50);
+  if (f.ladder !== undefined) {
+    integer('ladder', 10); integer('sample', 20, 0); integer('cap', 10); integer('from-rung', 1);
+    integer('clear-place', 2); integer('clear-rounds', 30);
+  }
+  return {integer,rules,length,torus,settings,generations,batch,rounds,race,seed,archiveSize,ties,aim,aimTries,aimExplore,lexicase,lexEpsilon,ops,starts,out,redQueen,placeRounds};
 }
 
 // Human output is kept outside search orchestration and JSON serialization.

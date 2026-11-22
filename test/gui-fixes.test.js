@@ -99,3 +99,25 @@ test('tournament scoring: winner takes the points, survivors of a tie share, the
   assert.equal(stats[1].score, 8);            // (3*3-1)/1
   assert.equal(stats[0].score, 4);            // (3*3-1)/2
 });
+
+test('a replay sitting at step 0 is not an unstarted round', () => {
+  const slots = [{ status: 'ok' }];
+  assert.equal(canStartEditedRound({ booting: false, replaying: true, vm: { steps: 0, done: false }, slots }), false);
+});
+
+test('time spent waiting on a step in flight is counted by the next step', () => {
+  const state = running({ stepsPerFrame: 10 });
+  const wants = [];
+  const step = (want) => wants.push(want);
+  advanceFrame(state, step, 0);
+  state.livePending = true;                       // a GPU readback takes three frames
+  for (const now of [16.7, 33.3, 50]) advanceFrame(state, step, now);
+  state.livePending = false;
+  advanceFrame(state, step, 66.7);
+  assert.equal(wants.length, 2);
+  assert.ok(wants[1] >= 39 && wants[1] <= 41, `second step asked for ${wants[1]}`);
+  // Pausing forgets the clock: resuming much later is one frame, not a burst.
+  state.running = false; advanceFrame(state, step, 100);
+  state.running = true; advanceFrame(state, step, 60000);
+  assert.equal(wants[2], 10);
+});

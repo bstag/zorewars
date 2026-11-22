@@ -21,7 +21,7 @@ if (errors.length) {
   const [warrior] = warriors;
   const code = warrior.instructions.map(({ op, mod, aMode, a, bMode, b }) => [op, mod, aMode, a, bMode, b]);
   const id = createHash('sha256').update(JSON.stringify([warrior.start, code])).digest('hex');
-  const entry = { id, name: warrior.name.slice(0, 80), source: files[0].source };
+  const entry = { id, name: warrior.name.slice(0, 80), author: String(warrior.author ?? '').slice(0, 60), source: files[0].source };
   if (members.some(member => member.id === id)) {
     parentPort.postMessage({ duplicate: id });
   } else {

@@ -4,7 +4,18 @@ const $ = (id) => document.getElementById(id);
 // Replaced when a build is stopped (a build runs to the end inside the worker,
 // so stopping one means ending the worker).
 let worker;
-let building = false;
+let building = false;                    // false, 'build', or 'field' (loading opponents after a build)
+
+// The stack is kept in this browser, and replacing one that hasn't been
+// exported or freshly loaded asks first.
+const STORE = 'zorewars.blocklab.v1';
+let clean = null;                        // JSON of the stack as last loaded or exported
+const snapshot = () => JSON.stringify(tree ?? null);
+const markClean = () => { clean = snapshot(); };
+const mayReplace = () => !tree || snapshot() === clean || confirm('Replace the current stack? It has changes that were not exported.');
+function saveStack() {
+  try { localStorage.setItem(STORE, JSON.stringify({ tree, rules: $('rules').value, budget: $('budget').value, topology: $('topology').value })); } catch { /* storage unavailable */ }
+}
 function startWorker() {
   worker = new Worker(new URL('./vendor/block-workbench.js', import.meta.url), { type: 'module' });
   worker.onmessage = onWorkerMessage;
@@ -87,6 +98,7 @@ function setTree(next) {
 
 function updateStack(focus = false) {
   invalidateBuild();
+  if (catalog) saveStack();
   message();
   renderStack(focus);
 }
@@ -293,7 +305,7 @@ function buildWarrior() {
     message();
     buildStatus('Linking blocks and checking behavior…');
     $('workbench-controls').disabled = true;
-    building = true;
+    building = 'build';
     $('run-status').hidden = false;
     $('stop-benchmark').disabled = false;
     $('stop-benchmark').textContent = 'Stop build';
@@ -349,7 +361,24 @@ function loadCatalog(data) {
   $('rules').append(...Object.keys(rulesets).map((id) => new Option(id, id)));
   $('rules').value = '94nop';
   $('starter').value = 'one-shot';
-  loadStarter();
+  if (!restoreStack()) loadStarter();
+}
+
+// The stack from the last visit, if it still fits the catalog.
+function restoreStack() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE));
+    if (!saved?.tree) return false;
+    const restored = readStack(saved.tree, catalog);
+    if (rulesets[saved.rules]) $('rules').value = saved.rules;
+    if ([...$('topology').options].some((o) => o.value === saved.topology)) $('topology').value = saved.topology;
+    setBudget(Number(saved.budget) || undefined);
+    setTree(restored);
+    renderPalette();
+    $('workbench-controls').disabled = false;
+    message('Restored the stack from your last visit.');
+    return true;
+  } catch { return false; }
 }
 
 function showField({ opponents, skipped }) {
@@ -364,11 +393,12 @@ function showField({ opponents, skipped }) {
 
 function onWorkerMessage({ data: { type, id, value } }) {
   if (id !== requestId) return;
-  if (type === 'build' || type === 'error') endBuildStatus();
+  if (type === 'field' || type === 'field-error' || type === 'error') endBuildStatus();
   switch (type) {
     case 'catalog': loadCatalog(value); break;
     case 'starter':
       setTree(readStack(value, catalog));
+      markClean();
       renderPalette();
       $('workbench-controls').disabled = false;
       break;
@@ -377,6 +407,10 @@ function onWorkerMessage({ data: { type, id, value } }) {
       $('save-redcode').disabled = false;
       buildStatus(`${value.total} / ${value.budget} instructions · Verification passed\n${value.scope}`, 'success');
       $('field-note').textContent = 'Checking which opponents can run here…';
+      // The controls stay locked while the library loads, so Stop stays too.
+      building = 'field';
+      $('stop-benchmark').textContent = 'Stop loading';
+      $('run-progress').textContent = 'Built. Loading the library opponents…';
       break;
     case 'field': showField(value); break;
     case 'field-error':
@@ -412,8 +446,9 @@ $('block-search').addEventListener('input', renderPalette);
 $('category').addEventListener('change', renderPalette);
 for (const id of ['rules', 'topology']) $(id).addEventListener('change', () => { setBudget(); renderPalette(); invalidateBuild(); });
 for (const id of ['budget', 'verification']) $(id).addEventListener('input', invalidateBuild);
-$('load-starter').addEventListener('click', loadStarter);
-$('new-tree').addEventListener('click', () => setTree(null));
+for (const id of ['rules', 'topology', 'budget']) $(id).addEventListener('change', () => { if (catalog) saveStack(); });
+$('load-starter').addEventListener('click', () => { if (mayReplace()) loadStarter(); });
+$('new-tree').addEventListener('click', () => { if (mayReplace()) { setTree(null); markClean(); } });
 $('build-warrior').addEventListener('click', buildWarrior);
 $('run-benchmark').addEventListener('click', runBenchmark);
 $('stop-benchmark').addEventListener('click', () => {
@@ -421,9 +456,11 @@ $('stop-benchmark').addEventListener('click', () => {
     worker.terminate();
     requestId++;                     // anything the old worker still sent is stale
     startWorker();
+    const phase = building;
     endBuildStatus();
     $('workbench-controls').disabled = false;
-    buildStatus('Build stopped. Change the stack or the verification level and build again.');
+    if (phase === 'field') $('field-note').textContent = 'Stopped loading opponents. Build again to benchmark.';
+    else buildStatus('Build stopped. Change the stack or the verification level and build again.');
     return;
   }
   $('stop-benchmark').disabled = true;
@@ -431,7 +468,7 @@ $('stop-benchmark').addEventListener('click', () => {
   worker.postMessage({ type: 'cancel' });
 });
 $('save-redcode').addEventListener('click', () => download('workbench.red', $('redcode').textContent, 'text/plain'));
-$('export-tree').addEventListener('click', () => download('workbench.tree.json', JSON.stringify(tree, null, 2) + '\n', 'application/json'));
+$('export-tree').addEventListener('click', () => { download('workbench.tree.json', JSON.stringify(tree, null, 2) + '\n', 'application/json'); markClean(); });
 $('import-tree').addEventListener('click', () => $('tree-file').click());
 $('tree-file').addEventListener('change', async (event) => {
   const file = event.target.files[0];
@@ -440,7 +477,8 @@ $('tree-file').addEventListener('change', async (event) => {
   $('workbench-controls').disabled = true;
   try {
     if (file.size > 64 * 1024) throw new Error('Choose a stack JSON file smaller than 64 KB.');
-    setTree(readStack(JSON.parse(await file.text()), catalog));
+    const imported = readStack(JSON.parse(await file.text()), catalog);
+    if (mayReplace()) { setTree(imported); markClean(); }
   } catch (error) { message(`Could not open stack. ${error.message}`, true); }
   finally { $('workbench-controls').disabled = false; }
 });

@@ -19,7 +19,7 @@ async function step(maxSteps, valid = () => true) {
       state.lastStep = live.lastStep;
       checkDeaths();
       if (!state.replaying && !vm.done) state.roundSetup?.recorder?.checkpoint();
-      if (vm.done) finishRound();
+      if (vm.done && n > 0) finishRound();        // n is 0 when another step already ended the round
       sampleChart(); updateCycle(); state.dirtyFrame = true;
       if (!n || vm.done || maxSteps === Infinity || total >= maxSteps || now() >= deadline) return total;
     }
