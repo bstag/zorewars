@@ -13,7 +13,7 @@ import { makeGeometry } from '../../src/engine/geometry.js';
 import {blockInstances as instances} from './layout.js';
 import {createObservation,observeTree,verifyPhases} from './observe.js';
 import {createPumpLineageObservation} from './pump-lineage.js';
-import { packedPlan, tableChoice } from './switch-table.js';
+import { packedPlan, tableChoice, trackChoice } from './switch-table.js';
 import { scoreScenarios } from './switch-score.js';
 
 const isLeaf = (node) => Object.hasOwn(leaves, node.id);
@@ -292,7 +292,13 @@ function scenarios(root, labels, settings) {
           ...(TIES ? { storedAll: [[CELL, pick], [CELL + 2, switchTies(TIES, result, ties).ties]] } : {}) });
       }
     }
-    if (node.id === 'switch-table') {
+    if (node.id === 'switch-table' && node.P.TRACK) {
+      for (const [arm, phase] of [[0, 0], [1, 0], [0, 1], [1, 1]]) {
+        const pspace = VM.freshPSpace(settings);
+        pspace[node.P.TRACK] = arm; pspace[node.P.TRACK + 1] = phase;
+        out.push({ name: `switch-table: tracked arm ${arm}, phase ${phase}`, pspace, branch: `${node.ns}:${trackChoice(arm, phase, node.P.TFIRST)}` });
+      }
+    } else if (node.id === 'switch-table') {
       const { CELL, PACKED } = node.P;
       const plan = PACKED ? packedPlan(node.P, settings.coreSize) : null;
       for (const [result, states] of [[-1, [0]], [0, [0, 1, 2, 3]], [1, [0, 1, 2, 3]], [2, [0, 1, 2, 3, 13]]]) {
