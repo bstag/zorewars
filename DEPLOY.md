@@ -27,8 +27,11 @@ to 32 KiB each and matches to 100 rounds.
      --var DISCORD_PUBLIC_KEY:APP_PUBLIC_KEY
    ```
 
-   Reuse these variables on subsequent deploys, or save them as Wrangler
-   variables. The Discord Worker acknowledges commands before waking a
+   The variables only need to be passed the first time: the config sets
+   `keep_vars`, so later deploys (`npx wrangler deploy --config
+   wrangler.discord.jsonc`) keep them. After any deploy, an unsigned
+   `POST` to the interactions URL should answer 401; a 503 means the
+   variables are missing. The Discord Worker acknowledges commands before waking a
    single `lite` container, which sleeps after one minute of inactivity.
    The main website deploy uses its own Wrangler config.
 3. In the app's General Information tab, set **Interactions Endpoint URL**
