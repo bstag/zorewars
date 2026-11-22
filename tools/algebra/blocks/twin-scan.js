@@ -73,11 +73,23 @@ export const twinLoops = (P, core) => Math.max(2, Math.round((P.TIME / 100) * (c
 const pads = (P) => Math.max(0, P.GAP + P.UP - 7);
 const below = (P) => 7 + pads(P);
 
+// DEAD d: the block runs d cells from where it was loaded (a boot's HOP), so the warrior as
+// loaded lies d cells under it, dead once the boot has gone. A high probe in that image
+// (or the low one, GAP under it) is ignored; the window is sized for the longest image.
+function deadWindow(P, core, length, scanIdx = 0, total = length) {
+  const start = mod(-P.DEAD - scanIdx, core);
+  return { lo: start - 1, hi: start + total + P.GAP };
+}
+
 function twinMismatches(P, settings) {
   const core = settings.coreSize, out = [];
   if (settings.topology === 'torus') return ['twin-scan: written for the ring'];
   if (twinFactor(P.G, core) < 2) out.push(`twin-scan: the ${core}-cell core has no factor from 2 to ${P.G} for the step to share`);
   if (P.VARY > 1 && !settings.pSpace) out.push('twin-scan: VARY counts rounds in P-space, which this hill does not have');
+  if (P.DEAD) {
+    const w = deadWindow(P, settings.coreSize, settings.maxLength);
+    if (w.lo < 0 || w.hi >= settings.coreSize) out.push('twin-scan: the dead image window wraps the core');
+  }
   if (2 * P.WIPE < P.GAP + P.UP + 1) out.push(`twin-scan: the wipe (${2 * P.WIPE} cells from UP under the low probe) does not reach the high probe: raise WIPE or lower GAP or UP`);
   return out;
 }
@@ -87,9 +99,9 @@ const twinScan = {
   processes: 1, grows: false,
   purpose: 'A small .8c pair scanner: two pairs of cells GAP apart compared per five-instruction loop on a step sharing a factor G with the core; each find gets 2*WIPE SPL cells from UP under the low probe upward, and the scan goes on; after TIME/100 laps the same wipe loop becomes a DAT clear that restarts itself when it comes round onto its lowest cell. Numbers are shares of the core, so it builds on any core; written for ModelWar, where booted away with a decoy left behind it beats the Decoy Adapter scanner/paper.',
   params: { G: [2, 16], STEPF: [1, 9999], STARTF: [1, 9999], GAP: [1, 16], WIPE: [1, 16], UP: [0, 8], TIME: [10, 2000], BA: [0, 3], CLR: [0, 1],
-    VARY: [0, 4], VCELL: [1, 1500], STEPF2: [1, 9999], STARTF2: [1, 9999], STEPF3: [1, 9999], STARTF3: [1, 9999], STEPF4: [1, 9999], STARTF4: [1, 9999] },
+    VARY: [0, 4], VCELL: [1, 1500], STEPF2: [1, 9999], STARTF2: [1, 9999], STEPF3: [1, 9999], STARTF3: [1, 9999], STEPF4: [1, 9999], STARTF4: [1, 9999], DEAD: [0, 200000] },
   defaults: { G: 4, STEPF: 884, STARTF: 1768, GAP: 6, WIPE: 7, UP: 2, TIME: 360, BA: 0, CLR: 1,
-    VARY: 0, VCELL: 44, STEPF2: 1500, STARTF2: 3100, STEPF3: 2900, STARTF3: 5300, STEPF4: 4100, STARTF4: 7700 },
+    VARY: 0, VCELL: 44, STEPF2: 1500, STARTF2: 3100, STEPF3: 2900, STARTF3: 5300, STEPF4: 4100, STARTF4: 7700, DEAD: 0 },
   entry: (P) => (P.VARY > 1 ? 'pick' : 'loop'), entryFirst: false, loop: 'loop',
   protects: (P) => (P.CLR ? 'image' : 'self'),
   provides: { splBomb: 'st', datBomb: 'cb' },
@@ -142,7 +154,15 @@ const twinScan = {
     ctx.ins('', 'JMZ', 'B', L('clr'), L('timer'));
     ctx.ins('', 'SLT', 'AB', scan, `#${hi}`);
     ctx.ins('', 'JMP', 'B', L('loop'));
-    ctx.ins('', 'MOV', 'AB', scan, L('cp'));
+    if (P.DEAD) {
+      // A find in our own dead image (the warrior as loaded, DEAD cells under us) is ignored.
+      const w = deadWindow(P, core, total, cp0 + below(P), total);
+      ctx.ins('', 'SLT', 'A', `#${w.lo}`, scan);
+      ctx.ins('', 'JMP', 'B', L('go'));
+      ctx.ins('', 'SLT', 'A', `#${w.hi}`, scan);
+      ctx.ins('', 'JMP', 'B', L('loop'));
+    }
+    ctx.ins(P.DEAD ? 'go' : '', 'MOV', 'AB', scan, L('cp'));
     // With fewer than 7 cells' room under scan, cp is too close: move the pointer down the rest.
     if (k < 7) ctx.ins('', 'ADD', 'AB', `#${7 - k}`, L('cp'));
     ctx.ins('', 'MOV', 'AB', `#${W}`, L('c'));
