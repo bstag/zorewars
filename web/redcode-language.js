@@ -19,7 +19,7 @@ export const redcodeMode = {
       return meta ? 'meta' : 'comment';
     }
     if (stream.match(/^\d+/)) return 'number';
-    if (stream.match(/^[#$*@{<}>]/)) return state.sawOpcode ? 'operator' : 'operator';
+    if (stream.match(/^[#$*@{<}>]/)) return 'operator';
     const word = stream.match(/^[A-Za-z_][\w.&]*/);
     if (word) {
       const w = word[0];

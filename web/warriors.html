@@ -18,30 +18,20 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='3' fill='%230b1020'/><rect x='3' y='3' width='4' height='4' fill='%2322d3ee'/><rect x='9' y='9' width='4' height='4' fill='%23f472b6'/><rect x='9' y='3' width='4' height='4' fill='%23334155'/><rect x='3' y='9' width='4' height='4' fill='%23334155'/></svg>">
   <link rel="stylesheet" href="style.css">
   <style>
-    .docs { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 32px; max-width: 1280px; margin: 0 auto; padding: 24px 20px 80px; }
-    .toc { position: sticky; top: 72px; align-self: start; max-height: calc(100vh - 90px); overflow: auto; font-size: 13px; }
-    .toc h4 { margin: 16px 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
-    .toc a { display: block; padding: 3px 8px; color: var(--text-2); text-decoration: none; border-radius: 6px; }
-    .toc a:hover { color: var(--text); background: var(--panel-2); }
-    main.enc { min-width: 0; font-size: 15px; line-height: 1.65; }
-    main.enc > h1 { font: 700 34px/1.2 var(--sans); margin: 8px 0; }
-    main.enc > h2 { font-size: 23px; margin: 48px 0 12px; padding-top: 8px; border-top: 1px solid var(--line); scroll-margin-top: 72px; }
-    main.enc p { color: #cbd5e1; max-width: 820px; }
-    .lead { font-size: 18px; color: var(--text-2) !important; }
-    code { font: 13px var(--mono); background: var(--panel-2); border: 1px solid var(--line); padding: 1px 5px; border-radius: 5px; color: #e2e8f0; }
+    /* Shared long-form styles are in style.css; these are only used here.
+       The encyclopedia is wider than the prose pages: its cards hold code listings. */
+    .docs { grid-template-columns: 220px minmax(0, 1fr); max-width: 1280px; }
+    main.enc p { max-width: 820px; }
     .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; margin: 16px 0; }
     .stat { border: 1px solid var(--line); border-radius: 10px; background: var(--panel); padding: 12px 14px; }
     .stat b { display: block; font: 700 26px/1.2 var(--mono); color: var(--accent); }
     .stat span { font-size: 13px; color: var(--text-2); }
     .stat a { font-size: 12px; }
-    .callout { border: 1px solid var(--line-2); border-left: 3px solid var(--accent); background: var(--panel); border-radius: 8px; padding: 12px 16px; margin: 16px 0; max-width: 820px; }
-    .callout p { margin: 0; }
-    table.ref { width: 100%; border-collapse: collapse; font-size: 14px; margin: 12px 0; }
+    .callout { max-width: 820px; }
     .table-scroll { overflow-x: auto; }
-    table.ref th, table.ref td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
-    table.ref th { color: var(--muted); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
     table.ref td.yr { font-family: var(--mono); color: var(--text-2); white-space: nowrap; }
     .btn.fight { padding: 3px 10px; font-size: 12px; text-decoration: none; color: var(--text); }
 
@@ -69,8 +59,7 @@
     .sw-list li { padding-left: 20px; position: relative; }
     .sw-list li.plus::before { content: '+'; position: absolute; left: 2px; color: var(--good); font-weight: 700; }
     .sw-list li.minus::before { content: '−'; position: absolute; left: 2px; color: var(--bad); font-weight: 700; }
-    .exercise { border: 1px dashed var(--line-2); border-radius: 8px; padding: 10px 14px; margin: 14px 0 0; font-size: 14px; color: #cbd5e1; }
-    .exercise b { color: var(--warn); }
+    .wcard .exercise { padding: 10px 14px; margin: 14px 0 0; font-size: 14px; color: #cbd5e1; }
     .listing { width: 100%; border-collapse: collapse; font: 12.5px/1.55 var(--mono); background: #060a14; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; display: block; overflow-x: auto; }
     .listing tbody { display: table; width: 100%; }
     .listing td { padding: 2px 10px; vertical-align: top; border-bottom: 1px solid #0f1730; }
@@ -88,9 +77,7 @@
     .bad { color: var(--bad) !important; }
     .cols > div { min-width: 0; }
     @media (max-width: 860px) {
-      .docs { grid-template-columns: 1fr; padding: 16px; }
-      .toc { position: static; max-height: none; border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; }
-      main.enc > h1 { font-size: 28px; }
+      .docs { grid-template-columns: 1fr; }
       .listing td.why { min-width: 160px; }
     }
   </style>
@@ -106,6 +93,8 @@
       <a href="./">Arena</a>
       <a href="docs.html">Learn</a>
       <a href="warriors.html" aria-current="page">Warriors</a>
+      <a href="blocks.html">Block Lab</a>
+      <a href="hills.html">Hill study</a>
       <a href="history.html">History</a>
       <a href="docs.html#cli">CLI &amp; AI agents</a>
     </nav>
@@ -139,7 +128,7 @@
 
       <h2 id="ranking">Library ranking</h2>
       <p>Every warrior on this page against every other, 100 rounds per pairing. Like rock-paper-scissors, the order depends on who's in the field: add your own warrior and the table changes.</p>
-      <div id="ranking" class="table-scroll"><p class="muted">Loading…</p></div>
+      <div id="rankingTable" class="table-scroll"><p class="muted">Loading…</p></div>
 
       <h2 id="history">Hall of fame</h2>
       <p>Famous warriors from forty years of Core War. Links go to the original source in the public archives; "our version" links to the warrior on this page built on the same idea.</p>

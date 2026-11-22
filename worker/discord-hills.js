@@ -1,4 +1,4 @@
-import { HILLS, HILL_REVISION, HILL_SIZE } from '../src/engine/discord-hills.js';
+import { HILLS, HILL_REVISION, HILL_SIZE, display } from '../src/engine/discord-hills.js';
 import { ladderPage } from './ladder-page.js';
 
 const PUBLIC_ORIGIN = 'https://battle.zorewar.app';
@@ -7,7 +7,13 @@ async function readHill(db, hill) {
   const row = await db.prepare('SELECT version, state FROM discord_hills WHERE hill = ?').bind(hill).first();
   if (!row) throw new Error('Hill schema has not been initialized');
   const state = JSON.parse(row.state);
-  if (state.revision !== HILL_REVISION) throw new Error('Hill scoring revision changed');
+  // Results scored under another revision can't be mixed with new ones, so a
+  // changed HILL_REVISION starts the hill empty. The stored row is replaced by
+  // the first submission under the new rules (the version check still applies).
+  if (state.revision !== HILL_REVISION) {
+    console.warn({ event: 'hill_revision_reset', hill, stored: state.revision, current: HILL_REVISION });
+    return { revision: HILL_REVISION, entries: [], matches: [], receipts: [], version: row.version };
+  }
   return { ...state, version: row.version };
 }
 
@@ -34,10 +40,6 @@ export async function readStandings(db, hill) {
   return rank(entries, matches).map(({ name, wins, losses, ties, points, rounds }, i) => ({
     rank: i + 1, name, wins, losses, ties, pointsPerRound: rounds ? points / rounds : null,
   }));
-}
-
-function display(name) {
-  return name.replace(/[\p{Cc}\p{Cf}]/gu, ' ').replace(/[\\`*_~|<>@\[\]]/g, '\\$&');
 }
 
 export function standingsMessage(hill, rows) {
@@ -94,6 +96,7 @@ export async function publicStandings(request, db) {
   const hill = match[1];
   const rows = await readStandings(db, hill);
   return new Response(ladderPage(hill, rows), {
-    headers: { 'Content-Type': 'text/html; charset=utf-8', 'X-Content-Type-Options': 'nosniff' },
+    // Standings only change on a submission; a short cache spares D1 on repeat views.
+    headers: { 'Content-Type': 'text/html; charset=utf-8', 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'public, max-age=30' },
   });
 }

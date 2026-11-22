@@ -2,16 +2,21 @@
 // Package the shared algebra for the buildless website. The CLI discovers
 // blocks from disk; the browser worker gets the same supported files as imports.
 import { readdirSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { build } from 'esbuild';
 import { isLeafFile } from '../tools/algebra/leaf-registry.js';
 
 const algebra = new URL('../tools/algebra/', import.meta.url);
 const files = readdirSync(new URL('blocks/', algebra)).filter((file) => isLeafFile(file)).sort();
 
-await build({
+export const WORKBENCH_BUNDLE = fileURLToPath(new URL('../web/vendor/block-workbench.js', import.meta.url));
+
+// write: false returns the bundle text (test/block-workbench-bundle.test.js
+// compares it with the committed file).
+export const bundleWorkbench = ({ write = true } = {}) => build({
+  write,
   entryPoints: [fileURLToPath(new URL('./block-workbench-worker.js', import.meta.url))],
-  outfile: fileURLToPath(new URL('../web/vendor/block-workbench.js', import.meta.url)),
+  outfile: WORKBENCH_BUNDLE,
   bundle: true,
   format: 'esm',
   minify: true,
@@ -32,3 +37,5 @@ await build({
     },
   }],
 });
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) await bundleWorkbench();

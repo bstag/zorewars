@@ -1,7 +1,7 @@
 // Editor display output; the page owns DOM updates and rule-change actions.
 import {listing} from '../src/engine/index.js';
 export function escapeHtml(s) {
-  return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
 export function compileStatusMarkup(slot) {

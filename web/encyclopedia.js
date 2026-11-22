@@ -4,9 +4,9 @@ import {settingsFor,fieldOf,card} from './encyclopedia-content.js';
 // and warriors/benchmarks.json.
 
 import { compile } from '../src/engine/index.js';
+import { escapeHtml as esc } from './editor-status.js';
 
 const $ = (sel) => document.querySelector(sel);
-const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 async function getJSON(url) {
   const r = await fetch(url);
@@ -53,8 +53,9 @@ async function main() {
   $('#encSearch').addEventListener('input', applyFilter);
 
   // Ranking table.
-  if (bench) {
-    $('#ranking').innerHTML = `<table class="ref"><thead><tr><th>#</th><th>Warrior</th><th>Family</th><th>Pts/round</th></tr></thead><tbody>${
+  if (!bench) $('#rankingTable').innerHTML = '<p class="muted small">The benchmark results could not be loaded.</p>';
+  else {
+    $('#rankingTable').innerHTML = `<table class="ref"><thead><tr><th>#</th><th>Warrior</th><th>Family</th><th>Pts/round</th></tr></thead><tbody>${
       bench.ranking.map((r) => {
         const entry = data.warriors.find((w) => w.file === r.file);
         const fam = entry?.family || library.find((l) => l.file === r.file)?.category || '';
@@ -91,5 +92,7 @@ async function main() {
 }
 
 main().catch((e) => {
+  // Don't leave the other sections saying "Loading…".
+  for (const id of ['#rankingTable', '#hof']) if (/^\s*Loading/.test($(id)?.textContent ?? '')) $(id).textContent = '';
   $('#cards').innerHTML = `<p class="bad">Could not load the encyclopedia: ${esc(e.message)}. Serve the project with <code>npm start</code>.</p>`;
 });

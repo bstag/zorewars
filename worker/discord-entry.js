@@ -49,7 +49,11 @@ export default {
     if (pathname.startsWith('/ladder/')) {
       const started = performance.now();
       const response = await publicStandings(request, env.HILLS_DB)
-        .catch(() => new Response('Hill storage is unavailable', { status: 503 }));
+        .catch((error) => {
+          // Say why in the log (an uninitialised database, for one).
+          console.error({ event: 'ladder_view_failed', reason: String(error?.message ?? error) });
+          return new Response('Hill storage is unavailable', { status: 503 });
+        });
       const hill = pathname === '/ladder/nano' ? 'nano' : pathname === '/ladder/tiny' ? 'tiny' : undefined;
       if (hill) console.info({ event: 'ladder_view', hill, status: response.status, durationMs: Math.round(performance.now() - started) });
       return response;

@@ -11,22 +11,29 @@
 // Species map: where warriors sit by behaviour, measured alone in the core
 // (src/engine/species.js), with the library for comparison.
 
+import { escapeHtml as esc } from './editor-status.js';
+import { safeGet, safeSet } from './storage.js';
 import { compile, mulberry32, roundPoints, smoothPoints, speciesAxes, speciesHint, inLibraryFor, pushOff } from '../src/engine/index.js';
 import { WARRIOR_COLORS } from './arena.js';
 import { createSimulationRunner } from './simulation.js';
 import { createBrowserMatchPool } from './matches.js';
 
-const LADDER_KEY = 'zorewars.ladder.v1';
+const LADDER_KEY = 'zorewars.ladder.v1';      // one ladder (read once, to migrate)
+const LADDERS_KEY = 'zorewars.ladders.v2';
 const LADDER_SIZE = 10;
 const LADDER_START = ['gatekeeper.js', 'bandit.js', 'chameleon.js', 'evolvedsilk.red', 'blitz.js', 'papercut.js', 'silk.red', 'oneshot.red'];
 // On a plane: warriors written for it, and classic ones that do well there.
 const LADDER_START_PLANE = ['plane/planequeen.red', 'plane/planesilk.js', 'plane/raster.js', 'plane/pillar.js', 'twopass.red', 'papercut.js', 'fastsilk.js', 'mice.red'];
 
 const $ = (id) => document.getElementById(id);
-const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const rulesKey = (s) => [s.topology ?? 'ring', s.sizeX, s.sizeY, s.sizeZ, s.coreSize, s.maxCycles, s.maxProcesses, s.maxLength, s.minDistance, s.dialect, s.pSpace].join('/');
-function safeGet(key) { try { return JSON.parse(localStorage.getItem(key)); } catch { return null; } }
-function safeSet(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* storage unavailable */ } }
+// { rulesKey: ladder }. A ladder saved by the earlier single-ladder format is kept.
+function savedLadders() {
+  const all = safeGet(LADDERS_KEY);
+  if (all && typeof all === 'object' && !Array.isArray(all)) return all;
+  const old = safeGet(LADDER_KEY);
+  return old?.rules && Array.isArray(old.members) ? { [old.rules]: old } : {};
+}
 const plural = (n, one, many) => `${n.toLocaleString()} ${n === 1 ? one : many}`;
 const hash = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 16777619); return (h >>> 0).toString(36); };
 
@@ -43,8 +50,8 @@ export function initLadder(ctx) {
   const result = (a, b) => ladder.results[key(a, b)];
 
   function load() {
-    const saved = safeGet(LADDER_KEY);
-    if (saved && saved.rules === rulesKey(ctx.settings()) && Array.isArray(saved.members)) return saved;
+    const saved = savedLadders()[rulesKey(ctx.settings())];
+    if (saved && Array.isArray(saved.members)) return saved;
     const lib = ctx.library();
     // Under ICWS'88 rules: the library's '88 warriors.
     const start = ctx.settings().dialect === '88' ? lib.filter((e) => inLibraryFor(e, ctx.settings())).map((e) => e.file)
@@ -53,7 +60,8 @@ export function initLadder(ctx) {
       .map((e) => ({ id: `lib:${e.file}`, name: e.name, language: e.language, source: e.source, origin: 'library', age: 0 }));
     return { rules: rulesKey(ctx.settings()), members, results: {} };
   }
-  const save = () => safeSet(LADDER_KEY, { ...ladder, members: ladder.members.map(({ compiled, ...m }) => m) });
+  // One ladder per rule set, so switching the battlefield and back keeps each.
+  const save = () => safeSet(LADDERS_KEY, { ...savedLadders(), [ladder.rules]: { ...ladder, members: ladder.members.map(({ compiled, ...m }) => m) } });
 
   function standings() {
     return ladder.members.map((m) => {
@@ -203,7 +211,8 @@ export function initLadder(ctx) {
 
   function reset() {
     if (job) return;
-    try { localStorage.removeItem(LADDER_KEY); } catch { /* storage unavailable */ }
+    const { [rulesKey(ctx.settings())]: dropped, ...rest } = savedLadders();
+    safeSet(LADDERS_KEY, rest);
     ladder = load();
     render('');
     fillGaps();

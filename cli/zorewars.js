@@ -524,7 +524,12 @@ const MIME = {
   '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png', '.wasm': 'application/wasm',
   '.red': 'text/plain; charset=utf-8', '.py': 'text/plain; charset=utf-8', '.cpp': 'text/plain; charset=utf-8',
   '.hpp': 'text/plain; charset=utf-8', '.md': 'text/plain; charset=utf-8', '.ico': 'image/x-icon', '.txt': 'text/plain; charset=utf-8', '.xml': 'application/xml; charset=utf-8',
+  '.webp': 'image/webp', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif', '.woff2': 'font/woff2',
 };
+
+// What "serve" publishes: the website, as .github/workflows/pages.yml assembles it.
+const SITE_FILES = ['index.html', 'robots.txt', 'sitemap.xml'];
+const SITE_DIRS = ['web', 'src', 'warriors', 'lang'];
 
 function cmdServe(args) {
   const port = parseInt(args.flags.port ?? process.env.PORT ?? '8080', 10);
@@ -543,19 +548,36 @@ function cmdServe(args) {
       }
       return;
     }
-    let urlPath = decodeURIComponent(reqUrl.pathname);
-    if (urlPath.endsWith('/')) urlPath += 'index.html';
-    const file = path.normalize(path.join(ROOT, urlPath));
-    if (!file.startsWith(ROOT + path.sep) || file.includes(`${path.sep}node_modules${path.sep}`)) {
-      res.writeHead(403); res.end('forbidden'); return;
+    // Only the website is served (the same files the deployments publish):
+    // never dotfiles, the CLI, or anything else in the repository.
+    let urlPath;
+    try {
+      urlPath = decodeURIComponent(reqUrl.pathname);
+    } catch {
+      res.writeHead(400); res.end('bad request'); return;
     }
-    fs.readFile(file, (err, data) => {
-      if (err) { res.writeHead(404); res.end('not found'); return; }
-      res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
-      res.end(data);
-    });
+    if (urlPath.endsWith('/')) urlPath += 'index.html';
+    const parts = urlPath.split('/').filter(Boolean);
+    const allowed = parts.length === 1 ? SITE_FILES.includes(parts[0]) : SITE_DIRS.includes(parts[0]);
+    if (!allowed || parts.some((part) => part.startsWith('.')) || urlPath.includes('\\')) {
+      res.writeHead(404); res.end('not found'); return;
+    }
+    const base = path.join(ROOT, ...parts);
+    // Production serves /web/docs for docs.html; do the same here.
+    const candidates = path.extname(base) ? [base] : [base, `${base}.html`];
+    const tryNext = () => {
+      const file = candidates.shift();
+      if (!file) { res.writeHead(404); res.end('not found'); return; }
+      fs.readFile(file, (err, data) => {
+        if (err) return tryNext();
+        res.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream', 'Cache-Control': 'no-cache' });
+        res.end(data);
+      });
+    };
+    tryNext();
   });
-  server.listen(port, () => console.log(`ZoreWars arena running at http://localhost:${port}/`));
+  // Loopback only: this is a development server.
+  server.listen(port, '127.0.0.1', () => console.log(`ZoreWars arena running at http://localhost:${port}/`));
 }
 
 function printTable(rows) {

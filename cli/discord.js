@@ -1,9 +1,10 @@
-import { createPublicKey, randomInt, timingSafeEqual, verify } from 'node:crypto';
+import { randomInt, timingSafeEqual } from 'node:crypto';
 import { createServer } from 'node:http';
 import { fileURLToPath } from 'node:url';
 import { Worker } from 'node:worker_threads';
 import { RULESETS } from '../src/engine/constants.js';
-import { HILLS, HILL_ROUNDS, HILL_SEED, HILL_SIZE, ladderCommand, submitCommand } from '../src/engine/discord-hills.js';
+import { HILLS, HILL_ROUNDS, HILL_SEED, HILL_SIZE, display, ladderCommand, submitCommand } from '../src/engine/discord-hills.js';
+import { discordConfigured, isSnowflake, verifyDiscordSignature } from '../src/engine/discord-verify.js';
 
 const API = 'https://discord.com/api/v10';
 const ENDPOINT = '/api/discord/interactions';
@@ -44,11 +45,6 @@ function reply(response, status, body) {
 
 function message(content) {
   return { content, allowed_mentions: { parse: [] } };
-}
-
-function display(text, limit = 90) {
-  return text.replace(/[\p{Cc}\p{Cf}]/gu, ' ').slice(0, limit)
-    .replace(/[\\`*_~|<>@\[\]]/g, '\\$&');
 }
 
 function matchOptions(data) {
@@ -142,11 +138,9 @@ function scoreboard({ scores, errors }, { rules, rounds, seed }) {
 }
 
 export function createDiscordServer({ applicationId, guildId, publicKey, hillSecret, fetch = globalThis.fetch }) {
-  if (!/^\d{17,20}$/.test(applicationId) || !/^\d{17,20}$/.test(guildId) || !/^[a-f0-9]{64}$/i.test(publicKey)) {
+  if (!discordConfigured(applicationId, guildId, publicKey)) {
     throw new Error('Set DISCORD_APPLICATION_ID, DISCORD_GUILD_ID and DISCORD_PUBLIC_KEY.');
   }
-  // Node expects a DER SubjectPublicKeyInfo wrapper around Discord's raw Ed25519 key.
-  const key = createPublicKey({ key: Buffer.from('302a300506032b6570032100' + publicKey, 'hex'), format: 'der', type: 'spki' });
   let active = 0;
 
   async function handle(request, response) {
@@ -216,9 +210,7 @@ export function createDiscordServer({ applicationId, guildId, publicKey, hillSec
     const body = Buffer.concat(chunks);
     const signature = request.headers['x-signature-ed25519'];
     const timestamp = request.headers['x-signature-timestamp'];
-    if (!/^[a-f0-9]{128}$/i.test(signature) || !/^\d{1,16}$/.test(timestamp) ||
-        Math.abs(Date.now() / 1000 - Number(timestamp)) > 300 ||
-        !verify(null, Buffer.concat([Buffer.from(timestamp), body]), key, Buffer.from(signature, 'hex'))) {
+    if (!await verifyDiscordSignature(publicKey, signature, timestamp, body)) {
       return reply(response, 401, { error: 'Invalid Discord signature' });
     }
     let interaction;
@@ -296,7 +288,7 @@ async function main() {
   const { DISCORD_APPLICATION_ID: applicationId, DISCORD_GUILD_ID: guildId,
     DISCORD_PUBLIC_KEY: publicKey, DISCORD_BOT_TOKEN: token, DISCORD_HILL_SECRET: hillSecret, PORT = '8788' } = process.env;
   if (process.argv[2] === 'register') {
-    if (!/^\d{17,20}$/.test(applicationId) || !/^\d{17,20}$/.test(guildId) || !token) {
+    if (!isSnowflake(applicationId) || !isSnowflake(guildId) || !token) {
       throw new Error('Set DISCORD_APPLICATION_ID, DISCORD_GUILD_ID and DISCORD_BOT_TOKEN.');
     }
     for (const command of [battleCommand, ladderCommand, submitCommand]) {

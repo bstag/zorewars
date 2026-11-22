@@ -195,3 +195,35 @@ test('Cloudflare answers Discord before the origin is ready and forwards signed 
   assert.equal(fetchMock.mock.callCount(), 2);
   assert.equal(callback.content, 'Warrior 2 needs a .red attachment.');
 });
+
+test('a hill stored under an older scoring revision starts empty and is replaced by the next entry', async () => {
+  const entry = { id: 'old', name: 'Old King', source: 'MOV 0, 1', joined: 0 };
+  const stored = { version: 7, state: JSON.stringify({ revision: 0, entries: [entry], matches: [], receipts: [{ id: 'x', content: 'old' }] }) };
+  const rows = new Map([['nano', stored]]);
+  const db = { prepare: () => ({ bind: (...args) => ({
+    first: async () => ({ ...rows.get(args[0]) }),
+    run: async () => {
+      const [state, hill, version] = args;
+      if (rows.get(hill).version !== version) return { meta: { changes: 0 } };
+      rows.set(hill, { version: version + 1, state });
+      return { meta: { changes: 1 } };
+    },
+  }) }) };
+  const warn = console.warn, info = console.info;
+  console.warn = console.info = () => {};
+  try {
+    assert.deepEqual(await readStandings(db, 'nano'), []);
+    assert.equal(rows.get('nano'), stored);                       // reading changes nothing
+    let faced;
+    const reply = await submitToHill(db, 'nano', 'first', {}, async (hill, attachment, members) => {
+      faced = members;
+      return { entry: { id: 'new', name: 'New', source: 'MOV 0, 1' }, matches: [] };
+    });
+    assert.deepEqual(faced, []);                                  // the old field is not fought
+    assert.match(reply, /entered.*#1/);
+    const saved = JSON.parse(rows.get('nano').state);
+    assert.equal(rows.get('nano').version, 8);
+    assert.deepEqual(saved.entries.map((e) => e.id), ['new']);
+    assert.equal(saved.revision, 1);
+  } finally { console.warn = warn; console.info = info; }
+});

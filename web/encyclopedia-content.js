@@ -90,7 +90,7 @@ export function card(entry, source, compiled, bench, names, conversions = []) {
         <p class="summary">${entry.summary}</p>
       </div>
       <figure class="portrait">
-        <img src="${esc(portraitOf(entry.file))}" loading="lazy" alt="${esc(compiled.name)} as an avatar, its body built from its own code">
+        <img src="${esc(portraitOf(entry.file))}" loading="lazy" onerror="this.closest('figure').hidden = true" alt="${esc(compiled.name)} as an avatar, its body built from its own code">
         <figcaption>Its avatar, built from its code</figcaption>
       </figure>
     </div>

@@ -49,6 +49,8 @@
       <a href="./" aria-current="page">Arena</a>
       <a href="docs.html">Learn</a>
       <a href="warriors.html">Warriors</a>
+      <a href="blocks.html">Block Lab</a>
+      <a href="hills.html">Hill study</a>
       <a href="history.html">History</a>
       <a href="docs.html#cli">CLI &amp; AI agents</a>
     </nav>
@@ -214,12 +216,6 @@
             <option value="pushoff">Diversity push-off (Tournament Weekend)</option>
           </select>
         </label>
-        <label class="field inline"><span>Rank by</span>
-          <select id="ladderRank">
-            <option value="points">Points per round</option>
-            <option value="pushoff">Diversity push-off (Tournament Weekend)</option>
-          </select>
-        </label>
         <div class="progress small" aria-hidden="true"><div id="ladderBar"></div></div>
         <p class="small ladder-status" id="ladderStatus" role="status"></p>
         <div id="ladderTable"></div>
@@ -318,7 +314,7 @@
 
   <dialog class="dialog picker" id="pickerDialog" aria-labelledby="pickerTitle">
     <h3 id="pickerTitle">Choose a warrior</h3>
-    <input type="search" id="pickerSearch" placeholder="Search by name, family, author or strategy…" spellcheck="false" aria-controls="pickerList" aria-label="Search warriors">
+    <input type="search" id="pickerSearch" placeholder="Search by name, family, author or strategy…" spellcheck="false" role="combobox" aria-expanded="true" aria-autocomplete="list" aria-controls="pickerList" aria-label="Search warriors">
     <div class="chips" id="pickerFamilies" role="group" aria-label="Filter by family"></div>
     <ul class="picker-list" id="pickerList" role="listbox" aria-label="Warriors"></ul>
     <p class="muted small" id="pickerCount" role="status"></p>

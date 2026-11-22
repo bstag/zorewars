@@ -7,6 +7,10 @@
   <link rel="canonical" href="https://zorewar.app/web/blocks">
   <meta name="theme-color" content="#070b16">
   <title>Block Workbench | ZoreWars</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='3' fill='%230b1020'/><rect x='3' y='3' width='4' height='4' fill='%2322d3ee'/><rect x='9' y='9' width='4' height='4' fill='%23f472b6'/><rect x='9' y='3' width='4' height='4' fill='%23334155'/><rect x='3' y='9' width='4' height='4' fill='%23334155'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="block-workbench.css">
 </head>
@@ -16,10 +20,15 @@
       <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
       <span class="brand-name">ZORE<b>WARS</b></span>
     </a>
-    <nav class="nav" aria-label="Workbench navigation">
+    <button class="icon-btn menu-btn" id="menuBtn" aria-label="Menu" aria-expanded="false" aria-controls="siteNav"><svg class="icon" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <nav class="nav" id="siteNav">
       <a href="./">Arena</a>
       <a href="docs.html">Learn</a>
-      <a href="#workbench-guide">Workbench guide</a>
+      <a href="warriors.html">Warriors</a>
+      <a href="blocks.html" aria-current="page">Block Lab</a>
+      <a href="hills.html">Hill study</a>
+      <a href="history.html">History</a>
+      <a href="docs.html#cli">CLI &amp; AI agents</a>
     </nav>
   </header>
 
@@ -136,6 +145,7 @@
       <p><a href="https://github.com/bstag/zorewars/blob/main/docs/block-algebra.md">Algebra design</a> · <a href="https://github.com/bstag/zorewars/blob/main/docs/block-algebra-catalog.md">Repository catalog</a></p>
     </section>
   </main>
+  <script type="module" src="nav.js"></script>
   <script type="module" src="block-workbench.js"></script>
 </body>
 </html>

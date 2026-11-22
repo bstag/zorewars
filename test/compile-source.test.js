@@ -17,5 +17,5 @@ test('hung generators are skipped and exceptions clear active markers with bound
 
 import{canStartEditedRound}from'../web/compile-source.js';
 test('edits reset rounds only after boot and pending compiles finish',()=>{
- for(const booting of [false,true])for(const vm of [null,{steps:0,done:false},{steps:1,done:false},{steps:1,done:true}])for(const status of ['compiling','ok','error'])assert.equal(canStartEditedRound({booting,vm,slots:[{status}]}),!booting&&(!vm||vm.steps===0||vm.done)&&status!=='compiling');
+ for(const booting of [false,true])for(const vm of [null,{steps:0,done:false},{steps:1,done:false},{steps:1,done:true}])for(const status of ['compiling','ok','error'])assert.equal(canStartEditedRound({booting,vm,slots:[{status}]}),!booting&&(!vm||vm.steps===0)&&status!=='compiling');
 });

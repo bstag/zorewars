@@ -7,11 +7,16 @@
   <meta name="description" content="Explore historical Core War hills, compare their published warriors, and reproduce a five-instruction Nano scanner in ZoreWars.">
   <link rel="canonical" href="https://zorewar.app/web/hills">
   <meta name="theme-color" content="#070b16">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='3' fill='%230b1020'/><rect x='3' y='3' width='4' height='4' fill='%2322d3ee'/><rect x='9' y='9' width='4' height='4' fill='%23f472b6'/><rect x='9' y='3' width='4' height='4' fill='%23334155'/><rect x='3' y='9' width='4' height='4' fill='%23334155'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <style>
     .hill-study { max-width: 920px; margin: 0 auto; padding: 24px 20px 64px; color: var(--text-2); line-height: 1.65; }
     .hill-study h1, .hill-study h2, .hill-study h3 { color: var(--text); line-height: 1.25; }
-    .hill-study h2 { margin-top: 42px; padding-top: 16px; border-top: 1px solid var(--line); scroll-margin-top: 72px; }
+    .hill-study h2 { font-size: 22px; margin-top: 42px; padding-top: 16px; border-top: 1px solid var(--line); scroll-margin-top: 72px; }
+    .hill-study h3 { font-size: 16px; text-transform: none; letter-spacing: 0; margin: 26px 0 8px; }
     .hill-study a { color: var(--accent); }
     .hill-study .table-scroll { overflow-x: auto; }
     .hill-study table { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -32,8 +37,10 @@
       <a href="./">Arena</a>
       <a href="docs.html">Learn</a>
       <a href="warriors.html">Warriors</a>
-      <a href="history.html">History</a>
+      <a href="blocks.html">Block Lab</a>
       <a href="hills.html" aria-current="page">Hill study</a>
+      <a href="history.html">History</a>
+      <a href="docs.html#cli">CLI &amp; AI agents</a>
     </nav>
   </header>
   <main class="hill-study">

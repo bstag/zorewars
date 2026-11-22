@@ -9,7 +9,7 @@
   "scripts": {
     "start": "node cli/zorewars.js serve",
     "dev:cloudflare": "wrangler dev",
-    "test": "node --test",
+    "test": "node --test test/*.test.js",
     "test:coverage": "node scripts/coverage.js",
     "crap": "node scripts/crap.js",
     "crap:check": "node scripts/crap.js --check",
