@@ -10,6 +10,7 @@ import top10x88 from './recipes-top10/88.js';
 import top10xlp from './recipes-top10/lp.js';
 import top10x94x from './recipes-top10/94x.js';
 import top10xtiny from './recipes-top10/tiny.js';
+import top10xnano from './recipes-top10/nano.js';
 const stone = (TSTEP = 4) => ({ id: 'stone', P: { TSTEP, TBOMB: 0 } });
 const stoneImpExample=()=>({id:'seq',kids:[
   {id:'opening-qscan-mul',P:{QFAC:347,GAP:138,UNITS:6,SHARE:0}},
@@ -453,5 +454,5 @@ export const recipes = {
       { id: 'fanboot', P: { N: 6, K: 2, HOPA: 3200, HOPB: 1002 }, kids: [{ id: 'run-stone' }, { id: 'loop-paper6', P: { FAN: 0 } }] }] }),
   },
   // The hills' top 10, one file per hill (tools/algebra/recipes-top10/).
-  ...top10x94nop, ...top10x88, ...top10xlp, ...top10x94x, ...top10xtiny,
+  ...top10x94nop, ...top10x88, ...top10xlp, ...top10x94x, ...top10xtiny, ...top10xnano,
 };
