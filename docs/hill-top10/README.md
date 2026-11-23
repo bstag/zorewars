@@ -44,6 +44,8 @@ Before this work, the nearest existing trees scored far lower: 0.26–1.28 for t
 
 Every rebuild was compiled for ModelWar (25200 cells, P-space) and played against the 17-warrior field. Decoy Adapter v6.1, the live entry, scores 2.16 there.
 
+These numbers predate the placement fix of 23 Nov 2026 (see `modelwar/README.md`, "Replaying a server battle"): they loaded the warriors 100+ cells apart instead of the server's 5040+, which overrates long warriors such as Decoy Adapter (2.03 on the corrected bench). Re-measure before relying on them.
+
 | Best rebuilds | Field average | Where it beats v6.1 |
 |---|---|---|
 | King Cobra / Kaitain (94nop), rescaled | 1.91–1.93 | Drift v2 2.25 vs 1.76, mercenary, MWClient, Ornithopter V |

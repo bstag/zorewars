@@ -3,7 +3,7 @@
 # under ModelWar 1v1 rules. FIELD holds the opponents' .red files (download them from /api/players/<id>).
 : "${FIELD:?set FIELD to a folder of opponent .red files}"
 W="$1"; R="${2:-40}"; SEED="${3:-7}"
-MW="--coresize 25200 --cycles 252000 --length 5040 --processes 25200 --distance 100"
+MW="--rules modelwar"  # the server: 25200 cells, P-space, warriors 5040+ apart
 TMP="$(mktemp)"
 cd "$(dirname "$0")/.."
 for o in "$FIELD"/*.red; do

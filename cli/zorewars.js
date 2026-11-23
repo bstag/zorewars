@@ -13,6 +13,7 @@ import { compile, detectLanguage, runMatch, runTournament, DEFAULT_SETTINGS, RUL
 import { convertWarrior, conversionCandidates } from '../src/engine/convert.js';
 import { MAX_TRACE_TAIL } from '../src/engine/trace.js';
 import { createTraceRound } from '../src/engine/battle.js';
+import { pmarsRng } from '../src/engine/random.js';
 import { rustEngine } from './rust-engine.js';
 import {writeConversionResult} from './conversion-output.js';
 import { runPythonFile, pythonRunner, GENERATOR_LIMITS, generatorFailure } from './python.js';
@@ -73,6 +74,8 @@ Warriors:
 Options:
   --rounds N         rounds per match            (default 1 for battle, 10 for tournament)
   --seed N           seed for load positions and evolution choices (default 1)
+  --server-seed N    battle, trace: a ModelWar battle's reported seed (with --rules modelwar,
+                     the challenger first, -r 100: replays the server's rounds exactly)
   --rules NAME       named battlefield: ${Object.keys(RULESETS).join(', ')}
                      combine with e.g. --length 50 for a tournament entry limit
   --coresize N       core size                   (default ${DEFAULT_SETTINGS.coreSize})
@@ -146,7 +149,7 @@ const VALUE_FLAGS = `aim-explore aim-tries algorithm archive-size backend batch 
   exploit-age exploit-win export-koenigstuhl export-pmars families features field field-rounds finalists fixed from-rung
   generations genome gpu-adapter gpu-batch hill host iterations king ladder last length lex-epsilon load local-steps metric
   model objective out panel partner place place-rounds pmars population port processes profiles pspace race red-queen
-  representation resume round rounds rule rules sample save seed seeds select selection start stop-after threads ties to top
+  representation resume round rounds rule rules sample save seed seeds select server-seed selection start stop-after threads ties to top
   torus tree-ops turns variants`.split(/\s+/);
 
 function parseArgs(argv) {
@@ -182,6 +185,17 @@ function intFlag(flags, key, fallback, { min = 1, max = Number.MAX_SAFE_INTEGER 
     usage(`--${key} must be a whole number${max === Number.MAX_SAFE_INTEGER ? ` of at least ${min}` : ` from ${min} to ${max}`}`);
   }
   return n;
+}
+
+// --seed, or --server-seed: the seed a ModelWar battle reports. Its simulator
+// (pmars-ts) advances the seed once before placing round 1, so a server
+// battle replays round for round with --rules modelwar --server-seed N.
+function seedFlag(flags) {
+  if (flags['server-seed'] !== undefined) {
+    if (flags.seed !== undefined) usage('use --seed or --server-seed, not both');
+    return pmarsRng(intFlag(flags, 'server-seed', 0, { min: 1, max: 2147483646 }));
+  }
+  return intFlag(flags, 'seed', 1, { min: 0 });
 }
 
 // Warriors are placed at least minDistance apart, so that many must fit.
@@ -351,7 +365,7 @@ async function cmdBattle(args) {
   if (refs.length < 1) usage('battle needs at least one warrior');
   const settings = settingsFrom(args.flags, { rounds: 1 });
   const json = !!args.flags.json;
-  const seed = intFlag(args.flags, 'seed', 1, { min: 0 });
+  const seed = seedFlag(args.flags);
   const fixed = intFlag(args.flags, 'fixed', undefined, { min: 0, max: settings.coreSize - 1 });
   const detailRound = Math.min(settings.rounds, intFlag(args.flags, 'round', 1));
   checkRoom(settings, refs.length);
@@ -490,7 +504,7 @@ async function cmdTrace(args) {
   if (adapter && backend === 'cpu') usage('--gpu-adapter requires --backend gpu or auto');
   const settings = { ...settingsFrom(args.flags), rounds: round };
   const json = !!args.flags.json;
-  const seed = intFlag(args.flags, 'seed', 1, { min: 0 });
+  const seed = seedFlag(args.flags);
   const fixed = intFlag(args.flags, 'fixed', undefined, { min: 0, max: settings.coreSize - 1 });
   checkRoom(settings, refs.length);
   const warriors = await loadAll(refs, settings, json);
