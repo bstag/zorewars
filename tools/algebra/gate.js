@@ -13,7 +13,7 @@ import { makeGeometry } from '../../src/engine/geometry.js';
 import {blockInstances as instances} from './layout.js';
 import {createObservation,observeTree,verifyPhases} from './observe.js';
 import {createPumpLineageObservation} from './pump-lineage.js';
-import { packedPlan, tableChoice, trackChoice } from './switch-table.js';
+import { packedPlan, tableChoice, trackChoice, rowsPlan, rowsChoice } from './switch-table.js';
 import { scoreScenarios } from './switch-score.js';
 
 const isLeaf = (node) => Object.hasOwn(leaves, node.id);
@@ -292,7 +292,19 @@ function scenarios(root, labels, settings) {
           ...(TIES ? { storedAll: [[CELL, pick], [CELL + 2, switchTies(TIES, result, ties).ties]] } : {}) });
       }
     }
-    if (node.id === 'switch-table' && node.P.TRACK) {
+    if (node.id === 'switch-table' && node.P.ROWS) {
+      // Every state after every result, the first round, and a stored number from no state.
+      const { CELL, STATES } = node.P, plan = rowsPlan(node.P, settings.coreSize);
+      const cases = [[-1, 0]];
+      for (let k = 0; k < STATES; k++) for (const result of [0, 1, 2]) cases.push([result, plan.values[k]]);
+      cases.push([0, plan.moduli[0] - 1], [2, plan.moduli[2] - 1]);
+      for (const [result, stored] of cases) {
+        const pspace = VM.freshPSpace(settings);
+        pspace[0] = result; pspace[CELL] = stored;
+        const pick = rowsChoice(node.P, settings.coreSize, result, stored);
+        out.push({ name: `switch-table: result ${result}, stored ${stored}`, pspace, branch: `${node.ns}:${pick.branch}`, stored: [CELL, pick.stored] });
+      }
+    } else if (node.id === 'switch-table' && node.P.TRACK) {
       for (const [arm, phase] of [[0, 0], [1, 0], [0, 1], [1, 1]]) {
         const pspace = VM.freshPSpace(settings);
         pspace[node.P.TRACK] = arm; pspace[node.P.TRACK + 1] = phase;

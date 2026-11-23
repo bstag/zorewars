@@ -4,7 +4,7 @@ import {fanLines} from './fan-lines.js';
 import { leaves } from './leaves.js';
 import { makeGeometry } from '../../src/engine/geometry.js';
 import { pSpaceSizeFor } from '../../src/engine/constants.js';
-import { packedPlan, tableRows } from './switch-table.js';
+import { packedPlan, tableRows, rowsPlan, rowOf } from './switch-table.js';
 import { scoreCells } from './switch-score.js';
 // The linker's entry rule, for a shared payload's entry (a live binding: used only once both modules have loaded).
 import { entryOf } from './link.js';
@@ -158,6 +158,18 @@ function checkSwitchTable(ctx) {
   checkSwitch(ctx);
   const { node, kids, out } = ctx;
   if (ctx.torus) out.mismatches.push('switch-table needs a ring');
+  if (node.P.ROWS) {
+    const S = node.P.STATES;
+    if (!rowsPlan(node.P, ctx.core)) out.mismatches.push(`switch-table: no three moduli of at least ${S} fit the core`);
+    if (node.P.FIRST >= S) out.mismatches.push('switch-table: FIRST is not one of the STATES');
+    for (let k = 0; k < S; k++) {
+      const r = rowOf(node.P, k);
+      if (r.member >= kids.length) out.mismatches.push(`switch-table: state ${k} plays a missing member`);
+      if (Math.max(r.loss, r.win, r.tie) >= S) out.mismatches.push(`switch-table: state ${k} goes to a state past STATES`);
+    }
+    return;
+  }
+  if (kids.length > 4) out.mismatches.push('switch-table: more than four members needs ROWS 1');
   if (node.P.PACKED && !packedPlan(node.P, ctx.core)) {
     out.mismatches.push('switch-table: packed residue range exceeds the core');
   }
