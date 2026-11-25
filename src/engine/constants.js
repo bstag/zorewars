@@ -57,7 +57,11 @@ export const RULESETS = Object.freeze({
   'sal-mp': { coreSize: 8000, maxProcesses: 64, maxCycles: 80000, maxLength: 100, minDistance: 100, pSpace: true, pSpaceSize: 1, assertErrors: true, hillMaxLength: 100 },
   'sal-msw': { coreSize: 8000, maxProcesses: 8000, maxCycles: 40000, maxLength: 100, minDistance: 100, pSpace: true, assertErrors: true, hillMaxLength: 100 },
   // ModelWar's 1v1 ladder (modelwar.ai; its arena uses the default 8000-cell settings).
-  modelwar: { coreSize: 25200, maxProcesses: 25200, maxCycles: 252000, maxLength: 5040, minDistance: 100, pSpace: true, assertErrors: true, hillMaxLength: 5040 },
+  // Its server (github.com/pj4533/modelwar, lib/engine.ts) runs pmars-ts, which
+  // separates the warriors by the length limit, not by minSeparation 100: the
+  // second warrior starts 5040..20160 cells after the first (checked by
+  // replaying server battles with their seeds). MINDISTANCE stays 100.
+  modelwar: { coreSize: 25200, maxProcesses: 25200, maxCycles: 252000, maxLength: 5040, minDistance: 100, loadSeparation: 5040, pSpace: true, assertErrors: true, hillMaxLength: 5040 },
 });
 
 export const MODE_NAMES = {
@@ -80,9 +84,10 @@ export function pSpaceSizeFor(settings) {
 }
 
 // Minimum distance between warriors' start addresses. pMARS uses the
-// maximum length when no distance is given.
+// maximum length when no distance is given. A rule set may load further
+// apart than MINDISTANCE says (loadSeparation: ModelWar's server).
 export function separationFor(settings) {
-  return settings.minDistance || settings.maxLength;
+  return settings.loadSeparation || settings.minDistance || settings.maxLength;
 }
 
 // Points for each survivor of a round, pMARS's default (W*W-1)/S: with two
